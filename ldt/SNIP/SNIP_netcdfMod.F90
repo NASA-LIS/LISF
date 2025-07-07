@@ -11,54 +11,55 @@
 ! NASA GSFC Land Data Toolkit (LDT) V1.0
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_netcdfMod
-! 
+! MODULE: SNIP_netcdfMod
+!
 ! REVISION HISTORY:
 ! 01 Mar 2019  Eric Kemp  First version.
 !
 ! DESCRIPTION:
-! Source code for writing Air Force snow depth analysis variables to 
+! Source code for writing Air Force snow depth analysis variables to
 ! NETCDF.
 !-------------------------------------------------------------------------
 
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module USAFSI_netcdfMod
+module SNIP_netcdfMod
 
    ! Defaults
    implicit none
    private
 
    ! Public routines
-   public :: USAFSI_write_netcdf
-   public :: USAFSI_read_netcdf
-   public :: USAFSI_read_netcdf_12z
+   public :: SNIP_write_netcdf
+   public :: SNIP_read_netcdf
+   public :: SNIP_read_netcdf_12z
 
 contains
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-   ! Subroutine for writing USAFSI analysis to netCDF
-   subroutine USAFSI_write_netcdf(date10)
+   ! Subroutine for writing SNIP analysis to netCDF
+   subroutine SNIP_write_netcdf(date10)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_masterproc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_SNIPMod, only: SNIP_settings
 #if ( defined SPMD )
       use mpi
 #endif
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
 
       ! Arguments
       character*10, intent(in) :: date10
 
       ! Local variables
-      character*255 :: outfilename
+      character(LDT_CONST_PATH_LEN) :: outfilename
       integer :: iret
       integer :: ncid
       character*8 :: date
@@ -82,7 +83,7 @@ contains
       real :: dlat, dlon
       real :: swlat, swlon
       real :: nelat, nelon
-      character*20 :: output_prefix     
+      character*20 :: output_prefix
 
       ! Only the master process handles the file output
       if (LDT_masterproc) then
@@ -91,7 +92,7 @@ contains
          nr = LDT_rc%lnr(1)
 
          ! Copy ldt.config files to local variables
-         output_prefix = trim(usafsi_settings%netcdf_prefix)
+         output_prefix = trim(SNIP_settings%netcdf_prefix)
 
          ! FIXME:  Set this in ldt.config
          outfilename = trim(output_prefix)//"_"//date10//".nc"
@@ -104,19 +105,19 @@ contains
          deflate_level = NETCDF_deflate_level
 
          ! Create the output file
-#if(defined USE_NETCDF3) 
+#if(defined USE_NETCDF3)
          iret=nf90_create(path=trim(outfilename),&
               cmode=nf90_clobber, ncid=ncid)
          call LDT_verify(iret,&
               '[ERR] nf90_create failed')
 #endif
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
          iret=nf90_create(path=trim(outfilename),&
               cmode=nf90_netcdf4, ncid=ncid)
          call LDT_verify(iret, &
               '[ERR] nf90_create failed')
-#endif    
-         
+#endif
+
          ! Write out dimensions headers
          call LDT_verify(nf90_def_dim(ncid,'time',1,dim_ids(3)), &
               '[ERR] nf90_def_dim failed')
@@ -124,7 +125,7 @@ contains
               '[ERR] nf90_def_dim failed')
          call LDT_verify(nf90_def_dim(ncid,'lon',nc,dim_ids(1)), &
               '[ERR] nf90_def_dim failed')
-         
+
          ! Map projection
          !FIXME:  Allow map projections other than lat/lon
          select case("latlon")
@@ -158,13 +159,13 @@ contains
             call LDT_verify(nf90_put_att(ncid,nf90_global, &
                  "DY",dlat), &
                  '[ERR] nf90_put_att failed')
-            
+
          case default
             write(LDT_logunit,*) &
-                 '[ERR] Only latlon map projection supported for USAFSI'
+                 '[ERR] Only latlon map projection supported for SNIP'
             call LDT_endrun()
          end select
-         
+
          ! Include the water points
          call LDT_verify(nf90_put_att(ncid,nf90_global, &
               "INC_WATER_PTS","true"), &
@@ -174,7 +175,7 @@ contains
          ! FIXME:  Add support for other map projections
          call LDT_verify(nf90_def_var(ncid,"lon",nf90_float,dim_ids(1), &
               lon_varid),'[ERR] nf90_def_var failed')
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
          call LDT_verify(nf90_def_var_deflate(ncid,&
               lon_varid, shuffle, deflate, deflate_level),&
               '[ERR] nf90_def_var_deflate')
@@ -193,7 +194,7 @@ contains
          ! FIXME:  Add support for other map projections
          call LDT_verify(nf90_def_var(ncid,"lat",nf90_float,dim_ids(2), &
               lat_varid),'[ERR] nf90_def_var failed')
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
          call LDT_verify(nf90_def_var_deflate(ncid,&
               lat_varid, shuffle, deflate, deflate_level),&
               '[ERR] nf90_def_var_deflate')
@@ -213,10 +214,10 @@ contains
          call LDT_verify(nf90_def_var(ncid,'time',nf90_double,&
               dimids=dim_ids(3), varid=time_varid), &
               '[ERR] nf90_def_var failed')
-         cyyyy = usafsi_settings%date10(1:4)
-         cmm = usafsi_settings%date10(5:6)
-         cdd = usafsi_settings%date10(7:8)
-         chh = usafsi_settings%date10(9:10)
+         cyyyy = SNIP_settings%date10(1:4)
+         cmm = SNIP_settings%date10(5:6)
+         cdd = SNIP_settings%date10(7:8)
+         chh = SNIP_settings%date10(9:10)
          write(time_units,'(A)') &
               "seconds since "//trim(cyyyy)//"-"//trim(cmm)//"-"//trim(cdd)//&
               " "//trim(chh)//":00:00"
@@ -224,14 +225,14 @@ contains
               "units",trim(time_units)),&
               '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,time_varid, &
-              "long_name","time"),&             
+              "long_name","time"), &
               '[ERR] nf90_put_att failed')
-         
+
          ! Define the snow depth analysis
          call LDT_verify(nf90_def_var(ncid,"snoanl",nf90_float, &
               dimids=dim_ids, &
               varid=snoanl_varid),'[ERR] nf90_def_var failed')
-#if (defined USE_NETCDF4) 
+#if (defined USE_NETCDF4)
          call LDT_verify(nf90_def_var_deflate(ncid,&
               snoanl_varid, shuffle, deflate, deflate_level), &
               '[ERR] nf90_def_var_deflate failed')
@@ -250,7 +251,7 @@ contains
          call LDT_verify(nf90_def_var(ncid,"snoage",nf90_float, &
               dimids=dim_ids, &
               varid=snoage_varid),'[ERR] nf90_def_var failed')
-#if (defined USE_NETCDF4) 
+#if (defined USE_NETCDF4)
          call LDT_verify(nf90_def_var_deflate(ncid,&
               snoage_varid, shuffle, deflate, deflate_level), &
               '[ERR] nf90_def_var_deflate failed')
@@ -272,7 +273,7 @@ contains
          call LDT_verify(nf90_def_var(ncid,"icecon",nf90_float, &
               dimids=dim_ids, &
               varid=icecon_varid),'[ERR] nf90_def_var failed')
-#if (defined USE_NETCDF4) 
+#if (defined USE_NETCDF4)
          call LDT_verify(nf90_def_var_deflate(ncid,&
               icecon_varid, shuffle, deflate, deflate_level), &
               '[ERR] nf90_def_var_deflate failed')
@@ -291,7 +292,7 @@ contains
               '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,icecon_varid, &
               "add_offset",0.),&
-              '[ERR] nf90_put_att failed')         
+              '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,icecon_varid, &
               'missing_value',-1.), &
               '[ERR] nf90_put_att failed for ICECON')
@@ -306,7 +307,7 @@ contains
          call LDT_verify(nf90_def_var(ncid,"icemask",nf90_float, &
               dimids=dim_ids, &
               varid=icemask_varid),'[ERR] nf90_def_var failed')
-#if (defined USE_NETCDF4) 
+#if (defined USE_NETCDF4)
          call LDT_verify(nf90_def_var_deflate(ncid,&
               icemask_varid, shuffle, deflate, deflate_level), &
               '[ERR] nf90_def_var_deflate failed')
@@ -324,8 +325,8 @@ contains
          ! Define the ice age analysis
          call LDT_verify(nf90_def_var(ncid,"iceage",nf90_float, &
               dimids=dim_ids, &
-              varid=iceage_varid),'[ERR] nf90_def_var failed')      
-#if (defined USE_NETCDF4) 
+              varid=iceage_varid),'[ERR] nf90_def_var failed')
+#if (defined USE_NETCDF4)
          call LDT_verify(nf90_def_var_deflate(ncid,&
               iceage_varid, shuffle, deflate, deflate_level), &
               '[ERR] nf90_def_var_deflate failed')
@@ -346,9 +347,9 @@ contains
          ! Miscellaneous header information
          call LDT_verify(nf90_put_att(ncid,nf90_global,"Conventions", &
               "CF-1.7"), &
-              '[ERR] nf90_put_att failed')         
+              '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,nf90_global,"title", &
-              "LDT USAFSI analysis"), &
+              "LDT SNIP analysis"), &
               '[ERR] nf90_put_att failed')
          call LDT_verify(nf90_put_att(ncid,nf90_global,"institution", &
               "NASA GSFC Hydrological Sciences Laboratory"), &
@@ -369,7 +370,7 @@ contains
          call LDT_verify(nf90_put_att(ncid,nf90_global,"comment", &
               "website: http://lis.gsfc.nasa.gov/"), &
               '[ERR] nf90_put_att failed')
-                  
+
          ! We are ready to write the actual data.  This requires taking NETCDF
          ! out of define mode.
          call LDT_verify(nf90_enddef(ncid), &
@@ -398,14 +399,14 @@ contains
          ! Write the time data
          call LDT_verify(nf90_put_var(ncid,time_varid,0.0), &
               '[ERR] nf90_put_var failed for time')
-         
-         ! Write the USAFSI fields
+
+         ! Write the SNIP fields
          call LDT_verify(nf90_put_var(ncid,snoanl_varid,&
-              USAFSI_arrays%snoanl(:,:), &
+              SNIP_arrays%snoanl(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed for snoanl')
          call LDT_verify(nf90_put_var(ncid,snoage_varid,&
-              USAFSI_arrays%snoage(:,:), &
+              SNIP_arrays%snoage(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed')
 
@@ -415,10 +416,10 @@ contains
          allocate(icecon_tmp(nc,nr))
          do j = 1,nr
             do i = 1,nc
-               if (USAFSI_arrays%icecon(i,j) < 0) then
+               if (SNIP_arrays%icecon(i,j) < 0) then
                   icecon_tmp(i,j) = -1
                else
-                  icecon_tmp(i,j) = 0.01*(USAFSI_arrays%icecon(i,j))
+                  icecon_tmp(i,j) = 0.01*(SNIP_arrays%icecon(i,j))
                endif
             end do
          end do
@@ -427,16 +428,16 @@ contains
               '[ERR] nf90_put_var failed for icecon')
          deallocate(icecon_tmp)
 
-         ! The rest of the USAFSI fields.
+         ! The rest of the SNIP fields.
          call LDT_verify(nf90_put_var(ncid,icemask_varid, &
-              USAFSI_arrays%icemask(:,:), &
+              SNIP_arrays%icemask(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed for icemask')
          call LDT_verify(nf90_put_var(ncid,iceage_varid, &
-              USAFSI_arrays%iceage(:,:), &
+              SNIP_arrays%iceage(:,:), &
               (/1,1/),(/nc,nr/)), &
               '[ERR] nf90_put_var failed for iceage')
-                  
+
          ! Close the file and clean up
          call LDT_verify(nf90_close(ncid), &
               '[ERR] nf90_close failed!')
@@ -448,35 +449,36 @@ contains
 #endif
 
       write(LDT_logunit,*) &
-           '[INFO] Finished writing LDT USAFSI parameters to netcdf file'
+           '[INFO] Finished writing LDT SNIP parameters to netcdf file'
 
-   end subroutine USAFSI_write_netcdf
-      
+   end subroutine SNIP_write_netcdf
+
 #else
    ! Dummy version
-   subroutine USAFSI_write_netcdf(date10)
+   subroutine SNIP_write_netcdf(date10)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
       character*10, intent(in) :: date10
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot write out USAFSI data'
+      write(LDT_logunit,*)'Cannot write out SNIP data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
-   end subroutine USAFSI_write_netcdf
+   end subroutine SNIP_write_netcdf
 #endif
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-   ! Subroutine for reading USAFSI analysis to netCDF
-   subroutine USAFSI_read_netcdf(date10,ierr)
+   ! Subroutine for reading SNIP analysis to netCDF
+   subroutine SNIP_read_netcdf(date10,ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
+      use LDT_SNIPMod, only: SNIP_settings
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use LDT_usafsiMod, only: usafsi_settings
+      use SNIP_arraysMod, only: SNIP_arrays
 
       ! Defaults
       implicit none
@@ -486,7 +488,7 @@ contains
       integer, intent(out) :: ierr
 
       ! Local variables
-      character*255 :: infilename
+      character(LDT_CONST_PATH_LEN) :: infilename
       logical :: file_exists
       integer :: ncid, dim_ids(3)
       integer :: snoanl_varid, snoage_varid, icecon_varid, icemask_varid, &
@@ -501,7 +503,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = trim(usafsi_settings%netcdf_prefix)//"_"//date10//".nc"
+      infilename = trim(SNIP_settings%netcdf_prefix)//"_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 
@@ -540,13 +542,13 @@ contains
            dimid=dim_ids(1), &
            len=nlon), &
            '[ERR] Error in nf90_inquire_dimension for dimension lon')
-      
+
       ! Sanity checks
       if (ntime .ne. 1 .or. &
            nlat .ne. nr .or. &
            nlon .ne. nc) then
          write(LDT_logunit, *) &
-              '[ERR] Dimension mismatch between LDT and USAFSI input'
+              '[ERR] Dimension mismatch between LDT and SNIP input'
          write(LDT_logunit,*) &
               '[ERR] Expected time = 1, lat = ',nr,' lon = ',nc
          write(LDT_logunit,*) &
@@ -554,7 +556,7 @@ contains
          call LDT_endrun()
       end if
 
-      ! Fetch the USAFSI analysis variable IDs
+      ! Fetch the SNIP analysis variable IDs
       call LDT_verify(nf90_inq_varid(ncid=ncid, &
            name='snoanl', &
            varid=snoanl_varid), &
@@ -576,22 +578,22 @@ contains
            varid=iceage_varid), &
            '[ERR] Error in nf90_inq_varid for iceage')
 
-      ! Read the USAFSI variables
+      ! Read the SNIP variables
       allocate(tmp(nc,nr,1)) ! Need 3D array
       call LDT_verify(nf90_get_var(ncid=ncid, &
            varid=snoanl_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoanl')
-      USAFSI_arrays%olddep(:,:) = tmp(:,:,1)
+      SNIP_arrays%olddep(:,:) = tmp(:,:,1)
 
       call LDT_verify(nf90_get_var(ncid=ncid, &
            varid=snoage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoage')
-      !USAFSI_arrays%snoage(:,:) = tmp(:,:,1)
+      !SNIP_arrays%snoage(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            USAFSI_arrays%snoage(c,r) = nint(tmp(c,r,1))
+            SNIP_arrays%snoage(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
 
@@ -603,9 +605,9 @@ contains
       do r = 1, nr
          do c = 1, nc
             if (tmp(c,r,1) < 0) then
-               USAFSI_arrays%oldcon(c,r) = -1
+               SNIP_arrays%oldcon(c,r) = -1
             else
-               USAFSI_arrays%oldcon(c,r) = nint(100*tmp(c,r,1))
+               SNIP_arrays%oldcon(c,r) = nint(100*tmp(c,r,1))
             end if
          end do
       end do
@@ -614,21 +616,21 @@ contains
            varid=icemask_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for icemask')
-      !USAFSI_arrays%oldmask(:,:) = tmp(:,:,1)
+      !SNIP_arrays%oldmask(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            USAFSI_arrays%oldmask(c,r) = nint(tmp(c,r,1))
+            SNIP_arrays%oldmask(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
- 
+
       call LDT_verify(nf90_get_var(ncid=ncid, &
            varid=iceage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for iceage')
-      !USAFSI_arrays%iceage(:,:) = tmp(:,:,1)
+      !SNIP_arrays%iceage(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            USAFSI_arrays%iceage(c,r) = nint(tmp(c,r,1))
+            SNIP_arrays%iceage(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
 
@@ -640,37 +642,38 @@ contains
 
       ! Normal exit
       ierr = 0
-   end subroutine USAFSI_read_netcdf
+   end subroutine SNIP_read_netcdf
 
 #else
    ! Dummy version
-   subroutine USAFSI_read_netcdf(date10, ierr)
+   subroutine SNIP_read_netcdf(date10, ierr)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
       character*10, intent(in) :: date10
       integer, intent(out) :: ierr
       ierr = 1
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot read out USAFSI data'
+      write(LDT_logunit,*)'Cannot read out SNIP data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
-   end subroutine USAFSI_read_netcdf
+   end subroutine SNIP_read_netcdf
 
 #endif
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-   ! Subroutine for reading 12Z USAFSI analysis to netCDF
+   ! Subroutine for reading 12Z SNIP analysis to netCDF
    ! Only snoage and iceage are read.
-   subroutine USAFSI_read_netcdf_12z(date10,ierr)
+   subroutine SNIP_read_netcdf_12z(date10,ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_SNIPMod, only: SNIP_settings
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
       use netcdf
 #endif
-      use USAFSI_arraysMod, only: USAFSI_arrays
+      use SNIP_arraysMod, only: SNIP_arrays
 
       ! Defaults
       implicit none
@@ -680,7 +683,7 @@ contains
       integer, intent(out) :: ierr
 
       ! Local variables
-      character*255 :: infilename
+      character(LDT_CONST_PATH_LEN) :: infilename
       logical :: file_exists
       integer :: ncid, dim_ids(3)
       integer :: snoage_varid, iceage_varid
@@ -694,7 +697,7 @@ contains
       nr = LDT_rc%lnr(1)
 
       ! See if file exists
-      infilename = trim(usafsi_settings%netcdf_prefix)//"_"//date10//".nc"
+      infilename = trim(SNIP_settings%netcdf_prefix)//"_"//date10//".nc"
       inquire(file=trim(infilename), exist=file_exists)
       if (.not. file_exists) return
 
@@ -734,13 +737,13 @@ contains
            dimid=dim_ids(1), &
            len=nlon), &
            '[ERR] Error in nf90_inquire_dimension for dimension lon')
-      
+
       ! Sanity checks
       if (ntime .ne. 1 .or. &
            nlat .ne. nr .or. &
            nlon .ne. nc) then
          write(LDT_logunit, *) &
-              '[ERR] Dimension mismatch between LDT and USAFSI input'
+              '[ERR] Dimension mismatch between LDT and SNIP input'
          write(LDT_logunit,*) &
               '[ERR] Expected time = 1, lat = ',nr,' lon = ',nc
          write(LDT_logunit,*) &
@@ -748,7 +751,7 @@ contains
          call LDT_endrun()
       end if
 
-      ! Fetch the USAFSI analysis variable IDs
+      ! Fetch the SNIP analysis variable IDs
       call LDT_verify(nf90_inq_varid(ncid=ncid, &
            name='snoage', &
            varid=snoage_varid), &
@@ -758,16 +761,16 @@ contains
            varid=iceage_varid), &
            '[ERR] Error in nf90_inq_varid for iceage')
 
-      ! Read the USAFSI variables
+      ! Read the SNIP variables
       allocate(tmp(nc,nr,1)) ! Need 3D array
       call LDT_verify(nf90_get_var(ncid=ncid, &
            varid=snoage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for snoage')
-      !USAFSI_arrays%snoage12z(:,:) = tmp(:,:,1)
+      !SNIP_arrays%snoage12z(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            USAFSI_arrays%snoage12z(c,r) = nint(tmp(c,r,1))            
+            SNIP_arrays%snoage12z(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
 
@@ -775,10 +778,10 @@ contains
            varid=iceage_varid, &
            values=tmp), &
            '[ERR] Error in nf90_get_var for iceage')
-      !USAFSI_arrays%iceage12z(:,:) = tmp(:,:,1)
+      !SNIP_arrays%iceage12z(:,:) = tmp(:,:,1)
       do r = 1, nr
          do c = 1, nc
-            USAFSI_arrays%iceage12z(c,r) = nint(tmp(c,r,1))
+            SNIP_arrays%iceage12z(c,r) = nint(tmp(c,r,1))
          end do ! c
       end do ! r
 
@@ -790,22 +793,22 @@ contains
 
       ! Normal exit
       ierr = 0
-   end subroutine USAFSI_read_netcdf_12z
+   end subroutine SNIP_read_netcdf_12z
 
 #else
    ! Dummy version
-   subroutine USAFSI_read_netcdf_12z(date10,ierr)
+   subroutine SNIP_read_netcdf_12z(date10,ierr)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
       character*10, intent(in) :: date10
       integer, intent(out) :: ierr
       ierr = 1
       write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-      write(LDT_logunit,*)'Cannot read out USAFSI data'
+      write(LDT_logunit,*)'Cannot read out SNIP data'
       write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
       call LDT_endrun()
-   end subroutine USAFSI_read_netcdf_12z
+   end subroutine SNIP_read_netcdf_12z
 
 #endif
 
-end module USAFSI_netcdfMod
+end module SNIP_netcdfMod
