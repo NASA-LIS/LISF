@@ -7,15 +7,16 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-! Temporary subroutine for writing USAFSI fields in binary
+! Temporary subroutine for writing SNIP fields in binary
 
 #include "LDT_misc.h"
 
-subroutine USAFSI_binary()
-   
+subroutine SNIP_binary()
+
    ! Imports
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
    use LDT_logMod, only: LDT_logunit
-   use USAFSI_arraysMod, only: USAFSI_arrays
+   use SNIP_arraysMod, only: SNIP_arrays
 
    ! Defaults
    implicit none
@@ -24,23 +25,23 @@ subroutine USAFSI_binary()
    integer, parameter :: lunit = 100
 
    ! Local variables
-   character*125 :: file_path
+   character(len=LDT_CONST_PATH_LEN) :: file_path
    integer :: istat
 
    ! Open file
-   file_path = "usafsi.bin"
-   write(LDT_logunit,*)"Writing usafsi.bin"
+   file_path = "SNIP.bin"
+   write(LDT_logunit,*)"Writing SNIP.bin"
    open(unit=lunit,file=file_path, form='unformatted', action='write', &
         iostat=istat, status='unknown')
-   
-   ! Write USAFSI fields
-   write(lunit) USAFSI_arrays%snoanl
-   write(lunit) USAFSI_arrays%snoage
-   write(lunit) USAFSI_arrays%icecon
-   write(lunit) USAFSI_arrays%icemask
-   write(lunit) USAFSI_arrays%iceage
-   
+
+   ! Write SNIP fields
+   write(lunit) SNIP_arrays%snoanl
+   write(lunit) SNIP_arrays%snoage
+   write(lunit) SNIP_arrays%icecon
+   write(lunit) SNIP_arrays%icemask
+   write(lunit) SNIP_arrays%iceage
+
    ! Close file
    close(lunit)
 
-end subroutine USAFSI_binary
+end subroutine SNIP_binary
