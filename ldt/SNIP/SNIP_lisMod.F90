@@ -9,11 +9,12 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAFSI_lisMod
-! 
+!
 ! REVISION HISTORY:
 ! 01 Mar 2019  Eric Kemp  First version.
 ! 09 May 2019  Eric Kemp  Renamed to LDTSI.
 ! 13 Dec 2019  Eric Kemp  Renamed to USAFSI.
+! 07 Jul 2025  Eric Kemp  Migrated to SNIP.
 !
 ! DESCRIPTION:
 ! Source code for reading LIS 2-meter temperatures.
@@ -21,7 +22,7 @@
 
 #include "LDT_misc.h"
 
-module USAFSI_lisMod
+module SNIP_lisMod
 
    ! Defaults
    implicit none
@@ -38,9 +39,10 @@ contains
 
       ! Imports
       use grib_api
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_verify, LDT_endrun
-      use USAFSI_paramsMod
+      use SNIP_paramsMod
 
       ! Defaults
       implicit none
@@ -53,7 +55,7 @@ contains
       integer, intent(out) :: ierr
 
       ! Local variables
-      character*255 :: infilename
+      character(LDT_CONST_PATH_LEN) :: infilename
       logical :: file_exists
       character*12 :: routine_name
       integer :: ifile, igrib
@@ -66,10 +68,10 @@ contains
       integer :: gridDefinitionTemplateNumber
       integer :: latitudeOfFirstGridPoint
       integer :: longitudeOfFirstGridPoint
-      real :: swlat, swlon      
+      real :: swlat, swlon
       integer :: latitudeOfLastGridPoint
       integer :: longitudeOfLastGridPoint
-      real :: nelat, nelon      
+      real :: nelat, nelon
       integer :: iDirectionIncrement
       integer :: jDirectionIncrement
       real :: dlon, dlat
@@ -114,7 +116,7 @@ contains
                  "[WARN] Failed to read " // trim(infilename)
             exit
          end if
-         
+
          ! Make sure this is a GRIB2 message
          call grib_get(igrib, "editionNumber", editionNumber, rc)
          if (rc .ne. 0) then
@@ -189,7 +191,7 @@ contains
             cycle ! We'll try reading the next GRIB message
          end if
 
-         ! Check the map projection.  
+         ! Check the map projection.
          call grib_get(igrib, "gridDefinitionTemplateNumber", &
               gridDefinitionTemplateNumber, rc)
          if (rc .ne. 0) then
@@ -303,7 +305,7 @@ contains
 
          ! Set up grid information for interpolator
          gridDesci = 0
-         gridDesci(1) = 0 
+         gridDesci(1) = 0
          gridDesci(2) = ni
          gridDesci(3) = nj
          gridDesci(4) =  swlat
@@ -318,7 +320,7 @@ contains
 
          allocate(n11(ni*nj))
          call neighbor_interp_input(1, gridDesci, n11)
-         
+
          allocate(li(ni*nj))
          li(:) = .false.
          do j = 1, nj
@@ -329,7 +331,7 @@ contains
                end if
             end do ! i
          end do ! j
-         
+
          ! Now interpolate
          allocate(tmp1d_out(nc*nr))
          allocate(lo(nc*nr))
@@ -337,7 +339,7 @@ contains
               lo, tmp1d_out, ni*nj, nc*nr, &
               LDT_domain(1)%lat, LDT_domain(1)%lon, &
               n11, 9999., rc)
-          
+
          ! Copy the interpolated temperature field
          sfctmp(:,:) = -1
          do r = 1, nr
@@ -355,7 +357,7 @@ contains
          if (allocated(lo)) deallocate(lo)
          if (allocated(li)) deallocate(li)
          if (allocated(n11)) deallocate(n11)
-         
+
          ! We found the data.  Break out of loop
          found_t2 = .true.
          exit
@@ -371,7 +373,7 @@ contains
               trim(infilename)
          return
       end if
-      
+
       ! The end
       ierr = 0
 
@@ -398,22 +400,30 @@ contains
 
    ! Builds path to LIS GRIB2 file
    subroutine construct_lis_grib2_filename(date10, filename)
-      use LDT_usafsiMod, only: usafsi_settings
+
+      ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+      use LDT_SNIPMod, only: SNIP_settings
+
+      ! Defaults
       implicit none
+
+      ! Arguments
       character*10, intent(in) :: date10
-      character*255, intent(out) :: filename
-      filename = trim(usafsi_settings%lis_grib2_dir) &
+      character(LDT_CONST_PATH_LEN), intent(out) :: filename
+
+      filename = trim(SNIP_settings%lis_grib2_dir) &
            // "/PS." &
            // "557WW_SC." &
-           // trim(usafsi_settings%security_class) // "_DI." &
-           // trim(usafsi_settings%data_category) // "_GP." &
+           // trim(SNIP_settings%security_class) // "_DI." &
+           // trim(SNIP_settings%data_category) // "_GP." &
            // "LIS_GR." &
-           // trim(usafsi_settings%data_res) // "_AR." &
-           // trim(usafsi_settings%area_of_data) // "_PA." &
+           // trim(SNIP_settings%data_res) // "_AR." &
+           // trim(SNIP_settings%area_of_data) // "_PA." &
            // "LIS_DD." &
            // date10(1:8) // "_DT." &
            // date10(9:10) // "00_DF." &
-           // "GR2"                     
+           // "GR2"
    end subroutine construct_lis_grib2_filename
 
-end module USAFSI_lisMod
+end module SNIP_lisMod
