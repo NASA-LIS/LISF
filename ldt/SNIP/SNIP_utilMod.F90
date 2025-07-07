@@ -8,13 +8,14 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_utilMod
+! MODULE: SNIP_utilMod
 !
 ! REVISION HISTORY:
 ! 08 Feb 2019  Eric Kemp  First ported to LDT.
 ! 09 May 2019  Eric Kemp  Renamed LDTSI.
 ! 13 Dec 2019  Eric Kemp  Renamed USAFSI.
 ! 14 Oct 2024  Eric Kemp  Updates to error_message.
+! 07 Jul 2025  Eric Kemp  Renamed for SNIP.
 !
 ! DESCRIPTION:
 ! Source code for util library for Air Force snow depth analysis.
@@ -22,7 +23,7 @@
 
 #include "LDT_misc.h"
 
-module USAFSI_utilMod
+module SNIP_utilMod
 
    !Defaults
    implicit none
@@ -68,6 +69,7 @@ contains
       !*************************************************************************
       !*************************************************************************
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
 
       ! Defaults
@@ -84,7 +86,7 @@ contains
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
       character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
-      character*255               :: message_file     ! MESSAGE FILE NAME
+      character(LDT_CONST_PATH_LEN) :: message_file   ! MESSAGE FILE NAME
       integer                     :: i                ! DO LOOP COUNTER
       integer                     :: istat            ! I/O STATUS
       integer                     :: nlines           ! NUMBER OF LINES IN MESSAGE
@@ -202,6 +204,7 @@ contains
       !     22 Mar 2019  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !     09 May 2019  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !     13 Dec 2019  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !     07 Jul 2025  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -373,11 +376,13 @@ contains
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
       !**  15 Oct 24 Extended character lengths, and added valid date/time
-      !**    of USAFSI analysis.
+      !**    of SNIP analysis.
+      !**  07 Jul 25  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*************************************************************************
       !*************************************************************************
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
 
       ! Defaults
@@ -397,7 +402,7 @@ contains
       character*2                 :: calert_number    ! ALERT NUMBER FOR FILE NAME
       !character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
-      character*255               :: message_file     ! MESSAGE FILE NAME
+      character(LDT_CONST_PATH_LEN) :: message_file   ! MESSAGE FILE NAME
       integer                     :: alert_number     ! ALERT NUMBER
       integer                     :: i                ! DO LOOP COUNTER
       integer                     :: istat            ! I/O STATUS
@@ -528,6 +533,7 @@ contains
       !     22 Mar 2019  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !     09 May 2019  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !     13 Dec 2019  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !     07 Jul 2025  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
@@ -657,6 +663,9 @@ contains
       !*******************************************************************************
       !*******************************************************************************
 
+      ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -666,7 +675,7 @@ contains
       ! Arguments
       integer*1,     intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character(LDT_CONST_PATH_LEN), intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
@@ -762,9 +771,13 @@ contains
       !**  22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19 Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  07 Jul 25 Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
+
+      ! Imports
+      use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
       ! Defaults
       implicit none
@@ -775,7 +788,7 @@ contains
       ! Arguments
       integer,       intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character(LDT_CONST_PATH_LEN), intent(in) :: file_name     ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
@@ -810,7 +823,7 @@ contains
          access_type = 'WRITING'
          write( 2, rec=1, iostat=istat, err=1000 ) buffer
 
-      ! Else abort due to invalid IOFUNC value.         
+      ! Else abort due to invalid IOFUNC value.
       else
          go to 4000
       endif
@@ -871,6 +884,7 @@ contains
       !**  22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19 Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  07 Jul 25 Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -947,43 +961,43 @@ contains
 
    end subroutine putget_real
 
-   subroutine tmjul4( hour, day, month, year, julhr ) 
+   subroutine tmjul4( hour, day, month, year, julhr )
 
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
       !
-      !     Name:  Time/Julian hour conversion with 4-digit year output 
+      !     Name:  Time/Julian hour conversion with 4-digit year output
       !     ====
       !
       !     Purpose:
       !     =======
-      !     Uses the Julian hour to determine the 2-digit Zulu time, day,  
-      !     month, and 4-digit year.    
+      !     Uses the Julian hour to determine the 2-digit Zulu time, day,
+      !     month, and 4-digit year.
       !
       !     Method:
-      !     ====== 
-      !     - Determine the current Zulu hour  
-      !     - Determine the total number of elapsed days   
-      !     - Count forward to the current day/month/year  
-      !  
+      !     ======
+      !     - Determine the current Zulu hour
+      !     - Determine the total number of elapsed days
+      !     - Count forward to the current day/month/year
+      !
       !     Interface:
-      !     =========  
+      !     =========
       !     Inputs:  julhr
-      ! 
+      !
       !     Iutputs: day, hour, month, year
       !
       !     Variables:
       !     =========
       !     Label       Description
       !     ------      --------------------------------
-      !     day         Day of the month (1..31)   
+      !     day         Day of the month (1..31)
       !     done        Test if done counting days/year
-      !     dypmon      Number of days in each month   
-      !     elapdy      Number of elapsed days 
-      !     hour        Zulu time (UTC) of the julian hour   
-      !     i           Loop index 
+      !     dypmon      Number of days in each month
+      !     elapdy      Number of elapsed days
+      !     hour        Zulu time (UTC) of the julian hour
+      !     i           Loop index
       !     julhr       Julian hour being processed
-      !     month       Month of the year (1..12)  
+      !     month       Month of the year (1..12)
       !     year        Four-digit year
       !
       !     Files accessed:  None
@@ -999,102 +1013,103 @@ contains
       !     22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !     09 May 19 Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !     13 Dec 19 Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
-      !  
+      !     07 Jul 25 Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
+      !
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
 
       ! Defaults
-      implicit none 
+      implicit none
 
       ! Arguments
-      integer,  intent(out)       :: hour 
-      integer,  intent(out)       :: day  
+      integer,  intent(out)       :: hour
+      integer,  intent(out)       :: day
       integer,  intent(out)       :: month
-      integer,  intent(out)       :: year 
+      integer,  intent(out)       :: year
       integer,  intent(in)        :: julhr
 
       ! Local variables
-      integer                     :: dypmon(12)   
-      integer                     :: elapdy   
+      integer                     :: dypmon(12)
+      integer                     :: elapdy
       integer                     :: i
-      logical                     :: done 
+      logical                     :: done
 
       data dypmon   /31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31/
 
       ! Initialize done flag to false.
       done = .false.
 
-      ! Extract the Zulu hour from the Julian hour.   
-      hour = mod(julhr, 24) 
+      ! Extract the Zulu hour from the Julian hour.
+      hour = mod(julhr, 24)
 
-      ! Determine the number of days that have elapsed since Dec 31, 1967 
-      ! (Julian hour 0).  
-      elapdy = julhr / 24   
+      ! Determine the number of days that have elapsed since Dec 31, 1967
+      ! (Julian hour 0).
+      elapdy = julhr / 24
 
-      ! Initialize the starting day, month, and year values.  
-      if (elapdy .gt. 0) then   
+      ! Initialize the starting day, month, and year values.
+      if (elapdy .gt. 0) then
 
-         year   = 1968   
-         day    = 1  
-         month  = 1  
-         elapdy = elapdy - 1 
+         year   = 1968
+         day    = 1
+         month  = 1
+         elapdy = elapdy - 1
 
-      else  
+      else
 
-         year   = 1967   
-         day    = 31 
-         month  = 12 
+         year   = 1967
+         day    = 31
+         month  = 12
 
       endif
 
-      ! Loop through the elapsed days to determine the year.  
+      ! Loop through the elapsed days to determine the year.
 
-100   continue  
+100   continue
 
-      dypmon(2) = 28  
+      dypmon(2) = 28
 
-      ! Determine if year value is a leap year.  Leap years occur every 
-      ! 4 years, with the exception of century years not evenly 
-      ! divisible by 400.   
-      if ((mod(year, 4)   .eq. 0) .and.                                  &   
-           ((mod(year, 100) .ne. 0) .or.                                 &   
-           (mod(year, 400) .eq. 0))) then  
+      ! Determine if year value is a leap year.  Leap years occur every
+      ! 4 years, with the exception of century years not evenly
+      ! divisible by 400.
+      if ((mod(year, 4)   .eq. 0) .and.                                  &
+           ((mod(year, 100) .ne. 0) .or.                                 &
+           (mod(year, 400) .eq. 0))) then
 
          dypmon(2) = 29
       endif
 
-      ! If the elapsed number of days is more than a year's worth,  
-      ! subtract the appropriate number of days, and increment the year.  
-      if (dypmon(2) .eq. 28) then 
-         if (elapdy .ge. 365) then 
-            year = year + 1 
-            elapdy = elapdy - 365   
-         else  
-            done = .true.   
+      ! If the elapsed number of days is more than a year's worth,
+      ! subtract the appropriate number of days, and increment the year.
+      if (dypmon(2) .eq. 28) then
+         if (elapdy .ge. 365) then
+            year = year + 1
+            elapdy = elapdy - 365
+         else
+            done = .true.
          endif
       else
-         if (elapdy .ge. 366) then 
-            year = year + 1 
-            elapdy = elapdy - 366   
-         else  
-            done = .true.   
+         if (elapdy .ge. 366) then
+            year = year + 1
+            elapdy = elapdy - 366
+         else
+            done = .true.
          endif
       endif
 
-      ! If the elapsed number of days is less than a year's worth, then   
+      ! If the elapsed number of days is less than a year's worth, then
       ! exit loop.
-      if (.not. done) goto 100  
+      if (.not. done) goto 100
 
       ! Count the days and months elapsed in the current year.
-      do 200 i = 1, elapdy  
-         day = day + 1   
+      do 200 i = 1, elapdy
+         day = day + 1
          if (day .gt. dypmon(month)) then
-            day = 1   
-            month = month + 1 
+            day = 1
+            month = month + 1
          endif
 200   end do
 
-      return      
+      return
    end subroutine tmjul4
 
-end module USAFSI_utilMod
+end module SNIP_utilMod
