@@ -8,13 +8,14 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_gofsMod
+! MODULE: SNIP_gofsMod
 !
 ! REVISION HISTORY:
 ! 01 Apr 2019  Eric Kemp  First version.
 ! 09 May 2019  Eric Kemp  Rename to LDTSI
-! 13 Dec 2019  Eric Kemp  Rename to USAFSI
+! 13 Dec 2019  Eric Kemp  Rename to SNIP
 ! 10 Mar 2022  Eric Kemp  Added array initialization.
+! 07 Jul 2025  Eric Kemp  Migrated to SNIP.
 !
 ! DESCRIPTION:
 ! Source code for reading US Navy GOFS data.
@@ -23,7 +24,7 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module USAFSI_gofsMod
+module SNIP_gofsMod
 
    ! Defaults
    implicit none
@@ -32,7 +33,7 @@ module USAFSI_gofsMod
    ! Public routines
    public :: process_gofs_sst
    public :: process_gofs_cice
-   
+
 contains
 
    ! Find GOFS CICE file on file system
@@ -40,9 +41,10 @@ contains
         filename)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit
       use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
-      
+
       ! Defaults
       implicit none
 
@@ -54,7 +56,7 @@ contains
       integer, intent(inout) :: dd
       integer, intent(inout) :: hh
       integer, intent(inout) :: fh
-      character*255, intent(out) :: filename
+      character(LDT_CONST_PATH_LEN), intent(out) :: filename
 
       ! Local variables
       integer :: julhr, julhr_orig
@@ -72,7 +74,7 @@ contains
       call LDT_julhr_date(julhr_orig, yyyy, mm, dd, hh)
       call construct_gofs_cice_filename(rootdir, region, &
            yyyy, mm, dd, hh, fh, filename)
-      
+
       write(LDT_logunit,*) &
            '------------------------------------------------------------------'
       write(LDT_logunit,*)'[INFO] *** SEARCHING FOR GOFS CICE FOR ',&
@@ -80,7 +82,7 @@ contains
       inquire(file=trim(filename),exist=file_exists)
       if (file_exists) then
          write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
-         return        
+         return
       end if
 
       ! At this point, we are rolling back to earlier CICE file
@@ -100,21 +102,24 @@ contains
             return
          end if
          call LDT_julhr_date(julhr, yyyy, mm, dd, hh)
-         
+
          call construct_gofs_cice_filename(rootdir, region, &
               yyyy, mm, dd, hh, fh, filename)
          inquire(file=trim(filename),exist=file_exists)
          if (file_exists) then
             write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
-            return        
+            return
          end if
       end do
-      
+
    end subroutine find_gofs_cice_file
 
    ! Builds path to GOFS CICE netcdf file
    subroutine construct_gofs_cice_filename(rootdir, region, &
            yyyy, mm, dd, hh, fh, filename)
+
+      ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 
       ! Defaults
       implicit none
@@ -127,7 +132,7 @@ contains
       integer, intent(in) :: dd
       integer, intent(in) :: hh
       integer, intent(in) :: fh
-      character*255, intent(out) :: filename
+      character(LDT_CONST_PATH_LEN), intent(out) :: filename
 
       ! Local variables
       character*10 :: yyyymmddhh
@@ -146,6 +151,7 @@ contains
         filename)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit
       use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
 
@@ -159,12 +165,11 @@ contains
       integer, intent(inout) :: dd
       integer, intent(inout) :: hh
       integer, intent(inout) :: fh
-      character*255, intent(inout) :: filename
+      character(LDT_CONST_PATH_LEN), intent(inout) :: filename
 
       ! Local variables
       integer :: julhr, julhr_orig
       logical :: file_exists
-            
 
       ! Build the file name.  Note that all GOFS SST runs start at 00Z.
       if (hh < 6) then
@@ -176,10 +181,10 @@ contains
       else
          fh = 18
       end if
-      hh = 0 
+      hh = 0
       call construct_gofs_sst_filename(rootdir, &
            yyyy, mm, dd, hh, fh, filename)
-      
+
       ! Check if file exists
       write(LDT_logunit,*) &
            '------------------------------------------------------------------'
@@ -227,6 +232,9 @@ contains
    subroutine construct_gofs_sst_filename(rootdir, &
         yyyy, mm, dd, hh, fh, filename)
 
+      ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -237,7 +245,7 @@ contains
       integer, intent(in) :: dd
       integer, intent(in) :: hh
       integer, intent(in) :: fh
-      character*255, intent(out) :: filename
+      character(LDT_CONST_PATH_LEN), intent(out) :: filename
 
       ! Local variables
       character*10 :: yyyymmddhh
@@ -259,6 +267,7 @@ contains
         ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_verify, ldt_logunit
       use netcdf
@@ -271,7 +280,7 @@ contains
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landmask(nc,nr)
-      real, intent(inout) :: sst(nc,nr)      
+      real, intent(inout) :: sst(nc,nr)
       integer, intent(inout) :: yyyy
       integer, intent(inout) :: mm
       integer, intent(inout) :: dd
@@ -284,7 +293,7 @@ contains
       integer, parameter :: nlon = 4500
 
       ! Local variables
-      character*255 :: filename
+      character(LDT_CONST_PATH_LEN) :: filename
       integer :: ncid, water_temp_varid
       real, allocatable :: water_temp(:,:,:,:)
       real, allocatable :: water_temp_1d(:)
@@ -311,7 +320,7 @@ contains
            "[ERR] Error in nf90_open for " // trim(filename))
 
       write(ldt_logunit,*)'[INFO] Reading ', trim(filename)
-      
+
       ! Get the varid for water_temp
       call LDT_verify(nf90_inq_varid(ncid, "water_temp", water_temp_varid), &
            "[ERR] Error in nf90_inq_varid for water_temp")
@@ -326,7 +335,7 @@ contains
       ! Close the file
       call LDT_verify(nf90_close(ncid), &
            "[ERR] Error in nf90_close for "// trim(filename))
-      
+
       ! We need to interpolate to the LDT grid.  First, copy to 1D array
       allocate(water_temp_1d(nlon*nlat*1*1))
       water_temp_1d(:) = -9999.0
@@ -350,10 +359,10 @@ contains
          end do ! c
       end do ! r
       deallocate(water_temp)
-      
+
       ! Set up interpolation weights
       gridDesci = 0
-      gridDesci(1) = 0 
+      gridDesci(1) = 0
       gridDesci(2) = nlon
       gridDesci(3) = nlat
       gridDesci(4) =  -80.0
@@ -367,7 +376,7 @@ contains
       allocate(n11(nlon*nlat))
       call upscaleByAveraging_input(gridDesci, LDT_rc%gridDesc, &
            nlon*nlat, nc*nr, n11)
-      
+
       ! Now interpolate
       allocate(sst_1d(nc*nr))
       sst_1d = -9999.
@@ -377,7 +386,7 @@ contains
            n11, lb, water_temp_1d, lo, sst_1d)
 
       ! Since SST is missing north of 80N, we need to set water points in
-      ! this region to a reasonable value.  We follow the typical 
+      ! this region to a reasonable value.  We follow the typical
       ! UKMET SURF value of 271.35K.
       sst(:,:) = -1
       do r = 1, nr
@@ -426,7 +435,7 @@ contains
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landmask(nc,nr)
-      real, intent(inout) :: sst(nc,nr)      
+      real, intent(inout) :: sst(nc,nr)
       integer, intent(inout) :: yyyy
       integer, intent(inout) :: mm
       integer, intent(inout) :: dd
@@ -447,7 +456,7 @@ contains
    subroutine process_gofs_cice(rootdir, nc, nr, landmask, icecon, &
         yyyy, mm, dd, hh, fh, &
         ierr)
-      
+
       ! Imports
       use LDT_coreMod, only: LDT_domain
 
@@ -459,7 +468,7 @@ contains
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landmask(nc,nr)
-      real, intent(inout) :: icecon(nc,nr)      
+      real, intent(inout) :: icecon(nc,nr)
       integer, intent(inout) :: yyyy
       integer, intent(inout) :: mm
       integer, intent(inout) :: dd
@@ -521,7 +530,8 @@ contains
    subroutine process_gofs_cice_region(region, rootdir, nc, nr, landmask, &
         yyyy, mm, dd, hh, fh, icecon, ierr)
 
-      ! Imports
+     ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use netcdf
@@ -537,7 +547,7 @@ contains
       integer, intent(inout) :: dd
       integer, intent(inout) :: hh
       integer, intent(inout) :: fh
-      real, allocatable, intent(out) :: icecon(:,:)      
+      real, allocatable, intent(out) :: icecon(:,:)
       integer, intent(out) :: ierr
 
       ! Local parameters
@@ -546,7 +556,7 @@ contains
       integer, parameter :: nlon = 4500
 
       ! Local variables
-      character*255 :: filename
+      character(LDT_CONST_PATH_LEN) :: filename
       integer :: ncid, aice_varid
       real, allocatable :: aice(:,:,:)
       real, allocatable :: aice_1d(:)
@@ -607,7 +617,7 @@ contains
       do r = 1, nlat
          do c = 1, nlon
             if (aice(c,r,1) .eq. -30000) cycle
-            
+
             ! Take into account the scale factor and offset
             aice_1d(c + (r-1)*nlon) = &
                  aice(c,r,1)*0.0001*100
@@ -618,7 +628,7 @@ contains
 
       ! Set up interpolation weights
       if (region .eq. 'ARC') then
-         gridDesci = 0 
+         gridDesci = 0
          gridDesci(1) = 0 ! Lat/lon projection
          gridDesci(2) = nlon
          gridDesci(3) = nlat
@@ -629,9 +639,9 @@ contains
          gridDesci(8) =  179.920043945312 ! Upper-right longitude (deg E)
          gridDesci(9) =    0.080017089844005795  ! delta-lon (deg)
          gridDesci(10) =   0.040000915527301117 ! delta-lat (deg)
-         gridDesci(20) = 64  ! East-west ordering         
+         gridDesci(20) = 64  ! East-west ordering
       else if (region .eq. 'ANT') then
-         gridDesci = 0 
+         gridDesci = 0
          gridDesci(1) = 0 ! Lat/lon projection
          gridDesci(2) = nlon
          gridDesci(3) = nlat
@@ -689,7 +699,7 @@ contains
    subroutine process_gofs_cice_region(region, rootdir, nc, nr, landmask, &
         icecon, yyyy, mm, dd, hh, fh, ierr)
 
-      ! Imports                                                                
+      ! Imports
       use LDT_logMod, only: LDT_logunit, LDT_endrun
 
       ! Arguments
@@ -698,7 +708,7 @@ contains
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landmask(nc,nr)
-      real, intent(inout) :: icecon(nc,nr)      
+      real, intent(inout) :: icecon(nc,nr)
       integer, intent(inout) :: yyyy
       integer, intent(inout) :: mm
       integer, intent(inout) :: dd
@@ -716,4 +726,4 @@ contains
 
 #endif
 
-end module USAFSI_gofsMod
+end module SNIP_gofsMod
