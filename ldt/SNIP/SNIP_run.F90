@@ -11,8 +11,8 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-! Main USAFSI driver
-subroutine USAFSI_run(n)
+! Main SNIP driver
+subroutine SNIP_run(n)
 
   !*****************************************************************************************
   !*****************************************************************************************
@@ -75,31 +75,33 @@ subroutine USAFSI_run(n)
   !**  24 Aug 23  Changed station names to 32 characters.........Eric Kemp/SSAI
 
   !**  19 Jul 24  Added ESPC-D support...........................Eric Kemp/SSAI
+  !**  07 Jul 25  Migrated to SNIP...............................Eric Kemp/SSAI
   !*****************************************************************************************
   !*****************************************************************************************
 
   ! Imports
   use LDT_bratsethMod
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod, only: LDT_masterproc, LDT_rc
   use LDT_logMod, only: LDT_logunit, LDT_endrun
   use LDT_pluginIndices
-  use LDT_usafsiMod, only: usafsi_settings
+  use LDT_SNIPMod, only: SNIP_settings
   use map_utils
 #if ( defined SPMD )
   use mpi
 #endif
-  use USAFSI_analysisMod
-  use USAFSI_arraysMod, only: USAFSI_arrays
-  use USAFSI_espcdMod
-  use USAFSI_galwemMod, only: USAFSI_get_galwem_t2m
-  use USAFSI_gofsMod
-  use USAFSI_lisMod, only:  read_gr2_t2
-  use USAFSI_netcdfMod
-  use USAFSI_paramsMod
-  use USAFSI_ssmisMod, only: USAFSI_proc_ssmis
-  use USAFSI_utilMod
-  use USAFSI_xcalgmiMod, only: USAFSI_proc_xcalgmi  !kyh20201118
-  use USAFSI_amsr2Mod,   only: USAFSI_proc_amsr2    !kyh20201217
+  use SNIP_analysisMod
+  use SNIP_arraysMod, only: SNIP_arrays
+  use SNIP_espcdMod
+  use SNIP_galwemMod, only: SNIP_get_galwem_t2m
+  use SNIP_gofsMod
+  use SNIP_lisMod, only:  read_gr2_t2
+  use SNIP_netcdfMod
+  use SNIP_paramsMod
+  use SNIP_ssmisMod, only: SNIP_proc_ssmis
+  use SNIP_utilMod
+  use SNIP_xcalgmiMod, only: SNIP_proc_xcalgmi  !kyh20201118
+  use SNIP_amsr2Mod,   only: SNIP_proc_amsr2    !kyh20201217
 
   ! Defaults
   implicit none
@@ -109,20 +111,20 @@ subroutine USAFSI_run(n)
 
   ! Local variables
   character*10               ::  date10               ! DATE-TIME GROUP OF CYCLE
-  character*255              ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
+  character(LDT_CONST_PATH_LEN) ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
   character*90               ::  message    (msglns)  ! ERROR MESSAGE
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
-  character*255              ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
-  character*255              ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
+  character(LDT_CONST_PATH_LEN) ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
+  character(LDT_CONST_PATH_LEN) ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
   integer :: sfcobsfmt ! Format of sfcobs file
-  character*255              ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
+  character(LDT_CONST_PATH_LEN) ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
   !character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character*32,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
-  character*255              ::  static               ! STATIC FILE DIRECTORY PATH
-  character*255              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
-  character*255 :: sstdir ! EMK 20220113
-  character*255              ::  unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
-  character*255              ::  viirsdir             ! PATH TO VIIRS DATA DIRECTORY
+  character(LDT_CONST_PATH_LEN) ::  static               ! STATIC FILE DIRECTORY PATH
+  character(LDT_CONST_PATH_LEN) ::  stmpdir              ! SFC TEMP DIRECTORY PATH
+  character(LDT_CONST_PATH_LEN) :: sstdir ! EMK 20220113
+  character(LDT_CONST_PATH_LEN) ::  unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
+  character(LDT_CONST_PATH_LEN) ::  viirsdir             ! PATH TO VIIRS DATA DIRECTORY
   integer                    ::  runcycle             ! CYCLE HOUR
   integer                    ::  hemi                 ! HEMISPHERE (1 = NH, 2 = SH, 3 = GLOBAL)
   integer                    ::  julhr                ! AFWA JULIAN HOUR BEING PROCESSED
@@ -156,22 +158,22 @@ subroutine USAFSI_run(n)
   logical :: just_12z
 
   ! PMW snow depth retrievals, Yeosang Yoon
-  character*255              ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
+  character(LDT_CONST_PATH_LEN) ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
 
-  maxsobs = usafsi_settings%maxsobs
+  maxsobs = SNIP_settings%maxsobs
 
   ! Only the master process handles the file output
   if (LDT_masterproc) then
-     routine_name = "USAFSI"
+     routine_name = "SNIP"
      message = ' '
      hemi    = 3
 
-     write (LDT_logunit,*) '[INFO] RUNNING USAFSI MODEL'
+     write (LDT_logunit,*) '[INFO] RUNNING SNIP MODEL'
 
      ! Check the LDT map projection.
      ! FIXME:  Support other projections in addition to LATLON
      if (trim(LDT_rc%lis_map_proj(1)) .ne. LDT_latlonId) then
-        write(LDT_logunit,*)'[ERR] USAFSI only supports lat/lon grid'
+        write(LDT_logunit,*)'[ERR] SNIP only supports lat/lon grid'
         call LDT_endrun()
      end if
 
@@ -179,35 +181,35 @@ subroutine USAFSI_run(n)
      call read_params(nc,nr,landmask,elevations, landice)
 
      ! Copy ldt.config files to local variables
-     date10 = trim(usafsi_settings%date10)
-     fracdir = trim(usafsi_settings%fracdir)
-     modif = trim(usafsi_settings%modif)
-     sfcobs = trim(usafsi_settings%sfcobs)
-     sfcobsfmt = usafsi_settings%sfcobsfmt ! EMK test
+     date10 = trim(SNIP_settings%date10)
+     fracdir = trim(SNIP_settings%fracdir)
+     modif = trim(SNIP_settings%modif)
+     sfcobs = trim(SNIP_settings%sfcobs)
+     sfcobsfmt = SNIP_settings%sfcobsfmt ! EMK test
 
 !---------------------------------------------------------kyh20201118
-     if (usafsi_settings%TB_option == 1) then             !SSMIS
-        TB_product_path = trim(usafsi_settings%ssmis)
-     elseif (usafsi_settings%TB_option == 2) then         !XCAL GMI
-        TB_product_path = trim(usafsi_settings%gmi)
-     elseif (usafsi_settings%TB_option == 3) then         !AMSR2
-        TB_product_path = trim(usafsi_settings%amsr2)
+     if (SNIP_settings%TB_option == 1) then             !SSMIS
+        TB_product_path = trim(SNIP_settings%ssmis)
+     elseif (SNIP_settings%TB_option == 2) then         !XCAL GMI
+        TB_product_path = trim(SNIP_settings%gmi)
+     elseif (SNIP_settings%TB_option == 3) then         !AMSR2
+        TB_product_path = trim(SNIP_settings%amsr2)
      end if
 !---------------------------------------------------------kyh20201118
-     stmpdir = trim(usafsi_settings%stmpdir)
-     sstdir = trim(usafsi_settings%sstdir) ! EMK 20220113
-     static = trim(usafsi_settings%static)
-     unmod = trim(usafsi_settings%unmod)
-     viirsdir = trim(usafsi_settings%viirsdir)
+     stmpdir = trim(SNIP_settings%stmpdir)
+     sstdir = trim(SNIP_settings%sstdir) ! EMK 20220113
+     static = trim(SNIP_settings%static)
+     unmod = trim(SNIP_settings%unmod)
+     viirsdir = trim(SNIP_settings%viirsdir)
 
 !-------------------------------------------------------------------------kyh20201118
      ! for Brightness temperature based snow depth
-     if (usafsi_settings%TB_option == 1) then             !SSMIS
-        TB_raw_dir = trim(usafsi_settings%ssmis_raw_dir)
-     elseif (usafsi_settings%TB_option == 2) then         !XCAL GMI
-        TB_raw_dir = trim(usafsi_settings%gmi_raw_dir)
-     elseif (usafsi_settings%TB_option == 3) then         !AMSR2
-        TB_raw_dir = trim(usafsi_settings%amsr2_raw_dir)
+     if (SNIP_settings%TB_option == 1) then             !SSMIS
+        TB_raw_dir = trim(SNIP_settings%ssmis_raw_dir)
+     elseif (SNIP_settings%TB_option == 2) then         !XCAL GMI
+        TB_raw_dir = trim(SNIP_settings%gmi_raw_dir)
+     elseif (SNIP_settings%TB_option == 3) then         !AMSR2
+        TB_raw_dir = trim(SNIP_settings%amsr2_raw_dir)
      end if
 !-------------------------------------------------------------------------kyh20201118
 
@@ -215,29 +217,29 @@ subroutine USAFSI_run(n)
      read (date10(5:6), '(i2)', err=4200) month
 
      ! ALLOCATE GRIDDED DATA ARRAYS.
-     allocate (USAFSI_arrays%climo            (nc,     nr))
-     allocate (USAFSI_arrays%elevat           (nc,     nr))
-     allocate (USAFSI_arrays%iceage           (nc,     nr))
-     allocate (USAFSI_arrays%iceage12z        (nc,     nr))
-     allocate (USAFSI_arrays%icecon           (nc,     nr))
-     allocate (USAFSI_arrays%icemask          (nc,     nr))
-     allocate (USAFSI_arrays%oldcon           (nc,     nr))
-     allocate (USAFSI_arrays%olddep           (nc,     nr))
-     allocate (USAFSI_arrays%oldmask          (nc,     nr))
-     allocate (USAFSI_arrays%ptlat            (nc,     nr))
-     allocate (USAFSI_arrays%ptlon            (nc,     nr))
+     allocate (SNIP_arrays%climo            (nc,     nr))
+     allocate (SNIP_arrays%elevat           (nc,     nr))
+     allocate (SNIP_arrays%iceage           (nc,     nr))
+     allocate (SNIP_arrays%iceage12z        (nc,     nr))
+     allocate (SNIP_arrays%icecon           (nc,     nr))
+     allocate (SNIP_arrays%icemask          (nc,     nr))
+     allocate (SNIP_arrays%oldcon           (nc,     nr))
+     allocate (SNIP_arrays%olddep           (nc,     nr))
+     allocate (SNIP_arrays%oldmask          (nc,     nr))
+     allocate (SNIP_arrays%ptlat            (nc,     nr))
+     allocate (SNIP_arrays%ptlon            (nc,     nr))
      ! This is the GALWEM or LIS data interpolated to the LDT grid
      allocate (sfctmp       (nc,     nr))
-     allocate (USAFSI_arrays%snoage           (nc,     nr))
-     allocate (USAFSI_arrays%snoage12z        (nc,     nr))
-     allocate (USAFSI_arrays%snoanl           (nc,     nr))
-     allocate (USAFSI_arrays%snofrac          (nc,     nr))
-     allocate (USAFSI_arrays%snow_poss        (nc,     nr))
-     allocate (USAFSI_arrays%ssmis_depth      (nc,     nr))
-     allocate (USAFSI_arrays%ssmis_icecon     (nc,     nr))
-     allocate (USAFSI_arrays%sst              (nc,     nr))
-     allocate (USAFSI_arrays%viirsmap         (nc,     nr))
-     allocate (USAFSI_arrays%navy_icecon(nc,nr))
+     allocate (SNIP_arrays%snoage           (nc,     nr))
+     allocate (SNIP_arrays%snoage12z        (nc,     nr))
+     allocate (SNIP_arrays%snoanl           (nc,     nr))
+     allocate (SNIP_arrays%snofrac          (nc,     nr))
+     allocate (SNIP_arrays%snow_poss        (nc,     nr))
+     allocate (SNIP_arrays%ssmis_depth      (nc,     nr))
+     allocate (SNIP_arrays%ssmis_icecon     (nc,     nr))
+     allocate (SNIP_arrays%sst              (nc,     nr))
+     allocate (SNIP_arrays%viirsmap         (nc,     nr))
+     allocate (SNIP_arrays%navy_icecon(nc,nr))
 
      ! RETRIEVE STATIC DATA SETS.
      write (LDT_logunit,*) '[INFO] CALLING GETGEO TO GET STATIC FIELDS'
@@ -245,41 +247,41 @@ subroutine USAFSI_run(n)
      call getgeo (month, static, nc, nr, elevations)
 
      ! Yeosang Yoon: retrive the snow climatology for the month
-     if (usafsi_settings%climo_option .eq. 1) then
+     if (SNIP_settings%climo_option .eq. 1) then
         ! EMK...Mismatches can occur in landmask between 0.25 deg climo and
         ! LDT's grid.  In cases where LDT introduces "new" land, use a bogus
         ! value.
         arctlatr = float(arctlat) / 100.0
         allocate(climo_tmp(nc,nr))
-        climo_tmp(:,:) = USAFSI_arrays%climo(:,:)
+        climo_tmp(:,:) = SNIP_arrays%climo(:,:)
         do r = 1, nr
            do c = 1, nc
-              if (USAFSI_arrays%ptlat(c,r) > -40.0 .and. &
-                   USAFSI_arrays%ptlat(c,r) < 40.0) cycle
+              if (SNIP_arrays%ptlat(c,r) > -40.0 .and. &
+                   SNIP_arrays%ptlat(c,r) < 40.0) cycle
               ! See if climo exists for glacier point.  If not, use a fill-in.
               !if (landmask(c,r) > 0.5 .and. &
-              !     USAFSI_arrays%climo(c,r) .le. 0) then
+              !     SNIP_arrays%climo(c,r) .le. 0) then
               if (landmask(c,r) > 0.5 .and. &
-                   USAFSI_arrays%climo(c,r) .le. 0) then
+                   SNIP_arrays%climo(c,r) .le. 0) then
                  if (landice(c,r) > 0.5) then
-                    climo_tmp(c,r) = usafsi_settings%fill_climo
+                    climo_tmp(c,r) = SNIP_settings%fill_climo
                  else
-                    !climo_tmp(c,r) = usafsi_settings%unkdep
+                    !climo_tmp(c,r) = SNIP_settings%unkdep
                     climo_tmp(c,r) = 0
                  end if
               end if
            end do ! c
         end do ! r
 
-        USAFSI_arrays%climo(:,:) = climo_tmp(:,:)
+        SNIP_arrays%climo(:,:) = climo_tmp(:,:)
         deallocate(climo_tmp)
-     else if (usafsi_settings%climo_option .eq. 2) then
-        ! newly produced 10-km snow climatology using ratio between SNODEP and USAFSI
+     else if (SNIP_settings%climo_option .eq. 2) then
+        ! newly produced 10-km snow climatology using ratio between SNODEP and SNIP
         call getclimo (month, static)
      end if
 
      ! RETRIEVE THE PREVIOUS SNOW ANALYSIS.
-     ! First, try reading USAFSI in netCDF format.  If that doesn't work,
+     ! First, try reading SNIP in netCDF format.  If that doesn't work,
      ! fall back on the legacy SNODEP at 0.25 deg resolution.
      write (LDT_logunit,*) &
           '[INFO] CALLING GETSNO_NC TO GET PREVIOUS SNOW AND ICE DATA'
@@ -305,9 +307,9 @@ subroutine USAFSI_run(n)
      cycle_loop : do while (julhr .lt. julhr_end)
 
         ! EMK Create bratseth object
-        call bratseth%new(maxsobs, usafsi_settings%back_err_var, &
-             usafsi_settings%back_err_h_corr_len, &
-             usafsi_settings%back_err_v_corr_len)
+        call bratseth%new(maxsobs, SNIP_settings%back_err_var, &
+             SNIP_settings%back_err_h_corr_len, &
+             SNIP_settings%back_err_v_corr_len)
 
         julhr = julhr + 6
         call julhr_date10 (julhr, date10, program_name, routine_name)
@@ -321,8 +323,8 @@ subroutine USAFSI_run(n)
 
         ! RETRIEVE GALWEM SURFACE TEMPERATURES.
         write (LDT_logunit,*) &
-          '[INFO] CALLING USAFSI_get_galwem_t2m TO GET GALWEM 2-M TEMPERATURES'
-        call USAFSI_get_galwem_t2m(n, julhr, nc, nr, sfctmp, ierr)
+          '[INFO] CALLING SNIP_get_galwem_t2m TO GET GALWEM 2-M TEMPERATURES'
+        call SNIP_get_galwem_t2m(n, julhr, nc, nr, sfctmp, ierr)
         if (ierr .ne. 0) then
            ! Fall back on LIS SURFACE temperatures
            write (LDT_logunit,*) &
@@ -346,17 +348,17 @@ subroutine USAFSI_run(n)
         read (date10(7: 8), '(i2)', err=4200) dd
         read (date10(9:10), '(i2)', err=4200) hh
         fh = 0 ! Dummy value
-        if (usafsi_settings%source_of_ocean_data == "ESPC-D") then
+        if (SNIP_settings%source_of_ocean_data == "ESPC-D") then
            write (LDT_logunit,*) &
                 '[INFO] CALLING PROCESS_ESPCD_SST TO GET SEA SURFACE TEMPERATURES'
-           call process_espcd_sst(usafsi_settings%espcd_sst_dir, &
-                nc, nr, landmask, usafSI_arrays%sst, &
+           call process_espcd_sst(SNIP_settings%espcd_sst_dir, &
+                nc, nr, landmask, SNIP_arrays%sst, &
                 yyyy, mm, dd, hh, ierr)
-        else if (usafsi_settings%source_of_ocean_data == "GOFS") then
+        else if (SNIP_settings%source_of_ocean_data == "GOFS") then
            write (LDT_logunit,*) &
                 '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
-           call process_gofs_sst(usafsi_settings%gofs_sst_dir, &
-                nc, nr, landmask, usafSI_arrays%sst, &
+           call process_gofs_sst(SNIP_settings%gofs_sst_dir, &
+                nc, nr, landmask, SNIP_arrays%sst, &
                 yyyy, mm, dd, hh, fh, ierr)
         end if
         if (ierr .ne. 0) then
@@ -367,8 +369,8 @@ subroutine USAFSI_run(n)
         end if
 
         ! RETRIEVE FRACTIONAL SNOW DATA.
-        usafsi_settings%usefrac = .false.  ! YY: no longer in use
-        !if (usafsi_settings%usefrac) then
+        SNIP_settings%usefrac = .false.  ! YY: no longer in use
+        !if (SNIP_settings%usefrac) then
         !   write (LDT_logunit,*) &
         !        '[INFO] CALLING GETFRAC TO GET FRACTIONAL SNOW DATA'
         !   call getfrac (date10, fracdir)
@@ -410,7 +412,7 @@ subroutine USAFSI_run(n)
            call bratseth%append_ob(network10, platform32, rob, &
                 rlat, rlon,&
                 relev, &
-                usafsi_settings%ob_err_var, back=-1.)
+                SNIP_settings%ob_err_var, back=-1.)
         end do
 
         ! Clean up
@@ -428,39 +430,39 @@ subroutine USAFSI_run(n)
         read (date10(9:10), '(i2)', err=4200) hh
         fh = 0 ! Dummy value
         found_navy_cice = .false.
-        if (usafsi_settings%source_of_ocean_data == "ESPC-D") then
+        if (SNIP_settings%source_of_ocean_data == "ESPC-D") then
            write(LDT_logunit,*) &
                 '[INFO] CALLING PROCESS_ESPCD_CICE TO GET GOFS SEA ICE DATA'
-           call process_espcd_cice(usafsi_settings%espcd_cice_dir, &
-                nc, nr, landmask, USAFSI_arrays%navy_icecon, &
+           call process_espcd_cice(SNIP_settings%espcd_cice_dir, &
+                nc, nr, landmask, SNIP_arrays%navy_icecon, &
                 yyyy, mm, dd, hh, ierr)
            if (ierr == 0) found_navy_cice = .true.
-        else if (usafsi_settings%source_of_ocean_data == "GOFS") then
+        else if (SNIP_settings%source_of_ocean_data == "GOFS") then
            ! Try to get the GOFS sea ice data
            write(LDT_logunit,*) &
                 '[INFO] CALLING PROCESS_GOFS_CICE TO GET GOFS SEA ICE DATA'
-           call process_gofs_cice(usafsi_settings%gofs_cice_dir, &
-                nc, nr, landmask, USAFSI_arrays%navy_icecon, &
+           call process_gofs_cice(SNIP_settings%gofs_cice_dir, &
+                nc, nr, landmask, SNIP_arrays%navy_icecon, &
                 yyyy, mm, dd, hh, fh, ierr)
            if (ierr == 0) found_navy_cice = .true.
         end if
 !---------------------------------------------------------------------kyh20201118
         ! Estimates TB-based snow depth
-        if (usafsi_settings%TB_option == 1) then       !SSMIS
+        if (SNIP_settings%TB_option == 1) then       !SSMIS
            write (LDT_logunit,*) &
-                '[INFO] CALLING USAFSI_PROC_SSMIS'
-           call USAFSI_proc_ssmis(date10, TB_raw_dir, TB_product_path, &
-                usafsi_settings%ssmis_option)
-        elseif (usafsi_settings%TB_option == 2) then   !XCAL GMI
+                '[INFO] CALLING SNIP_PROC_SSMIS'
+           call SNIP_proc_ssmis(date10, TB_raw_dir, TB_product_path, &
+                SNIP_settings%ssmis_option)
+        elseif (SNIP_settings%TB_option == 2) then   !XCAL GMI
            write (LDT_logunit,*) &
-                '[INFO] CALLING USAFSI_PROC_GMI'
-           call USAFSI_proc_xcalgmi(date10, TB_raw_dir, TB_product_path, &
-                usafsi_settings%ssmis_option)
-        elseif (usafsi_settings%TB_option == 3) then   !AMSR2
+                '[INFO] CALLING SNIP_PROC_GMI'
+           call SNIP_proc_xcalgmi(date10, TB_raw_dir, TB_product_path, &
+                SNIP_settings%ssmis_option)
+        elseif (SNIP_settings%TB_option == 3) then   !AMSR2
            write (LDT_logunit,*) &
-                '[INFO] CALLING USAFSI_PROC_AMSR2'
-           call USAFSI_proc_amsr2(date10, TB_raw_dir, TB_product_path, &
-                usafsi_settings%ssmis_option)
+                '[INFO] CALLING SNIP_PROC_AMSR2'
+           call SNIP_proc_amsr2(date10, TB_raw_dir, TB_product_path, &
+                SNIP_settings%ssmis_option)
         end if
 !---------------------------------------------------------------------kyh20201118
 
@@ -468,18 +470,18 @@ subroutine USAFSI_run(n)
         write (LDT_logunit,*) &
              '[INFO] CALLING GETSMI TO GET PMW SNOW DEPTH RETRIEVALS'
         call getsmi (date10, TB_product_path)  !kyh20201118
-        
+
         ! RETRIEVE VIIRS DATA.
-        if (usafsi_settings%useviirs) then
+        if (SNIP_settings%useviirs) then
            write (LDT_logunit,*) &
                 '[INFO] CALLING GETVIIRS TO GET VIIRS SNOW MAP'
            call getviirs(date10, viirsdir)
         end if
 
         ! PERFORM THE SNOW ANALYSIS.
-        USAFSI_arrays%snoanl(:,:) = -1
-        USAFSI_arrays%icecon(:,:) = -1
-        USAFSI_arrays%icemask(:,:) = -1
+        SNIP_arrays%snoanl(:,:) = -1
+        SNIP_arrays%icecon(:,:) = -1
+        SNIP_arrays%icemask(:,:) = -1
         write(LDT_logunit,*) &
              '[INFO] CALLING RUN_SNOW_ANALYSIS_NOGLACIER'
         call run_snow_analysis_noglacier(runcycle, nc, nr, landmask, landice, &
@@ -507,10 +509,10 @@ subroutine USAFSI_run(n)
         ! TO REQUIRE MANUAL MODIFICATIONS.  ANY BAD OB SHOULD SHOW HERE.
         write(LDT_logunit,6800) bratseth%count_all_obs()
         call bratseth%sort_obs_by_id()
-        call bratseth%print_snowdepths(usafsi_settings%minprt)
+        call bratseth%print_snowdepths(SNIP_settings%minprt)
 
         ! EMK Write out in netcdf format
-        call USAFSI_write_netcdf(date10)
+        call SNIP_write_netcdf(date10)
 
         ! Clean up bratseth object
         call bratseth%delete()
@@ -519,28 +521,28 @@ subroutine USAFSI_run(n)
      end do cycle_loop
 
      ! DEALLOCATE ALL ARRAYS.
-     deallocate (usafsi_arrays%climo)
-     deallocate (usafsi_arrays%elevat)
-     deallocate (usafsi_arrays%iceage)
-     deallocate (usafsi_arrays%iceage12z)
-     deallocate (usafsi_arrays%icecon)
-     deallocate (usafsi_arrays%icemask)
-     deallocate (usafsi_arrays%oldcon)
-     deallocate (usafsi_arrays%olddep)
-     deallocate (usafsi_arrays%oldmask)
-     deallocate (usafsi_arrays%ptlat)
-     deallocate (usafsi_arrays%ptlon)
+     deallocate (SNIP_arrays%climo)
+     deallocate (SNIP_arrays%elevat)
+     deallocate (SNIP_arrays%iceage)
+     deallocate (SNIP_arrays%iceage12z)
+     deallocate (SNIP_arrays%icecon)
+     deallocate (SNIP_arrays%icemask)
+     deallocate (SNIP_arrays%oldcon)
+     deallocate (SNIP_arrays%olddep)
+     deallocate (SNIP_arrays%oldmask)
+     deallocate (SNIP_arrays%ptlat)
+     deallocate (SNIP_arrays%ptlon)
      deallocate (sfctmp)
-     deallocate (usafsi_arrays%snoage)
-     deallocate (usafsi_arrays%snoage12z)
-     deallocate (usafsi_arrays%snoanl)
-     deallocate (usafsi_arrays%snofrac)
-     deallocate (usafsi_arrays%snow_poss)
-     deallocate (usafsi_arrays%ssmis_depth)
-     deallocate (usafsi_arrays%ssmis_icecon)
-     deallocate (usafsi_arrays%sst)
-     deallocate (usafsi_arrays%viirsmap)
-     deallocate (usafsi_arrays%navy_icecon)
+     deallocate (SNIP_arrays%snoage)
+     deallocate (SNIP_arrays%snoage12z)
+     deallocate (SNIP_arrays%snoanl)
+     deallocate (SNIP_arrays%snofrac)
+     deallocate (SNIP_arrays%snow_poss)
+     deallocate (SNIP_arrays%ssmis_depth)
+     deallocate (SNIP_arrays%ssmis_icecon)
+     deallocate (SNIP_arrays%sst)
+     deallocate (SNIP_arrays%viirsmap)
+     deallocate (SNIP_arrays%navy_icecon)
      deallocate(landmask)
      deallocate(elevations)
      deallocate(landice)
@@ -564,7 +566,7 @@ subroutine USAFSI_run(n)
 
   ! FORMAT STATEMENTS.
 6800 format (/, 1X, 55('-'),                                             &
-       /, 3X, '[INFO] PROGRAM:  USAFSI',                                &
+       /, 3X, '[INFO] PROGRAM:  SNIP',                                &
        /, 5X, '[INFO] TOTAL STATIONS PROCESSED = ', I5,                 &
        /, 5X, '[INFO] PRINTING DEPTH REPORTS BY NETWORK & STATION ID'   &
        /, 5X, '[INFO] ELEV OF "-1000" INDICATES ELEVATION NOT REPORTED' &
@@ -579,6 +581,7 @@ contains
   subroutine read_params(nc, nr, landmask, elevation, landice)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc
     use LDT_logMod, only: LDT_logunit, LDT_verify
     use LDT_paramDataMod, only: LDT_LSMparam_struc
@@ -595,7 +598,7 @@ contains
     real, allocatable, intent(out) :: landice(:,:)
 
     ! Local variables
-    character*255 :: filename
+    character(LDT_CONST_PATH_LEN) :: filename
     integer :: ncid
     integer :: dimids(3)
     integer :: landmask_varid, elevation_varid, surfacetype_varid
@@ -619,7 +622,7 @@ contains
     inquire(file=trim(filename), exist=file_exists)
     if (.not. file_exists) then
        write(LDT_logunit,*) &
-            '[ERR] Cannot find ', trim(filename), ' for USAFSI analysis'
+            '[ERR] Cannot find ', trim(filename), ' for SNIP analysis'
        write(LDT_logunit,*)'LDT will stop'
        call LDT_endrun()
     end if
@@ -713,4 +716,4 @@ contains
   end subroutine read_params
 #endif
 
-end subroutine USAFSI_run
+end subroutine SNIP_run
