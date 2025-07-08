@@ -81,6 +81,9 @@ contains
     external LDT_init_usafsi
     external LDT_run_usafsi
 
+    external LDT_init_snip
+    external LDT_run_snip
+
     external LDT_init_OPTUEparamproc
     external LDT_run_OPTUEparamproc
 
@@ -157,6 +160,12 @@ contains
          LDT_init_usafsi)
     call registerldtrun(trim(LDT_usafsiId)//char(0), &
          LDT_run_usafsi)
+
+    ! SNIP analysis
+    call registerldtinit(trim(LDT_snipId)//char(0), &
+         LDT_init_snip)
+    call registerldtrun(trim(LDT_snipId)//char(0), &
+         LDT_run_snip)
 
     ! OPTUE processing
     call registerldtinit(trim(LDT_OPTUEparamprocId)//char(0), &

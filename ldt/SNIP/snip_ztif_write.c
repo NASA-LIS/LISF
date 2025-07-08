@@ -44,7 +44,7 @@ FTN(snip_ztif_write)(int *buffer, char *fname, int *width, int *length) {
         for(i=0; i<cols; i++) {
             ztif.wbuf[i] = buffer[i + (j*cols)];
         }
-        if((status = ZTIFWriteline(&ztif, j) != E_SUCCESS)) {
+        if((status = SNIP_ZTIFWriteline(&ztif, j) != E_SUCCESS)) {
             break;
         }
     }
