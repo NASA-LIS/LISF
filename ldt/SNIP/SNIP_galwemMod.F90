@@ -39,8 +39,8 @@ contains
 #endif
     use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
+    use LDT_snipMod, only: snip_settings
     use LDT_timeMgrMod, only: LDT_julhr_date
-    use LDT_usafsiMod, only: usafsi_settings
 
     ! Defaults
     implicit none
@@ -56,7 +56,6 @@ contains
     ! Local variables
     character(LDT_CONST_PATH_LEN) :: gribfilename
     real :: gridDesci_glb(50)
-    logical :: file_exists
     logical :: found
     logical :: roll_back
     integer :: fc_hr
@@ -109,9 +108,9 @@ contains
        roll_back = .true.
 
        call get_galwem_filename(gribfilename, &
-            usafsi_settings%galwem_root_dir, &
-            usafsi_settings%galwem_sub_dir, usafsi_settings%use_timestamp, &
-            usafsi_settings%galwem_res, yr1, mo1, da1, hr1, fc_hr)
+            snip_settings%galwem_root_dir, &
+            snip_settings%galwem_sub_dir, snip_settings%use_timestamp, &
+            snip_settings%galwem_res, yr1, mo1, da1, hr1, fc_hr)
 
        ! Before using ECCODE/GRIB_API, see if the GRIB file exists.
        inquire(file=trim(gribfilename), exist=found_inq)
@@ -433,7 +432,6 @@ contains
     character(3) :: fchr
 
     character(len=54) :: fname1
-    character(len=20) :: fname2
 
     write (UNIT=fhr, FMT='(i2.2)') hr
     write (UNIT=fchr, FMT='(i3.3)') fc_hr
@@ -471,8 +469,7 @@ contains
 
     ! Imports
     use LDT_coreMod, only: LDT_rc, LDT_domain
-    use LDT_logMod, only: LDT_logunit
-    use LDT_usafsiMod, only: usafsi_settings
+    use LDT_snipMod, only: snip_settings
 
     ! Defaults
     implicit none
@@ -489,16 +486,17 @@ contains
 
     ! Local variables
     integer   :: mi, mo
-    integer   :: k
     integer   :: i,j
     integer   :: iret
     integer   :: midway
-    character(len=50) :: method
     real, allocatable :: var(:,:)
     logical*1, allocatable :: lb(:)
     logical*1, allocatable :: lo(:)
     integer, allocatable :: n11(:), n12(:), n21(:), n22(:)
     real, allocatable :: w11(:), w12(:), w21(:), w22(:)
+
+    external :: bilinear_interp_input
+    external :: bilinear_interp
 
     allocate(var(ifguess,jfguess))
     allocate(lb(ifguess*jfguess))
@@ -561,7 +559,7 @@ contains
 
     ! Imports
     use LDT_logMod, only: LDT_logunit, LDT_endrun
-    use LDT_usafsiMod, only: usafsi_settings
+    use LDT_snipMod, only: snip_settings
 
     ! Defaults
     implicit none
@@ -570,7 +568,7 @@ contains
     real, intent(inout) :: gridDesci_glb(50)
 
     ! Set the weights for the interpolation.  This varies by GALWEM resolution
-    if (usafsi_settings%galwem_res == 17) then
+    if (snip_settings%galwem_res == 17) then
        gridDesci_glb = 0
        gridDesci_glb(1) = 0
        gridDesci_glb(2) = 1536
@@ -583,7 +581,7 @@ contains
        gridDesci_glb(9) = 0.234378
        gridDesci_glb(10) = 0.15625
        gridDesci_glb(20) = 0
-    else if (usafsi_settings%galwem_res == 10) then
+    else if (snip_settings%galwem_res == 10) then
        gridDesci_glb = 0
        gridDesci_glb(1) = 0
        gridDesci_glb(2) = 2560
@@ -598,7 +596,7 @@ contains
        gridDesci_glb(20) = 0
     else
        write(LDT_logunit)'[ERR] Invalid nominal resolution for GALWEM!'
-       write(LDT_logunit)'[ERR] Found ', usafsi_settings%galwem_res
+       write(LDT_logunit)'[ERR] Found ', snip_settings%galwem_res
        write(LDT_logunit)'[ERR] Only supports 17 and 10'
        call LDT_endrun()
     end if
