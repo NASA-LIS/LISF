@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-*  Name: ztif_frac.c
+*  Name: snip_ztif_frac.c
 *
 *  Get fractional snow from geotiff reference maps
 *
@@ -9,6 +9,7 @@
 *  20161208 Initial version .................................. Puskar/16WS/WXE
 *  20161219 Rewritten to match ztif library .................. Puskar/16WS/WXE
 *  20190325 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+*  20250708 Ported for SNIP...Eric Kemp, NASA GSFC/SSAI
 *
 *******************************************************************************/
 
@@ -18,12 +19,12 @@
 /* EMK Only compile of LIBGEOTIFF support is enabled */
 #ifdef USE_LIBGEOTIFF
 
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "geotiffio.h"
 #include "xtiffio.h"
-#include "ztif.h"
+#include "snip_ztif.h"
 
 // -----------------------------
 // private structs
@@ -46,9 +47,9 @@ struct Results {
     int counter[256];
 };
 
-struct ZTIFGroup {
-    ZTIF map;
-    ZTIF age;
+struct SNIP_ZTIFGroup {
+    SNIP_ZTIF map;
+    SNIP_ZTIF age;
 };
 
 struct GridCell {
@@ -93,12 +94,12 @@ init_results(struct Results *r, int size) {
 }
 
 static int
-open_files(struct ZTIFGroup *ztif, struct Parameters p) {
+open_files(struct SNIP_ZTIFGroup *ztif, struct Parameters p) {
     int status;
 
     printf("... opening reference maps\n");
-    if((status = ZTIFOpen(&ztif->map, p.snomap, "r")) != E_SUCCESS ||
-       (status = ZTIFOpen(&ztif->age, p.snoage, "r")) != E_SUCCESS ){
+    if((status = SNIP_ZTIFOpen(&ztif->map, p.snomap, "r")) != E_SUCCESS ||
+       (status = SNIP_ZTIFOpen(&ztif->age, p.snoage, "r")) != E_SUCCESS ){
         return status;
     }
     printf("... source snomap dimensions: width=%d length=%d\n", ztif->map.width, ztif->map.length);
@@ -113,7 +114,7 @@ open_files(struct ZTIFGroup *ztif, struct Parameters p) {
 }
 
 static void
-init_cell(struct GridCell *cell, ZTIF source, struct Parameters p) {
+init_cell(struct GridCell *cell, SNIP_ZTIF source, struct Parameters p) {
     printf("... initializing grid cell\n");
     cell->width = source.width / p.grid_width;
     cell->length = source.length / p.grid_length;
@@ -123,7 +124,8 @@ init_cell(struct GridCell *cell, ZTIF source, struct Parameters p) {
 }
 
 static int
-process_grid(struct Results *r, struct ZTIFGroup *ztif, struct Parameters p, struct GridCell cell) {
+process_grid(struct Results *r, struct SNIP_ZTIFGroup *ztif,
+             struct Parameters p, struct GridCell cell) {
     int i;
     int j;
     int index;
@@ -134,8 +136,8 @@ process_grid(struct Results *r, struct ZTIFGroup *ztif, struct Parameters p, str
     printf("... processing the grid\n");
     for(j=0; j<ztif->map.length; j++) {
 
-        if((status = ZTIFReadline(&ztif->map, j)) != E_SUCCESS ||
-           (status = ZTIFReadline(&ztif->age, j)) != E_SUCCESS ){
+        if((status = SNIP_ZTIFReadline(&ztif->map, j)) != E_SUCCESS ||
+           (status = SNIP_ZTIFReadline(&ztif->age, j)) != E_SUCCESS ){
             break;
         }
 
@@ -144,7 +146,7 @@ process_grid(struct Results *r, struct ZTIFGroup *ztif, struct Parameters p, str
             age_pixel = ((uint8*)ztif->age.rbuf)[i] + p.offset;
             if(age_pixel <= p.max_age)
                 map_pixel = ((uint8*)ztif->map.rbuf)[i];
-           
+
             index = (i/cell.width) + ((j/cell.length)*p.grid_width);
             if(map_pixel == SNOW) {
                 r->snow[index]++;
@@ -158,7 +160,8 @@ process_grid(struct Results *r, struct ZTIFGroup *ztif, struct Parameters p, str
 }
 
 static void
-fill_buffer(int *buffer, struct Results *r, struct Parameters p, struct GridCell cell) {
+fill_buffer(int *buffer, struct Results *r, struct Parameters p,
+            struct GridCell cell) {
     int i;
     int j;
     int index;
@@ -230,17 +233,19 @@ print_results(struct Results r) {
 // -----------------------------
 
 int
-FTN(ztif_frac)(int *buffer, char *snomap, char *snoage, int *offset, 
-	       int *max_age, int *width, int *length, float *snow_threshold, 
-	       float *bare_threshold) {
+FTN(snip_ztif_frac)(int *buffer, char *snomap, char *snoage, int *offset,
+                    int *max_age, int *width, int *length,
+                    float *snow_threshold,
+                    float *bare_threshold) {
 
     int status;
     struct Results r;
     struct GridCell cell;
-    struct ZTIFGroup ztif;
+    struct SNIP_ZTIFGroup ztif;
 
     // get the parameters
-    struct Parameters p = { snomap, snoage, (*max_age), (*offset), (*width), (*length), (*snow_threshold), (*bare_threshold) };
+    struct Parameters p = { snomap, snoage, (*max_age), (*offset),
+        (*width), (*length), (*snow_threshold), (*bare_threshold) };
     print_params(p);
 
     // initialize the result struct
@@ -263,8 +268,8 @@ FTN(ztif_frac)(int *buffer, char *snomap, char *snoage, int *offset,
     status = process_grid(&r, &ztif, p, cell);
 
     // free memory and close images
-    ZTIFClose(&ztif.map);
-    ZTIFClose(&ztif.age);
+    SNIP_ZTIFClose(&ztif.map);
+    SNIP_ZTIFClose(&ztif.age);
 
     // fill the result buffer
     if(status == E_SUCCESS) {
