@@ -16,15 +16,18 @@
 # SCRIPT: fault_tolerance_galwem_ge.py
 #
 # PURPOSE:  Checks for GALWEM GE GRIB2 files, and based on results,
-# submits LIS MR run using either GALWEM GE or GALWEM GD as forcing.
+# updates the LIS MR run configuration (lis.config) to use 
+# either GALWEM GE or GALWEM GD as forcing.
 #
 # REQUIREMENTS as of 26 June 2025:
 # * Python 3.11 or higher
-# * Pygrib Python library
+# * cfgrib Python library
 #
 # REVISION HISTORY:
 # 24 June 2025:  Yeosang Yoon, first version.
 # 26 June 2025:  Eric Kemp, updates to satisfy pylint.
+# 08 July 2025:  Yeosang Yoon, update the codes to generate lis.config 
+#                              insted of submitting to Slurm.
 #
 #--------------------------------------------------------------------------
 """
@@ -34,8 +37,8 @@ import os
 from datetime import datetime
 
 import cfgrib
-import dask
 import xarray as xr
+from update_lis_config import update_config
 
 def generate_forecast_hours():
     """Generate a list of forecast hours."""
@@ -137,7 +140,7 @@ def print_results(missing_members, bad_files):
         print("✅ All files are present and valid.")
 
 def write_log_file(log_path, date_str, cycle_str, missing_members, \
-                   bad_files, script_name):
+                   bad_files, lsm, met_type, config_path):
     """Writes information on available ensemble files to a log file"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_filename = f"check_result_{date_str}_CY{cycle_str}.log"
@@ -161,29 +164,24 @@ def write_log_file(log_path, date_str, cycle_str, missing_members, \
         else:
             log.write("All GRIB2 files are valid.\n")
 
-        log.write("\nJob submitted: " + script_name + "\n")
+        log.write(f"\nGenerated config saved to '{config_path}'\n")
     print(f"📝 Log saved to: {full_path}")
-
-def submit_batch_script(script_name):
-    """Submits batch job to SLURM"""
-    print(f"\n🚀 Submitting job: {script_name}")
-    ret = os.system(f"sbatch {script_name}")
-    if ret != 0:
-        print(f"❌ Failed to submit job: {script_name} (exit code {ret})")
 
 def main():
     """Main driver"""
-    parser = argparse.ArgumentParser(description="Check GALWEM GRIB2 file status and trigger sbatch if ready")
+    parser = argparse.ArgumentParser(description="Check GALWEM-GE GRIB2 files and generate LIS config")
     parser.add_argument("--root", type=str, required=True, \
                         help="Root directory containing <date>/<cycle>/memberXXX folders")
     parser.add_argument("--date", type=str, required=True, \
-                        help="Date (YYYYMMDD)")
+                        help="Forecast start date (YYYYMMDD)")
     parser.add_argument("--cycle", type=str, required=True, \
-                        help="Cycle (e.g., 00, 06, 12, 18)")
+                        help="Cycle (e.g., 00, 12)")
     parser.add_argument("--log-dir", type=str, default=".", \
                         help="Directory to save log files (default: current)")
+    parser.add_argument("--lsm", type=str, required=True, \
+                        choices=["noah39", "noahmp401"], help="Land surface model")
     parser.add_argument("--deep-check", action="store_true", \
-                        help="Enable deep GRIB2 read check using pygrib")
+                        help="Enable deep GRIB2 read check using cfgrib")
 
     args = parser.parse_args()
 
@@ -193,13 +191,18 @@ def main():
     print_results(missing_members, bad_files)
 
     if not missing_members and not bad_files:
-        script_name = "lis.mr.noah39.rapid.galwem_ge.job"
+        met_type = "GALWEM-GE"
     else:
-        script_name = "lis.mr.noah39.rapid.galwem.job"
+        met_type = "GALWEM"
 
-    #submit_batch_script(script_name)
+    try:
+        config_path = update_config(args.date, args.cycle, met_type, args.lsm)
+    except Exception as e:
+        print(f"❌ Failed to generate LIS config: {e}")
+        sys.exit(1)
+
     write_log_file(args.log_dir, args.date, args.cycle, missing_members, \
-                   bad_files, script_name)
+                   bad_files, args.lsm, met_type, config_path)
 
 if __name__ == "__main__":
     main()
