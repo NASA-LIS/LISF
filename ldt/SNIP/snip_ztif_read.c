@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-*  Name: ztif_read.c
+*  Name: snip_ztif_read.c
 *
 *  Read/write data to/from geotiff files
 *
@@ -8,6 +8,7 @@
 *  =======
 *  20161215 Initial version....................................Puskar/16WS/WXE
 *  20190325 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+*  20250708 Ported to SNIP...Eric Kemp, NASA GSFC/SSAI
 *
 *******************************************************************************/
 
@@ -18,34 +19,34 @@
 
 #ifdef USE_LIBGEOTIFF
 
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "geotiffio.h"
 #include "xtiffio.h"
-#include "ztif.h"
+#include "snip_ztif.h"
 
 int
-FTN(ztif_read)(int *buffer, char *fname) {
+FTN(snip_ztif_read)(int *buffer, char *fname) {
     int i;
     int j;
     int index;
     int status;
-    ZTIF ztif;
+    SNIP_ZTIF ztif;
 
-    if((status = ZTIFOpen(&ztif, fname, "r")) != E_SUCCESS) {
+    if((status = SNIP_ZTIFOpen(&ztif, fname, "r")) != E_SUCCESS) {
         return status;
     }
     for(j=0; j<ztif.length; j++) {
-        if((status = ZTIFReadline(&ztif, j)) != E_SUCCESS) {
+        if((status = SNIP_ZTIFReadline(&ztif, j)) != E_SUCCESS) {
             return status;
-        }    
+        }
         for(i=0; i<ztif.width; i++) {
             buffer[i + (j*ztif.width)] = ((uint8*)ztif.rbuf)[i];
         }
     }
-    ZTIFClose(&ztif);
- 
+    SNIP_ZTIFClose(&ztif);
+
     return status;
 }
 
