@@ -29,7 +29,6 @@ int
 FTN(snip_ztif_write)(int *buffer, char *fname, int *width, int *length) {
     int i;
     int j;
-    int index;
     int status;
     int cols = (*width);
     int rows = (*length);
