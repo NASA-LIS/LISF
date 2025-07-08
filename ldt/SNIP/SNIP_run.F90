@@ -80,7 +80,6 @@ subroutine SNIP_run(n)
   !*****************************************************************************************
 
   ! Imports
-  use LDT_bratsethMod
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod, only: LDT_masterproc, LDT_rc
   use LDT_logMod, only: LDT_logunit, LDT_endrun
@@ -92,6 +91,7 @@ subroutine SNIP_run(n)
 #endif
   use SNIP_analysisMod
   use SNIP_arraysMod, only: SNIP_arrays
+  use SNIP_bratsethMod
   use SNIP_espcdMod
   use SNIP_galwemMod, only: SNIP_get_galwem_t2m
   use SNIP_gofsMod

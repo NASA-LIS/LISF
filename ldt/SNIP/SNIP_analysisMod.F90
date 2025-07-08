@@ -2848,12 +2848,12 @@ contains
         elevations, sfctmp_found, sfctmp_lis, bratseth)
 
       ! Imports
-      use LDT_bratsethMod
       use LDT_coreMod, only: LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use LDT_usafsiMod, only: usafsi_settings
       use map_utils
       use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_bratsethMod
       use SNIP_paramsMod
 
       ! Defaults
