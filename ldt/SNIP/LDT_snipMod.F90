@@ -12,6 +12,9 @@
 
 module LDT_snipMod
 
+  ! Imports
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   ! Defaults
   implicit none
   private
@@ -25,18 +28,18 @@ module LDT_snipMod
   type, public :: snip_t
      ! Former environment variables
      character*10  :: date10
-     character*255 :: fracdir
-     character*255 :: modif
+     character(LDT_CONST_PATH_LEN) :: fracdir
+     character(LDT_CONST_PATH_LEN) :: modif
      integer :: sfcobsfmt ! EMK 20230727
-     character*255 :: sfcobs
-     character*255 :: ssmis
-     character*255 :: gmi    !kyh20201118
-     character*255 :: amsr2  !kyh20201217
-     character*255 :: stmpdir
-     character*255 :: sstdir ! EMK 20220113
-     character*255 :: static
-     character*255 :: unmod
-     character*255 :: viirsdir
+     character(LDT_CONST_PATH_LEN) :: sfcobs
+     character(LDT_CONST_PATH_LEN) :: ssmis
+     character(LDT_CONST_PATH_LEN) :: gmi    !kyh20201118
+     character(LDT_CONST_PATH_LEN) :: amsr2  !kyh20201217
+     character(LDT_CONST_PATH_LEN) :: stmpdir
+     character(LDT_CONST_PATH_LEN) :: sstdir ! EMK 20220113
+     character(LDT_CONST_PATH_LEN) :: static
+     character(LDT_CONST_PATH_LEN) :: unmod
+     character(LDT_CONST_PATH_LEN) :: viirsdir
 
      ! Former namelist variables
      real :: clmadj
@@ -62,11 +65,11 @@ module LDT_snipMod
 
      ! option for PMW snow depth retrieval algorithms
      integer       :: ssmis_option
-     character*255 :: ssmis_raw_dir
-     character*255 :: gmi_raw_dir        !kyh20201118
-     character*255 :: amsr2_raw_dir      !kyh20201217
-     character*255 :: ff_file
-     character*255 :: fd_file            !kyh20210113
+     character(LDT_CONST_PATH_LEN) :: ssmis_raw_dir
+     character(LDT_CONST_PATH_LEN) :: gmi_raw_dir        !kyh20201118
+     character(LDT_CONST_PATH_LEN) :: amsr2_raw_dir      !kyh20201217
+     character(LDT_CONST_PATH_LEN) :: ff_file
+     character(LDT_CONST_PATH_LEN) :: fd_file            !kyh20210113
 
      ! Bratseth settings
      real :: ob_err_var
@@ -78,18 +81,18 @@ module LDT_snipMod
 
      ! Other new settings
      real :: fill_climo
-     character*255 :: source_of_ocean_data ! EMK 20240718
-     character*255 :: gofs_sst_dir
-     character*255 :: gofs_cice_dir
-     character*255 :: espcd_sst_dir  ! EMK 20240718
-     character*255 :: espcd_cice_dir ! EMK 20240718
-     character*255 :: lis_grib2_dir
+     character(LDT_CONST_PATH_LEN) :: source_of_ocean_data ! EMK 20240718
+     character(LDT_CONST_PATH_LEN) :: gofs_sst_dir
+     character(LDT_CONST_PATH_LEN) :: gofs_cice_dir
+     character(LDT_CONST_PATH_LEN) :: espcd_sst_dir  ! EMK 20240718
+     character(LDT_CONST_PATH_LEN) :: espcd_cice_dir ! EMK 20240718
+     character(LDT_CONST_PATH_LEN) :: lis_grib2_dir
      character*20 :: security_class
      character*20 :: data_category
      character*20 :: data_res
      character*20 :: area_of_data
-     character*255 :: galwem_root_dir
-     character*255 :: galwem_sub_dir
+     character(LDT_CONST_PATH_LEN) :: galwem_root_dir
+     character(LDT_CONST_PATH_LEN) :: galwem_sub_dir
      integer :: use_timestamp
      integer :: galwem_res
 
@@ -109,6 +112,7 @@ contains
 
     ! Imports
     use ESMF
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_config
     use LDT_logMod, only: LDT_verify, LDT_logunit, LDT_endrun
 
@@ -116,7 +120,7 @@ contains
     implicit none
 
     ! Local variables
-    character(len=255) :: cfg_entry
+    character(len=LDT_CONST_PATH_LEN) :: cfg_entry
     integer :: rc
     integer :: c,r
 
@@ -159,7 +163,6 @@ contains
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-!------------------------------------------------------------------------------kyh20201118
     ! Select TB data
     cfg_entry = "SNIP brightness temperature data option:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
@@ -188,7 +191,6 @@ contains
        call ESMF_ConfigGetAttribute(LDT_config, snip_settings%amsr2, rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
-!------------------------------------------------------------------------------kyh20201118
 
     ! Get stmpdir
     cfg_entry = "SNIP surface temperature data directory:"
@@ -197,7 +199,7 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%stmpdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! EMK 20220113
+    ! Get FNMOC SST data
     cfg_entry = "SNIP FNMOC SST GRIB1 data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
@@ -225,35 +227,35 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%viirsdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-!------------------------------------------------------------------------------kyh20201118
-    ! *** for PMW snow depth retrieval, Yeosang Yoon
     ! get PMW raw datasets
     if (snip_settings%TB_option == 1) then ! SSMIS
        cfg_entry = "SNIP SSMIS raw data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ssmis_raw_dir, &
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            snip_settings%ssmis_raw_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     elseif (snip_settings%TB_option == 2) then ! XCAL GMI
        cfg_entry = "SNIP XCAL GMI raw data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%gmi_raw_dir, &
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            snip_settings%gmi_raw_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     elseif (snip_settings%TB_option == 3) then ! AMSR2
        cfg_entry = "SNIP AMSR2 raw data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%amsr2_raw_dir, &
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            snip_settings%amsr2_raw_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
-!------------------------------------------------------------------------------kyh20201118
 
-    ! YY: get option for PMW snow depth retrieval alogrithm
-    cfg_entry = "SNIP PMW snow depth retrieval algorithm option:"  
+    ! Get option for PMW snow depth retrieval alogrithm
+    cfg_entry = "SNIP PMW snow depth retrieval algorithm option:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ssmis_option, &
@@ -261,8 +263,9 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! get forest fraction for algorithm 3 and 4
-    if (snip_settings%ssmis_option==3 .or. snip_settings%ssmis_option==4) then   !kyh20201212
-       cfg_entry = "SNIP forest fraction file:"   !YY
+    if (snip_settings%ssmis_option==3 .or. &
+         snip_settings%ssmis_option==4) then
+       cfg_entry = "SNIP forest fraction file:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ff_file, &
@@ -271,11 +274,11 @@ contains
     end if
 
     ! get forest density for algorithm 4
-    if (snip_settings%ssmis_option==4) then   !kyh20210113
+    if (snip_settings%ssmis_option==4) then
        cfg_entry = "SNIP forest density file:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%fd_file, & 
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%fd_file, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
@@ -284,7 +287,8 @@ contains
     cfg_entry = "SNIP Snow Climatology:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%climo_option,&
+    call ESMF_ConfigGetAttribute(LDT_config, &
+         snip_settings%climo_option, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
@@ -360,7 +364,6 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%thresh,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
 
     ! Get arctmax
     cfg_entry = &
@@ -510,7 +513,7 @@ contains
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! EMK 20240718...Specify source of ocean data.
+    ! Specify source of ocean data.
     cfg_entry = "SNIP source of ocean data:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
