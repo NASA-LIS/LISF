@@ -1,16 +1,17 @@
 /*******************************************************************************
  *
- *   Name: ztif.h
+ *   Name: snip_ztif.h
  *
  *   Header file for ZTIF library
  *
  *   Updates
  *   =======
  *   20161208 Initial version ............................... M Puskar 16WS/WXE
- *
+ *   20250708 Ported for SNIP................................ E Kemp GSFC/SSAI
+*
  ******************************************************************************/
-#ifndef ZTIF_H
-#define ZTIF_H
+#ifndef SNIP_ZTIF_H
+#define SNIP_ZTIF_H
 
 #include "geotiffio.h"
 #include "xtiffio.h"
@@ -44,7 +45,7 @@ enum _error_codes {
     E_ARGS,
 };
 
-typedef struct ZTIF {
+typedef struct SNIP_ZTIF {
     char*          fname;
     TIFF*          tif;
     GTIF*          gtif;
@@ -54,14 +55,14 @@ typedef struct ZTIF {
     int            width;
     int            length;
     long           size;
-} ZTIF;
+} SNIP_ZTIF;
 
 
-int  ZTIFOpen(ZTIF *ztif, char *fname, char *mode);
-int  ZTIFSetup(ZTIF *ztif, int width, int length);
-int  ZTIFSetupRGB(ZTIF *ztif, int width, int length);
-int  ZTIFReadline(ZTIF *ztif, int linenum);
-int  ZTIFWriteline(ZTIF *ztif, int linenum);
-void ZTIFClose(ZTIF *ztif);
+int  SNIP_ZTIFOpen(SNIP_ZTIF *ztif, char *fname, char *mode);
+int  SNIP_ZTIFSetup(SNIP_ZTIF *ztif, int width, int length);
+int  SNIP_ZTIFSetupRGB(SNIP_ZTIF *ztif, int width, int length);
+int  SNIP_ZTIFReadline(SNIP_ZTIF *ztif, int linenum);
+int  SNIP_ZTIFWriteline(SNIP_ZTIF *ztif, int linenum);
+void SNIP_ZTIFClose(SNIP_ZTIF *ztif);
 
 #endif
