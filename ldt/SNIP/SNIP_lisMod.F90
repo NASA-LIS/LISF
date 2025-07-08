@@ -81,6 +81,9 @@ contains
       logical*1, allocatable :: li(:), lo(:)
       integer :: c, r, i, j, gindex
 
+      external :: neighbor_interp_input
+      external :: neighbor_interp
+
       routine_name = 'read_gr2_t2'
 
       ierr = 1 ! Update below if we succeed in interpolating temperature
