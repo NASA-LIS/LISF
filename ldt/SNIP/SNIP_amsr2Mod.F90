@@ -39,6 +39,7 @@ contains
    subroutine SNIP_proc_amsr2(date10, amsr2_in, amsr2, option)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use SNIP_utilMod
 
@@ -47,13 +48,13 @@ contains
 
       ! Arguments
       character(len=10),  intent(in)  :: date10
-      character(len=255), intent(in)  :: amsr2_in
-      character(len=255), intent(in)  :: amsr2
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: amsr2_in
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: amsr2
       integer,            intent(in)  :: option
 
       ! Local variables
-      integer                         :: eof, i, j, n, nArr, nFile, x, y
-      character(len=255)              :: filename, nc_filename
+      integer                         :: eof, i, nArr, nFile
+      character(len=LDT_CONST_PATH_LEN) :: filename, nc_filename
       !integer,           dimension(:), allocatable :: surflag0, surflag
       character(len=10), dimension(:), allocatable :: date0, date10_arr
       real,              dimension(:), allocatable :: lat0, lon0, tb10h0, tb10v0, tb19h0, tb19v0, &
@@ -66,6 +67,9 @@ contains
       integer                                      :: satid
       real                                         :: icoord, jcoord
       INTEGER, PARAMETER                           :: POSE    = 0   ! LONGITUDE ORIENTATION FLAG; 0 = POSITIVE WEST
+
+      external :: LLTOPS
+      external :: system
 
       call search_files (date10, amsr2_in)
 
@@ -222,7 +226,7 @@ contains
 #endif
 
       ! Imports
-      use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
+      use LDT_logMod, only: LDT_endrun, LDT_verify
 
       !Defaults
       implicit none
@@ -678,11 +682,11 @@ contains
       integer                             :: i
       character(len=255)                  :: ff_filename
       character(len=255)                  :: fd_filename
-      real                                :: pd19,pd37,pd89,tt,si89, &
+      real                                :: pd19,pd37,pd89,tt, &
            scat,sc37,sc89,scx
       logical                             :: flag
       real                                :: lon_grid(nc), &
-           lat_grid(nr), ratio
+           lat_grid(nr)
       real                                :: ff(nc,nr)
       real                                :: fd(nc,nr)
       integer                             :: plat, plon
@@ -1380,6 +1384,7 @@ contains
 
 
    subroutine search_files(date10, amsr2_in)
+
       ! Imports
       use SNIP_utilMod, only: date10_julhr, julhr_date10
 
@@ -1391,7 +1396,7 @@ contains
       character*255,      intent(in) :: amsr2_in
 
       ! Local variables
-      integer            :: eof, n, i, j, k
+      integer            :: n, j, k
       character(len=255)             :: file_path, cmd
       character*10                   :: date10_prev
       integer                        :: hr, st_hr, julhr
@@ -1400,6 +1405,8 @@ contains
       ! EMK
       character*12                   :: program_name          ! NAME OF CALLING PROGRAM
       character*20                   :: routine_name          ! NAME OF THIS ROUTINE
+
+      external :: system
 
       ! define data values
       data routine_name  / 'search_files' /
