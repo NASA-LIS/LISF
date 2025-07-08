@@ -30,7 +30,6 @@ int
 FTN(snip_ztif_read)(int *buffer, char *fname) {
     int i;
     int j;
-    int index;
     int status;
     SNIP_ZTIF ztif;
 
