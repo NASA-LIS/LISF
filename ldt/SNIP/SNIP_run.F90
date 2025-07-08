@@ -139,7 +139,7 @@ subroutine SNIP_run(n)
   real,       allocatable    ::  sfctmp (:, :)        ! GALWEM OR LIS SHELTER TEMPERATURE DATA
   real,       allocatable    ::  stadep     (:)       ! OBSERVATION SNOW DEPTH (METERS)
   character*20 :: routine_name
-  type(LDT_bratseth_t) :: bratseth
+  type(SNIP_bratseth_t) :: bratseth
   character*10 :: network10
   character*32 :: platform32
   real :: rob, rlat, rlon, relev

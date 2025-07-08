@@ -101,7 +101,7 @@ contains
       !***********************************************************************
 
       ! Imports
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use SNIP_paramsMod
 
       ! Defaults
@@ -126,7 +126,7 @@ contains
 
          ! PREVIOUS DAY HAD SNOW COVER, ADJUST TOWARDS CLIMATOLOGY.
          ! INCREMENT THE AGE ONE DAY.
-         adjust = (pntclm - pntold) * (usafsi_settings%clmadj)
+         adjust = (pntclm - pntold) * (snip_settings%clmadj)
          pntanl = pntold + adjust
          pntage = pntage + 1
 
@@ -305,9 +305,10 @@ contains
       !*******************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use map_utils
       use SNIP_arraysMod, only: SNIP_arrays
       use SNIP_paramsMod
@@ -318,7 +319,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF SNIP CYCLE
-      character*255, intent(in)   :: fracdir          ! FRACTIONAL SNOW DIRECTORY PATH
+      character(LDT_CONST_PATH_LEN), intent(in)   :: fracdir ! FRACTIONAL SNOW DIRECTORY PATH
       
       ! Local constants
       character*8, parameter :: meshnp05 = '_0p05deg' ! MESH FOR 1/20 DEGREE FILE NAME
@@ -331,7 +332,7 @@ contains
       character*2                 :: cyclhr           ! CYCLE HOUR
 
       character*10                :: datefr           ! DATE-TIME GROUP OF FRACTIONAL SNOW
-      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character(LDT_CONST_PATH_LEN) :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
       character*90                :: message (msglns) ! ERROR MESSAGE
       character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
@@ -443,7 +444,7 @@ contains
 
       else
 
-         usafsi_settings%usefrac = .false.
+         snip_settings%usefrac = .false.
          message(1) = '[WARN]  FRACTIONAL SNOW FILE NOT FOUND'
          message(2) = '[WARN]  PATH = ' // trim(file_path)
          call error_message (program_name, routine_name, yyyymmddhh, &
@@ -533,6 +534,7 @@ contains
       !*******************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_endrun, ldt_logunit
       use map_utils
@@ -545,7 +547,7 @@ contains
 
       ! Arguments
       integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
-      character*255, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+      character(LDT_CONST_PATH_LEN), intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: elevations(nc,nr)
@@ -553,7 +555,7 @@ contains
       ! Local variables
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
       character*4                 :: file_ext         ! LAST PORTION OF FILE NAME
-      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character(LDT_CONST_PATH_LEN) :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*90                :: message (msglns) ! ERROR MESSAGE
       character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
       real, allocatable :: climo_0p25deg(:,:)
@@ -762,7 +764,7 @@ contains
 
       ! Imports
       use LDT_logMod, only: LDT_logunit
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use map_utils ! EMK
       use SNIP_paramsMod
       use SNIP_utilMod ! EMK
@@ -838,8 +840,8 @@ contains
       data routine_name / 'GETOBS      '/
 
       ! ALLOCATE PROCESSED STATION LIST TO MAX NUMBER OF OBS RETURNED.
-      allocate (oldnet (usafsi_settings%maxsobs))
-      allocate (oldsta (usafsi_settings%maxsobs))
+      allocate (oldnet (snip_settings%maxsobs))
+      allocate (oldsta (snip_settings%maxsobs))
 
       yyyymmddhh = date10
       
@@ -943,11 +945,11 @@ contains
                   enddo duplicate_obs
 
                   ! IF TEMP NOT TOO WARM, CONTINUE PROCESSING.
-                  temp_check : if (itemp <= usafsi_settings%thresh) then
+                  temp_check : if (itemp <= snip_settings%thresh) then
 
                      ! IF LATITUDE IS 40 OR LESS, CHECK WHERE SNOW IS
                      ! UNLIKELY BASED ON ELEVATION, MONTH, AND LATITUDE.
-                     if (abs(oblat) <= usafsi_settings%trplat(1)) then
+                     if (abs(oblat) <= snip_settings%trplat(1)) then
                         call summer (obelev, hemi, oblat, month, towarm)
                      endif
 
@@ -1057,7 +1059,7 @@ contains
 
                         ! IF WE'RE IN A POLAR REGION AND TEMPERATURE EXCEEDS THE
                         ! MAXIMUM, ASSUME INVALID TEMPERATURE AND REJECT THE OB.
-                     else if (itemp > usafsi_settings%arctmax) then
+                     else if (itemp > snip_settings%arctmax) then
 
                         printlat = float (oblat) / 100.0
                         printlon = float (oblon) / 100.0
@@ -1808,6 +1810,7 @@ contains
       !*******************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
@@ -1820,8 +1823,8 @@ contains
 
       ! Arguments
       character*10,  intent(in)  :: date10           ! CURRENT CYCLE DATE-TIME GROUP
-      character*255, intent(in)  :: modif            ! PATH TO MODIFIED DATA DIRECTORY
-      character*255, intent(in)  :: unmod            ! PATH TO UNMODIFIED DATA DIRECTORY
+      character(LDT_CONST_PATH_LEN), intent(in)  :: modif            ! PATH TO MODIFIED DATA DIRECTORY
+      character(LDT_CONST_PATH_LEN), intent(in)  :: unmod            ! PATH TO UNMODIFIED DATA DIRECTORY
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landice(nc,nr)
@@ -1830,10 +1833,10 @@ contains
 
       ! Local variables
       character*10               :: date10_prev      ! PREVIOUS CYCLE DATE-TIME GROUP
-      character*255              :: file_path        ! INPUT FILE PATH AND NAME
+      character(LDT_CONST_PATH_LEN) :: file_path        ! INPUT FILE PATH AND NAME
       character*90               :: message (msglns) ! ERROR MESSAGE
       character*20               :: routine_name     ! NAME OF THIS SUBROUTINE
-      character*255              :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
+      character(LDT_CONST_PATH_LEN) :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
       integer                    :: runcycle         ! CYCLE HOUR
       integer                    :: julhr            ! AFWA JULIAN HOUR
       integer                    :: limit            ! LIMIT ON NUMBER OF CYCLES TO SEARCH
@@ -2564,7 +2567,7 @@ contains
       ! Imports
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use map_utils
       use SNIP_arraysMod, only: SNIP_arrays
       use SNIP_paramsMod
@@ -2664,7 +2667,7 @@ contains
 
       file_search : do while ((.not. map_exists) .and. &
            (.not. age_exists) .and. &
-           (icount .le. usafsi_settings%maxpixage))
+           (icount .le. snip_settings%maxpixage))
 
          snomap_path = trim (viirsdir) // '/snomap_0p005deg.' // datefr &
               // '.tiff'
@@ -2756,7 +2759,7 @@ contains
 
                      ! Skip if the pixel age is too old.
                      if (agebuf_slice(i_viirs) > &
-                          usafsi_settings%maxpixage) cycle
+                          snip_settings%maxpixage) cycle
 
                      ! Increment the appropriate snow/bare counter
                      if (mapbuf_slice(i_viirs) .eq. 0) then
@@ -2790,14 +2793,14 @@ contains
          ! From the geolocated data, create the final VIIRS snow cover map
          do j = 1, nr
             do i = 1, nc
-               min_snow_count = usafsi_settings%minfrac * pixels(i,j)
-               min_bare_count = usafsi_settings%minbare * pixels(i,j)
+               min_snow_count = snip_settings%minfrac * pixels(i,j)
+               min_bare_count = snip_settings%minbare * pixels(i,j)
                if (snow(i,j) > min_snow_count) then
-                  usafsi_arrays%viirsmap(i,j) = 1
+                  snip_arrays%viirsmap(i,j) = 1
                else if (bare(i,j) > min_bare_count) then
-                  usafsi_arrays%viirsmap(i,j) = 0
+                  snip_arrays%viirsmap(i,j) = 0
                else
-                  usafsi_arrays%viirsmap(i,j) = 255
+                  snip_arrays%viirsmap(i,j) = 255
                end if
             end do ! i
          end do ! j
@@ -2808,7 +2811,7 @@ contains
       else
 
          if (.not. map_exists) then
-            usafsi_settings%useviirs = .false.
+            snip_settings%useviirs = .false.
             message(1) = '[WARN] VIIRS SNOW MAP FILE NOT FOUND'
             !message(2) = '[WARN] PATH = ' // trim(snomap_path)
             call error_message (program_name, routine_name, &
@@ -2817,7 +2820,7 @@ contains
          end if
 
          if (.not. age_exists) then
-            usafsi_settings%useviirs = .false.
+            snip_settings%useviirs = .false.
             message(1) = '[WARN] VIIRS SNOW AGE FILE NOT FOUND'
             !message(2) = '[WARN] PATH = ' // trim(snoage_path)
             call error_message (program_name, routine_name, &
@@ -2850,7 +2853,7 @@ contains
       ! Imports
       use LDT_coreMod, only: LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use map_utils
       use SNIP_arraysMod, only: SNIP_arrays
       use SNIP_bratsethMod
@@ -2868,7 +2871,7 @@ contains
       real, intent(in) :: elevations(nc,nr)
       logical, intent(in) :: sfctmp_found
       real, intent(in) :: sfctmp_lis(:,:)
-      type(LDT_bratseth_t), intent(inout) :: bratseth
+      type(SNIP_bratseth_t), intent(inout) :: bratseth
 
       ! Local variables
       real :: satdep
@@ -2895,7 +2898,7 @@ contains
       snomask(:,:) = -1 ! Unknown
       skip_grid_points(:,:) = .false.
       updated(:,:) = .false.
-      rthresh = float(usafsi_settings%thresh) / 10.0
+      rthresh = float(snip_settings%thresh) / 10.0
 
       ! Build mask to screen out areas we don't want to analyze.
       do r = 1,nr
@@ -2949,7 +2952,7 @@ contains
             ! Handle SSMIS detection problem with very shallow snow.  If below
             ! minimum depth, preserve prior analysis if larger than SSMIS.
             if (satdep >= 0) then
-               if (satdep .le. usafsi_settings%minsat) then
+               if (satdep .le. snip_settings%minsat) then
                   if (satdep > SNIP_arrays%olddep(c,r)) then
                      SNIP_arrays%snoanl(c,r) = satdep
                      updated(c,r) = .true.
@@ -2970,11 +2973,11 @@ contains
       end do ! r
 
       ! Update the snow mask using the fractional snow
-      if (usafsi_settings%usefrac) then
+      if (snip_settings%usefrac) then
          do r = 1, nr
             do c = 1, nc     
                if (skip_grid_points(c,r)) cycle
-               if (SNIP_arrays%snofrac(c,r) > usafsi_settings%minfrac) then
+               if (SNIP_arrays%snofrac(c,r) > snip_settings%minfrac) then
                   snomask(c,r) = 1
                end if
             end do ! c
@@ -2982,7 +2985,7 @@ contains
       end if ! usefrac
 
       ! Adjust snow mask based on VIIRS
-      if (usafsi_settings%useviirs) then
+      if (snip_settings%useviirs) then
          do r = 1,nr
             do c = 1, nc
                if (skip_grid_points(c,r)) cycle
@@ -3041,7 +3044,7 @@ contains
       write(LDT_logunit,*) &
            '[INFO] Reject obs with elevations too different from LDT'
       call bratseth%run_elev_qc(1,nc,nr,elevations,&
-           usafsi_settings%elevqc_diff_threshold)
+           snip_settings%elevqc_diff_threshold)
       
       write(LDT_logunit,*)'[INFO] Check for duplicate obs'
       call bratseth%run_dup_qc()
@@ -3109,13 +3112,13 @@ contains
       num_good_obs = bratseth%count_good_obs()
       write(LDT_logunit,*) &
            '[INFO] Reject obs with snow depths too low compared to background'
-      call bratseth%run_skewed_back_qc(usafsi_settings%skewed_backqc_threshold)
+      call bratseth%run_skewed_back_qc(snip_settings%skewed_backqc_threshold)
 
       ! Reject obs that differ "too much" from background.  
       num_good_obs = bratseth%count_good_obs()
       write(LDT_logunit,*) &
            '[INFO] Reject obs that differ too much from background'
-      call bratseth%run_back_qc(usafsi_settings%back_err_var)
+      call bratseth%run_back_qc(snip_settings%back_err_var)
 
       write(LDT_logunit,*) &
            '[INFO] Merge obs in the same LDT grid box'
@@ -3192,7 +3195,7 @@ contains
                ! If no snow in prior analysis, or if climo adjustment
                ! removes snow, put in bogus value.
                if (SNIP_arrays%snoanl(c,r) == 0) then
-                  SNIP_arrays%snoanl(c,r) = usafsi_settings%unkdep
+                  SNIP_arrays%snoanl(c,r) = snip_settings%unkdep
                   SNIP_arrays%snoage(c,r) = 1
                end if
             else if (updated(c,r)) then
@@ -3235,7 +3238,7 @@ contains
    subroutine run_snow_analysis_glacier(runcycle, nc, nr, landmask, landice)
       
       ! Imports
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use SNIP_arraysMod, only: SNIP_arrays
       use SNIP_paramsMod
       
@@ -3257,7 +3260,7 @@ contains
       
       ! NOTE: Do not overwrite snoanl with olddep, as that will destroy
       ! analysis over non-glaciers
-      rthresh = float(usafsi_settings%thresh) / 10.0
+      rthresh = float(snip_settings%thresh) / 10.0
       arctlatr = float(arctlat) / 100.0
 
       ! HANDLE GLACIERS.  Glaciers may occur on land points with
@@ -3311,7 +3314,7 @@ contains
             ! It is possible that climo adjustment removes snow.  In that case,
             ! put in a bogus value.
             if (SNIP_arrays%snoanl(c,r) .le. 0) then
-               SNIP_arrays%snoanl(c,r) = usafsi_settings%unkdep
+               SNIP_arrays%snoanl(c,r) = snip_settings%unkdep
                SNIP_arrays%snoage(c,r) = 1
             end if
 
@@ -3325,7 +3328,7 @@ contains
    subroutine run_seaice_analysis_ssmis(month,runcycle,nc,nr,landmask)
 
       ! Imports
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use SNIP_arraysMod, only: SNIP_arrays
       use SNIP_paramsMod
 
@@ -3366,7 +3369,7 @@ contains
             end if
 
             if (abs(SNIP_arrays%ptlat(c,r)) &
-                 < usafsi_settings%latchk(month,hemi)) then
+                 < snip_settings%latchk(month,hemi)) then
                ! Force sea ice removal in low latitudes, a function of
                ! month and hemisphere
                SNIP_arrays%icemask(c,r) = 0
@@ -3374,13 +3377,13 @@ contains
                SNIP_arrays%iceage(c,r) = 0
                
             else if (abs(SNIP_arrays%ptlat(c,r)) >= &
-                 usafsi_settings%icelat(month,hemi)) then
+                 snip_settings%icelat(month,hemi)) then
                ! Force sea ice in high latitudes, a function of month and
                ! hemisphere, unless valid SSMIS says otherwise.  
                if (SNIP_arrays%ssmis_icecon(c,r) >= 0 .and. &
                     SNIP_arrays%ssmis_icecon(c,r) .le. 100) then
                   SNIP_arrays%icecon(c,r) = SNIP_arrays%ssmis_icecon(c,r)
-                  if (SNIP_arrays%icecon(c,r) > usafsi_settings%minice) then
+                  if (SNIP_arrays%icecon(c,r) > snip_settings%minice) then
                      SNIP_arrays%icemask(c,r) = icepnt
                   else
                      SNIP_arrays%icemask(c,r) = 0
@@ -3390,7 +3393,7 @@ contains
                   ! No SSMI available.  Force sea ice and find a reasonable
                   ! value.
                   SNIP_arrays%icemask(c,r) = icepnt
-                  if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+                  if (SNIP_arrays%oldcon(c,r) > snip_settings%minice) then
                      SNIP_arrays%icecon(c,r) = &
                           SNIP_arrays%oldcon(c,r) ! Prior analysis
                   else
@@ -3401,21 +3404,21 @@ contains
             else
                ! Mid-latitude case.  
                if ( (SNIP_arrays%ssmis_icecon(c,r) > &
-                    usafsi_settings%minice) .and. &
+                    snip_settings%minice) .and. &
                     (SNIP_arrays%ssmis_icecon(c,r) .le. 100)) then
                   ! Valid SSMIS detected ice
                   SNIP_arrays%icemask(c,r) = icepnt
                   SNIP_arrays%icecon(c,r) = SNIP_arrays%ssmis_icecon(c,r)
                else if (SNIP_arrays%ssmis_icecon(c,r) >= 0 .and. &
                     SNIP_arrays%ssmis_icecon(c,r) .le. &
-                    usafsi_settings%minice) then
+                    snip_settings%minice) then
                   ! Valid SSMIS detected no ice
                   SNIP_arrays%icemask(c,r) = 0
                   SNIP_arrays%icecon(c,r) = 0
                   SNIP_arrays%iceage(c,r) = 0
                else
                   ! No valid SSMIS data.  Attempt to use prior analysis
-                  if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+                  if (SNIP_arrays%oldcon(c,r) > snip_settings%minice) then
                      SNIP_arrays%icemask(c,r) = icepnt
                      SNIP_arrays%icecon(c,r) = SNIP_arrays%oldcon(c,r)
                   else
@@ -3465,7 +3468,7 @@ contains
    subroutine run_seaice_analysis_navy(month, runcycle, nc, nr, landmask)
 
       ! Imports
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use SNIP_arraysMod, only: SNIP_arrays
       use SNIP_paramsMod
 
@@ -3510,7 +3513,7 @@ contains
                ! We have valid GOFS data
                SNIP_arrays%icecon(c,r) = &
                     nint(SNIP_arrays%navy_icecon(c,r))
-               if (SNIP_arrays%icecon(c,r) > usafsi_settings%minice) then
+               if (SNIP_arrays%icecon(c,r) > snip_settings%minice) then
                   SNIP_arrays%icemask(c,r) = icepnt
                else
                   SNIP_arrays%icemask(c,r) = 0
@@ -3519,7 +3522,7 @@ contains
                check_sst = .false.  ! Defer to GOFS
 
             else if (abs(SNIP_arrays%ptlat(c,r)) < &
-                 usafsi_settings%latchk(month,hemi)) then
+                 snip_settings%latchk(month,hemi)) then
                ! GOFS is missing at this point, and we are in low latitudes.
                ! Force no seaice.
                SNIP_arrays%icemask(c,r) = 0
@@ -3527,11 +3530,11 @@ contains
                SNIP_arrays%iceage(c,r) = 0
                
             else if (abs(SNIP_arrays%ptlat(c,r)) >= &
-                 usafsi_settings%icelat(month,hemi)) then
+                 snip_settings%icelat(month,hemi)) then
                ! GOFS is missing at this point, and we are in high latitudes.
                ! Force sea ice and find a reasonable value.
                SNIP_arrays%icemask(c,r) = icepnt
-               if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+               if (SNIP_arrays%oldcon(c,r) > snip_settings%minice) then
                   SNIP_arrays%icecon(c,r) = &
                        SNIP_arrays%oldcon(c,r) ! Prior analysis
                else
@@ -3541,7 +3544,7 @@ contains
             else
                ! GOFS is missing at this point, and we are in mid-latitudes.
                ! Attempt to use prior analysis.
-               if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+               if (SNIP_arrays%oldcon(c,r) > snip_settings%minice) then
                   SNIP_arrays%icemask(c,r) = icepnt
                   SNIP_arrays%icecon(c,r) = SNIP_arrays%oldcon(c,r)
                else
@@ -3625,7 +3628,7 @@ contains
       !*******************************************************************************
 
       ! Imports
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_snipMod, only: snip_settings
       use SNIP_paramsMod
 
       ! Defaults
@@ -3662,22 +3665,22 @@ contains
 
       ! CHECK IF LATITUDE IS LESS THAN OR EQUAL TO 30 DEGREES AND
       ! LESS THAN OR EQUAL TO 20 DEGREES.
-      if (abs (oblat) <= usafsi_settings%trplat(2)) then
-         if (abs (oblat) <= usafsi_settings%trplat(3)) then
+      if (abs (oblat) <= snip_settings%trplat(2)) then
+         if (abs (oblat) <= snip_settings%trplat(3)) then
 
-            if (obelev <= usafsi_settings%elvlim(1)) then
+            if (obelev <= snip_settings%elvlim(1)) then
                ! IF THE ELEVATION IS LESS THAN OR EQUAL TO 1000 METERS,
                ! SET TOWARM FLAG TO TRUE.
                towarm = .true.
             elseif ((sumnth(month,hemi,2) == 1) .and.       &
-                 (obelev <= usafsi_settings%elvlim(2)))      then
+                 (obelev <= snip_settings%elvlim(2)))      then
                ! IF IT'S A SUMMER MONTH AND THE ELEVATION IS LESS THAN OR
                ! EQUAL TO 1500 METERS, SET TOWARM FLAG TO TRUE.
                towarm = .true.
             endif
 
          elseif ((sumnth(month,hemi,2) == 1) .and.          &
-              (obelev <= usafsi_settings%elvlim(3)))      then
+              (obelev <= snip_settings%elvlim(3)))      then
             ! THE LATITUDE IS BETWEEN 20 AND 30 DEGRESS.  IF IT'S A SUMMER
             ! MONTH AND THE ELEVATION IS LESS THAN OR EQUAL TO 1000 METERS,
             ! SET TOWARM FLAG TO TRUE.
@@ -3685,7 +3688,7 @@ contains
          endif
 
       elseif ((sumnth(month,hemi,1) == 1) .and.              &
-           (obelev <= usafsi_settings%elvlim(4)))      then
+           (obelev <= snip_settings%elvlim(4)))      then
          ! THE LATITUDE IS BETWEEN 30 AND 40 DEGRESS.  IF IT'S A SUMMER
          ! MONTH AND THE ELEVATION IS LESS THAN OR EQUAL TO 1000 METERS,
          ! SET TOWARM FLAG TO TRUE.
