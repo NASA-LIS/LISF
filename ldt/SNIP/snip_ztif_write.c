@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-*  Name: ztif_writ.c
+*  Name: snip_ztif_writ.c
 *
 *  Write data from buffer to a geotiff file
 *
@@ -8,6 +8,7 @@
 *  =======
 *  20161215 Initial version....................................Puskar/16WS/WXE
 *  20190325 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+*  20250708 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
 *
 *******************************************************************************/
 
@@ -17,25 +18,25 @@
 /* EMK Only compile if LIBGEOTIFF support is enabled */
 #ifdef USE_LIBGEOTIFF
 
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "geotiffio.h"
 #include "xtiffio.h"
-#include "ztif.h"
+#include "snip_ztif.h"
 
 int
-FTN(ztif_write)(int *buffer, char *fname, int *width, int *length) {
+FTN(snip_ztif_write)(int *buffer, char *fname, int *width, int *length) {
     int i;
     int j;
     int index;
     int status;
     int cols = (*width);
     int rows = (*length);
-    ZTIF ztif;
+    SNIP_ZTIF ztif;
 
-    if((status = ZTIFOpen(&ztif, fname, "w")) != E_SUCCESS || 
-       (status = ZTIFSetup(&ztif, cols, rows)) != E_SUCCESS) {
+    if((status = SNIP_ZTIFOpen(&ztif, fname, "w")) != E_SUCCESS ||
+       (status = SNIP_ZTIFSetup(&ztif, cols, rows)) != E_SUCCESS) {
         return status;
     }
 
@@ -47,8 +48,8 @@ FTN(ztif_write)(int *buffer, char *fname, int *width, int *length) {
             break;
         }
     }
-    ZTIFClose(&ztif);
- 
+    SNIP_ZTIFClose(&ztif);
+
     return status;
 }
 
