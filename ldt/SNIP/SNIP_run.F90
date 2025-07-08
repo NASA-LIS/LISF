@@ -89,6 +89,7 @@ subroutine SNIP_run(n)
 #if ( defined SPMD )
   use mpi
 #endif
+  use SNIP_amsr2Mod,   only: SNIP_proc_amsr2
   use SNIP_analysisMod
   use SNIP_arraysMod, only: SNIP_arrays
   use SNIP_bratsethMod
@@ -100,8 +101,7 @@ subroutine SNIP_run(n)
   use SNIP_paramsMod
   use SNIP_ssmisMod, only: SNIP_proc_ssmis
   use SNIP_utilMod
-  use SNIP_xcalgmiMod, only: SNIP_proc_xcalgmi  !kyh20201118
-  use SNIP_amsr2Mod,   only: SNIP_proc_amsr2    !kyh20201217
+  use SNIP_xcalgmiMod, only: SNIP_proc_xcalgmi
 
   ! Defaults
   implicit none
@@ -202,7 +202,7 @@ subroutine SNIP_run(n)
      unmod = trim(SNIP_settings%unmod)
      viirsdir = trim(SNIP_settings%viirsdir)
 
-!-------------------------------------------------------------------------kyh20201118
+!-------------------------------------------------------------------------
      ! for Brightness temperature based snow depth
      if (SNIP_settings%TB_option == 1) then             !SSMIS
         TB_raw_dir = trim(SNIP_settings%ssmis_raw_dir)
@@ -211,7 +211,7 @@ subroutine SNIP_run(n)
      elseif (SNIP_settings%TB_option == 3) then         !AMSR2
         TB_raw_dir = trim(SNIP_settings%amsr2_raw_dir)
      end if
-!-------------------------------------------------------------------------kyh20201118
+!-------------------------------------------------------------------------
 
      ! EXTRACT MONTH FROM DATE-TIME GROUP.
      read (date10(5:6), '(i2)', err=4200) month
@@ -243,14 +243,14 @@ subroutine SNIP_run(n)
 
      ! RETRIEVE STATIC DATA SETS.
      write (LDT_logunit,*) '[INFO] CALLING GETGEO TO GET STATIC FIELDS'
-     ! EMK...Pass LDT elevations to this routine to populate SNODEP elevat
+     ! Pass LDT elevations to this routine to populate SNODEP elevat
      call getgeo (month, static, nc, nr, elevations)
 
      ! Yeosang Yoon: retrive the snow climatology for the month
      if (SNIP_settings%climo_option .eq. 1) then
-        ! EMK...Mismatches can occur in landmask between 0.25 deg climo and
-        ! LDT's grid.  In cases where LDT introduces "new" land, use a bogus
-        ! value.
+        ! Mismatches can occur in landmask between 0.25 deg climo and
+        ! LDT's grid.  In cases where LDT introduces "new" land, use a
+        ! bogus value.
         arctlatr = float(arctlat) / 100.0
         allocate(climo_tmp(nc,nr))
         climo_tmp(:,:) = SNIP_arrays%climo(:,:)
@@ -259,14 +259,11 @@ subroutine SNIP_run(n)
               if (SNIP_arrays%ptlat(c,r) > -40.0 .and. &
                    SNIP_arrays%ptlat(c,r) < 40.0) cycle
               ! See if climo exists for glacier point.  If not, use a fill-in.
-              !if (landmask(c,r) > 0.5 .and. &
-              !     SNIP_arrays%climo(c,r) .le. 0) then
               if (landmask(c,r) > 0.5 .and. &
                    SNIP_arrays%climo(c,r) .le. 0) then
                  if (landice(c,r) > 0.5) then
                     climo_tmp(c,r) = SNIP_settings%fill_climo
                  else
-                    !climo_tmp(c,r) = SNIP_settings%unkdep
                     climo_tmp(c,r) = 0
                  end if
               end if
@@ -276,7 +273,7 @@ subroutine SNIP_run(n)
         SNIP_arrays%climo(:,:) = climo_tmp(:,:)
         deallocate(climo_tmp)
      else if (SNIP_settings%climo_option .eq. 2) then
-        ! newly produced 10-km snow climatology using ratio between SNODEP and SNIP
+        ! newly produced 10-km snow climatology using ratio between SNODEP and USAFSI
         call getclimo (month, static)
      end if
 
@@ -303,7 +300,6 @@ subroutine SNIP_run(n)
 
      ! LOOP THROUGH UNCOMPLETED CYCLES.
      ! FIXME...Change this to handle only one cycle
-     !YY cycle_loop : do while (julhr .lt. julhr_end)
      cycle_loop : do while (julhr .lt. julhr_end)
 
         ! EMK Create bratseth object
@@ -341,8 +337,7 @@ subroutine SNIP_run(n)
            sfctmp_found = .true.
         end if
 
-        ! RETRIEVE NAVY SEA SURFACE TEMPERATURE (SST) DATA.
-        ! EMK 20240718...Try GOFS or ESPC-D
+        ! Retrieve sea surface temperature data.
         read (date10(1: 4), '(i4)', err=4200) yyyy
         read (date10(5: 6), '(i2)', err=4200) mm
         read (date10(7: 8), '(i2)', err=4200) dd
@@ -369,12 +364,7 @@ subroutine SNIP_run(n)
         end if
 
         ! RETRIEVE FRACTIONAL SNOW DATA.
-        SNIP_settings%usefrac = .false.  ! YY: no longer in use
-        !if (SNIP_settings%usefrac) then
-        !   write (LDT_logunit,*) &
-        !        '[INFO] CALLING GETFRAC TO GET FRACTIONAL SNOW DATA'
-        !   call getfrac (date10, fracdir)
-        !end if
+        SNIP_settings%usefrac = .false.
 
         ! RETRIEVE SURFACE OBSERVATIONS.
         write (LDT_logunit,*) &
@@ -401,7 +391,7 @@ subroutine SNIP_run(n)
              '[INFO] TOTAL OBSERVATIONS RETURNED FROM GETOBS: ', &
              stacnt
 
-        ! EMK Copy observations to bratseth object
+        ! Copy observations to bratseth object
         do j = 1, stacnt
            network10 = trim(netid(j))
            platform32 = trim(staid(j))
@@ -423,7 +413,7 @@ subroutine SNIP_run(n)
         deallocate(staelv)
         deallocate(stadep)
 
-        ! EMK 20240718...Choose between ESPC-D and GOFS.
+        ! Choose between ESPC-D and GOFS.
         read (date10(1: 4), '(i4)', err=4200) yyyy
         read (date10(5: 6), '(i2)', err=4200) mm
         read (date10(7: 8), '(i2)', err=4200) dd
@@ -446,7 +436,7 @@ subroutine SNIP_run(n)
                 yyyy, mm, dd, hh, fh, ierr)
            if (ierr == 0) found_navy_cice = .true.
         end if
-!---------------------------------------------------------------------kyh20201118
+!---------------------------------------------------------------------
         ! Estimates TB-based snow depth
         if (SNIP_settings%TB_option == 1) then       !SSMIS
            write (LDT_logunit,*) &
@@ -464,7 +454,7 @@ subroutine SNIP_run(n)
            call SNIP_proc_amsr2(date10, TB_raw_dir, TB_product_path, &
                 SNIP_settings%ssmis_option)
         end if
-!---------------------------------------------------------------------kyh20201118
+!---------------------------------------------------------------------
 
         ! RETRIEVE PMW snow depth.
         write (LDT_logunit,*) &
@@ -484,12 +474,13 @@ subroutine SNIP_run(n)
         SNIP_arrays%icemask(:,:) = -1
         write(LDT_logunit,*) &
              '[INFO] CALLING RUN_SNOW_ANALYSIS_NOGLACIER'
-        call run_snow_analysis_noglacier(runcycle, nc, nr, landmask, landice, &
-             elevations, sfctmp_found, sfctmp, bratseth)
+        call run_snow_analysis_noglacier(runcycle, nc, nr, landmask, &
+             landice, elevations, sfctmp_found, sfctmp, bratseth)
 
         write(LDT_logunit,*) &
              '[INFO] CALLING RUN_SNOW_ANALYSIS_GLACIER'
-        call run_snow_analysis_glacier(runcycle, nc, nr, landmask, landice)
+        call run_snow_analysis_glacier(runcycle, nc, nr, landmask, &
+             landice)
 
         ! FIXME...Try using ESPC-D or GOFS data first, and if
         ! unsuccessful, then run the old SSMIS analysis.
@@ -501,7 +492,8 @@ subroutine SNIP_run(n)
         else
            write(LDT_logunit,*) &
                 '[INFO] CALLING RUN_SEAICE_ANALYSIS_SSMIS'
-           call run_seaice_analysis_ssmis(month, runcycle, nc, nr, landmask)
+           call run_seaice_analysis_ssmis(month, runcycle, nc, nr, &
+                landmask)
         end if
 
         ! PRINT OUT TOTAL NUMBER OF STATIONS PROCESSED. PRINT ANY STATION
@@ -511,13 +503,12 @@ subroutine SNIP_run(n)
         call bratseth%sort_obs_by_id()
         call bratseth%print_snowdepths(SNIP_settings%minprt)
 
-        ! EMK Write out in netcdf format
+        ! Write out in netcdf format
         call SNIP_write_netcdf(date10)
 
         ! Clean up bratseth object
         call bratseth%delete()
 
-        !YY end do cycle_loop
      end do cycle_loop
 
      ! DEALLOCATE ALL ARRAYS.
@@ -553,7 +544,6 @@ subroutine SNIP_run(n)
 #endif
 
   write (LDT_logunit,*) '[INFO] NORMAL TERMINATION'
-  !call LDT_endrun() ! EMK...Avoid error code 1
   return
 
   ! ERROR HANDLING SECTION.
@@ -683,7 +673,8 @@ contains
     ! Fetch the glacier class number
     call LDT_verify(nf90_get_att(ncid, nf90_global, "GLACIERCLASS", &
          glacierclass), &
-         '[ERR] GLACIERCLASS global attribute not found in '//trim(filename))
+         '[ERR] GLACIERCLASS global attribute not found in '// &
+         trim(filename))
 
     ! Create a landice mask
     allocate(landice(nc,nr))
