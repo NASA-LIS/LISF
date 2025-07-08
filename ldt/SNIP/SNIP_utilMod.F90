@@ -400,7 +400,6 @@ contains
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
       character*2                 :: calert_number    ! ALERT NUMBER FOR FILE NAME
-      !character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character(LDT_CONST_PATH_LEN) :: message_file   ! MESSAGE FILE NAME
       integer                     :: alert_number     ! ALERT NUMBER
