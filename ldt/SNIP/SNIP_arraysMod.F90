@@ -57,7 +57,7 @@ module SNIP_arraysMod
       integer,    allocatable    :: ssmis_icecon     ( : , : )    ! SSMIS ICE CONCENTRATIONS (PERCENT, 0-100)
       integer,    allocatable    :: snoage           ( : , : )    ! SNOW AGE (DAYS)
       integer,    allocatable    :: snoage12z        ( : , : )    ! SNOW AGE (DAYS) FROM PREVIOUS 12Z
-      integer,    allocatable    :: viirsmap         ( : , : )    ! VIIRS SNOW COVERED AREA MAP   
+      integer,    allocatable    :: viirsmap         ( : , : )    ! VIIRS SNOW COVERED AREA MAP
       real,       allocatable    :: climo            ( : , : )    ! THIS MONTH'S SNOW CLIMATOLOGY (METERS)
       real,       allocatable    :: elevat           ( : , : )    ! TERRAIN ELEVATION (METERS)
       real,       allocatable    :: olddep           ( : , : )    ! PREVIOUS DAY'S SNOW ANALYSIS (METERS)
