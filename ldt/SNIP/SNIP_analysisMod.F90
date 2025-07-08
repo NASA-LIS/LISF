@@ -2614,7 +2614,7 @@ contains
       call LDT_endrun()
 
 #else
-      external :: ztif_frac_slice ! EMK 20220113
+      external :: snip_ztif_frac_slice ! EMK 20250708
 
       data routine_name  / 'GETVIIRS    ' /
 
@@ -2703,7 +2703,7 @@ contains
             do j_viirs = 1, jgrid_viirs
 
                ierr = 0
-               call ztif_frac_slice(mapbuf_slice, &
+               call snip_ztif_frac_slice(mapbuf_slice, &
                     agebuf_slice, &
                     igrid_viirs, &
                     jgrid_viirs, &
