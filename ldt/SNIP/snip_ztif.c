@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-*  Name: ztif.c
+*  Name: snip_ztif.c
 *
 *  Utility library for interacting with TIFF/GEOTIFF libraries
 *
@@ -8,6 +8,7 @@
 *  =======
 *  20161208 Initial version.....................................Puskar/16WS/WXE
 *  20190325 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
+*  20250708 Ported for SNIP...Eric Kemp, NASA GSFC/SSAI
 *
 *******************************************************************************/
 
@@ -16,14 +17,14 @@
 
 #ifdef USE_LIBGEOTIFF
 
-#include <stdlib.h> 
+#include <stdlib.h>
 
 #include "geotiffio.h"
 #include "xtiffio.h"
-#include "ztif.h"
+#include "snip_ztif.h"
 
 int
-ZTIFOpen(ZTIF *ztif, char *fname, char *mode) {
+SNIP_ZTIFOpen(SNIP_ZTIF *ztif, char *fname, char *mode) {
     // initialize the ztif object
     ztif->fname = fname;
     ztif->tif = (TIFF*)0;
@@ -57,7 +58,7 @@ ZTIFOpen(ZTIF *ztif, char *fname, char *mode) {
 }
 
 int
-ZTIFSetup(ZTIF *ztif, int width, int length) {
+SNIP_ZTIFSetup(SNIP_ZTIF *ztif, int width, int length) {
 
     // make sure width and length are greater than 0
     if(width < 1 || length < 1) {
@@ -72,13 +73,13 @@ ZTIFSetup(ZTIF *ztif, int width, int length) {
     // allocate a write buffer
     ztif->wbuf = malloc(width);
     if(ztif->wbuf == NULL) {
-        perror("ZTIFSetup");
+        perror("SNIP_ZTIFSetup");
         return E_MALLOC;
-    } 
+    }
     ztif->width  = width;
     ztif->length = length;
     ztif->size   = (long)width * (long)length;
-    
+
     TIFFSetField(ztif->tif,TIFFTAG_IMAGEWIDTH,    width);
     TIFFSetField(ztif->tif,TIFFTAG_IMAGELENGTH,   length);
     TIFFSetField(ztif->tif,TIFFTAG_COMPRESSION,   COMPRESSION_PACKBITS);
@@ -98,11 +99,11 @@ ZTIFSetup(ZTIF *ztif, int width, int length) {
 }
 
 int
-ZTIFSetupRGB(ZTIF *ztif, int width, int length) {
+SNIP_ZTIFSetupRGB(SNIP_ZTIF *ztif, int width, int length) {
     int status;
-    
+
     // start with default
-    if((status = ZTIFSetup(ztif, width, length)) != E_SUCCESS) {
+    if((status = SNIP_ZTIFSetup(ztif, width, length)) != E_SUCCESS) {
         return status;
     }
 
@@ -120,12 +121,12 @@ ZTIFSetupRGB(ZTIF *ztif, int width, int length) {
     r_pal[1] = 255;
     g_pal[1] = 255;
     b_pal[1] = 255;
-    
+
     // green
     r_pal[2] = 0;
     g_pal[2] = 255;
     b_pal[2] = 0;
-    
+
     // add palette info
     TIFFSetField(ztif->tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_PALETTE);
     TIFFSetField(ztif->tif, TIFFTAG_COLORMAP, r_pal, g_pal, b_pal);
@@ -134,7 +135,7 @@ ZTIFSetupRGB(ZTIF *ztif, int width, int length) {
 }
 
 int
-ZTIFReadline(ZTIF *ztif, int linenum) {
+SNIP_ZTIFReadline(SNIP_ZTIF *ztif, int linenum) {
     if(TIFFReadScanline(ztif->tif, ztif->rbuf, linenum, 0) != 1) {
         return E_TIFFREADSCANLINE;
     }
@@ -142,7 +143,7 @@ ZTIFReadline(ZTIF *ztif, int linenum) {
 }
 
 int
-ZTIFWriteline(ZTIF *ztif, int linenum) {
+SNIP_ZTIFWriteline(SNIP_ZTIF *ztif, int linenum) {
     if((TIFFWriteScanline(ztif->tif, ztif->wbuf, linenum, 0)) != 1) {
         return E_TIFFWRITESCANLINE;
     }
@@ -150,7 +151,7 @@ ZTIFWriteline(ZTIF *ztif, int linenum) {
 }
 
 void
-ZTIFClose(ZTIF *ztif) {
+SNIP_ZTIFClose(SNIP_ZTIF *ztif) {
     if(ztif->mode[0] == 'r') {
         _TIFFfree(ztif->rbuf);
     }
