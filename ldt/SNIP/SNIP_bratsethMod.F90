@@ -236,7 +236,7 @@ contains
        lat, lon, elev, ob_err_var, back)
 
     ! Imports
-    use LDT_logmod, only : LDT_logunit
+    use LDT_logMod, only: LDT_logunit
 
     ! Defaults
     implicit none
@@ -746,7 +746,7 @@ contains
     real, intent(in) :: gbacks(ncols,nrows)
     real, intent(in) :: gelevs(ncols,nrows)
     real, intent(inout) :: ganas(ncols,nrows)
-    logical,intent(in) :: skip_grid_points(ncols,nrows)
+    logical, intent(in) :: skip_grid_points(ncols,nrows)
 
     ! Local variables
     real :: t1, t2
@@ -840,7 +840,7 @@ contains
     integer :: total_create_count
     integer :: count_dups
     real :: mean, back, newlat, newlon, newelev
-    real :: ob_err_var, ob_err_corr_len
+    real :: ob_err_var
     character(len=10) :: network
     character(len=32) :: platform
     real :: diff
@@ -1701,9 +1701,9 @@ contains
 
     ! Arguments
     class(SNIP_bratseth_t), intent(inout) :: this
-    integer,intent(in) :: n
-    integer,intent(in) :: ncols
-    integer,intent(in) :: nrows
+    integer, intent(in) :: n
+    integer, intent(in) :: ncols
+    integer, intent(in) :: nrows
     real, intent(in) :: elevations(ncols,nrows)
     real, intent(in) :: threshold
 
@@ -1811,7 +1811,7 @@ contains
   subroutine SNIP_bratseth_resort_bad_obs(this)
 
     ! Imports
-    use LDT_logMod, only: LDT_logunit, LDT_endrun
+    use LDT_logMod, only: LDT_endrun
 
     ! Defaults
     implicit none
@@ -2048,9 +2048,6 @@ contains
   ! Sort observations by ID.  Based on legacy SNODEP subroutine COMBSORT
   ! See https://en.wikipedia.org/wiki/Comb_sort
   subroutine SNIP_bratseth_sort_obs_by_id(this)
-
-    ! Imports
-    use LDT_logmod, only : LDT_logunit
 
     ! Defaults
     implicit none
