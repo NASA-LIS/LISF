@@ -55,12 +55,12 @@ module SNIP_analysisMod
    public :: run_seaice_analysis_ssmis ! EMK
    public :: run_seaice_analysis_navy  ! EMK
    public :: getclimo                  ! Yeosang Yoon
- 
+
    ! Internal constant
    real, parameter :: FILL = -1
 
 contains
-   
+
    ! Private subroutine
    subroutine appclm (pntclm, pntold, pntanl, pntage)
 
@@ -116,7 +116,6 @@ contains
       ! Local variables
       real                            :: adjust ! ADJUSTMENT TO PREVIOUS SNOW ANALYSIS
 
-      
       ! IF SNOW IS PRESENT, DETERMINE THE DIFFERENCE BETWEEN YESTERDAY'S
       ! ANALYSIS AND CLIMATOLOGY.  MULTIPLY BY CLMADJ (SET IN TUNING FILE)
       ! AND ADJUST THE ANALYSIS.  IF YESTERDAY'S ANALYSIS = 0, LEAVE AT 0.
@@ -151,11 +150,10 @@ contains
 
    end subroutine appclm
 
-   ! EMK Search for nearest valid point.
-   ! Algorithm mimics subroutine search_extrap in GEOGRID, but code is
-   ! simpler.
-   function find_nearest_valid_value(nc,nr,data,missing,first_c,first_r) &
-        result(answer)
+   ! Search for nearest valid point.  Algorithm mimics subroutine
+   ! search_extrap in GEOGRID, but code is simpler.
+   function find_nearest_valid_value(nc, nr, data, missing, &
+        first_c, first_r) result(answer)
 
       ! Defaults
       implicit none
@@ -172,7 +170,7 @@ contains
       real :: answer
 
       ! Local variables
-      integer :: c,r,i,j
+      integer :: c, r, i, j
       integer :: maxi
       integer, allocatable :: c_list(:)
       integer, allocatable :: r_list(:)
@@ -242,14 +240,14 @@ contains
                c_list(j) = c
                r_list(j) = r+1
             end if
-         end if         
-      end do 
+         end if
+      end do
 
       if (found_valid) then
          distance = ((c-first_c)*(c-first_c)) + ((r-first_r)*(r-first_r))
          answer = data(c,r) ! First guess
          ! Search the remaining points we stored above for a closer answer.
-         do while (i .lt. maxi .and. i .lt. j) 
+         do while (i .lt. maxi .and. i .lt. j)
             i = i + 1
             c = c_list(i)
             r = r_list(i)
@@ -320,7 +318,7 @@ contains
       ! Arguments
       character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF SNIP CYCLE
       character(LDT_CONST_PATH_LEN), intent(in)   :: fracdir ! FRACTIONAL SNOW DIRECTORY PATH
-      
+
       ! Local constants
       character*8, parameter :: meshnp05 = '_0p05deg' ! MESH FOR 1/20 DEGREE FILE NAME
 
@@ -407,7 +405,7 @@ contains
 
       if (isfile) then
 
-         ! EMK New version.  Average snow onto LDT grid.  
+         ! New version.  Average snow onto LDT grid.
          do j_0p05deg = 1, jgridf
             rlat = -89.975 + (j_0p05deg-1)*0.05
             do i_0p05deg = 1, igridf
@@ -551,7 +549,7 @@ contains
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: elevations(nc,nr)
-      
+
       ! Local variables
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
       character*4                 :: file_ext         ! LAST PORTION OF FILE NAME
@@ -626,7 +624,7 @@ contains
          end do ! c
       end do ! r
 
-      ! EMK Copy LDT latitude data to PTLAT array
+      ! Copy LDT latitude data to PTLAT array
       do r = 1,nr
          do c = 1 ,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
@@ -634,7 +632,7 @@ contains
          end do ! i
       end do ! j
 
-      ! EMK Copy LDT longitude data to PTLON array
+      ! Copy LDT longitude data to PTLON array
       do r = 1,nr
          do c = 1 ,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
@@ -642,7 +640,7 @@ contains
          end do ! i
       end do ! j
 
-      ! EMK Copy LDT terrain data to elevat array
+      ! Copy LDT terrain data to elevat array
       do r = 1,nr
          do c = 1 ,nc
             SNIP_arrays%elevat(c,r) = elevations(c,r)
@@ -655,7 +653,7 @@ contains
       call putget_int1 (snow_poss_0p25deg, 'r', file_path, program_name,     &
            routine_name, igrid, jgrid)
 
-      ! Interpolate the "snow possible" mask to the LDT grid.  
+      ! Interpolate the "snow possible" mask to the LDT grid.
       ! For simplicity, just use the value of the 0.25 deg grid box that the
       ! LDT grid point is within.
       SNIP_arrays%snow_poss(:,:) = 0
@@ -763,11 +761,12 @@ contains
       !*******************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit
       use LDT_snipMod, only: snip_settings
-      use map_utils ! EMK
+      use map_utils
       use SNIP_paramsMod
-      use SNIP_utilMod ! EMK
+      use SNIP_utilMod
 
       ! Defaults
       implicit none
@@ -775,7 +774,7 @@ contains
       ! Arguments
       character*10,  intent(in)   :: date10                ! DATE-TIME GROUP OF CYCLE
       integer, intent(in)         :: month                 ! CURRENT MONTH (1-12)
-      character*255, intent(in)   :: sfcobs                ! PATH TO DBPULL SNOW OBS DIRECTORY
+      character(LDT_CONST_PATH_LEN), intent(in) :: sfcobs  ! PATH TO DBPULL SNOW OBS DIRECTORY
       character*5,   intent(out)  :: netid       (:)       ! NETWORK ID OF AN OBSERVATION
       character*32,   intent(out)  :: staid       (:)       ! STATION ID OF AN OBSERVATION
 
@@ -796,7 +795,7 @@ contains
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*4                 :: msgval                ! ERROR MESSAGE VALUE
       character*90                :: message     (msglns)  ! ERROR MESSAGE
-      character*255               :: obsfile               ! NAME OF OBSERVATION TEXT FILE
+      character(LDT_CONST_PATH_LEN) :: obsfile               ! NAME OF OBSERVATION TEXT FILE
       character*5                 :: obsnet                ! RETURNED OBS STATION NETWORK
       character*32                 :: obssta                ! RETURNED OBS STATION ID
       character*5,   allocatable  :: oldnet      (:)       ! ARRAY OF NETWORKS FOR OLDSTA
@@ -844,7 +843,7 @@ contains
       allocate (oldsta (snip_settings%maxsobs))
 
       yyyymmddhh = date10
-      
+
       ! INITIALIZE VARIABLES.
       depth        = missing
       istat        = 0
@@ -985,7 +984,6 @@ contains
                            stacnt         = stacnt + 1
                            stctp1         = stacnt + 1
 
-                           
                            ! IF DEPTH IS MISSING, NOT REPORTED, OR INDETERMINATE,
                            ! AND STATE OF GROUND STATES NO SNOW, STORE STATION
                            ! NUMBER AND INCREMENT THE COUNTERS.
@@ -1035,7 +1033,7 @@ contains
                      endif climo_check
 
                   else temp_check
-                     
+
                      ! THE TEMPERATURE THRESHOLD HAS BEEN EXCEEDED, SO IF OB IS
                      ! ACCURATE, IT'S UNREALISTIC THIS STATION HAS SNOW.
                      ! IF NOT IN THE ARCTIC OR ANTARCTIC, SET AMOUNT TO 0,
@@ -1161,7 +1159,6 @@ contains
       return
 
       ! ERROR-HANDLING SECTION.
-
 5000  continue
       if (isopen) close (lunsrc(hemi))
       message(1) = '[ERR] ERROR ' // access_type // ' ' // trim (obsfile)
@@ -1245,18 +1242,19 @@ contains
       !*****************************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
       use SNIP_paramsMod
-      use SNIP_utilMod ! EMK
+      use SNIP_utilMod
 
       ! Defaults
       implicit none
 
       ! Arguments
       character*10,  intent(in)   :: date10                ! SNODEP DATE-TIME GROUP
-      character*255, intent(in)   :: stmpdir               ! SFC TEMP DIRECTORY PATH
+      character(LDT_CONST_PATH_LEN), intent(in) :: stmpdir ! SFC TEMP DIRECTORY PATH
       logical,       intent(out)  :: sfctmp_found          ! FLAG FOR SFC TEMP FILE FOUND
       real,          intent(out)  :: sfctmp_lis  ( : , : ) ! LIS SURFACE TEMPERATURE DATA
 
@@ -1265,7 +1263,7 @@ contains
 
       ! Local variables
       character*10                :: dtglis                ! LIS DATE-TIME GROUP
-      character*255               :: file_stmp             ! FULLY-QUALIFIED SFCTMP FILE NAME
+      character(LDT_CONST_PATH_LEN) :: file_stmp ! FULLY-QUALIFIED SFCTMP FILE NAME
       character*7                 :: iofunc                ! ACTION TO BE PERFORMED
       character*90                :: message     (msglns)  ! ERROR MESSAGE
 
@@ -1279,7 +1277,7 @@ contains
       type(proj_info) :: lis_0p25deg_proj
       real :: ri,rj,rlat,rlon
       integer :: i_0p25deg, j_0p25deg, gindex, r, c
-      
+
       data routine_name / 'GETSFC      ' /
 
       allocate(sfctmp_lis_0p25deg(igrid, jgrid_lis))
@@ -1322,7 +1320,7 @@ contains
          end if
 
       end do file_search
-      
+
       ! IF NOT FOUND FOR PAST 24 HOURS, SEND ERROR MESSAGE.
       if (.not. sfctmp_found) then
          message(1) = '[WARN] LIS DATA NOT FOUND FOR PAST 24 HOURS'
@@ -1371,12 +1369,12 @@ contains
                end if
             end do ! c
          end do ! r
-                  
+
       end if
-      
+
       ! Clean up
       deallocate(sfctmp_lis_0p25deg)
-      
+
       return
 
       ! Format statements
@@ -1452,6 +1450,7 @@ contains
       !*******************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils ! EMK
@@ -1464,7 +1463,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10                ! DATE-TIME GROUP OF CYCLE
-      character*255, intent(in)   :: ssmis                 ! SSMIS FILE DIRECTORY PATH
+      character(LDT_CONST_PATH_LEN), intent(in) :: ssmis ! SSMIS FILE DIRECTORY PATH
 
       ! Local variables
       character*7                 :: access_type           ! FILE ACCESS TYPE
@@ -1472,7 +1471,7 @@ contains
       character*2                 :: chemifile   ( 2)      ! HEMISPHERE FOR FILENAME ('nh', 'sh')
       character*10                :: date10_hourly         ! DATE-TIME GROUP OF HOURLY DATA
       character*10                :: date10_prev           ! DATE-TIME GROUP OF LAST HOUR READ
-      character*255               :: file_path             ! SSMIS SNOW OR ICE EDR TEXT FILE
+      character(LDT_CONST_PATH_LEN) :: file_path           ! SSMIS SNOW OR ICE EDR TEXT FILE
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*90                :: message     (msglns)  ! ERROR MESSAGE
       character*4                 :: msgval                ! PLACEHOLDER FOR ERROR MESSAGE VALUES
@@ -1858,7 +1857,7 @@ contains
 
       data routine_name / 'GETSNO      '/
 
-      ! julhr must always be calculated 
+      ! julhr must always be calculated
       call date10_julhr (date10, julhr, program_name, routine_name)
 
       ! FIND THE DATE/TIME GROUP OF THE PREVIOUS CYCLE.
@@ -1874,53 +1873,53 @@ contains
          allocate(olddep_0p25deg(igrid,jgrid))
          allocate(oldcon_0p25deg(igrid,jgrid))
          allocate(oldmask_0p25deg(igrid,jgrid))
-         
+
          julhr_beg = julhr
-         
+
          cycle_loop : do while ((.not. found) .and. (tries .le. limit))
             julhr_beg = julhr_beg - 6
             call julhr_date10 (julhr_beg, date10_prev, program_name, &
                  routine_name)
             read (date10_prev(9:10), '(i2)', err=4200) runcycle
-            
+
             ! CHECK FOR PREVIOUS SNOW AGE.
-            ! IF 12Z DETERMINE IF MODIFIED DATA AVAILABLE. IF NOT, USE 
+            ! IF 12Z DETERMINE IF MODIFIED DATA AVAILABLE. IF NOT, USE
             ! UNMODIFIED.
             if (runcycle .eq. 12) then
-               
+
                prevdir = modif
                file_path = trim(prevdir) // 'snoage' // meshname // '.' //  &
                     date10_prev // '.dat'
-               
+
                inquire (file=file_path, exist=isfile)
-               
+
                if (isfile) then
                   found = .true.
                else
                   write (ldt_logunit,6000) trim (routine_name), date10_prev
                end if
-               
+
             end if
-            
+
             if (.not. found) then
                prevdir = unmod
                file_path = trim(prevdir) // 'snoage' // meshname // '.' //   &
                     date10_prev // '.dat'
-               
+
                inquire (file=file_path, exist=isfile)
-               
+
                if (isfile) found = .true.
-               
+
             end if
-            
+
             if (found) then
-               
+
                ! RETRIEVE PREVIOUS SNOW AGE.
                write(LDT_logunit,*) &
                     '[INFO] Reading ',trim(file_path)
                call putget_int (snoage_0p25deg, 'r', file_path, program_name, &
                     routine_name, igrid, jgrid)
-               
+
                ! RETRIEVE PREVIOUS SNOW DEPTH.
                file_path = trim(prevdir) // 'snodep' // meshname // '.' //    &
                     date10_prev // '.dat'
@@ -1928,7 +1927,7 @@ contains
                     '[INFO] Reading ',trim(file_path)
                call putget_real (olddep_0p25deg, 'r', file_path, program_name,&
                     routine_name, igrid, jgrid)
-               
+
                ! RETRIEVE PREVIOUS ICE AGE.
                file_path = trim(prevdir) // 'iceage' // meshname // '.' //    &
                     date10_prev // '.dat'
@@ -1936,7 +1935,7 @@ contains
                     '[INFO] Reading ',trim(file_path)
                call putget_int (iceage_0p25deg, 'r', file_path, program_name, &
                     routine_name, igrid, jgrid)
-               
+
                ! RETRIEVE PREVIOUS ICE CONCENTRATIONS.
                file_path = trim(prevdir) // 'icecon' // meshname // '.' //    &
                     date10_prev // '.dat'
@@ -1944,7 +1943,7 @@ contains
                     '[INFO] Reading ',trim(file_path)
                call putget_int (oldcon_0p25deg, 'r', file_path, program_name, &
                     routine_name, igrid, jgrid)
-               
+
                ! RETRIEVE PREVIOUS ICE MASK.
                file_path = trim(prevdir) // 'icemask' // meshname // '.' //   &
                     date10_prev // '.dat'
@@ -1952,12 +1951,12 @@ contains
                     '[INFO] Reading ',trim(file_path)
                call putget_int (oldmask_0p25deg, 'r', file_path, program_name,&
                     routine_name, igrid, jgrid)
-               
+
             else
                write (ldt_logunit,6200) trim (routine_name), date10_prev
                tries = tries + 1
             end if
-            
+
          end do cycle_loop
       end if
 
@@ -1976,17 +1975,17 @@ contains
          prevdir = modif
          limit   = 5
          tries   = 1
-         
+
          cycle12_loop : do while ((.not. found) .and. (tries .le. limit))
-            
+
             julhr = julhr - 24
             call julhr_date10 (julhr, date10_prev, program_name, routine_name)
-            
+
             ! RETRIEVE PREVIOUS 12Z SNOW AGE.
             ! DETERMINE IF MODIFIED DATA AVAILABLE. IF NOT, USE UNMODIFIED.
             file_path = trim(prevdir) // 'snoage' // meshname // '.' //       &
                  date10_prev // '.dat'
-            
+
             inquire (file=file_path, exist=isfile)
 
             if (isfile) then
@@ -1999,9 +1998,9 @@ contains
                inquire (file=file_path, exist=isfile)
                if (isfile) found = .true.
             end if
-            
+
             if (found) then
-               
+
                ! RETRIEVE PREVIOUS 12Z SNOW AND ICE AGE.
                write(LDT_logunit,*) &
                     '[INFO] Reading ',trim(file_path)
@@ -2102,9 +2101,9 @@ contains
       if (allocated(snoage12z_0p25deg)) deallocate(snoage12z_0p25deg)
       if (allocated(iceage12z_0p25deg)) deallocate(iceage12z_0p25deg)
 
-      ! EMK...When downscaling from 0.25 deg, some snow-free gaps appear at 
-      ! high-latitudes that cannot be corrected by the snow depth analysis 
-      ! due to a lack of observations.  As a kludge, we check for this and 
+      ! When downscaling from 0.25 deg, some snow-free gaps appear at
+      ! high-latitudes that cannot be corrected by the snow depth analysis
+      ! due to a lack of observations.  As a kludge, we check for this and
       ! replace with climo values.
       do r = 1,nr
          do c = 1, nc
@@ -2117,7 +2116,7 @@ contains
                SNIP_arrays%oldmask(c,r) = 1
                if (landice(c,r) > 0.5) then
                   SNIP_arrays%snoage(c,r) = maxage
-                  SNIP_arrays%snoage12z(c,r) = maxage                
+                  SNIP_arrays%snoage12z(c,r) = maxage
                else
                   SNIP_arrays%snoage(c,r) = 1
                   SNIP_arrays%snoage12z(c,r) = 1
@@ -2151,9 +2150,9 @@ contains
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use SNIP_netcdfMod, only: SNIP_read_netcdf, &
            SNIP_read_netcdf_12z
+      use SNIP_paramsMod, only: msglns, program_name
       use SNIP_utilMod, only: abort_message, date10_julhr, &
            julhr_date10
-      use SNIP_paramsMod, only: msglns, program_name
 
       ! Defaults
       implicit none
@@ -2292,6 +2291,7 @@ contains
       !*******************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
@@ -2304,15 +2304,15 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10           ! SNODEP DATE-TIME GROUP
-      character*255, intent(in)   :: stmpdir          ! SFC TEMPERATURE DIRECTORY PATH
-      character*255, intent(in)   :: sstdir
+      character(LDT_CONST_PATH_LEN), intent(in)   :: stmpdir          ! SFC TEMPERATURE DIRECTORY PATH
+      character(LDT_CONST_PATH_LEN), intent(in)   :: sstdir
 
       ! Local constants
       integer, parameter          :: sst_size = sst_igrid * sst_jgrid  ! SST ARRAY SIZE
 
       ! Local variables
       character*10                :: date10_sst       ! SST DATE-TIME GROUP
-      character*255               :: file_binary      ! FULLY-QUALIFIED BINARY NAME
+      character(LDT_CONST_PATH_LEN) :: file_binary      ! FULLY-QUALIFIED BINARY NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
       !character*90                :: message (msglns) ! ERROR MESSAGE
       character*255                :: message (msglns) ! ERROR MESSAGE
@@ -2332,7 +2332,7 @@ contains
       integer :: gindex,c,r
       real :: rlat,rlon,ri,rj
       integer :: nc,nr
-      character*255 :: file_grib
+      character(LDT_CONST_PATH_LEN) :: file_grib
       integer :: grstat
 
       data routine_name           / 'GETSST      '/
@@ -2386,7 +2386,6 @@ contains
                  routine_name, sst_igrid, sst_jgrid )
          else
             write(ldt_logunit,*)'[WARN] Cannot find ', trim(file_binary)
-            !EMK 20220113...Reinstated GRIB1 support
             file_grib = trim(sstdir) &
                  // 'US058GOCN-GR1mdl.0043_0200_00000A0LT' &
                  // date10_sst &
@@ -2499,7 +2498,7 @@ contains
             end if
          end do ! c
       end do ! r
-      
+
       ! Clean up
       deallocate(sst_0p25deg)
 
@@ -2565,6 +2564,7 @@ contains
       !*******************************************************************************
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use LDT_snipMod, only: snip_settings
@@ -2578,14 +2578,14 @@ contains
 
       ! Argments
       character(10), intent(in)   :: date10           ! DATE-TIME GROUP OF SNODEP CYCLE
-      character(255), intent(in)  :: viirsdir         ! FRACTIONAL SNOW DIRECTORY PATH
+      character(LDT_CONST_PATH_LEN), intent(in) :: viirsdir ! FRACTIONAL SNOW DIRECTORY PATH
 
       ! Local variables
       character(2)                :: cyclhr           ! CYCLE HOUR
 
       character(10)               :: datefr           ! DATE-TIME GROUP OF SNOW COVER
-      character(255)              :: snomap_path      ! FULLY-QUALIFIED SNOMAP FILE NAME
-      character(255)              :: snoage_path      ! FULLY-QUALIFIED SNOAGE FILE NAME
+      character(LDT_CONST_PATH_LEN) :: snomap_path ! FULLY-QUALIFIED SNOMAP FILE NAME
+      character(LDT_CONST_PATH_LEN) :: snoage_path ! FULLY-QUALIFIED SNOAGE FILE NAME
       character(7)                :: iofunc           ! ACTION TO BE PERFORMED
       character(90)               :: message (msglns) ! ERROR MESSAGE
       character(20)               :: routine_name     ! NAME OF THIS SUBROUTINE
@@ -2608,7 +2608,7 @@ contains
       type(proj_info) :: viirs_0p005deg_proj
       real :: min_snow_count, min_bare_count
 
-! EMK...Must have LIBGEOTIFF support enabled!
+! Must have LIBGEOTIFF support enabled!
 #ifndef USE_LIBGEOTIFF
       write(LDT_logunit,*)'[ERR] LDT not compiled with LIBGEOTIFF support!'
       write(LDT_logunit,*)'[ERR] Cannot read VIIRS file!'
@@ -2907,14 +2907,14 @@ contains
                skip_grid_points(c,r) = .true.
                ! EMK...Make sure prior analysis has no snow here
                SNIP_arrays%snoanl(c,r) = -1
-               SNIP_arrays%snoage(c,r) = -1               
+               SNIP_arrays%snoage(c,r) = -1
             else if (landice(c,r) > 0.5) then
                ! Use LDT landcover to identify glaciers
                skip_grid_points(c,r) = .true.
             else if (SNIP_arrays%snow_poss(c,r) == 0) then
                ! Since the snow_poss mask is coarse resolution (0.25 deg),
-               ! there may be artificial snow-free gaps introduced when 
-               ! downscaling.  So, we will allow snow analysis to run in high 
+               ! there may be artificial snow-free gaps introduced when
+               ! downscaling.  So, we will allow snow analysis to run in high
                ! latitudes for non-glacier regions. Low and mid-latitudes
                ! will still be screened out.
                gindex = c+(r-1)*nc
@@ -2923,7 +2923,7 @@ contains
                   skip_grid_points(c,r) = .true.
                   ! No snow allowed, so zero out these fields now
                   SNIP_arrays%snoanl(c,r) = 0
-                  SNIP_arrays%snoage(c,r) = 0               
+                  SNIP_arrays%snoage(c,r) = 0
                end if
             end if
          end do ! c
@@ -2944,7 +2944,7 @@ contains
             if (skip_grid_points(c,r)) cycle
 
             ! Get SSMIS value
-            satdep = misanl 
+            satdep = misanl
             if (SNIP_arrays%ssmis_depth(c,r) >= 0) then
                satdep = SNIP_arrays%ssmis_depth(c,r)
             end if
@@ -2968,14 +2968,14 @@ contains
                   end if
                end if
             end if
-            
+
          end do ! c
       end do ! r
 
       ! Update the snow mask using the fractional snow
       if (snip_settings%usefrac) then
          do r = 1, nr
-            do c = 1, nc     
+            do c = 1, nc
                if (skip_grid_points(c,r)) cycle
                if (SNIP_arrays%snofrac(c,r) > snip_settings%minfrac) then
                   snomask(c,r) = 1
@@ -3029,7 +3029,6 @@ contains
 
       ! At this point, we have our background field and snow mask.
       ! Start QC of surface observations.
-
       write(LDT_logunit,*) &
            '[INFO] Reject obs that are missing elevations'
       call bratseth%run_missing_elev_qc()
@@ -3045,12 +3044,12 @@ contains
            '[INFO] Reject obs with elevations too different from LDT'
       call bratseth%run_elev_qc(1,nc,nr,elevations,&
            snip_settings%elevqc_diff_threshold)
-      
+
       write(LDT_logunit,*)'[INFO] Check for duplicate obs'
       call bratseth%run_dup_qc()
-                  
-      ! Interpolate to the observations.  For simplicity, just use the value 
-      ! in the grid box.
+
+      ! Interpolate to the observations.  For simplicity, just use the
+      ! value in the grid box.
       num_good_obs = bratseth%count_good_obs()
       snomask_reject_count =0
       bad_back_count = 0
@@ -3093,7 +3092,7 @@ contains
             else
                call bratseth%set_back(job,SNIP_arrays%snoanl(c,r))
             end if
-         else 
+         else
             call bratseth%set_back(job,SNIP_arrays%snoanl(c,r))
          end if
       end do ! j
@@ -3114,7 +3113,7 @@ contains
            '[INFO] Reject obs with snow depths too low compared to background'
       call bratseth%run_skewed_back_qc(snip_settings%skewed_backqc_threshold)
 
-      ! Reject obs that differ "too much" from background.  
+      ! Reject obs that differ "too much" from background.
       num_good_obs = bratseth%count_good_obs()
       write(LDT_logunit,*) &
            '[INFO] Reject obs that differ too much from background'
@@ -3236,39 +3235,39 @@ contains
 
    ! Run snow analysis over glaciers
    subroutine run_snow_analysis_glacier(runcycle, nc, nr, landmask, landice)
-      
+
       ! Imports
       use LDT_snipMod, only: snip_settings
       use SNIP_arraysMod, only: SNIP_arrays
       use SNIP_paramsMod
-      
+
       ! Defaults
       implicit none
-      
+
       ! Arguments
       integer, intent(in) :: runcycle
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landmask(nc,nr)
       real, intent(in) :: landice(nc,nr)
-      
+
       ! Local variables
       logical :: glacier
       real :: rthresh
       real :: arctlatr
-      integer :: c,r
-      
+      integer :: c, r
+
       ! NOTE: Do not overwrite snoanl with olddep, as that will destroy
       ! analysis over non-glaciers
       rthresh = float(snip_settings%thresh) / 10.0
       arctlatr = float(arctlat) / 100.0
 
       ! HANDLE GLACIERS.  Glaciers may occur on land points with
-      ! snow_poss==0.  Greenland and Antarctica are likely to have 
+      ! snow_poss==0.  Greenland and Antarctica are likely to have
       ! glaciers, and a lat/lon check is included to preliminarily put
       ! them in.  VIIRS can further remove or add points.  Once the
       ! glaciers are identified, adjustments to climatology are made at
-      ! 12Z, unless the glacier first appearsx in this case, a fake
+      ! 12Z, unless the glacier first appears; in this case, a fake
       ! depth is added.
       do r = 1, nr
          do c = 1,nc
@@ -3279,7 +3278,7 @@ contains
             if (landmask(c,r) < 0.5) then
                ! EMK...Make sure prior analysis has no snow here
                SNIP_arrays%snoanl(c,r) = -1
-               SNIP_arrays%snoage(c,r) = -1               
+               SNIP_arrays%snoage(c,r) = -1
                cycle
             end if
 
@@ -3292,7 +3291,7 @@ contains
 
             ! This is now a possible glacier point.  Initialize the analysis
             ! from the previous value.
-            SNIP_arrays%snoanl(c,r) = SNIP_arrays%olddep(c,r)            
+            SNIP_arrays%snoanl(c,r) = SNIP_arrays%olddep(c,r)
             ! EMK...In case of landmask disagreements between 0.25 deg
             ! legacy SNODEP and LDT grid
             if (SNIP_arrays%snoanl(c,r) < 0) then
@@ -3303,7 +3302,7 @@ contains
             ! Glaciers are adjusted to climatalogy over the long term (at
             ! 12Z).  However, the adjustment only works if the prior analysis
             ! has positive depth.  So we check that first before applying.
-            ! If no prior snow depth exists, the glacier is "new"; insert a 
+            ! If no prior snow depth exists, the glacier is "new"; insert a
             ! fake value for the current analysis.
             if (runcycle .eq. 12) then
                call appclm(SNIP_arrays%climo(c,r), &
@@ -3311,7 +3310,8 @@ contains
                     SNIP_arrays%snoanl(c,r), &
                     SNIP_arrays%snoage(c,r))
             end if
-            ! It is possible that climo adjustment removes snow.  In that case,
+            ! It is possible that climo adjustment removes snow.  In
+            ! that case,
             ! put in a bogus value.
             if (SNIP_arrays%snoanl(c,r) .le. 0) then
                SNIP_arrays%snoanl(c,r) = snip_settings%unkdep
@@ -3344,7 +3344,7 @@ contains
 
       ! Local variables
       integer :: hemi
-      integer :: c,r
+      integer :: c, r
 
       do r = 1, nr
          do c = 1, nc
@@ -3375,11 +3375,11 @@ contains
                SNIP_arrays%icemask(c,r) = 0
                SNIP_arrays%icecon(c,r) = 0
                SNIP_arrays%iceage(c,r) = 0
-               
+
             else if (abs(SNIP_arrays%ptlat(c,r)) >= &
                  snip_settings%icelat(month,hemi)) then
                ! Force sea ice in high latitudes, a function of month and
-               ! hemisphere, unless valid SSMIS says otherwise.  
+               ! hemisphere, unless valid SSMIS says otherwise.
                if (SNIP_arrays%ssmis_icecon(c,r) >= 0 .and. &
                     SNIP_arrays%ssmis_icecon(c,r) .le. 100) then
                   SNIP_arrays%icecon(c,r) = SNIP_arrays%ssmis_icecon(c,r)
@@ -3402,7 +3402,7 @@ contains
                end if
 
             else
-               ! Mid-latitude case.  
+               ! Mid-latitude case.
                if ( (SNIP_arrays%ssmis_icecon(c,r) > &
                     snip_settings%minice) .and. &
                     (SNIP_arrays%ssmis_icecon(c,r) .le. 100)) then
@@ -3437,7 +3437,7 @@ contains
                SNIP_arrays%icecon(c,r) = 0
                SNIP_arrays%iceage(c,r) = 0
             end if
-            
+
             ! Update age if this is a 12Z analysis
             if (SNIP_arrays%icemask(c,r) == icepnt) then
                if ( runcycle == 12 .and. &
@@ -3447,9 +3447,9 @@ contains
                        min( (SNIP_arrays%iceage(c,r)+1), maxage)
                end if
             end if
-               
+
             ! EMK...Sanity check iceage.  Make sure not missing if
-            ! icemask is defined.  This can happen if SNIP is 
+            ! icemask is defined.  This can happen if SNIP is
             ! coldstarted at a time other than 12Z.
             if (runcycle .ne. 12) then
                if (SNIP_arrays%icemask(c,r) .ne. -1) then
@@ -3474,7 +3474,7 @@ contains
 
       ! Defaults
       implicit none
-      
+
       ! Arguments
       integer, intent(in) :: month
       integer, intent(in) :: runcycle
@@ -3489,7 +3489,7 @@ contains
 
       do r = 1, nr
          do c = 1, nc
-            
+
             ! Only run over water
             if (landmask(c,r) > 0.5) then
                SNIP_arrays%icecon(c,r) = -1
@@ -3497,7 +3497,7 @@ contains
                SNIP_arrays%iceage(c,r) = -1
                cycle
             end if
-      
+
             ! Find hemisphere
             if (SNIP_arrays%ptlat(c,r) >= 0) then
                hemi = 1
@@ -3528,7 +3528,7 @@ contains
                SNIP_arrays%icemask(c,r) = 0
                SNIP_arrays%icecon(c,r) = 0
                SNIP_arrays%iceage(c,r) = 0
-               
+
             else if (abs(SNIP_arrays%ptlat(c,r)) >= &
                  snip_settings%icelat(month,hemi)) then
                ! GOFS is missing at this point, and we are in high latitudes.
@@ -3555,7 +3555,7 @@ contains
                   SNIP_arrays%iceage(c,r) = 0
                end if
             end if
-               
+
             ! Apply the SST filter unless we used the GOFS sea ice value.
             if (check_sst) then
                if (SNIP_arrays%sst(c,r) > 275) then
@@ -3564,7 +3564,7 @@ contains
                   SNIP_arrays%iceage(c,r) = 0
                end if
             end if
-            
+
             ! Update age if this is a 12Z analysis
             if (SNIP_arrays%icemask(c,r) == icepnt) then
                if ( runcycle == 12 .and. &
@@ -3576,7 +3576,7 @@ contains
             end if
 
             ! EMK...Sanity check iceage.  Make sure not missing if
-            ! icemask is defined.  This can happen if SNIP is 
+            ! icemask is defined.  This can happen if SNIP is
             ! coldstarted at a time other than 12Z.
             if (runcycle .ne. 12) then
                if (SNIP_arrays%icemask(c,r) .ne. -1) then
@@ -3588,7 +3588,7 @@ contains
 
          end do ! c
       end do ! r
-         
+
     end subroutine run_seaice_analysis_navy
 
    ! Private subroutine
@@ -3703,6 +3703,7 @@ contains
    subroutine getclimo (month, static)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_verify, ldt_logunit
       use SNIP_arraysMod, only: SNIP_arrays
       use netcdf
@@ -3712,11 +3713,11 @@ contains
 
       ! Arguments
       integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
-      character*255, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+      character(LDT_CONST_PATH_LEN), intent(in) :: static ! STATIC FILE DIRECTORY PATH
 
       ! Local variables
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
-      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character(LDT_CONST_PATH_LEN) :: file_path ! FULLY-QUALIFIED FILE NAME
 
       data cmonth        / '_jan', '_feb', '_mar', '_apr', '_may', '_jun', &
           '_jul', '_aug', '_sep', '_oct', '_nov', '_dec' /
