@@ -306,6 +306,9 @@ contains
       integer :: gindex
       real :: rlat
 
+      external :: upscaleByAveraging_input
+      external :: upscaleByAveraging
+
       ! Find a valid file on the file system
       call find_gofs_sst_file(rootdir, yyyy, mm, dd, hh, fh, filename)
       if (trim(filename) == "NONE") then
@@ -567,6 +570,9 @@ contains
       real :: griddesci(50)
       real, allocatable :: n11(:)
       integer :: gindex, nlat
+
+      external :: upscaleByAveraging_input
+      external :: upscaleByAveraging
 
       ! Sanity check the region
       if (region .eq. 'ARC') then
