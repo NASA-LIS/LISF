@@ -58,7 +58,7 @@ contains
       integer,            intent(in)  :: option
 
       ! Local variables
-      integer                         :: eof, i, j, n, nArr, nFile, x, y
+      integer                         :: eof, i, nArr, nFile
       character(len=LDT_CONST_PATH_LEN) :: filename, nc_filename
       integer,           dimension(:), allocatable :: surflag0, surflag, &
            satid0, satid
@@ -240,7 +240,6 @@ contains
       ! Imports
       use eccodes
       use LDT_constantsMod, only: LDT_CONST_PATH_LEN
-      use LDT_logMod, only: ldt_logunit
 
       ! Defaults
       implicit none
@@ -262,7 +261,7 @@ contains
 
       ! Local variables
       integer                        :: ifile, iret, ibufr
-      integer                        :: i, option, n
+      integer                        ::  n
       integer                        :: numObs
       integer                        :: yyyy, mm, dd, hh, id
       character(len=10)              :: sbufr
@@ -435,7 +434,6 @@ contains
 
       ! Imports
       use LDT_constantsMod, only: LDT_CONST_PATH_LEN
-      use LDT_logMod, only: ldt_logunit
       use LDT_SNIPMod, only: SNIP_settings
 
       ! Defaults
@@ -463,11 +461,11 @@ contains
       ! Local variables
       integer                                        :: i
       character(len=LDT_CONST_PATH_LEN)              :: ff_filename
-      real(kind=8)                                   :: pd19,pd91,tt,si91, &
+      real(kind=8)                                   :: pd19,pd91,tt, &
            scat,sc37,sc91,scx
       logical                                        :: flag
       real                                           :: lon_grid(nc), &
-           lat_grid(nr), ratio
+           lat_grid(nr)
       real                                           :: ff(nc,nr)
       integer                                        :: plat, plon
 
@@ -1028,7 +1026,7 @@ contains
       character(LDT_CONST_PATH_LEN), intent(in) :: ssmis_in
 
       ! Local variables
-      integer            :: eof, n, i, j, k
+      integer            :: n, i, j, k
       character(len=LDT_CONST_PATH_LEN) :: file_path, cmd
       character*10                   :: date10_prev
       integer                        :: hr, st_hr, julhr
@@ -1038,6 +1036,8 @@ contains
       ! EMK
       character*12                   :: program_name          ! NAME OF CALLING PROGRAM
       character*20                   :: routine_name          ! NAME OF THIS ROUTINE
+
+      external :: system
 
       ! define data values
       data satid            / '16', '17', '18' /
