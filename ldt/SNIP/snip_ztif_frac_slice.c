@@ -14,29 +14,29 @@
 /* EMK Only compile of LIBGEOTIFF support is enabled */
 #ifdef USE_LIBGEOTIFF
 
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "geotiffio.h"
 #include "xtiffio.h"
-#include "ztif.h"
+#include "snip_ztif.h"
 
-/* A general-use function for just pulling the ZTIF data out at native 
+/* A general-use function for just pulling the ZTIF data out at native
    resolution.  Error status is returned in the ierr argument--values
    other than 0 indicate an error occurred.
 
    Eric Kemp, NASA GSFC/SSAI */
 
 void
-FTN(ztif_frac_slice)(int *map_buffer_slice,
-                 int *age_buffer_slice,
-                 const int *nc_native,
-                 const int *nr_native,
-                 char *map_path,
-                 char *age_path,
-                 const int *offset,
-                 const int *jslice,
-                 int* ierr)
+FTN(snip_ztif_frac_slice)(int *map_buffer_slice,
+                          int *age_buffer_slice,
+                          const int *nc_native,
+                          const int *nr_native,
+                          char *map_path,
+                          char *age_path,
+                          const int *offset,
+                          const int *jslice,
+                          int* ierr)
 {
 
     /* Local variables */
@@ -48,10 +48,10 @@ FTN(ztif_frac_slice)(int *map_buffer_slice,
     int j;
     int i;
 
-    /* Static variables for keeping data in memory--and files open--between 
+    /* Static variables for keeping data in memory--and files open--between
        invocations */
-    static struct ZTIF map;
-    static struct ZTIF age;
+    static struct SNIP_ZTIF map;
+    static struct SNIP_ZTIF age;
 
     /* For convenience */
     nc = (*nc_native);
@@ -65,38 +65,38 @@ FTN(ztif_frac_slice)(int *map_buffer_slice,
     if (*jslice == 1) {
 
 	/* Open the snow map file and check the dimensions */
-        status = ZTIFOpen(&map, map_path, "r");
+        status = SNIP_ZTIFOpen(&map, map_path, "r");
         if (status != E_SUCCESS) {
             *ierr = 1;
             return;
         }
         if (nr != map.length) {
-            ZTIFClose(&map);
+            SNIP_ZTIFClose(&map);
             *ierr = 1;
             return;
         }
 	if (nc != map.width) {
-            ZTIFClose(&map);
+            SNIP_ZTIFClose(&map);
             *ierr = 1;
             return;
         }
 
 	/* Open the age file and check the dimensions  */
-        status = ZTIFOpen(&age, age_path, "r");
+        status = SNIP_ZTIFOpen(&age, age_path, "r");
         if (status != E_SUCCESS) {
-            ZTIFClose(&map);
+            SNIP_ZTIFClose(&map);
             *ierr = 2;
             return;
-        }       
+        }
         if (nr != age.length) {
-            ZTIFClose(&map);
-            ZTIFClose(&age);
+            SNIP_ZTIFClose(&map);
+            SNIP_ZTIFClose(&age);
             *ierr = 2;
             return;
         }
         if (nc != age.width) {
-            ZTIFClose(&map);
-            ZTIFClose(&age);
+            SNIP_ZTIFClose(&map);
+            SNIP_ZTIFClose(&age);
             *ierr = 2;
             return;
         }
@@ -106,38 +106,38 @@ FTN(ztif_frac_slice)(int *map_buffer_slice,
        converting to int.  We cannot pull the whole dataset due to massive
        size */
     j = (*jslice) - 1; /* Switch from Fortran to C convention */
-    status = ZTIFReadline(&map, j);
+    status = SNIP_ZTIFReadline(&map, j);
     if (status != E_SUCCESS) {
-        ZTIFClose(&map);
-        ZTIFClose(&age);
+        SNIP_ZTIFClose(&map);
+        SNIP_ZTIFClose(&age);
         *ierr = 1;
         return;
     }
     for (i=0; i < map.width; i++) {
         map_pixel = ((uint8*) map.rbuf)[i];
         map_buffer_slice[i] = (int) map_pixel;
-    }   
+    }
 
     /* Copy the age data from the file to the output argument, converting
        to int */
     j = (*jslice) - 1;
-    status = ZTIFReadline(&age, j);
+    status = SNIP_ZTIFReadline(&age, j);
     if (status != E_SUCCESS) {
-        ZTIFClose(&map);
-        ZTIFClose(&age);
+        SNIP_ZTIFClose(&map);
+        SNIP_ZTIFClose(&age);
         *ierr = 2;
         return;
     }
     for (i=0; i < age.width; i++) {
         age_pixel = ((uint8*) age.rbuf)[i];
-        age_buffer_slice[i] = (int) age_pixel + (*offset); 
-    }   
+        age_buffer_slice[i] = (int) age_pixel + (*offset);
+    }
 
     /* If this is the final row, this is also the last function invocation.
        Therefore, we close the files before exiting. */
     if (*jslice == nr) {
-        ZTIFClose(&map);
-        ZTIFClose(&age);
+        SNIP_ZTIFClose(&map);
+        SNIP_ZTIFClose(&age);
     }
 
     *ierr = 0;
@@ -146,17 +146,17 @@ FTN(ztif_frac_slice)(int *map_buffer_slice,
 
 #else
 
-/* Dummy version of ztif_frac_slice */
+/* Dummy version of snip_ztif_frac_slice */
 void
-ztif_frac_slice_(int *map_buffer_slice,
-                 int *age_buffer_slice,
-                 const int *nc_native,
-                 const int *nr_native,
-                 char *map_path,
-                 char *age_path,
-                 const int *offset,
-                 const int *jslice,
-                 int* ierr)
+snip_ztif_frac_slice_(int *map_buffer_slice,
+                      int *age_buffer_slice,
+                      const int *nc_native,
+                      const int *nr_native,
+                      char *map_path,
+                      char *age_path,
+                      const int *offset,
+                      const int *jslice,
+                      int* ierr)
 {
     *ierr = 3;
     return;
