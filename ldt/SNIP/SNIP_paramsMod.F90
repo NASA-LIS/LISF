@@ -44,7 +44,7 @@
 !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
 !**  09 Mar 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
 !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
-!**  07 Jul 25  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
+!**  09 Jul 25  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
 !**
 !*******************************************************************************
 !*******************************************************************************
@@ -53,37 +53,37 @@
 
 module SNIP_paramsMod
 
-   ! Defaults
-   implicit none
-   public
+  ! Defaults
+  implicit none
+  public
 
-   character*12, parameter     :: program_name = 'SNIP'        ! NAME OF MAIN PROGRAM
+  character*12, parameter     :: program_name = 'SNIP'        ! NAME OF MAIN PROGRAM
 
-   integer, parameter    :: msglns      = 20                     ! MAXIMUM NUMBER OF LINES IN ERROR MESSAGE
+  integer, parameter    :: msglns      = 20                     ! MAXIMUM NUMBER OF LINES IN ERROR MESSAGE
 
-   ! Parameters for reading legacy 0.25 deg SNODEP product
-   character*8,  parameter     :: meshname = '_0p25deg'          ! GRID AND MESH FOR DATA FILE NAMES
-   integer, parameter    :: mesh        = 4                      ! EQUIDISTANT CYL GRID MESH (4 = 1/4 DEGREE)
-   integer, parameter    :: igrid       = 360 * mesh             ! SIZE OF GRID IN THE I-DIRECTION
-   integer, parameter    :: jgrid       = 180 * mesh             ! SIZE OF GRID IN THE J-DIRECTION
-   real,    parameter    :: begin_lat   = -89.875                ! LATITUDE OF LOWER LEFT CORNER OF GRID
-   real,    parameter    :: begin_lon   = -179.875               ! LONGITUDE OF LOWER LEFT CORNER OF GRID
+  ! Parameters for reading legacy 0.25 deg SNODEP product
+  character*8,  parameter     :: meshname = '_0p25deg'          ! GRID AND MESH FOR DATA FILE NAMES
+  integer, parameter    :: mesh        = 4                      ! EQUIDISTANT CYL GRID MESH (4 = 1/4 DEGREE)
+  integer, parameter    :: igrid       = 360 * mesh             ! SIZE OF GRID IN THE I-DIRECTION
+  integer, parameter    :: jgrid       = 180 * mesh             ! SIZE OF GRID IN THE J-DIRECTION
+  real,    parameter    :: begin_lat   = -89.875                ! LATITUDE OF LOWER LEFT CORNER OF GRID
+  real,    parameter    :: begin_lon   = -179.875               ! LONGITUDE OF LOWER LEFT CORNER OF GRID
 
-   ! Parameter for reading legacy 0.25 deg degribbed LIS product
-   integer, parameter    :: jgrid_lis   = 150 * mesh             ! SIZE OF LIS GRID IN J-DIRECTION
+  ! Parameter for reading legacy 0.25 deg degribbed LIS product
+  integer, parameter    :: jgrid_lis   = 150 * mesh             ! SIZE OF LIS GRID IN J-DIRECTION
 
-   ! Parameters for reading legacy 0.25 deg US Navy SST product
-   integer, parameter    :: sst_igrid   = 1440                   ! SIZE OF SST GRID IN THE I-DIRECTION
-   integer, parameter    :: sst_jgrid   = 721                    ! SIZE OF SST GRID IN THE J-DIRECTION
+  ! Parameters for reading legacy 0.25 deg US Navy SST product
+  integer, parameter    :: sst_igrid   = 1440                   ! SIZE OF SST GRID IN THE I-DIRECTION
+  integer, parameter    :: sst_jgrid   = 721                    ! SIZE OF SST GRID IN THE J-DIRECTION
 
-   ! PARAMETERS NEEDED BY SNOW DEPTH ALGORITHM.
-   integer, parameter    :: arctlat     = 6650                   ! LATITUDE OF ARCTIC CIRCLE (*100)
-   real,    parameter    :: misanl      = -1.0                   ! MISSING ANALYSIS FLAG
-   integer, parameter    :: icepnt      = 1                      ! ICE FLAG (0 = NO ICE, 1 = ICE)
-   integer, parameter    :: maxage      = 365                    ! MAXIMUM SNOW AGE IN DAYS
-   integer, parameter    :: missing     = -1                     ! MISSING VALUE FLAG
-   integer, parameter    :: misval      = -99999998              ! CDMS MISSING VALUE FLAG
-   real,    parameter    :: snothresh   = 0.02                   ! THRESHOLD VALUE FOR TRACKING SNOW DEPTH
+  ! PARAMETERS NEEDED BY SNOW DEPTH ALGORITHM.
+  integer, parameter    :: arctlat     = 6650                   ! LATITUDE OF ARCTIC CIRCLE (*100)
+  real,    parameter    :: misanl      = -1.0                   ! MISSING ANALYSIS FLAG
+  integer, parameter    :: icepnt      = 1                      ! ICE FLAG (0 = NO ICE, 1 = ICE)
+  integer, parameter    :: maxage      = 365                    ! MAXIMUM SNOW AGE IN DAYS
+  integer, parameter    :: missing     = -1                     ! MISSING VALUE FLAG
+  integer, parameter    :: misval      = -99999998              ! CDMS MISSING VALUE FLAG
+  real,    parameter    :: snothresh   = 0.02                   ! THRESHOLD VALUE FOR TRACKING SNOW DEPTH
 
-   integer, parameter :: icedef = 95 ! Bogus value for ice concentration
+  integer, parameter :: icedef = 95 ! Bogus value for ice concentration
 end module SNIP_paramsMod
