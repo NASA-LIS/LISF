@@ -14,8 +14,8 @@
 ! Main SNIP driver
 subroutine SNIP_run(n)
 
-  !*****************************************************************************************
-  !*****************************************************************************************
+  !************************************************************************
+  !************************************************************************
   !**
   !**  NAME: SNOW DEPTH ANALYSIS MODEL
   !**
@@ -26,58 +26,68 @@ subroutine SNIP_run(n)
   !**
   !**  UPDATES
   !**  =======
-  !**  26 APR 95  INITIAL UNISYS VERSION.....................................SSGT CONRY/SYSM
+  !**  26 APR 95  INITIAL UNISYS VERSION....................SSGT CONRY/SYSM
   !**  09 FEB 96  CHANGED ARGUMENTS PASSED BETWEEN GETOBS, GETSNO, GETSMI,
   !**             AND PROCES DUE TO CHANGES DESCRIBED IN THEIR PROLOGUES.
-  !**             FORMATTED PRINT STATEMENTS........................DR KOPP, SSGT CONRY/SYSM
-  !**  23 OCT 97  ADDED INCLUDE OF TUNES PROC AND CALL TO RDTUNE.............SSGT CONRY/DNXM
-  !**  23 FEB 01  PORTED FROM UNISYS MAINFRAME..............................SSGT MILLER/DNXM
-  !**  30 JAN 03  ADDED ROUTINE BLACKLIST......................................MR GAYNO/DNXM
-  !**  09 JUL 03  REMOVED CALL TO GETSST; NOW PART OF NT2ICE...................MR GAYNO/DNXM
+  !**             FORMATTED PRINT STATEMENTS.......DR KOPP, SSGT CONRY/SYSM
+  !**  23 OCT 97  ADDED INCLUDE OF TUNES PROC AND CALL TO RDTUNE...........
+  !**             ..........................................SSGT CONRY/DNXM
+  !**  23 FEB 01  PORTED FROM UNISYS MAINFRAME.............SSGT MILLER/DNXM
+  !**  30 JAN 03  ADDED ROUTINE BLACKLIST.....................MR GAYNO/DNXM
+  !**  09 JUL 03  REMOVED CALL TO GETSST; NOW PART OF NT2ICE..MR GAYNO/DNXM
   !**  05 FEB 04  CHANGED GEOG RECORD LENGTH FROM 4-BYTE TO 2-BYTE WORD
-  !**             (INCORPORATED 18 APR 03 AER CHANGES)......................MR LEWISTON/DNXM
+  !**             (INCORPORATED 18 APR 03 AER CHANGES).....MR LEWISTON/DNXM
   !**  05 MAY 04  MERGED IN THE SSMIS NASA TEAM II SEA ICE CONCENTRATION
   !**             CAPABILITY.  CONVERTED TO FREE FORMAT FORTRAN 90 USING
-  !**             MODULES RATHER THAN COMMON BLOCKS.........................MR EYLANDER/DNXM
+  !**             MODULES RATHER THAN COMMON BLOCKS........MR EYLANDER/DNXM
   !**  21 OCT 04  PORTED TO CDFS II.  REMOVED GRIB SUBROUTINES SINCE
-  !**             CDFS II WRITING C++ GRIB ROUTINES.........................MR EYLANDER/DNXM
-  !**  21 MAR 05  REMOVED OBSOLETE ARRAY SMITMP.............................MR LEWISTON/DNXM
+  !**             CDFS II WRITING C++ GRIB ROUTINES........MR EYLANDER/DNXM
+  !**  21 MAR 05  REMOVED OBSOLETE ARRAY SMITMP............MR LEWISTON/DNXM
   !**  14 APR 05  SEPARATED SNOW AND ICE INTO SEPARATE ARRAYS.
-  !**             ADDED CALL TO GETICE......................................MR LEWISTON/DNXM
-  !**  07 JUN 05  REMOVED JULHR FROM GETOBS & GETSMI CALLS..................MR LEWISTON/DNXM
-  !**  08 MAY 09  ADDED AMSR-E SNOW. REMOVED SEA ICE....................MR LEWISTON/2WXG/WEA
-  !**  16 JUN 09  CONVERTED TO EQUIDISTANT CYLINDRICAL GRID.............MR LEWISTON/2WXG/WEA
-  !**  18 Dec 09  ADDED GRIB OUTPUT.....................................MR LEWISTON/16WS/WXE
-  !**  05 JAN 10  CHANGED SSMIS FROM SDRS TO EDRS.......................MR LEWISTON/16WS/WXE
-  !**  13 SEP 10  ADDED CALL TO GETSFC..................................MR LEWISTON/16WS/WXE
-  !**  29 APR 11  MOVED BLACKLIST AND VALIDATION TO DBPULL..............MR LEWISTON/16WS/WXE
-  !**  08 NOV 11  REMOVED AMSR-E AND PORTED TO LINUX....................MR LEWISTON/16WS/WXE
-  !**  20 MAR 12  SWITCHED OBS SOURCE FROM CDMS TO JMOBS................MR LEWISTON/16WS/WXE
-  !**  29 MAY 12  MOVED MODIFIED TEST FROM SCRIPT TO GETSNO.............MR LEWISTON/16WS/WXE
-  !**  07 NOV 12  ADDED FRACTIONAL SNOW.................................MR LEWISTON/16WS/WXE
+  !**             ADDED CALL TO GETICE.....................MR LEWISTON/DNXM
+  !**  07 JUN 05  REMOVED JULHR FROM GETOBS & GETSMI CALLS.................
+  !**             .........................................MR LEWISTON/DNXM
+  !**  08 MAY 09  ADDED AMSR-E SNOW. REMOVED SEA ICE...MR LEWISTON/2WXG/WEA
+  !**  16 JUN 09  CONVERTED TO EQUIDISTANT CYLINDRICAL GRID...............
+  !**             .....................................MR LEWISTON/2WXG/WEA
+  !**  18 Dec 09  ADDED GRIB OUTPUT....................MR LEWISTON/16WS/WXE
+  !**  05 JAN 10  CHANGED SSMIS FROM SDRS TO EDRS......MR LEWISTON/16WS/WXE
+  !**  13 SEP 10  ADDED CALL TO GETSFC.................MR LEWISTON/16WS/WXE
+  !**  29 APR 11  MOVED BLACKLIST AND VALIDATION TO DBPULL................
+  !**             .....................................MR LEWISTON/16WS/WXE
+  !**  08 NOV 11  REMOVED AMSR-E AND PORTED TO LINUX...MR LEWISTON/16WS/WXE
+  !**  20 MAR 12  SWITCHED OBS SOURCE FROM CDMS TO JMOBS..................
+  !**             .....................................MR LEWISTON/16WS/WXE
+  !**  29 MAY 12  MOVED MODIFIED TEST FROM SCRIPT TO GETSNO...............
+  !**             .....................................MR LEWISTON/16WS/WXE
+  !**  07 NOV 12  ADDED FRACTIONAL SNOW................MR LEWISTON/16WS/WXE
   !**  10 OCT 13  CHANGED DAILY TO 4 TIMES/DAY. ADDED CYCLE_LOOP.
-  !**             REPLACED NAMELIST WITH GETENV CALLS...................MR LEWISTON/16WS/WXE
-  !**  15 FEB 17  ADDED VIIRS DATA........................................MR PUSKAR/16WS/WXE
-  !**  28 DEC 17  ADDED FILTER FOR MISSING ELEVATIONS...................MR LEWISTON/16WS/WXE
+  !**             REPLACED NAMELIST WITH GETENV CALLS......................
+  !**             .....................................MR LEWISTON/16WS/WXE
+  !**  15 FEB 17  ADDED VIIRS DATA.......................MR PUSKAR/16WS/WXE
+  !**  28 DEC 17  ADDED FILTER FOR MISSING ELEVATIONS.....................
+  !**             .....................................MR LEWISTON/16WS/WXE
   !**  25 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
   !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
   !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
   !**  02 Nov 20  Removed blacklist logic...Eric Kemp, NASA GSFC/SSAI
-  !**  06 Nov 20  Added GALWEM 2-m temperature.......Eric Kemp, NASA GSFC/SSAI
-  !**  12 Dec 20  Added GMI and AMSR2 capability...............Yonghwan Kwon/NASA GSFC/ESSIC
-  !**  26 Jan 21  Added revised 10-km snow climatology...........Yeosang Yoon/NASA GSFC/SAIC
-  !**  28 Jan 21  Updated messages for PMW snow retrievals
-  !**             and cleaned some unused codes..................Yeosang Yoon/NASA GSFC/SAIC
-  !**  13 Jan 22  Added support for FNMOC SST GRIB1 file.........Eric Kemp/NASA GSFC/SSAI
+  !**  06 Nov 20  Added GALWEM 2-m temperature....Eric Kemp, NASA GSFC/SSAI
+  !**  12 Dec 20  Added GMI and AMSR2 capability..........................
+  !**             ............................Yonghwan Kwon/NASA GSFC/ESSIC
+  !**  26 Jan 21  Added revised 10-km snow climatology....................
+  !**             ..............................Yeosang Yoon/NASA GSFC/SAIC
+  !**  28 Jan 21  Updated messages for PMW snow retrievals and cleaned some
+  !**             unused codes..................Yeosang Yoon/NASA GSFC/SAIC
+  !**  13 Jan 22  Added support for FNMOC SST GRIB1 file..................
+  !**             .................................Eric Kemp/NASA GSFC/SSAI
   !**  27 Jun 23  Removed LDT_endrun for normal termination, to avoid error
-  !               code 1.........................................Eric Kemp/SSAI
-  !**  28 Jun 23  Extended station names to 31 characters........Eric Kemp/SSAI
-  !**  24 Aug 23  Changed station names to 32 characters.........Eric Kemp/SSAI
-
-  !**  19 Jul 24  Added ESPC-D support...........................Eric Kemp/SSAI
-  !**  07 Jul 25  Migrated to SNIP...............................Eric Kemp/SSAI
-  !*****************************************************************************************
-  !*****************************************************************************************
+  !**             code 1.....................................Eric Kemp/SSAI
+  !**  28 Jun 23  Extended station names to 31 characters....Eric Kemp/SSAI
+  !**  24 Aug 23  Changed station names to 32 characters.....Eric Kemp/SSAI
+  !**  19 Jul 24  Added ESPC-D support.......................Eric Kemp/SSAI
+  !**  09 Jul 25  Migrated to SNIP...........................Eric Kemp/SSAI
+  !***********************************************************************
+  !***********************************************************************
 
   ! Imports
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
@@ -158,7 +168,7 @@ subroutine SNIP_run(n)
   logical :: just_12z
 
   ! PMW snow depth retrievals, Yeosang Yoon
-  character(LDT_CONST_PATH_LEN) ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
+  character(LDT_CONST_PATH_LEN) ::  TB_raw_dir          ! Brightness temperature raw file directory path
 
   maxsobs = SNIP_settings%maxsobs
 
@@ -185,9 +195,8 @@ subroutine SNIP_run(n)
      fracdir = trim(SNIP_settings%fracdir)
      modif = trim(SNIP_settings%modif)
      sfcobs = trim(SNIP_settings%sfcobs)
-     sfcobsfmt = SNIP_settings%sfcobsfmt ! EMK test
+     sfcobsfmt = SNIP_settings%sfcobsfmt
 
-!---------------------------------------------------------kyh20201118
      if (SNIP_settings%TB_option == 1) then             !SSMIS
         TB_product_path = trim(SNIP_settings%ssmis)
      elseif (SNIP_settings%TB_option == 2) then         !XCAL GMI
@@ -195,14 +204,13 @@ subroutine SNIP_run(n)
      elseif (SNIP_settings%TB_option == 3) then         !AMSR2
         TB_product_path = trim(SNIP_settings%amsr2)
      end if
-!---------------------------------------------------------kyh20201118
+
      stmpdir = trim(SNIP_settings%stmpdir)
-     sstdir = trim(SNIP_settings%sstdir) ! EMK 20220113
+     sstdir = trim(SNIP_settings%sstdir)
      static = trim(SNIP_settings%static)
      unmod = trim(SNIP_settings%unmod)
      viirsdir = trim(SNIP_settings%viirsdir)
 
-!-------------------------------------------------------------------------
      ! for Brightness temperature based snow depth
      if (SNIP_settings%TB_option == 1) then             !SSMIS
         TB_raw_dir = trim(SNIP_settings%ssmis_raw_dir)
@@ -211,7 +219,6 @@ subroutine SNIP_run(n)
      elseif (SNIP_settings%TB_option == 3) then         !AMSR2
         TB_raw_dir = trim(SNIP_settings%amsr2_raw_dir)
      end if
-!-------------------------------------------------------------------------
 
      ! EXTRACT MONTH FROM DATE-TIME GROUP.
      read (date10(5:6), '(i2)', err=4200) month
@@ -258,7 +265,8 @@ subroutine SNIP_run(n)
            do c = 1, nc
               if (SNIP_arrays%ptlat(c,r) > -40.0 .and. &
                    SNIP_arrays%ptlat(c,r) < 40.0) cycle
-              ! See if climo exists for glacier point.  If not, use a fill-in.
+              ! See if climo exists for glacier point.  If not, use a
+              ! fill-in.
               if (landmask(c,r) > 0.5 .and. &
                    SNIP_arrays%climo(c,r) .le. 0) then
                  if (landice(c,r) > 0.5) then
@@ -273,7 +281,8 @@ subroutine SNIP_run(n)
         SNIP_arrays%climo(:,:) = climo_tmp(:,:)
         deallocate(climo_tmp)
      else if (SNIP_settings%climo_option .eq. 2) then
-        ! newly produced 10-km snow climatology using ratio between SNODEP and USAFSI
+        ! newly produced 10-km snow climatology using ratio between
+        ! SNODEP and USAFSI
         call getclimo (month, static)
      end if
 
@@ -319,12 +328,12 @@ subroutine SNIP_run(n)
 
         ! RETRIEVE GALWEM SURFACE TEMPERATURES.
         write (LDT_logunit,*) &
-          '[INFO] CALLING SNIP_get_galwem_t2m TO GET GALWEM 2-M TEMPERATURES'
+       '[INFO] CALLING SNIP_get_galwem_t2m TO GET GALWEM 2-M TEMPERATURES'
         call SNIP_get_galwem_t2m(n, julhr, nc, nr, sfctmp, ierr)
         if (ierr .ne. 0) then
            ! Fall back on LIS SURFACE temperatures
            write (LDT_logunit,*) &
-                '[INFO] CALLING READ_GR2_T2 TO GET LIS SHELTER TEMPERATURES'
+              '[INFO] CALLING READ_GR2_T2 TO GET LIS SHELTER TEMPERATURES'
            call read_gr2_t2(date10, nc, nr, sfctmp, ierr)
            if (ierr .ne. 0) then
               write (LDT_logunit,*) &
@@ -345,13 +354,13 @@ subroutine SNIP_run(n)
         fh = 0 ! Dummy value
         if (SNIP_settings%source_of_ocean_data == "ESPC-D") then
            write (LDT_logunit,*) &
-                '[INFO] CALLING PROCESS_ESPCD_SST TO GET SEA SURFACE TEMPERATURES'
+        '[INFO] CALLING PROCESS_ESPCD_SST TO GET SEA SURFACE TEMPERATURES'
            call process_espcd_sst(SNIP_settings%espcd_sst_dir, &
                 nc, nr, landmask, SNIP_arrays%sst, &
                 yyyy, mm, dd, hh, ierr)
         else if (SNIP_settings%source_of_ocean_data == "GOFS") then
            write (LDT_logunit,*) &
-                '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
+         '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
            call process_gofs_sst(SNIP_settings%gofs_sst_dir, &
                 nc, nr, landmask, SNIP_arrays%sst, &
                 yyyy, mm, dd, hh, fh, ierr)
@@ -422,7 +431,7 @@ subroutine SNIP_run(n)
         found_navy_cice = .false.
         if (SNIP_settings%source_of_ocean_data == "ESPC-D") then
            write(LDT_logunit,*) &
-                '[INFO] CALLING PROCESS_ESPCD_CICE TO GET GOFS SEA ICE DATA'
+              '[INFO] CALLING PROCESS_ESPCD_CICE TO GET GOFS SEA ICE DATA'
            call process_espcd_cice(SNIP_settings%espcd_cice_dir, &
                 nc, nr, landmask, SNIP_arrays%navy_icecon, &
                 yyyy, mm, dd, hh, ierr)
@@ -430,13 +439,13 @@ subroutine SNIP_run(n)
         else if (SNIP_settings%source_of_ocean_data == "GOFS") then
            ! Try to get the GOFS sea ice data
            write(LDT_logunit,*) &
-                '[INFO] CALLING PROCESS_GOFS_CICE TO GET GOFS SEA ICE DATA'
+               '[INFO] CALLING PROCESS_GOFS_CICE TO GET GOFS SEA ICE DATA'
            call process_gofs_cice(SNIP_settings%gofs_cice_dir, &
                 nc, nr, landmask, SNIP_arrays%navy_icecon, &
                 yyyy, mm, dd, hh, fh, ierr)
            if (ierr == 0) found_navy_cice = .true.
         end if
-!---------------------------------------------------------------------
+
         ! Estimates TB-based snow depth
         if (SNIP_settings%TB_option == 1) then       !SSMIS
            write (LDT_logunit,*) &
@@ -454,12 +463,11 @@ subroutine SNIP_run(n)
            call SNIP_proc_amsr2(date10, TB_raw_dir, TB_product_path, &
                 SNIP_settings%ssmis_option)
         end if
-!---------------------------------------------------------------------
 
         ! RETRIEVE PMW snow depth.
         write (LDT_logunit,*) &
              '[INFO] CALLING GETSMI TO GET PMW SNOW DEPTH RETRIEVALS'
-        call getsmi (date10, TB_product_path)  !kyh20201118
+        call getsmi (date10, TB_product_path)
 
         ! RETRIEVE VIIRS DATA.
         if (SNIP_settings%useviirs) then
@@ -555,8 +563,8 @@ subroutine SNIP_run(n)
   call LDT_endrun()
 
   ! FORMAT STATEMENTS.
-6800 format (/, 1X, 55('-'),                                             &
-       /, 3X, '[INFO] PROGRAM:  SNIP',                                &
+6800 format (/, 1X, 55('-'),                                            &
+       /, 3X, '[INFO] PROGRAM:  SNIP',                                  &
        /, 5X, '[INFO] TOTAL STATIONS PROCESSED = ', I5,                 &
        /, 5X, '[INFO] PRINTING DEPTH REPORTS BY NETWORK & STATION ID'   &
        /, 5X, '[INFO] ELEV OF "-1000" INDICATES ELEVATION NOT REPORTED' &
@@ -646,7 +654,8 @@ contains
 
     call LDT_verify(nf90_inq_dimid(ncid, "sfctypes", dimids(3)), &
          '[ERR] nf90_inq_dimid failed')
-    call LDT_verify(nf90_inquire_dimension(ncid, dimids(3), len=nsfctypes), &
+    call LDT_verify(nf90_inquire_dimension(ncid, dimids(3), &
+         len=nsfctypes), &
          '[ERR] nf90_inquire_dimension failed')
 
     ! Get the landmask
@@ -664,7 +673,8 @@ contains
          '[ERR] nf90_get_var failed')
 
     ! Get the surfacetype
-    call LDT_verify(nf90_inq_varid(ncid, 'SURFACETYPE', surfacetype_varid), &
+    call LDT_verify(nf90_inq_varid(ncid, 'SURFACETYPE', &
+         surfacetype_varid), &
          '[ERR] SURFACETYPE field not found in '//trim(filename))
     allocate(surfacetype(nc,nr,nsfctypes))
     call LDT_verify(nf90_get_var(ncid, surfacetype_varid, surfacetype), &
