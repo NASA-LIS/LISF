@@ -12,7 +12,8 @@
 !
 ! REVISION HISTORY:
 ! 17 Jul 2024  Eric Kemp      First version.  (Based on USAF_gofsMod.F90)
-! 16 Dec 2024  Yeosang Yoon   Updated ESPC-D SST file format (depth dimensions)
+! 16 Dec 2024  Yeosang Yoon   Updated ESPC-D SST file format (depth
+!                             dimensions)
 ! 07 Jul 2025  Eric Kemp      Modified for SNIP.
 !
 ! DESCRIPTION:
@@ -611,7 +612,6 @@ contains
 
   end subroutine construct_espcd_sst_filename
 
-
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   ! Read ESPC-D sea surface temperature and reproject to LDT grid
   subroutine process_espcd_sst(rootdir, nc, nr, landmask, sst, &
@@ -748,7 +748,7 @@ contains
 
 #else
 
-   ! Dummy version with no netCDF support
+  ! Dummy version with no netCDF support
   subroutine process_espcd_sst(rootdir, nc, nr, landmask, sst, &
        yyyy, mm, dd, hh, fh, vierr)
 
@@ -998,6 +998,7 @@ contains
   end subroutine process_espcd_cice_region
 
 #else
+
   ! Dummy version
   subroutine process_espcd_cice_region(region, rootdir, nc, nr, &
        landmask, icecon, yyyy, mm, dd, hh, fh, ierr)
