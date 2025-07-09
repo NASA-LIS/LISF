@@ -115,7 +115,8 @@ contains
        ! Before using ECCODE/GRIB_API, see if the GRIB file exists.
        inquire(file=trim(gribfilename), exist=found_inq)
        if (.not. found_inq) then
-          write(LDT_logunit,*) '[WARN] Cannot find file ' // trim(gribfilename)
+          write(LDT_logunit,*) '[WARN] Cannot find file ' // &
+               trim(gribfilename)
           cycle
        end if
 
@@ -125,7 +126,8 @@ contains
        call grib_open_file(ftn, trim(gribfilename), 'r', ierr)
        if ( ierr .ne. 0 ) then
           call grib_close_file(ftn)
-          write(LDT_logunit,*) '[WARN] Failed to open ' // trim(gribfilename)
+          write(LDT_logunit,*) '[WARN] Failed to open ' // &
+               trim(gribfilename)
           write(LDT_logunit,*) '[WARN] ierr = ', ierr
           flush(LDT_logunit)
           cycle
@@ -147,7 +149,8 @@ contains
           call grib_new_from_file(ftn, igrib, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) &
-                  '[WARN] failed to read message from' // trim(gribfilename)
+                  '[WARN] failed to read message from' // &
+                  trim(gribfilename)
              call grib_close_file(ftn)
              exit
           endif
@@ -211,7 +214,8 @@ contains
           end if
 
           ! Check the first surface type
-          call grib_get(igrib, 'typeOfFirstFixedSurface', surface_val, ierr)
+          call grib_get(igrib, 'typeOfFirstFixedSurface', surface_val, &
+               ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
                   'typeOfFirstFixedSurface in SNIP_get_galwem_t2m'
@@ -225,15 +229,16 @@ contains
           end if
 
           ! Check the second surface type
-          call grib_get(igrib, 'typeOfSecondFixedSurface', surface_val_2, ierr)
+          call grib_get(igrib, 'typeOfSecondFixedSurface', &
+               surface_val_2, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
                   'typeOfSecondFixedSurface in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
-          ! We want the second surface type to be missing, meaning the data
-          ! is for a level and not a layer.
+          ! We want the second surface type to be missing, meaning the
+          ! data is for a level and not a layer.
           if (surface_val_2 .ne. 255) then
              call grib_release(igrib, ierr)
              cycle
@@ -353,7 +358,7 @@ contains
           endif
 
           write(LDT_logunit,*) &
-               '[INFO] FOUND 2-M AIR TEMPERATURE FROM UK UM (GALWEM) MODEL'
+              '[INFO] FOUND 2-M AIR TEMPERATURE FROM UK UM (GALWEM) MODEL'
           write(LDT_logunit,*)'[INFO] GALWEM DELTA LAT IS ', &
                gridres_dlat,' DEGREES'
           write(LDT_logunit,*)'[INFO] GALWEM DELTA LON IS ', &
@@ -457,15 +462,16 @@ contains
             fchr // '_DF.GR2'
     else
        filename = trim(rootdir) // '/' // trim(dir) // '/' // &
-            fname1 // ftime1 // '_CY.' // fhr // '_FH.' // fchr // '_DF.GR2'
+            fname1 // ftime1 // '_CY.' // fhr // '_FH.' // fchr // &
+            '_DF.GR2'
     endif
 
   end subroutine get_galwem_filename
 
 
   ! Private method
-  subroutine interp_galwem_t2m(n, gridDesci_glb, ifguess, jfguess, fg_field, &
-       nc, nr, t2m)
+  subroutine interp_galwem_t2m(n, gridDesci_glb, ifguess, jfguess, &
+       fg_field, nc, nr, t2m)
 
     ! Imports
     use LDT_coreMod, only: LDT_rc, LDT_domain
@@ -567,7 +573,8 @@ contains
     ! Arguments
     real, intent(inout) :: gridDesci_glb(50)
 
-    ! Set the weights for the interpolation.  This varies by GALWEM resolution
+    ! Set the weights for the interpolation.  This varies by GALWEM
+    ! resolution
     if (snip_settings%galwem_res == 17) then
        gridDesci_glb = 0
        gridDesci_glb(1) = 0
