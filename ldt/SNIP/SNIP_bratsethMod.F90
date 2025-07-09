@@ -42,11 +42,11 @@
 !   Meteor Soc Japan, 64A, 61-74.
 ! Kalnay, E, 2003:  Atmospheric Modeling, Data Assimilation and
 !   Predictability.  Cambridge University Press, Cambridge, UK, 341pp.
-! Lespinas, F, V Fortin, G Roy, P Rasmussen, and T Stadnyk, 2015:  Performance
-!   evaluation of the Canadian Precipitation Analysis (CaPA).  J Hydrometeor,
-!   16, 2045-2064.
-! Lopez, P, 2013: Experimental 4D-Var assimilation of SYNOP rain gauge data at
-!   ECMWF.  Mon Wea Rev, 141, 1527-1544.
+! Lespinas, F, V Fortin, G Roy, P Rasmussen, and T Stadnyk, 2015:
+!   Performance evaluation of the Canadian Precipitation Analysis (CaPA).
+!   J Hydrometeor, 16, 2045-2064.
+! Lopez, P, 2013: Experimental 4D-Var assimilation of SYNOP rain gauge
+!   data at ECMWF.  Mon Wea Rev, 141, 1527-1544.
 ! Mahfouf, J-F, B Brasnett, and S Gagnon, 2007:  A Canadian precipitation
 !   analysis (CaPA) project:  Description and preliminary results.
 !   Atmos-Ocean, 45, 1-17.
@@ -58,11 +58,12 @@
 !   2889-2902.
 ! Ruggiero, F H, K D Sashgeyi, A E Lipton, R V Madala, and S Raman, 1999:
 !   Coupled assimilation of geostationary satellite sounder data into a
-!   mesoscale model using the Bratseth approach.  Mon Wea Rev, 127, 802-821.
+!   mesoscale model using the Bratseth approach.  Mon Wea Rev, 127,
+!   802-821.
 ! Sashegyi, K D, D E Harms, R V Madala, and S Raman, 1993:  Application of
 !   the Bratseth scheme for the analysis of GALE data using a mesoscale
 !   model.  Mon Wea Rev, 121, 2331-2350.
-!------------------------------------------------------------------------------
+!--------------------------------------------------------------------------
 
 #include "LDT_misc.h"
 
@@ -357,8 +358,8 @@ contains
     do j = 1, num_good_obs
        do i = 1, num_good_obs
 
-          ! Find distance between two obs, and see if they are close enough
-          ! to have correlated background errors.
+          ! Find distance between two obs, and see if they are close
+          ! enough to have correlated background errors.
           ! First, horizontal distance.
           if (i .eq. j) then
              h_dist = 0
@@ -395,7 +396,8 @@ contains
     ! Finish data density calculations, including inversion.
     do j = 1, num_good_obs
        this%inv_data_dens(j) = &
-            this%inv_data_dens(j)*(this%back_err_var + this%ob_err_vars(j))
+            this%inv_data_dens(j) * &
+            (this%back_err_var + this%ob_err_vars(j))
        this%inv_data_dens(j) = &
             1. / this%inv_data_dens(j)
     end do ! j
@@ -487,9 +489,9 @@ contains
   ! Run Bratseth analysis at observation points.  Multiple interations
   ! are run until convergence is reached.  Along the way, the observation
   ! estimates from each iteration are summed for later interpolation to
-  ! the grid points.  Note that the analysis is also run at the observation
-  ! points because in practice the analysis converges before the iterative
-  ! "observation estimates" do (see Sashegyi et al 1993).
+  ! the grid points.  Note that the analysis is also run at the
+  ! observation points because in practice the analysis converges before
+  ! the iterative "observation estimates" do (see Sashegyi et al 1993).
   ! NOTE:  Assumes all observations have passed QC checks, and that
   ! observation errors are uncorrelated.
   subroutine SNIP_bratseth_calc_ob_anas(this, converg_thresh, silent)
@@ -543,11 +545,12 @@ contains
     ! is used in both calculations, but the interpolation weights differ
     ! which cause the observation estimates and analysis values to drift
     ! apart with each iteration.  We use the change in analysis values to
-    ! see if the analysis has converged; if so, we terminate the iterations.
+    ! see if the analysis has converged; if so, we terminate the
+    ! iterations.
     !
-    ! The output we need are the summed observation estimates and the number
-    ! of iterations (passes) required for convergence; both are used later
-    ! to interpolate the analysis to the LIS grid points.
+    ! The output we need are the summed observation estimates and the
+    ! number of iterations (passes) required for convergence; both are
+    ! used later to interpolate the analysis to the LIS grid points.
     call cpu_time(t0)
     allocate(new_anas(num_good_obs))
     allocate(new_ests(num_good_obs))
@@ -811,12 +814,13 @@ contains
 
   ! QC checks for duplicate gage reports.  Based on Mahfouf et al (2007).
   !
-  ! If duplicates are found for a particular station but all are identical,
-  ! only one report is preserved and the rest are rejected.  Otherwise,
-  ! if two different reports from the same station are found, a superob will
-  ! be created if the spread is smaller than the observation error variance
-  ! and both original reports will be rejected.  If more than two
-  ! unique reports exist for the same station, all will be rejected.
+  ! If duplicates are found for a particular station but all are
+  ! identical, only one report is preserved and the rest are rejected.
+  ! Otherwise, if two different reports from the same station are found,
+  ! a superob will be created if the spread is smaller than the
+  ! observation error variance and both original reports will be
+  ! rejected.  If more than two unique reports exist for the same
+  ! station, all will be rejected.
   subroutine SNIP_bratseth_run_dup_qc(this)
 
     ! Imports
@@ -893,8 +897,8 @@ contains
        ! If we have no duplicates, just move on.
        if (count_dups .eq. 0) cycle
 
-       ! Handle the special case of inconsistent locations.  In this event,
-       ! just save the first ob.
+       ! Handle the special case of inconsistent locations.  In this
+       ! event, just save the first ob.
        location_issue = .false.
        if (count_dups .gt. 0) then
 
@@ -917,17 +921,17 @@ contains
                 this%reject_reasons(ptr%ob_index) = "DUP_QC REJECT"
                 total_reject_count = total_reject_count + 1
                 ! write(LDT_logunit,*) &
-                !                        '[INFO] dupQC rejecting ob w/ changing lat/lon  r: ', &
-                !                        ptr%ob_index, &
-                !                        ' net: ',trim(this%networks(ptr%ob_index)), &
-                !                        ' platform: ',trim(this%platforms(ptr%ob_index)), &
-                !                        ' lat: ',this%lats(ptr%ob_index), &
-                !                        ' lon: ',this%lons(ptr%ob_index), &
-                !                        ' elev: ',this%elevs(ptr%ob_index), &
-                !                        ' obs: ',this%obs(ptr%ob_index), &
-                !                        ' back: ',this%backs(ptr%ob_index)
-                !                   write(LDT_logunit,*) &
-                !                        '------------------------------------------------------'
+                !  '[INFO] dupQC rejecting ob w/ changing lat/lon  r: ', &
+                !  ptr%ob_index, &
+                !  ' net: ',trim(this%networks(ptr%ob_index)), &
+                !  ' platform: ',trim(this%platforms(ptr%ob_index)), &
+                !  ' lat: ',this%lats(ptr%ob_index), &
+                !  ' lon: ',this%lons(ptr%ob_index), &
+                !  ' elev: ',this%elevs(ptr%ob_index), &
+                !  ' obs: ',this%obs(ptr%ob_index), &
+                !  ' back: ',this%backs(ptr%ob_index)
+                ! write(LDT_logunit,*) &
+                ! '------------------------------------------------------'
                 ptr => ptr%next
              end do ! i
           end if
@@ -936,7 +940,8 @@ contains
        ! If we have more than one duplicate, determining a sane procedure
        ! for handling all the reports becomes difficult.  We'll keep it
        ! simple and reject all reports if more than one unique measurement
-       ! amount is found; otherwise, we'll just reject the exact duplicates.
+       ! amount is found; otherwise, we'll just reject the exact
+       ! duplicates.
        if (count_dups .gt. 1 .and. .not. location_issue) then
           ptr => head
           reject_all = .false.
@@ -946,17 +951,17 @@ contains
                 this%qcs(ptr%ob_index) = QC_REJECT
                 this%reject_reasons(ptr%ob_index) = "DUP_QC REJECT"
                 ! write(LDT_logunit,*) &
-                !                        '[INFO] dupQC rejecting exact duplicate1 ob i: ', &
-                !                        ptr%ob_index, &
-                !                        ' network: ',trim(this%networks(ptr%ob_index)), &
-                !                        ' platform: ',trim(this%platforms(ptr%ob_index)), &
-                !                        ' lat: ',this%lats(ptr%ob_index), &
-                !                        ' lon: ',this%lons(ptr%ob_index), &
-                !                        ' elev: ',this%elevs(ptr%ob_index), &
-                !                        ' obs: ',this%obs(ptr%ob_index), &
-                !                        ' back: ',this%backs(ptr%ob_index)
-                !                   write(LDT_logunit,*) &
-                !                        '-----------------------------------------------------'
+                !  '[INFO] dupQC rejecting exact duplicate1 ob i: ', &
+                !  ptr%ob_index, &
+                !  ' network: ',trim(this%networks(ptr%ob_index)), &
+                !  ' platform: ',trim(this%platforms(ptr%ob_index)), &
+                !  ' lat: ',this%lats(ptr%ob_index), &
+                !  ' lon: ',this%lons(ptr%ob_index), &
+                !  ' elev: ',this%elevs(ptr%ob_index), &
+                !  ' obs: ',this%obs(ptr%ob_index), &
+                !  ' back: ',this%backs(ptr%ob_index)
+                ! write(LDT_logunit,*) &
+                !  '-----------------------------------------------------'
              else
                 reject_all = .true.
                 exit ! out of i loop
@@ -966,21 +971,21 @@ contains
 
           if (reject_all) then
              ! We will reject all reports from this platform.
-             ! Start with the "j" report, which is not stored in the linked
-             ! list.
+             ! Start with the "j" report, which is not stored in the
+             ! linked list.
              this%qcs(j) = QC_REJECT
              this%reject_reasons(j) = "DUP_QC REJECT"
              total_reject_count = total_reject_count + 1
              ! write(LDT_logunit,*) &
-             !                     '[INFO] dupQC rejecting ob1 j: ', &
-             !                     j, &
-             !                     ' network: ',trim(this%networks(j)), &
-             !                     ' platform: ',trim(this%platforms(j)), &
-             !                     ' lat: ',this%lats(j), &
-             !                     ' lon: ',this%lons(j), &
-             !                     ' elev: ',this%elevs(j), &
-             !                     ' obs: ',this%obs(j), &
-             !                     ' back: ',this%backs(j)
+             !   '[INFO] dupQC rejecting ob1 j: ', &
+             !   j, &
+             !   ' network: ',trim(this%networks(j)), &
+             !   ' platform: ',trim(this%platforms(j)), &
+             !   ' lat: ',this%lats(j), &
+             !   ' lon: ',this%lons(j), &
+             !   ' elev: ',this%elevs(j), &
+             !   ' obs: ',this%obs(j), &
+             !   ' back: ',this%backs(j)
 
              ! Now reject the duplicate reports in the linked list.
              ptr => head
@@ -988,21 +993,21 @@ contains
                 this%qcs(ptr%ob_index) = QC_REJECT
                 this%reject_reasons(j) = "DUP_QC REJECT"
                 total_reject_count = total_reject_count + 1
-                !                   write(LDT_logunit,*) &
-                !                        '[INFO] dupQC rejecting ob1 i: ', &
-                !                        ptr%ob_index, &
-                !                        ' network: ',trim(this%networks(ptr%ob_index)), &
-                !                        ' platform: ',trim(this%platforms(ptr%ob_index)), &
-                !                        ' lat: ',this%lats(ptr%ob_index), &
-                !                        ' lon: ',this%lons(ptr%ob_index), &
-                !                        ' elev: ',this%elevs(ptr%ob_index), &
-                !                        ' obs: ',this%obs(ptr%ob_index), &
-                !                        ' back: ',this%backs(ptr%ob_index)
+                ! write(LDT_logunit,*) &
+                !  '[INFO] dupQC rejecting ob1 i: ', &
+                !  ptr%ob_index, &
+                !  ' network: ',trim(this%networks(ptr%ob_index)), &
+                !  ' platform: ',trim(this%platforms(ptr%ob_index)), &
+                !  ' lat: ',this%lats(ptr%ob_index), &
+                !  ' lon: ',this%lons(ptr%ob_index), &
+                !  ' elev: ',this%elevs(ptr%ob_index), &
+                !  ' obs: ',this%obs(ptr%ob_index), &
+                !  ' back: ',this%backs(ptr%ob_index)
 
                 ptr => ptr%next
              end do ! i
              !write(LDT_logunit,*) &
-             !     '------------------------------------------------------'
+             !  '------------------------------------------------------'
           end if ! reject_all
        end if ! count_dups .gt. 1 .and. .not. location_issue
 
@@ -1015,78 +1020,78 @@ contains
              this%qcs(ptr%ob_index) = QC_REJECT
              this%reject_reasons(j) = "DUP_QC REJECT"
              total_reject_count = total_reject_count + 1
-             !                write(LDT_logunit,*) &
-             !                     '[INFO] dupQC rejecting exact duplicate2 ob j: ', &
-             !                     ptr%ob_index, &
-             !                     ' network: ',trim(this%networks(ptr%ob_index)), &
-             !                     ' platform: ',trim(this%platforms(ptr%ob_index)), &
-             !                     ' lat: ',this%lats(ptr%ob_index), &
-             !                     ' lon: ',this%lons(ptr%ob_index), &
-             !                     ' elev: ',this%elevs(ptr%ob_index), &
-             !                     ' obs: ',this%obs(ptr%ob_index), &
-             !                     ' back: ',this%backs(ptr%ob_index)
-             !                write(LDT_logunit,*) &
-             !                     '------------------------------------------------------'
+             ! write(LDT_logunit,*) &
+             !  '[INFO] dupQC rejecting exact duplicate2 ob j: ', &
+             !  ptr%ob_index, &
+             !  ' network: ',trim(this%networks(ptr%ob_index)), &
+             !  ' platform: ',trim(this%platforms(ptr%ob_index)), &
+             !  ' lat: ',this%lats(ptr%ob_index), &
+             !  ' lon: ',this%lons(ptr%ob_index), &
+             !  ' elev: ',this%elevs(ptr%ob_index), &
+             !  ' obs: ',this%obs(ptr%ob_index), &
+             !  ' back: ',this%backs(ptr%ob_index)
+             ! write(LDT_logunit,*) &
+             !  '------------------------------------------------------'
 
           else if (diff*diff .gt. this%ob_err_vars(j)) then
              ! Obs are too different.  Reject both of them.
              this%qcs(j) = QC_REJECT
              this%reject_reasons(j) = "DUP_QC REJECT"
              total_reject_count = total_reject_count + 1
-             !                write(LDT_logunit,*) &
-             !                     '[INFO] dupQC rejecting2 ob j: ', &
-             !                     j, &
-             !                     ' network: ',trim(this%networks(j)), &
-             !                     ' platform: ',trim(this%platforms(j)), &
-             !                     ' lat: ',this%lats(j), &
-             !                     ' lon: ',this%lons(j), &
-             !                     ' elev: ',this%elevs(j), &
-             !                     ' obs: ',this%obs(j), &
-             !                     ' back: ',this%backs(j)
+             ! write(LDT_logunit,*) &
+             !  '[INFO] dupQC rejecting2 ob j: ', &
+             !  j, &
+             !  ' network: ',trim(this%networks(j)), &
+             !  ' platform: ',trim(this%platforms(j)), &
+             !  ' lat: ',this%lats(j), &
+             !  ' lon: ',this%lons(j), &
+             !  ' elev: ',this%elevs(j), &
+             !  ' obs: ',this%obs(j), &
+             !  ' back: ',this%backs(j)
 
              this%qcs(ptr%ob_index) = QC_REJECT
              this%reject_reasons(j) = "DUP_QC REJECT"
              total_reject_count = total_reject_count + 1
 
-             !                write(LDT_logunit,*) &
-             !                     '[INFO] dupQC rejecting2 ob j: ', &
-             !                     ptr%ob_index, &
-             !                     ' network: ',trim(this%networks(ptr%ob_index)), &
-             !                     ' platform: ',trim(this%platforms(ptr%ob_index)), &
-             !                     ' lat: ',this%lats(ptr%ob_index), &
-             !                     ' lon: ',this%lons(ptr%ob_index), &
-             !                     ' elev: ',this%elevs(ptr%ob_index), &
-             !                     ' obs: ',this%obs(ptr%ob_index), &
-             !                     ' back: ',this%backs(ptr%ob_index)
+             ! write(LDT_logunit,*) &
+             !  '[INFO] dupQC rejecting2 ob j: ', &
+             !  ptr%ob_index, &
+             !  ' network: ',trim(this%networks(ptr%ob_index)), &
+             !  ' platform: ',trim(this%platforms(ptr%ob_index)), &
+             !  ' lat: ',this%lats(ptr%ob_index), &
+             !  ' lon: ',this%lons(ptr%ob_index), &
+             !  ' elev: ',this%elevs(ptr%ob_index), &
+             !  ' obs: ',this%obs(ptr%ob_index), &
+             !  ' back: ',this%backs(ptr%ob_index)
 
              write(LDT_logunit,*) &
-                  '------------------------------------------------------'
+                 '------------------------------------------------------'
 
           else
              ! Create superob.
              mean = 0.5 * (this%obs(ptr%ob_index) + this%obs(j))
 
-             !                write(LDT_logunit,*) &
-             !                     '[INFO] dupQC will create superob from j: ', &
-             !                     j, &
-             !                     ' network: ',trim(this%networks(j)), &
-             !                     ' platform: ',trim(this%platforms(j)), &
-             !                     ' lat: ',this%lats(j), &
-             !                     ' lon: ',this%lons(j), &
-             !                     ' elev: ',this%elevs(j), &
-             !                     ' obs: ',this%obs(j), &
-             !                     ' back: ',this%backs(j)
+             ! write(LDT_logunit,*) &
+             !  '[INFO] dupQC will create superob from j: ', &
+             !  j, &
+             !  ' network: ',trim(this%networks(j)), &
+             !  ' platform: ',trim(this%platforms(j)), &
+             !  ' lat: ',this%lats(j), &
+             !  ' lon: ',this%lons(j), &
+             !  ' elev: ',this%elevs(j), &
+             !  ' obs: ',this%obs(j), &
+             !  ' back: ',this%backs(j)
 
-             !                write(LDT_logunit,*) &
-             !                     '[INFO] dupQC will create superob from i: ', &
-             !                     ptr%ob_index, &
-             !                     ' network: ',trim(this%networks(ptr%ob_index)), &
-             !                     ' platform: ',trim(this%platforms(ptr%ob_index)), &
-             !                     ' lat: ',this%lats(ptr%ob_index), &
-             !                     ' lon: ',this%lons(ptr%ob_index), &
-             !                     ' elev: ',this%elevs(ptr%ob_index), &
-             !                     ' obs: ',this%obs(ptr%ob_index), &
-             !                     ' back: ',this%backs(ptr%ob_index)
+             ! write(LDT_logunit,*) &
+             !  '[INFO] dupQC will create superob from i: ', &
+             !  ptr%ob_index, &
+             !  ' network: ',trim(this%networks(ptr%ob_index)), &
+             !  ' platform: ',trim(this%platforms(ptr%ob_index)), &
+             !  ' lat: ',this%lats(ptr%ob_index), &
+             !  ' lon: ',this%lons(ptr%ob_index), &
+             !  ' elev: ',this%elevs(ptr%ob_index), &
+             !  ' obs: ',this%obs(ptr%ob_index), &
+             !  ' back: ',this%backs(ptr%ob_index)
 
              network = trim(this%networks(j))
              platform = trim(this%platforms(j))
@@ -1097,14 +1102,15 @@ contains
              ob_err_var = this%ob_err_vars(j)
 
              ! write(LDT_logunit,*) &
-             !                     '[INFO] dupQC new superob is : ', &
-             !                     ' network: ',trim(this%networks(j)), &
-             !                     ' platform: ',trim(this%platforms(j)), &
-             !                     ' obs: ',mean
-             !                write(LDT_logunit,*) &
-             !                     '------------------------------------------------------'
+             !  '[INFO] dupQC new superob is : ', &
+             !  ' network: ',trim(this%networks(j)), &
+             !  ' platform: ',trim(this%platforms(j)), &
+             !  ' obs: ',mean
+             ! write(LDT_logunit,*) &
+             !  '------------------------------------------------------'
 
-             call this%append_ob(network, platform, mean, newlat, newlon,&
+             call this%append_ob(network, platform, mean, &
+                  newlat, newlon, &
                   newelev, ob_err_var, back=back)
 
              total_create_count = total_create_count + 1
@@ -1135,12 +1141,13 @@ contains
     end do ! j
 
     write(LDT_logunit,*) &
-         '[INFO] dupQC rejected ',total_reject_count,' obs and merged ', &
-         total_merge_count
+         '[INFO] dupQC rejected ', total_reject_count, &
+         ' obs and merged ', total_merge_count
     write(LDT_logunit,*) &
-         '[INFO] dupQC created ',total_create_count,' super obs'
+         '[INFO] dupQC created ', total_create_count,' super obs'
 
-    if (total_reject_count + total_merge_count + total_create_count > 0) then
+    if (total_reject_count + total_merge_count + total_create_count &
+         > 0) then
        call this%resort_bad_obs()
     end if
 
@@ -1199,8 +1206,8 @@ contains
 
        ! Find the column,row of this ob in the LDT domain
        call latlon_to_ij(LDT_domain(n)%ldtproj, &
-            this%lats(j),this%lons(j), &
-            xpt,ypt)
+            this%lats(j), this%lons(j), &
+            xpt, ypt)
        c = nint(xpt)
        if (c > ncols) then
           c = c - ncols
@@ -1238,11 +1245,11 @@ contains
 
   end subroutine SNIP_bratseth_run_water_qc
 
-  ! Creates "superobs" out of close observations.  Each close observation is
-  ! first checked for unacceptable deviation from the mean of the close
-  ! obs, and rejected if deviation is too high.  Superobs are considered
-  ! "close" if they are in the same LIS grid box.  Based on Lespinas et al
-  ! (2015).
+  ! Creates "superobs" out of close observations.  Each close
+  ! observation is first checked for unacceptable deviation from the
+  ! mean of the close obs, and rejected if deviation is too high.
+  ! Superobs are considered "close" if they are in the same LIS grid
+  ! box.  Based on Lespinas et al (2015).
   subroutine SNIP_bratseth_run_superstat_qc(this, n, new_name, &
        ncols, nrows, silent_rejects)
 
@@ -1404,7 +1411,8 @@ contains
        superlats(c,r) = superlats(c,r) + this%lats(j)
        superlons(c,r) = superlons(c,r) + this%lons(j)
        superelevs(c,r) = superelevs(c,r) + this%elevs(j)
-       superob_err_vars(c,r) = superob_err_vars(c,r) + this%ob_err_vars(j)
+       superob_err_vars(c,r) = superob_err_vars(c,r) + &
+            this%ob_err_vars(j)
 
     end do ! j
 
@@ -1425,8 +1433,8 @@ contains
        end do ! c
     end do ! r
 
-    ! Make sure to preserve obs that passed the QC test above but were not
-    ! merged (not enough good obs in the grid box).
+    ! Make sure to preserve obs that passed the QC test above but were
+    ! not merged (not enough good obs in the grid box).
     do j = 1,num_good_obs
 
        ! Only use the obs that passed the test above.
@@ -1458,31 +1466,31 @@ contains
           this%qcs(j) = QC_REJECT
           this%reject_reasons(j) = "SUPERSTAT_QC REJECT"
           ! if (.not. silent_rejects_local) then
-          !                write(LDT_logunit,*) &
-          !                     '[INFO] superstatQC rejection j: ',j, &
-          !                     ' net: ',trim(this%networks(j)), &
-          !                     ' platform: ',trim(this%platforms(j)), &
-          !                     ' lat: ',this%lats(j), &
-          !                     ' lon: ',this%lons(j), &
-          !                     ' elev: ',this%elevs(j), &
-          !                     ' obs: ',this%obs(j), &
-          !                     ' back: ',this%backs(j)
-          !             end if
+          !    write(LDT_logunit,*) &
+          !     '[INFO] superstatQC rejection j: ',j, &
+          !     ' net: ',trim(this%networks(j)), &
+          !     ' platform: ',trim(this%platforms(j)), &
+          !     ' lat: ',this%lats(j), &
+          !     ' lon: ',this%lons(j), &
+          !     ' elev: ',this%elevs(j), &
+          !     ' obs: ',this%obs(j), &
+          !     ' back: ',this%backs(j)
+          ! end if
           num_rejected_obs = num_rejected_obs + 1
        else if (actions(j) .eq. 1) then
           this%qcs(j) = QC_REJECT ! Was merged into superob
           this%reject_reasons(j) = "SUPERSTAT_QC MERGED"
-          !             if (.not. silent_rejects_local) then
-          !                write(LDT_logunit,*) &
-          !                     '[INFO] superstatQC will create superob from j: ',j, &
-          !                     ' net: ',trim(this%networks(j)), &
-          !                     ' platform: ',trim(this%platforms(j)), &
-          !                     ' lat: ',this%lats(j), &
-          !                     ' lon: ',this%lons(j), &
-          !                     ' elev: ',this%elevs(j), &
-          !                     ' obs: ',this%obs(j), &
-          !                     ' back: ',this%backs(j)
-          !             end if
+          ! if (.not. silent_rejects_local) then
+          !    write(LDT_logunit,*) &
+          !     '[INFO] superstatQC will create superob from j: ',j, &
+          !     ' net: ',trim(this%networks(j)), &
+          !     ' platform: ',trim(this%platforms(j)), &
+          !     ' lat: ',this%lats(j), &
+          !     ' lon: ',this%lons(j), &
+          !     ' elev: ',this%elevs(j), &
+          !     ' obs: ',this%obs(j), &
+          !     ' back: ',this%backs(j)
+          ! end if
           num_merged_obs = num_merged_obs + 1
        end if
     end do ! j
@@ -1510,7 +1518,7 @@ contains
     end do ! r
 
     write(LDT_logunit,*) &
-         '[INFO] superstatQC created ',num_superobs,' super obs'
+         '[INFO] superstatQC created ', num_superobs,' super obs'
 
     ! Clean up
     deallocate(means)
@@ -1533,10 +1541,10 @@ contains
 
   end subroutine SNIP_bratseth_run_superstat_qc
 
-  ! Reject obs that differ "too much" from background field.  Threshold based
-  ! on sum of observation and background error variances.  From Lopez (2013).
-  ! This assumes both background and observations are unbiased, and large
-  ! difference implies gross error in observation.
+  ! Reject obs that differ "too much" from background field.  Threshold
+  ! based on sum of observation and background error variances.  From
+  ! Lopez (2013).  This assumes both background and observations are
+  ! unbiased, and large difference implies gross error in observation.
   subroutine SNIP_bratseth_run_back_qc(this, back_err_var, &
        silent_rejects)
 
@@ -1586,19 +1594,19 @@ contains
 
           reject_count = reject_count + 1
 
-          !             if (.not. silent_rejects_local) then
-          !                write(LDT_logunit,*) &
-          !                     '[INFO] backQC rejecting observation j: ',j, &
-          !                     ' network: ',trim(this%networks(j)), &
-          !                     ' platform: ',trim(this%platforms(j)), &
-          !                     ' lat: ',this%lats(j), &
-          !                     ' lon: ',this%lons(j), &
-          !                     ' elev: ',this%elevs(j), &
-          !                     ' obs: ',this%obs(j), &
-          !                     ' back: ',this%backs(j), &
-          !                     ' abs diff: ', abs(this%obs(j) - this%backs(j)), &
-          !                     ' threshold ', threshold
-          !             end if
+          ! if (.not. silent_rejects_local) then
+          !   write(LDT_logunit,*) &
+          !    '[INFO] backQC rejecting observation j: ',j, &
+          !    ' network: ',trim(this%networks(j)), &
+          !    ' platform: ',trim(this%platforms(j)), &
+          !    ' lat: ',this%lats(j), &
+          !    ' lon: ',this%lons(j), &
+          !    ' elev: ',this%elevs(j), &
+          !    ' obs: ',this%obs(j), &
+          !    ' back: ',this%backs(j), &
+          !    ' abs diff: ', abs(this%obs(j) - this%backs(j)), &
+          !    ' threshold ', threshold
+          ! end if
        end if
 
     end do ! j
@@ -1616,9 +1624,9 @@ contains
 
   end subroutine SNIP_bratseth_run_back_qc
 
-  ! Skewed error check against the background.  If the observation indicates
-  ! snow depth at least X less than the background, reject the observation.
-  ! From Brasnett (1999), where X is usually 40 cm.
+  ! Skewed error check against the background.  If the observation
+  ! indicates snow depth at least X less than the background, reject the
+  ! observation.  From Brasnett (1999), where X is usually 40 cm.
   subroutine SNIP_bratseth_run_skewed_back_qc(this, threshold)
 
     ! Imports
@@ -1669,7 +1677,7 @@ contains
           !     ' obs: ',this%obs(j), &
           !     ' back: ',this%backs(j)
           !write(LDT_logunit,*) &
-          !           '------------------------------------------------------'
+          !     '------------------------------------------------------'
        end if
     end do ! j
 
@@ -1687,7 +1695,8 @@ contains
   end subroutine SNIP_bratseth_run_skewed_back_qc
 
   ! Compare reported station elevation to interpolated LDT value, and
-  ! reject ob if the elevations differ too much.  Based on Brasnett (1999).
+  ! reject ob if the elevations differ too much.  Based on Brasnett
+  ! (1999).
   subroutine SNIP_bratseth_run_elev_qc(this, n, ncols, nrows, &
        elevations, threshold)
 
@@ -1727,8 +1736,8 @@ contains
 
     total_reject_count = 0
 
-    ! Compare elevation of each good ob to the interpolated terrain value,
-    ! rejecting those that differ too much.
+    ! Compare elevation of each good ob to the interpolated terrain
+    ! value, rejecting those that differ too much.
     do j = 1,num_good_obs
 
        ! Find the LDT grid box containing the observation.
@@ -1759,7 +1768,7 @@ contains
           !     ' obs: ',this%obs(j), &
           !     ' back: ',this%backs(j)
           !write(LDT_logunit,*) &
-          !           '------------------------------------------------------'
+          !  '------------------------------------------------------'
        end if
     end do ! j
 
@@ -1881,7 +1890,8 @@ contains
              end if
           end do ! iob
 
-          ! If we didn't find a replacement, all the remaining obs are bad.
+          ! If we didn't find a replacement, all the remaining obs are
+          ! bad.
           if (.not. found_replacement) then
              exit
           end if
@@ -2033,7 +2043,7 @@ contains
     end do ! j
 
     write(LDT_logunit,*)&
-         '[INFO] missingElevQC rejected ',reject_count,' observations'
+         '[INFO] missingElevQC rejected ', reject_count,' observations'
 
     if (reject_count > 0) then
        call this%resort_bad_obs()
@@ -2041,7 +2051,7 @@ contains
 
     call cpu_time(t2)
     write(LDT_logunit,*) &
-         '[INFO] Elapsed time in missingElevQC is ',t2-t1,' seconds'
+         '[INFO] Elapsed time in missingElevQC is ', t2-t1,' seconds'
 
   end subroutine SNIP_bratseth_run_missing_elev_qc
 
@@ -2157,7 +2167,8 @@ contains
        if (this%obs(i) >= minprt) then
           write(LDT_logunit,7000) this%networks(i), &
                this%platforms(i), this%lats(i), this%lons(i), &
-               int(this%elevs(i)), this%obs(i), trim(this%reject_reasons(i))
+               int(this%elevs(i)), this%obs(i), &
+               trim(this%reject_reasons(i))
        end if
     end do ! i
 7000 format (/,'[INFO] NETID = ',A5,' STATION ID = ',A32, &
