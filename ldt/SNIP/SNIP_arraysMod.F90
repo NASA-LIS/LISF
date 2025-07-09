@@ -34,7 +34,7 @@
 !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
 !**  19 Jul 24  Renamed gofs_icecon array to navy_icecon array to reflect
 !               source as either ESPC-D or GOFS.
-!**  07 Jul 25  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
+!**  09 Jul 25  Ported for SNIP...Eric Kemp, NASA GSFC/SSAI
 !*****************************************************************************************
 !*****************************************************************************************
 
@@ -42,34 +42,34 @@
 
 module SNIP_arraysMod
 
-   ! Defaults
-   implicit none
-   private
+  ! Defaults
+  implicit none
+  private
 
-   type SNIP_arrays_t
-      integer*1,  allocatable    :: snow_poss        ( : , : )    ! SNOW POSSIBLE MASK (0=NO SNOW; 1=SNOW)
-      integer,    allocatable    :: iceage           ( : , : )    ! ICE AGE (DAYS)
-      integer,    allocatable    :: iceage12z        ( : , : )    ! ICE AGE (DAYS) PROM PREVIOUS 12Z
-      integer,    allocatable    :: icecon           ( : , : )    ! ICE CONCENTRATIONS (PERCENT, 0-100)
-      integer,    allocatable    :: icemask          ( : , : )    ! ICE MASK (0 = NO ICE; 1 = ICE)
-      integer,    allocatable    :: oldcon           ( : , : )    ! PREVIOUS DAY'S ICE CONCENTRATIONS
-      integer,    allocatable    :: oldmask          ( : , : )    ! PREVIOUS DAY'S ICE FLAGS
-      integer,    allocatable    :: ssmis_icecon     ( : , : )    ! SSMIS ICE CONCENTRATIONS (PERCENT, 0-100)
-      integer,    allocatable    :: snoage           ( : , : )    ! SNOW AGE (DAYS)
-      integer,    allocatable    :: snoage12z        ( : , : )    ! SNOW AGE (DAYS) FROM PREVIOUS 12Z
-      integer,    allocatable    :: viirsmap         ( : , : )    ! VIIRS SNOW COVERED AREA MAP
-      real,       allocatable    :: climo            ( : , : )    ! THIS MONTH'S SNOW CLIMATOLOGY (METERS)
-      real,       allocatable    :: elevat           ( : , : )    ! TERRAIN ELEVATION (METERS)
-      real,       allocatable    :: olddep           ( : , : )    ! PREVIOUS DAY'S SNOW ANALYSIS (METERS)
-      real,       allocatable    :: ptlat            ( : , : )    ! GRID POINT LATITUDES
-      real,       allocatable    :: ptlon            ( : , : )    ! GRID POINT LONGITUDES
-      real,       allocatable    :: snoanl           ( : , : )    ! CURRENT SNOW DEPTH ANALYSIS (METERS)
-      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNIP GRID
-      real,       allocatable    :: ssmis_depth      ( : , : )    ! SNOW DEPTH FROM SSMIS EDRS
-      real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
-      real, allocatable :: navy_icecon(:,:)
-   end type SNIP_arrays_t
+  type SNIP_arrays_t
+     integer*1,  allocatable    :: snow_poss        ( : , : )    ! SNOW POSSIBLE MASK (0=NO SNOW; 1=SNOW)
+     integer,    allocatable    :: iceage           ( : , : )    ! ICE AGE (DAYS)
+     integer,    allocatable    :: iceage12z        ( : , : )    ! ICE AGE (DAYS) PROM PREVIOUS 12Z
+     integer,    allocatable    :: icecon           ( : , : )    ! ICE CONCENTRATIONS (PERCENT, 0-100)
+     integer,    allocatable    :: icemask          ( : , : )    ! ICE MASK (0 = NO ICE; 1 = ICE)
+     integer,    allocatable    :: oldcon           ( : , : )    ! PREVIOUS DAY'S ICE CONCENTRATIONS
+     integer,    allocatable    :: oldmask          ( : , : )    ! PREVIOUS DAY'S ICE FLAGS
+     integer,    allocatable    :: ssmis_icecon     ( : , : )    ! SSMIS ICE CONCENTRATIONS (PERCENT, 0-100)
+     integer,    allocatable    :: snoage           ( : , : )    ! SNOW AGE (DAYS)
+     integer,    allocatable    :: snoage12z        ( : , : )    ! SNOW AGE (DAYS) FROM PREVIOUS 12Z
+     integer,    allocatable    :: viirsmap         ( : , : )    ! VIIRS SNOW COVERED AREA MAP
+     real,       allocatable    :: climo            ( : , : )    ! THIS MONTH'S SNOW CLIMATOLOGY (METERS)
+     real,       allocatable    :: elevat           ( : , : )    ! TERRAIN ELEVATION (METERS)
+     real,       allocatable    :: olddep           ( : , : )    ! PREVIOUS DAY'S SNOW ANALYSIS (METERS)
+     real,       allocatable    :: ptlat            ( : , : )    ! GRID POINT LATITUDES
+     real,       allocatable    :: ptlon            ( : , : )    ! GRID POINT LONGITUDES
+     real,       allocatable    :: snoanl           ( : , : )    ! CURRENT SNOW DEPTH ANALYSIS (METERS)
+     real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNIP GRID
+     real,       allocatable    :: ssmis_depth      ( : , : )    ! SNOW DEPTH FROM SSMIS EDRS
+     real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
+     real, allocatable :: navy_icecon(:,:)
+  end type SNIP_arrays_t
 
-   type(SNIP_arrays_t), public :: SNIP_arrays
+  type(SNIP_arrays_t), public :: SNIP_arrays
 
 end module SNIP_arraysMod
