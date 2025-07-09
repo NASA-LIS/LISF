@@ -13,35 +13,35 @@
 
 subroutine SNIP_binary()
 
-   ! Imports
-   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
-   use LDT_logMod, only: LDT_logunit
-   use SNIP_arraysMod, only: SNIP_arrays
+  ! Imports
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+  use LDT_logMod, only: LDT_logunit
+  use SNIP_arraysMod, only: SNIP_arrays
 
-   ! Defaults
-   implicit none
+  ! Defaults
+  implicit none
 
-   ! Local constants
-   integer, parameter :: lunit = 100
+  ! Local constants
+  integer, parameter :: lunit = 100
 
-   ! Local variables
-   character(len=LDT_CONST_PATH_LEN) :: file_path
-   integer :: istat
+  ! Local variables
+  character(len=LDT_CONST_PATH_LEN) :: file_path
+  integer :: istat
 
-   ! Open file
-   file_path = "SNIP.bin"
-   write(LDT_logunit,*)"Writing SNIP.bin"
-   open(unit=lunit,file=file_path, form='unformatted', action='write', &
-        iostat=istat, status='unknown')
+  ! Open file
+  file_path = "SNIP.bin"
+  write(LDT_logunit,*)"Writing SNIP.bin"
+  open(unit=lunit,file=file_path, form='unformatted', action='write', &
+       iostat=istat, status='unknown')
 
-   ! Write SNIP fields
-   write(lunit) SNIP_arrays%snoanl
-   write(lunit) SNIP_arrays%snoage
-   write(lunit) SNIP_arrays%icecon
-   write(lunit) SNIP_arrays%icemask
-   write(lunit) SNIP_arrays%iceage
+  ! Write SNIP fields
+  write(lunit) SNIP_arrays%snoanl
+  write(lunit) SNIP_arrays%snoage
+  write(lunit) SNIP_arrays%icecon
+  write(lunit) SNIP_arrays%icemask
+  write(lunit) SNIP_arrays%iceage
 
-   ! Close file
-   close(lunit)
+  ! Close file
+  close(lunit)
 
 end subroutine SNIP_binary
