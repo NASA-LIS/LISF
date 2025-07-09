@@ -10,22 +10,22 @@
 
 subroutine LDT_run_snip()
 
-   ! Imports
-   use LDT_logMod
-   use LDT_snipMod
+  ! Imports
+  use LDT_logMod
+  use LDT_snipMod
 
-   ! Defaults
-   implicit none
+  ! Defaults
+  implicit none
 
-   ! Local variables
-   integer :: n
+  ! Local variables
+  integer :: n
 
-   ! Currently SNIP assumes single nest
-   n = 1
-   call LDT_snipRun(n)
+  ! Currently SNIP assumes single nest
+  n = 1
+  call LDT_snipRun(n)
 
-   write(LDT_logunit,*) "--------------------------------"
-   write(LDT_logunit,*) " Finished LDT run "
-   write(LDT_logunit,*) "--------------------------------"
+  write(LDT_logunit,*) "--------------------------------"
+  write(LDT_logunit,*) " Finished LDT run "
+  write(LDT_logunit,*) "--------------------------------"
 
 end subroutine LDT_run_snip
