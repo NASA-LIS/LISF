@@ -23,15 +23,18 @@
 #
 # REVISION HISTORY:
 # 08 July 2025:  Yeosang Yoon, first version.
+# 10 July 2025:  Eric Kemp, clean up to pacify pylint.
 #
 #--------------------------------------------------------------------------
 """
 
 import argparse
-import sys
 from datetime import datetime, timedelta
+import sys
 
 def update_config(date, cycle, met_type, lsm):
+    """Customize the lis.config file"""
+
     # Validate met forcing
     if met_type not in ['GALWEM-GE', 'GALWEM']:
         txt = "Invalid met forcing. Only 'GALWEM-GE' or 'GALWEM' " + \
@@ -55,17 +58,16 @@ def update_config(date, cycle, met_type, lsm):
     input_file = f"./input/template/lis.config.mr.{lsm}.rapid.template"
     output_file = \
        f"lis.config.mr.{lsm}.rapid.{met_type.lower().replace('-', '_')}.76"
-    lsm_dir = lsm
     restart_prefix = "LIS_RST_NOAH39" if lsm == "noah39" \
         else "LIS_RST_NOAHMP401"
 
-    with open(input_file, "r") as f:
+    with open(input_file, "r", encoding="ascii") as f:
         lines = f.readlines()
 
     new_lines = []
     forcings_inserted = False
 
-    for i, line in enumerate(lines):
+    for _, line in enumerate(lines):
         # Start/End time edits (shared)
         if 'Starting year:' in line:
             line = 'Starting year:                            ' + \
@@ -190,15 +192,15 @@ def update_config(date, cycle, met_type, lsm):
 
         new_lines.append(line)
 
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="ascii") as f:
         f.writelines(new_lines)
 
     print(f"[SUCCESS] Generated config saved to '{output_file}'")
     return output_file
 
 if __name__ == "__main__":
-    txt = "Generate LIS config from template."
-    parser = argparse.ArgumentParser(description=txt)
+    DESCRIPTION = "Generate LIS config from template."
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument("--date", required=True, \
                         help="Forecast date (YYYYMMDD)")
     parser.add_argument("--cycle", required=True, \
@@ -213,7 +215,6 @@ if __name__ == "__main__":
 
     try:
         update_config(args.date, args.cycle, args.met, args.lsm)
-    except Exception as e:
+    except (ValueError, UnicodeError, OSError) as e:
         print(f"[ERR] {e}")
         sys.exit(1)
-
