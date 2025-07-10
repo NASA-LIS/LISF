@@ -129,21 +129,21 @@ def check_files(base_path, date_str, cycle_str, deep_check=False):
 
 def print_results(missing_members, bad_files):
     """Prints summary of file checks to screen"""
-    print("==== ✅ File Check Result ====")
+    print("==== File Check Result ====")
 
     if missing_members:
-        print(f"❌ Missing member folders: {', '.join(missing_members)}")
+        print(f"[WARN] Missing member folders: {', '.join(missing_members)}")
     else:
-        print("✅ All member folders are present.")
+        print("[INFO] All member folders are present.")
 
     if bad_files:
-        print("\n❌ Missing or corrupted files by member:")
+        print("\n[WARN] Missing or corrupted files by member:")
         for member, files in bad_files.items():
             print(f"  - {member}: {len(files)} problematic files")
             for f, reason in files:
                 print(f"      {f} ({reason})")
     else:
-        print("✅ All files are present and valid.")
+        print("[INFO] All files are present and valid.")
 
 def write_log_file(log_path, date_str, cycle_str, missing_members, \
                    bad_files, config_path):
@@ -176,7 +176,7 @@ def write_log_file(log_path, date_str, cycle_str, missing_members, \
             log.write("All GRIB2 files are valid.\n")
 
         log.write(f"\nGenerated config saved to '{config_path}'\n")
-    print(f"📝 Log saved to: {full_path}")
+    print(f"[INFO] Log saved to: {full_path}")
 
 def main():
     """Main driver"""
@@ -214,7 +214,7 @@ def main():
         config_path = update_config(args.date, args.cycle, met_type, \
                                     args.lsm)
     except Exception as e:
-        print(f"❌ Failed to generate LIS config: {e}")
+        print(f"[ERR] Failed to generate LIS config: {e}")
         sys.exit(1)
 
     write_log_file(args.log_dir, args.date, args.cycle, missing_members, \
