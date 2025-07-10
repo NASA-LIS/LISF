@@ -79,7 +79,7 @@ def is_grib2_valid(filepath, deep_check=False):
                                  decode_timedelta=False)
             del ds
         return True
-    except Exception as e:
+    except (OSError, ValueError, FileNotFoundError) as e:
         print(f"An unexpected error occurred:  {e}")
         return False
 
@@ -213,7 +213,7 @@ def main():
     try:
         config_path = update_config(args.date, args.cycle, met_type, \
                                     args.lsm)
-    except Exception as e:
+    except (ValueError, UnicodeError, OSError) as e:
         print(f"[ERR] Failed to generate LIS config: {e}")
         sys.exit(1)
 
