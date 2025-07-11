@@ -86,8 +86,10 @@ subroutine SNIP_run(n)
   !**  24 Aug 23  Changed station names to 32 characters.....Eric Kemp/SSAI
   !**  19 Jul 24  Added ESPC-D support.......................Eric Kemp/SSAI
   !**  09 Jul 25  Migrated to SNIP...........................Eric Kemp/SSAI
-  !***********************************************************************
-  !***********************************************************************
+  !**  11 Jul 25  Removed legacy satellite SD retrievals.  Added code
+  !               to read SNIP or USAFSI prior analyses......Eric Kemp/SSAI
+  !************************************************************************
+  !************************************************************************
 
   ! Imports
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
@@ -99,7 +101,6 @@ subroutine SNIP_run(n)
 #if ( defined SPMD )
   use mpi
 #endif
-  use SNIP_amsr2Mod,   only: SNIP_proc_amsr2
   use SNIP_analysisMod
   use SNIP_arraysMod, only: SNIP_arrays
   use SNIP_bratsethMod
@@ -109,9 +110,7 @@ subroutine SNIP_run(n)
   use SNIP_lisMod, only:  read_gr2_t2
   use SNIP_netcdfMod
   use SNIP_paramsMod
-  use SNIP_ssmisMod, only: SNIP_proc_ssmis
   use SNIP_utilMod
-  use SNIP_xcalgmiMod, only: SNIP_proc_xcalgmi
 
   ! Defaults
   implicit none
@@ -196,29 +195,11 @@ subroutine SNIP_run(n)
      modif = trim(SNIP_settings%modif)
      sfcobs = trim(SNIP_settings%sfcobs)
      sfcobsfmt = SNIP_settings%sfcobsfmt
-
-     if (SNIP_settings%TB_option == 1) then             !SSMIS
-        TB_product_path = trim(SNIP_settings%ssmis)
-     elseif (SNIP_settings%TB_option == 2) then         !XCAL GMI
-        TB_product_path = trim(SNIP_settings%gmi)
-     elseif (SNIP_settings%TB_option == 3) then         !AMSR2
-        TB_product_path = trim(SNIP_settings%amsr2)
-     end if
-
      stmpdir = trim(SNIP_settings%stmpdir)
      sstdir = trim(SNIP_settings%sstdir)
      static = trim(SNIP_settings%static)
      unmod = trim(SNIP_settings%unmod)
      viirsdir = trim(SNIP_settings%viirsdir)
-
-     ! for Brightness temperature based snow depth
-     if (SNIP_settings%TB_option == 1) then             !SSMIS
-        TB_raw_dir = trim(SNIP_settings%ssmis_raw_dir)
-     elseif (SNIP_settings%TB_option == 2) then         !XCAL GMI
-        TB_raw_dir = trim(SNIP_settings%gmi_raw_dir)
-     elseif (SNIP_settings%TB_option == 3) then         !AMSR2
-        TB_raw_dir = trim(SNIP_settings%amsr2_raw_dir)
-     end if
 
      ! EXTRACT MONTH FROM DATE-TIME GROUP.
      read (date10(5:6), '(i2)', err=4200) month
@@ -253,14 +234,14 @@ subroutine SNIP_run(n)
      ! Pass LDT elevations to this routine to populate SNODEP elevat
      call getgeo (month, static, nc, nr, elevations)
 
-     ! Yeosang Yoon: retrive the snow climatology for the month
+     ! Retrieve the snow climatology for the month
      if (SNIP_settings%climo_option .eq. 1) then
         ! Mismatches can occur in landmask between 0.25 deg climo and
         ! LDT's grid.  In cases where LDT introduces "new" land, use a
         ! bogus value.
         arctlatr = float(arctlat) / 100.0
         allocate(climo_tmp(nc,nr))
-        climo_tmp(:,:) = SNIP_arrays%climo(:,:)
+        climo_tmp = SNIP_arrays%climo
         do r = 1, nr
            do c = 1, nc
               if (SNIP_arrays%ptlat(c,r) > -40.0 .and. &
@@ -288,13 +269,19 @@ subroutine SNIP_run(n)
 
      ! RETRIEVE THE PREVIOUS SNOW ANALYSIS.
      ! First, try reading SNIP in netCDF format.  If that doesn't work,
+     ! fall back to reading USAFSI in netCDF format.
      ! fall back on the legacy SNODEP at 0.25 deg resolution.
      write (LDT_logunit,*) &
-          '[INFO] CALLING GETSNO_NC TO GET PREVIOUS SNOW AND ICE DATA'
-     call getsno_nc(date10, julhr_beg, ierr)
+          '[INFO] CALLING GETSNO_SNIP_NC TO GET PREVIOUS SNIP DATA'
+     call getsno_snip_nc(date10, julhr_beg, ierr)
      if (ierr .ne. 0) then
         write (LDT_logunit,*) &
-             '[INFO] CALLING GETSNO TO GET PREVIOUS SNOW AND ICE DATA'
+             '[INFO] CALLING GETSNO_USAFSI_NC TO GET PREVIOUS USAFSI DATA'
+        call getsno_usafsi_nc(date10, julhr_beg, ierr)
+     end if
+     if (ierr .ne. 0) then
+        write (LDT_logunit,*) &
+             '[INFO] CALLING GETSNO TO GET PREVIOUS SNODEP DATA'
         if (ierr == 1) then
            just_12z = .true.
         else
@@ -446,28 +433,7 @@ subroutine SNIP_run(n)
            if (ierr == 0) found_navy_cice = .true.
         end if
 
-        ! Estimates TB-based snow depth
-        if (SNIP_settings%TB_option == 1) then       !SSMIS
-           write (LDT_logunit,*) &
-                '[INFO] CALLING SNIP_PROC_SSMIS'
-           call SNIP_proc_ssmis(date10, TB_raw_dir, TB_product_path, &
-                SNIP_settings%ssmis_option)
-        elseif (SNIP_settings%TB_option == 2) then   !XCAL GMI
-           write (LDT_logunit,*) &
-                '[INFO] CALLING SNIP_PROC_GMI'
-           call SNIP_proc_xcalgmi(date10, TB_raw_dir, TB_product_path, &
-                SNIP_settings%ssmis_option)
-        elseif (SNIP_settings%TB_option == 3) then   !AMSR2
-           write (LDT_logunit,*) &
-                '[INFO] CALLING SNIP_PROC_AMSR2'
-           call SNIP_proc_amsr2(date10, TB_raw_dir, TB_product_path, &
-                SNIP_settings%ssmis_option)
-        end if
-
-        ! RETRIEVE PMW snow depth.
-        write (LDT_logunit,*) &
-             '[INFO] CALLING GETSMI TO GET PMW SNOW DEPTH RETRIEVALS'
-        call getsmi (date10, TB_product_path)
+        ! TODO:  Read externally generated AMSR2 snow depth retrievals.
 
         ! RETRIEVE VIIRS DATA.
         if (SNIP_settings%useviirs) then

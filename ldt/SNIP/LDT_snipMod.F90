@@ -30,13 +30,10 @@ module LDT_snipMod
      character*10  :: date10
      character(LDT_CONST_PATH_LEN) :: fracdir
      character(LDT_CONST_PATH_LEN) :: modif
-     integer :: sfcobsfmt ! EMK 20230727
+     integer :: sfcobsfmt
      character(LDT_CONST_PATH_LEN) :: sfcobs
-     character(LDT_CONST_PATH_LEN) :: ssmis
-     character(LDT_CONST_PATH_LEN) :: gmi    !kyh20201118
-     character(LDT_CONST_PATH_LEN) :: amsr2  !kyh20201217
      character(LDT_CONST_PATH_LEN) :: stmpdir
-     character(LDT_CONST_PATH_LEN) :: sstdir ! EMK 20220113
+     character(LDT_CONST_PATH_LEN) :: sstdir
      character(LDT_CONST_PATH_LEN) :: static
      character(LDT_CONST_PATH_LEN) :: unmod
      character(LDT_CONST_PATH_LEN) :: viirsdir
@@ -64,12 +61,6 @@ module LDT_snipMod
      integer       :: TB_option          !kyh20201118
 
      ! option for PMW snow depth retrieval algorithms
-     integer       :: ssmis_option
-     character(LDT_CONST_PATH_LEN) :: ssmis_raw_dir
-     character(LDT_CONST_PATH_LEN) :: gmi_raw_dir        !kyh20201118
-     character(LDT_CONST_PATH_LEN) :: amsr2_raw_dir      !kyh20201217
-     character(LDT_CONST_PATH_LEN) :: ff_file
-     character(LDT_CONST_PATH_LEN) :: fd_file            !kyh20210113
 
      ! Bratseth settings
      real :: ob_err_var
@@ -97,7 +88,8 @@ module LDT_snipMod
      integer :: galwem_res
 
      ! Output file name (prefix)
-     character*20 :: netcdf_prefix
+     character*20 :: netcdf_prefix_snip
+     character*20 :: netcdf_prefix_usafsi
 
      ! option for snow climatology
      integer       :: climo_option
@@ -147,7 +139,7 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%modif, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! New sfcobs format...EMK 20230728
+    ! New sfcobs format for WIGOS
     cfg_entry = "SNIP surface obs data format:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
@@ -162,35 +154,6 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%sfcobs, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-    ! Select TB data
-    cfg_entry = "SNIP brightness temperature data option:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%TB_option, &
-         rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-    ! Get TB data
-    if (snip_settings%TB_option == 1) then ! SSMIS
-       cfg_entry = "SNIP SSMIS data directory:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ssmis, rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (snip_settings%TB_option == 2) then ! XCAL GMI
-       cfg_entry = "SNIP XCAL GMI data directory:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%gmi, rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (snip_settings%TB_option == 3) then ! AMSR2
-       cfg_entry = "SNIP AMSR2 data directory:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%amsr2, rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    end if
 
     ! Get stmpdir
     cfg_entry = "SNIP surface temperature data directory:"
@@ -224,64 +187,11 @@ contains
     cfg_entry = "SNIP VIIRS data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%viirsdir, rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-    ! get PMW raw datasets
-    if (snip_settings%TB_option == 1) then ! SSMIS
-       cfg_entry = "SNIP SSMIS raw data directory:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, &
-            snip_settings%ssmis_raw_dir, &
-            rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (snip_settings%TB_option == 2) then ! XCAL GMI
-       cfg_entry = "SNIP XCAL GMI raw data directory:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, &
-            snip_settings%gmi_raw_dir, &
-            rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (snip_settings%TB_option == 3) then ! AMSR2
-       cfg_entry = "SNIP AMSR2 raw data directory:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, &
-            snip_settings%amsr2_raw_dir, &
-            rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    end if
-
-    ! Get option for PMW snow depth retrieval alogrithm
-    cfg_entry = "SNIP PMW snow depth retrieval algorithm option:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ssmis_option, &
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%viirsdir, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! get forest fraction for algorithm 3 and 4
-    if (snip_settings%ssmis_option==3 .or. &
-         snip_settings%ssmis_option==4) then
-       cfg_entry = "SNIP forest fraction file:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ff_file, &
-            rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    end if
-
-    ! get forest density for algorithm 4
-    if (snip_settings%ssmis_option==4) then
-       cfg_entry = "SNIP forest density file:"
-       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%fd_file, &
-            rc=rc)
-       call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    end if
+    ! TODO:  Directory for reading AMSR2 AI/ML retrievals
 
     ! get option for snow climatology
     cfg_entry = "SNIP Snow Climatology:"
@@ -367,7 +277,7 @@ contains
 
     ! Get arctmax
     cfg_entry = &
-         "SNIP max reported temperature (deg K * 10) allowed around poles:"
+        "SNIP max reported temperature (deg K * 10) allowed around poles:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%arctmax,&
@@ -653,12 +563,21 @@ contains
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! Get output file name (prefix)
-    cfg_entry = "SNIP netcdf filename prefix:"
+    ! Get SNIP output file name (prefix)
+    cfg_entry = "SNIP netcdf filename prefix for SNIP:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         snip_settings%netcdf_prefix, &
+         snip_settings%netcdf_prefix_snip, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get USAFSI output file name (prefix)
+    cfg_entry = "SNIP netcdf filename prefix for USAFSI:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, &
+         snip_settings%netcdf_prefix_usafsi, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
