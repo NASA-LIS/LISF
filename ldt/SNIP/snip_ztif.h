@@ -58,7 +58,7 @@ typedef struct SNIP_ZTIF {
 } SNIP_ZTIF;
 
 
-int  SNIP_ZTIFOpen(SNIP_ZTIF *ztif, char *fname, char *mode);
+int  SNIP_ZTIFOpen(SNIP_ZTIF *ztif, char *fname, const char *mode);
 int  SNIP_ZTIFSetup(SNIP_ZTIF *ztif, int width, int length);
 int  SNIP_ZTIFSetupRGB(SNIP_ZTIF *ztif, int width, int length);
 int  SNIP_ZTIFReadline(SNIP_ZTIF *ztif, int linenum);

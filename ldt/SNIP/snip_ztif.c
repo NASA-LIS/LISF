@@ -18,20 +18,23 @@
 #ifdef USE_LIBGEOTIFF
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "geotiffio.h"
 #include "xtiffio.h"
 #include "snip_ztif.h"
 
 int
-SNIP_ZTIFOpen(SNIP_ZTIF *ztif, char *fname, char *mode) {
+SNIP_ZTIFOpen(SNIP_ZTIF *ztif, char *fname, const char *mode) {
     // initialize the ztif object
-    ztif->fname = fname;
+    ztif->fname = malloc(strlen(fname)*sizeof(char));
+    strcpy(ztif->fname, fname);
     ztif->tif = (TIFF*)0;
     ztif->gtif = (GTIF*)0;
     ztif->rbuf = NULL;
     ztif->wbuf = NULL;
-    ztif->mode = mode;
+    ztif->mode = malloc(strlen(mode)*sizeof(char));
+    strcpy(ztif->mode, mode);
     ztif->width = 0;
     ztif->length = 0;
     ztif->size = 0;
@@ -167,6 +170,10 @@ SNIP_ZTIFClose(SNIP_ZTIF *ztif) {
     if(ztif->tif) {
         XTIFFClose(ztif->tif);
     }
+    free(ztif->fname);
+    ztif->fname = NULL;
+    free(ztif->mode);
+    ztif->mode = NULL;
 }
 
 /*EMK Only compile if LIBGEOTIFF support is enabled */

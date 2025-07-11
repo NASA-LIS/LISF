@@ -36,6 +36,17 @@ FTN(snip_ztif_frac_slice)(int *map_buffer_slice,
                           char *age_path,
                           const int *offset,
                           const int *jslice,
+                          int* ierr);
+
+void
+FTN(snip_ztif_frac_slice)(int *map_buffer_slice,
+                          int *age_buffer_slice,
+                          const int *nc_native,
+                          const int *nr_native,
+                          char *map_path,
+                          char *age_path,
+                          const int *offset,
+                          const int *jslice,
                           int* ierr)
 {
 

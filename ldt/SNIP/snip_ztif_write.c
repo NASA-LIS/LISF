@@ -26,6 +26,9 @@
 #include "snip_ztif.h"
 
 int
+FTN(snip_ztif_write)(int *buffer, char *fname, int *width, int *length);
+
+int
 FTN(snip_ztif_write)(int *buffer, char *fname, int *width, int *length) {
     int i;
     int j;
