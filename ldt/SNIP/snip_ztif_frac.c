@@ -183,12 +183,12 @@ fill_buffer(int *buffer, struct Results *r, struct Parameters p,
 }
 
 static void
-print_hrule() {
+print_hrule(void) {
     printf("------------------------------------------------------------------\n");
 }
 
 static void
-print_header(char *header) {
+print_header(const char *header) {
     print_hrule();
     printf("%s\n", header);
     print_hrule();
@@ -231,6 +231,12 @@ print_results(struct Results r) {
 // -----------------------------
 // public functions
 // -----------------------------
+
+int
+FTN(snip_ztif_frac)(int *buffer, char *snomap, char *snoage, int *offset,
+                    int *max_age, int *width, int *length,
+                    float *snow_threshold,
+                    float *bare_threshold);
 
 int
 FTN(snip_ztif_frac)(int *buffer, char *snomap, char *snoage, int *offset,
