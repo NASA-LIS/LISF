@@ -26,6 +26,7 @@
 ! 15 Oct 2024  Eric Kemp Updated error_message logic.
 ! 18 Mar 2025  Eric Kemp Fixed bug in checking for earlier 12Z analysis.
 ! 09 Jul 2025  Eric Kemp Migration to SNIP.
+! 11 Jul 2025  Eric Kemp Split getsno_nc into SNIP and USAFSI versions.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -47,7 +48,8 @@ module SNIP_analysisMod
   public :: getsfc
   public :: getsmi
   public :: getsno
-  public :: getsno_nc
+  public :: getsno_snip_nc
+  public :: getsno_usafsi_nc
   public :: getsst
   public :: getviirs
   public :: run_snow_analysis_noglacier ! EMK
@@ -2168,7 +2170,7 @@ contains
   end subroutine getsno
 
   ! Fetch SNIP data from netCDF
-  subroutine getsno_nc(date10, julhr_beg, ierr)
+  subroutine getsno_snip_nc(date10, julhr_beg, ierr)
 
     ! Imports
     use LDT_logMod, only: LDT_logunit, LDT_endrun
@@ -2195,7 +2197,7 @@ contains
     character*10 :: date10_prev
     character*90 :: message(msglns)
 
-    data routine_name / 'GETSNO_NC   '/
+    data routine_name / 'GETSNO_SNIP_NC   '/
 
     ! Find the date/time group of the previous cycle
     found = .false.
@@ -2270,7 +2272,112 @@ contains
 6200 format (/, '[INFO]', A, ': DATA FROM ', A10, ' MISSING; ',        &
          'CHECKING FOR PREVIOUS CYCLE')
 
-  end subroutine getsno_nc
+  end subroutine getsno_snip_nc
+
+  ! Fetch USAFSI data from netCDF
+  subroutine getsno_usafsi_nc(date10, julhr_beg, ierr)
+
+    ! Imports
+    use LDT_logMod, only: LDT_logunit, LDT_endrun
+    use SNIP_netcdfMod, only: SNIP_read_netcdf, &
+         SNIP_read_netcdf_12z
+    use SNIP_paramsMod, only: msglns, program_name
+    use SNIP_utilMod, only: abort_message, date10_julhr, &
+         julhr_date10
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    character*10, intent(in) :: date10
+    integer, intent(out) :: julhr_beg
+    integer, intent(out) :: ierr
+
+    ! Local variables
+    logical :: found, found_12z
+    integer :: limit, tries
+    integer :: runcycle
+    integer :: julhr
+    character*20 :: routine_name
+    character*10 :: date10_prev
+    character*90 :: message(msglns)
+
+    data routine_name / 'GETSNO_USAFSI_NC   '/
+
+    ! Find the date/time group of the previous cycle
+    found = .false.
+    found_12z = .false.
+    limit = 20
+    tries = 1
+
+    call date10_julhr(date10, julhr, program_name, routine_name)
+    julhr_beg = julhr
+
+    ! Grab prior analysis
+    do while ((.not. found) .and. (tries .le. limit))
+       julhr_beg = julhr_beg - 6
+       call julhr_date10(julhr_beg, date10_prev, program_name, &
+            routine_name)
+       call SNIP_read_netcdf(date10_prev,ierr)
+       if (ierr == 0) then
+          found = .true.
+       else
+          write (ldt_logunit,6200) trim (routine_name), date10_prev
+          tries = tries + 1
+       end if
+    end do
+
+    ! If 12Z cycle, retrieve last 12Z snow and ice age
+    read (date10(9:10), '(i2)', err=4200) runcycle
+    if (found .and. runcycle .eq. 12) then
+       found_12z = .false.
+       limit = 5
+       tries = 1
+       do while ((.not. found_12z) .and. (tries .le. limit))
+          julhr = julhr - 24
+          call julhr_date10 (julhr, date10_prev, program_name, &
+               routine_name)
+          call SNIP_read_netcdf_12z(date10_prev,ierr)
+          if (ierr == 0) then
+             found_12z = .true.
+          else
+             write (ldt_logunit,6200) trim (routine_name), date10_prev
+             tries = tries + 1
+          end if
+       end do
+    end if
+
+    ! If netCDF data could not be retrieved, pass an error code back
+    ! to the caller.  Caller will need to try the legacy SNODEP instead.
+    if (.not. found) then
+       write(LDT_logunit,*) &
+            '[WARN] Cannot find prior USAFSI analysis'
+       ierr = 2
+       ! Only return error for missing 12z analysis if
+       ! current cycle is 12z.  This avoids erroneously searching for
+       ! 0.25 deg SNODEP data, and applying climo for missing or zero
+       ! values.
+    else if (.not. found_12z .and. runcycle .eq. 12) then
+       write(LDT_logunit,*) &
+            '[WARN] Cannot find prior 12Z USAFSI analysis'
+       ierr = 1
+    else
+       ierr = 0
+    end if
+    return
+
+    ! Error handling section
+4200 continue
+    message(1) = '[ERR] ERROR CONVERTING DATA FROM CHARACTER TO INTEGER'
+    message(2) = '[ERR] DATE10 = ' // date10
+    call abort_message (program_name, routine_name, message)
+    call LDT_endrun()
+
+    ! Other format statements
+6200 format (/, '[INFO]', A, ': DATA FROM ', A10, ' MISSING; ',        &
+         'CHECKING FOR PREVIOUS CYCLE')
+
+  end subroutine getsno_usafsi_nc
 
   subroutine getsst (date10, stmpdir, sstdir)
 
