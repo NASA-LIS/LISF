@@ -126,8 +126,6 @@ subroutine SNIP_run(n)
   character(LDT_CONST_PATH_LEN) ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
   character(LDT_CONST_PATH_LEN) ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
   integer :: sfcobsfmt ! Format of sfcobs file
-  character(LDT_CONST_PATH_LEN) ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
-  !character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character*32,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character(LDT_CONST_PATH_LEN) ::  static               ! STATIC FILE DIRECTORY PATH
   character(LDT_CONST_PATH_LEN) ::  stmpdir              ! SFC TEMP DIRECTORY PATH
@@ -165,9 +163,6 @@ subroutine SNIP_run(n)
   integer :: ierr
   logical :: found_navy_cice
   logical :: just_12z
-
-  ! PMW snow depth retrievals, Yeosang Yoon
-  character(LDT_CONST_PATH_LEN) ::  TB_raw_dir          ! Brightness temperature raw file directory path
 
   maxsobs = SNIP_settings%maxsobs
 
