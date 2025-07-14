@@ -43,7 +43,6 @@ module LDT_snipMod
      real :: unkdep
      real :: minprt
      integer :: maxsobs
-     real :: minsat
      integer :: trplat(3)
      integer :: elvlim(4)
      integer :: thresh
@@ -54,7 +53,6 @@ module LDT_snipMod
      integer :: maxpixage
      real :: minbare
      real :: minfrac
-     logical :: usefrac
      logical :: useviirs
 
      ! option for brightness temperature data
@@ -238,14 +236,6 @@ contains
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! Get minsat
-    cfg_entry = "SNIP SSMIS shallow snow depth threshold (m):"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minsat,&
-         rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
     ! Get trplat
     cfg_entry = "SNIP latitudes (deg * 100) for summer climo check:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
@@ -338,18 +328,10 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get minfrac
-    cfg_entry = "SNIP min VIIRS/CDFS-II fraction to mark point as snow:"
+    cfg_entry = "SNIP min VIIRS fraction to mark point as snow:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minfrac,&
-         rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-    ! Get usefrac
-    cfg_entry = "SNIP use CDFS-II fractional snow data:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%usefrac,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
