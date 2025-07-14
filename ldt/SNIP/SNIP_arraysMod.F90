@@ -54,7 +54,6 @@ module SNIP_arraysMod
      integer,    allocatable    :: icemask          ( : , : )    ! ICE MASK (0 = NO ICE; 1 = ICE)
      integer,    allocatable    :: oldcon           ( : , : )    ! PREVIOUS DAY'S ICE CONCENTRATIONS
      integer,    allocatable    :: oldmask          ( : , : )    ! PREVIOUS DAY'S ICE FLAGS
-     integer,    allocatable    :: ssmis_icecon     ( : , : )    ! SSMIS ICE CONCENTRATIONS (PERCENT, 0-100)
      integer,    allocatable    :: snoage           ( : , : )    ! SNOW AGE (DAYS)
      integer,    allocatable    :: snoage12z        ( : , : )    ! SNOW AGE (DAYS) FROM PREVIOUS 12Z
      integer,    allocatable    :: viirsmap         ( : , : )    ! VIIRS SNOW COVERED AREA MAP
@@ -65,7 +64,6 @@ module SNIP_arraysMod
      real,       allocatable    :: ptlon            ( : , : )    ! GRID POINT LONGITUDES
      real,       allocatable    :: snoanl           ( : , : )    ! CURRENT SNOW DEPTH ANALYSIS (METERS)
      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNIP GRID
-     real,       allocatable    :: ssmis_depth      ( : , : )    ! SNOW DEPTH FROM SSMIS EDRS
      real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
      real, allocatable :: navy_icecon(:,:)
   end type SNIP_arrays_t
