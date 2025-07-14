@@ -26,9 +26,11 @@
 #include "xtiffio.h"
 #include "snip_ztif.h"
 
+/* Function prototype */
 int
 FTN(snip_ztif_read)(int *buffer, char *fname);
 
+/* Function definition */
 int
 FTN(snip_ztif_read)(int *buffer, char *fname) {
     int i;

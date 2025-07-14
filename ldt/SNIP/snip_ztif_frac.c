@@ -232,12 +232,14 @@ print_results(struct Results r) {
 // public functions
 // -----------------------------
 
+/* Function prototype */
 int
 FTN(snip_ztif_frac)(int *buffer, char *snomap, char *snoage, int *offset,
                     int *max_age, int *width, int *length,
                     float *snow_threshold,
                     float *bare_threshold);
 
+/* Function definition */
 int
 FTN(snip_ztif_frac)(int *buffer, char *snomap, char *snoage, int *offset,
                     int *max_age, int *width, int *length,

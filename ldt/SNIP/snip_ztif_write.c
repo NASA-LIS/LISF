@@ -25,9 +25,11 @@
 #include "xtiffio.h"
 #include "snip_ztif.h"
 
+/* Function prototype */
 int
 FTN(snip_ztif_write)(int *buffer, char *fname, int *width, int *length);
 
+/* Function definition */
 int
 FTN(snip_ztif_write)(int *buffer, char *fname, int *width, int *length) {
     int i;
