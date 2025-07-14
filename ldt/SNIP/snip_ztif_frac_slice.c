@@ -27,6 +27,7 @@
 
    Eric Kemp, NASA GSFC/SSAI */
 
+/* Function prototype */
 void
 FTN(snip_ztif_frac_slice)(int *map_buffer_slice,
                           int *age_buffer_slice,
@@ -38,6 +39,7 @@ FTN(snip_ztif_frac_slice)(int *map_buffer_slice,
                           const int *jslice,
                           int* ierr);
 
+/* Function definition */
 void
 FTN(snip_ztif_frac_slice)(int *map_buffer_slice,
                           int *age_buffer_slice,
