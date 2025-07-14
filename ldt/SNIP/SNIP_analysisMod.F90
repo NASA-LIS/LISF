@@ -41,8 +41,7 @@ module SNIP_analysisMod
   private
 
   ! Public methods
-  public :: find_nearest_valid_value ! EMK
-  public :: getfrac
+  public :: find_nearest_valid_value
   public :: getgeo
   public :: getobs
   public :: getsfc
@@ -52,11 +51,11 @@ module SNIP_analysisMod
   public :: getsno_usafsi_nc
   public :: getsst
   public :: getviirs
-  public :: run_snow_analysis_noglacier ! EMK
-  public :: run_snow_analysis_glacier ! EMK
+  public :: run_snow_analysis_noglacier
+  public :: run_snow_analysis_glacier
   public :: run_seaice_analysis_ssmis ! EMK
-  public :: run_seaice_analysis_navy  ! EMK
-  public :: getclimo                  ! Yeosang Yoon
+  public :: run_seaice_analysis_navy
+  public :: getclimo
 
   ! Internal constant
   real, parameter :: FILL = -1
@@ -271,207 +270,6 @@ contains
     deallocate(bitmap)
 
   end function find_nearest_valid_value
-
-  subroutine getfrac (date10, fracdir)
-
-    !*******************************************************************************
-    !*******************************************************************************
-    !**
-    !**  NAME: GET FRACTIONAL SNOW
-    !**
-    !**  PURPOSE: READ IN FRACTIONAL SNOW DATA
-    !**
-    !**  CALLED FROM: SNODEP
-    !**
-    !**  INTERFACE
-    !**  =========
-    !**   INPUT:  DATE10, FRACDIR
-    !**
-    !**   OUTPUT: SNOFRAC, USEFRAC
-    !**
-    !**  FILES ACCESSED
-    !**  ==============
-    !**  FILE NAME                                R/W DESCRIPTION
-    !**  ---------------------------------------- --- ------------------------------
-    !**  ${FRACDIR}/snofrac_0p05deg.${DATEFR}.dat  R  FRACTIONAL SNOW
-    !**
-    !**  UPDATES
-    !**  =======
-    !**  07 NOV 12  INITIAL VERSION.............................MR LEWISTON/16WS/WXE
-    !**  15 NOV 13  ADDED SEARCH BACK IF CURRENT DAY NOT FOUND..MR LEWISTON/16WS/WXE
-    !**  21 Mar 19  Adapted to LDT...Eric Kemp, NASA GSFC/SSAI
-    !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-    !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
-    !**  09 Jul 25  Ported for SNIP...Eric Kemp, NASA GSFC/SSAI
-    !*******************************************************************************
-    !*******************************************************************************
-
-    ! Imports
-    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
-    use LDT_coreMod, only: LDT_rc, LDT_domain
-    use LDT_logMod, only: LDT_logunit, LDT_endrun
-    use LDT_snipMod, only: snip_settings
-    use map_utils
-    use SNIP_arraysMod, only: SNIP_arrays
-    use SNIP_paramsMod
-    use SNIP_utilMod
-
-    ! Defaults
-    implicit none
-
-    ! Arguments
-    character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF SNIP CYCLE
-    character(LDT_CONST_PATH_LEN), intent(in)   :: fracdir ! FRACTIONAL SNOW DIRECTORY PATH
-
-    ! Local constants
-    character*8, parameter :: meshnp05 = '_0p05deg' ! MESH FOR 1/20 DEGREE FILE NAME
-
-    integer,     parameter :: meshf  = 20           ! ECE GRID MESH (20 = 1/20 DEGREE)
-    integer,     parameter :: igridf = 360 * meshf  ! SIZE OF GRID IN THE I-DIRECTION
-    integer,     parameter :: jgridf = 180 * meshf  ! SIZE OF GRID IN THE J-DIRECTION
-
-    ! Local variables
-    character*2                 :: cyclhr           ! CYCLE HOUR
-
-    character*10                :: datefr           ! DATE-TIME GROUP OF FRACTIONAL SNOW
-    character(LDT_CONST_PATH_LEN) :: file_path        ! FULLY-QUALIFIED FILE NAME
-    character*7                 :: iofunc           ! ACTION TO BE PERFORMED
-    character*90                :: message (msglns) ! ERROR MESSAGE
-    character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
-    character*10                :: yyyymmddhh
-    integer                     :: fracnt           ! NUMBER OF FRACTIONAL POINTS
-    integer                     :: i                ! SNODEP I-COORDINATE
-    integer                     :: icount           ! LOOP COUNTER
-    integer                     :: julhr            ! AFWA JULIAN HOUR
-    integer                     :: maxdays          ! NUMBER OF DAYS TO SEARCH BACK
-    integer,       allocatable  :: pntcnt  (: , :)  ! COUNT OF POINTS WITH DATA
-    integer                     :: j                ! SNODEP J-COORDINATE
-    logical                     :: isfile           ! FLAG INDICATING WHETHER FILE FOUND
-    real,          allocatable  :: infrac_0p05deg  (: , :)  ! CDFS II FRACTIONAL SNOW DATA
-    real,          allocatable  :: snocum  (: , :)  ! FRACTIONAL SNOW ACCUMULATOR
-    integer :: i_0p05deg, j_0p05deg
-    real :: rlat,rlon,ri,rj
-
-    data routine_name  / 'GETFRAC     ' /
-
-    ! ALLOCATE DATA ARRAYS.
-    allocate (infrac_0p05deg (igridf, jgridf))
-    allocate(pntcnt( ldt_rc%lnc(1), ldt_rc%lnr(1)))
-    allocate(snocum( ldt_rc%lnc(1), ldt_rc%lnr(1)))
-
-    yyyymmddhh = date10
-
-    ! INITIALIZE VARIABLES.
-    fracnt  = 0
-    icount  = 1
-    iofunc  = 'READING'
-    isfile  = .false.
-    maxdays = 3
-    message = ' '
-    pntcnt  = 0
-    snocum  = 0.0
-    SNIP_arrays%snofrac = -1
-
-    ! RETRIEVE FRACTIONAL SNOW DATA.
-    cyclhr = date10 (9:10)
-    datefr = date10 (1:8) // '09'
-
-    if (cyclhr .eq. '00' .or. cyclhr .eq. '06') then
-       call date10_julhr (datefr, julhr, program_name, routine_name)
-       julhr  = julhr  - 24
-       call julhr_date10 (julhr, datefr, program_name, routine_name)
-    end if
-
-    file_search : do while ((.not. isfile) .and.(icount .le. maxdays))
-
-       file_path = trim (fracdir) // 'snofrc' // meshnp05 // '.'       &
-            // datefr // '.dat'
-
-       inquire (file=file_path, exist=isfile)
-
-       if (isfile) then
-          write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
-          write (ldt_logunit, 6000) routine_name, iofunc, file_path
-          call putget_real (infrac_0p05deg, 'r', file_path, &
-               program_name,       &
-               routine_name, igridf, jgridf)
-
-       else
-
-          call date10_julhr (datefr, julhr, program_name, routine_name)
-          julhr  = julhr  - 24
-          icount = icount + 1
-          call julhr_date10 (julhr, datefr, program_name, routine_name)
-
-       end if
-
-    end do file_search
-
-    if (isfile) then
-
-       ! New version.  Average snow onto LDT grid.
-       do j_0p05deg = 1, jgridf
-          rlat = -89.975 + (j_0p05deg-1)*0.05
-          do i_0p05deg = 1, igridf
-             if (.not. infrac_0p05deg(i_0p05deg, j_0p05deg) > 0) cycle
-             rlon = -179.975 + (i_0p05deg-1)*0.05
-             call latlon_to_ij(LDT_domain(1)%ldtproj,rlat,rlon,ri,rj)
-             i = nint(ri)
-             if (i .lt. 1) then
-                i = i + LDT_rc%lnc(1)
-             else if (i .gt. LDT_rc%lnc(1)) then
-                i = i - LDT_rc%lnc(1)
-             end if
-             j = nint(rj)
-             if (j .lt. 1) then
-                j = 1
-             else if (j .gt. LDT_rc%lnr(1)) then
-                j = LDT_rc%lnr(1)
-             end if
-             pntcnt(i,j) = pntcnt(i,j) + 1
-             snocum(i,j) = snocum(i,j) + &
-                  infrac_0p05deg(i_0p05deg,j_0p05deg)
-          end do ! i_0p05deg
-       end do ! j_0p05deg
-
-       do j = 1,LDT_rc%lnr(1)
-          do i = 1, LDT_rc%lnc(1)
-             if (pntcnt(i,j) > 0) then
-                fracnt = fracnt + 1
-                SNIP_arrays%snofrac(i,j) = snocum(i,j) / real(pntcnt(i,j))
-             end if
-          end do ! i
-       end do ! j
-
-       write (ldt_logunit, 6200) routine_name, fracnt
-
-    else
-
-       snip_settings%usefrac = .false.
-       message(1) = '[WARN]  FRACTIONAL SNOW FILE NOT FOUND'
-       message(2) = '[WARN]  PATH = ' // trim(file_path)
-       call error_message (program_name, routine_name, yyyymmddhh, &
-            message)
-       write (LDT_logunit, 6400) routine_name, file_path
-
-    end if
-
-    ! DEALLOCATE ARRAYS.
-    deallocate (infrac_0p05deg)
-    deallocate (pntcnt)
-    deallocate (snocum)
-
-    return
-
-    ! FORMAT STATEMENTS.
-6000 format (/, '[INFO] ', A7, ': ', A7, 1X, A)
-
-6200 format (/, '[INFO]', A7, ': POINTS WITH FRACTIONAL SNOW = ', I6)
-
-6400 format (/, '[WARN]', A7, ': FILE NOT FOUND: ', A,                    &
-         /, '   WILL NOT USE FRACTIONAL SNOW DATA')
-
-  end subroutine getfrac
 
   subroutine getgeo (month, static, nc, nr, elevations)
 
@@ -2975,7 +2773,7 @@ contains
 #endif
   end subroutine getviirs
 
-  ! EMK New snow analysis excluding glaciers
+  ! Snow analysis excluding glaciers
   subroutine run_snow_analysis_noglacier(runcycle, nc, nr, landmask, &
        landice, &
        elevations, sfctmp_found, sfctmp_lis, bratseth)
@@ -3035,7 +2833,7 @@ contains
        do c = 1,nc
           if (landmask(c,r) < 0.5) then
              skip_grid_points(c,r) = .true.
-             ! EMK...Make sure prior analysis has no snow here
+             ! Make sure prior analysis has no snow here
              SNIP_arrays%snoanl(c,r) = -1
              SNIP_arrays%snoage(c,r) = -1
           else if (landice(c,r) > 0.5) then
@@ -3067,53 +2865,43 @@ contains
        end do ! c
     end do ! r
 
-    ! Adjust the first-guess towards gridded SSMIS.
-    do r = 1, nr
-       do c = 1, nc
+    ! TODO Replace with AMSR2 retrievals
+    ! ! Adjust the first-guess towards gridded SSMIS.
+    ! do r = 1, nr
+    !    do c = 1, nc
 
-          if (skip_grid_points(c,r)) cycle
+    !       if (skip_grid_points(c,r)) cycle
 
-          ! Get SSMIS value
-          satdep = misanl
-          if (SNIP_arrays%ssmis_depth(c,r) >= 0) then
-             satdep = SNIP_arrays%ssmis_depth(c,r)
-          end if
+    !       ! Get SSMIS value
+    !       satdep = misanl
+    !       if (SNIP_arrays%ssmis_depth(c,r) >= 0) then
+    !          satdep = SNIP_arrays%ssmis_depth(c,r)
+    !       end if
 
-          ! Handle SSMIS detection problem with very shallow snow.  If
-          ! below minimum depth, preserve prior analysis if larger than
-          ! SSMIS.
-          if (satdep >= 0) then
-             if (satdep .le. snip_settings%minsat) then
-                if (satdep > SNIP_arrays%olddep(c,r)) then
-                   SNIP_arrays%snoanl(c,r) = satdep
-                   updated(c,r) = .true.
-                   if (satdep > 0) then
-                      snomask(c,r) = 1
-                   end if
-                end if
-             else
-                SNIP_arrays%snoanl(c,r) = satdep
-                updated(c,r) = .true.
-                if (satdep > 0) then
-                   snomask(c,r) = 1
-                end if
-             end if
-          end if
+    !       ! Handle SSMIS detection problem with very shallow snow.  If
+    !       ! below minimum depth, preserve prior analysis if larger than
+    !       ! SSMIS.
+    !       if (satdep >= 0) then
+    !          if (satdep .le. snip_settings%minsat) then
+    !             if (satdep > SNIP_arrays%olddep(c,r)) then
+    !                SNIP_arrays%snoanl(c,r) = satdep
+    !                updated(c,r) = .true.
+    !                if (satdep > 0) then
+    !                   snomask(c,r) = 1
+    !                end if
+    !             end if
+    !          else
+    !             SNIP_arrays%snoanl(c,r) = satdep
+    !             updated(c,r) = .true.
+    !             if (satdep > 0) then
+    !                snomask(c,r) = 1
+    !             end if
+    !          end if
+    !       end if
 
-       end do ! c
-    end do ! r
+    !    end do ! c
+    ! end do ! r
 
-    ! Update the snow mask using the fractional snow
-    if (snip_settings%usefrac) then
-       do r = 1, nr
-          do c = 1, nc
-             if (skip_grid_points(c,r)) cycle
-             if (SNIP_arrays%snofrac(c,r) > snip_settings%minfrac) then
-                snomask(c,r) = 1
-             end if
-          end do ! c
-       end do ! r
-    end if ! usefrac
 
     ! Adjust snow mask based on VIIRS
     if (snip_settings%useviirs) then

@@ -354,9 +354,6 @@ subroutine SNIP_run(n)
            call getsst (date10, stmpdir, sstdir)
         end if
 
-        ! RETRIEVE FRACTIONAL SNOW DATA.
-        SNIP_settings%usefrac = .false.
-
         ! RETRIEVE SURFACE OBSERVATIONS.
         write (LDT_logunit,*) &
              '[INFO] CALLING GETOBS TO PROCESS SURFACE OBSERVATIONS'
