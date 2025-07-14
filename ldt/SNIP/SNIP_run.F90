@@ -218,8 +218,6 @@ subroutine SNIP_run(n)
      allocate (SNIP_arrays%snoanl           (nc,     nr))
      allocate (SNIP_arrays%snofrac          (nc,     nr))
      allocate (SNIP_arrays%snow_poss        (nc,     nr))
-     allocate (SNIP_arrays%ssmis_depth      (nc,     nr))
-     allocate (SNIP_arrays%ssmis_icecon     (nc,     nr))
      allocate (SNIP_arrays%sst              (nc,     nr))
      allocate (SNIP_arrays%viirsmap         (nc,     nr))
      allocate (SNIP_arrays%navy_icecon(nc,nr))
@@ -448,18 +446,15 @@ subroutine SNIP_run(n)
         call run_snow_analysis_glacier(runcycle, nc, nr, landmask, &
              landice)
 
-        ! FIXME...Try using ESPC-D or GOFS data first, and if
-        ! unsuccessful, then run the old SSMIS analysis.
+        ! Use ESPC-D or GOFS data.  SSMIS based analysis is retired.
         if (found_navy_cice) then
            write(LDT_logunit,*) &
                 '[INFO] CALLING RUN_SEAICE_ANALYSIS_NAVY'
            call run_seaice_analysis_navy(month, runcycle, nc, nr, &
                 landmask)
         else
-           write(LDT_logunit,*) &
-                '[INFO] CALLING RUN_SEAICE_ANALYSIS_SSMIS'
-           call run_seaice_analysis_ssmis(month, runcycle, nc, nr, &
-                landmask)
+           write(LDT_logunit,*)'[ERR] Navy sea ice not available!'
+           call LDT_endrun()
         end if
 
         ! PRINT OUT TOTAL NUMBER OF STATIONS PROCESSED. PRINT ANY STATION
@@ -495,8 +490,6 @@ subroutine SNIP_run(n)
      deallocate (SNIP_arrays%snoanl)
      deallocate (SNIP_arrays%snofrac)
      deallocate (SNIP_arrays%snow_poss)
-     deallocate (SNIP_arrays%ssmis_depth)
-     deallocate (SNIP_arrays%ssmis_icecon)
      deallocate (SNIP_arrays%sst)
      deallocate (SNIP_arrays%viirsmap)
      deallocate (SNIP_arrays%navy_icecon)
