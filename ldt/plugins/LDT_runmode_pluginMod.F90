@@ -46,6 +46,9 @@ contains
 
     implicit none
 !EOP
+    external :: registerldtinit
+    external :: registerldtrun
+
     external LDT_init_LSMparamproc
     external LDT_run_LSMparamproc
 
