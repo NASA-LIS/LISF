@@ -508,7 +508,10 @@ contains
     infilename = trim(SNIP_settings%netcdf_prefix_snip)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
-    if (.not. file_exists) return
+    if (.not. file_exists) then
+       write(LDT_logunit,*)'[WARN] Cannot find ', trim(infilename)
+       return
+    end if
 
     write(LDT_logunit,*) '[INFO] Reading prior SNIP NETCDF file ', &
          trim(infilename)
@@ -700,7 +703,10 @@ contains
     infilename = trim(SNIP_settings%netcdf_prefix_snip)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
-    if (.not. file_exists) return
+    if (.not. file_exists) then
+       write(LDT_logunit,*)'[WARN] Cannot find ', trim(infilename)
+       return
+    end if
 
     write(LDT_logunit,*)'[INFO] Reading prior 12Z SNIP NETCDF file ', &
          trim(infilename)
@@ -851,7 +857,10 @@ contains
     infilename = trim(SNIP_settings%netcdf_prefix_usafsi)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
-    if (.not. file_exists) return
+    if (.not. file_exists) then
+       write(LDT_logunit,*)'[WARN] Cannot find ', trim(infilename)
+       return
+    end if
 
     write(LDT_logunit,*) '[INFO] Reading prior USAFSI NETCDF file ', &
          trim(infilename)
@@ -1043,7 +1052,10 @@ contains
     infilename = trim(SNIP_settings%netcdf_prefix_usafsi)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
-    if (.not. file_exists) return
+    if (.not. file_exists) then
+       write(LDT_logunit,*)'[WARN] Cannot find ', trim(infilename)
+       return
+    end if
 
     write(LDT_logunit,*)'[INFO] Reading prior 12Z USAFSI NETCDF file ', &
          trim(infilename)

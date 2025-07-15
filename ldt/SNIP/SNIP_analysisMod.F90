@@ -1702,8 +1702,8 @@ contains
 
     ! Imports
     use LDT_logMod, only: LDT_logunit, LDT_endrun
-    use SNIP_netcdfMod, only: SNIP_read_netcdf, &
-         SNIP_read_netcdf_12z
+    use SNIP_netcdfMod, only: SNIP_read_netcdf_usafsi, &
+         SNIP_read_netcdf_usafsi_12z
     use SNIP_paramsMod, only: msglns, program_name
     use SNIP_utilMod, only: abort_message, date10_julhr, &
          julhr_date10
@@ -1741,7 +1741,7 @@ contains
        julhr_beg = julhr_beg - 6
        call julhr_date10(julhr_beg, date10_prev, program_name, &
             routine_name)
-       call SNIP_read_netcdf(date10_prev,ierr)
+       call SNIP_read_netcdf_usafsi(date10_prev,ierr)
        if (ierr == 0) then
           found = .true.
        else
@@ -1760,7 +1760,7 @@ contains
           julhr = julhr - 24
           call julhr_date10 (julhr, date10_prev, program_name, &
                routine_name)
-          call SNIP_read_netcdf_12z(date10_prev,ierr)
+          call SNIP_read_netcdf_usafsi_12z(date10_prev,ierr)
           if (ierr == 0) then
              found_12z = .true.
           else
