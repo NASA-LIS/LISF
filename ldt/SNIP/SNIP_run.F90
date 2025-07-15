@@ -120,7 +120,6 @@ subroutine SNIP_run(n)
 
   ! Local variables
   character*10               ::  date10               ! DATE-TIME GROUP OF CYCLE
-  character(LDT_CONST_PATH_LEN) ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
   character*90               ::  message    (msglns)  ! ERROR MESSAGE
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
   character(LDT_CONST_PATH_LEN) ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
@@ -186,7 +185,6 @@ subroutine SNIP_run(n)
 
      ! Copy ldt.config files to local variables
      date10 = trim(SNIP_settings%date10)
-     fracdir = trim(SNIP_settings%fracdir)
      modif = trim(SNIP_settings%modif)
      sfcobs = trim(SNIP_settings%sfcobs)
      sfcobsfmt = SNIP_settings%sfcobsfmt

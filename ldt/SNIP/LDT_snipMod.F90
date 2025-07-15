@@ -28,7 +28,6 @@ module LDT_snipMod
   type, public :: snip_t
      ! Former environment variables
      character*10  :: date10
-     character(LDT_CONST_PATH_LEN) :: fracdir
      character(LDT_CONST_PATH_LEN) :: modif
      integer :: sfcobsfmt
      character(LDT_CONST_PATH_LEN) :: sfcobs
@@ -121,13 +120,6 @@ contains
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%date10, rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-    ! Get fracdir
-    cfg_entry = "SNIP fractional snow data directory:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%fracdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get modif
