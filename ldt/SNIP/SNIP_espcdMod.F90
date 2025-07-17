@@ -513,7 +513,7 @@ contains
 
        if (lens(1) .ne. nlon .or. &
             lens(2) .ne. nlat .or. &
-            lens(3) .ne. 2 .or. &          !depth=2, updated 2024/10/31
+            (lens(3) .ne. 1 .and. lens(3) .ne. 2) .or. &
             lens(4) .ne. 1) then
           message(1) = &
                '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
