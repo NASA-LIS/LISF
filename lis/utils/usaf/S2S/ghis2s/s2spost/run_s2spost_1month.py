@@ -30,6 +30,7 @@
 
 # Standard modules
 import datetime
+from dateutil.relativedelta import relativedelta
 import os
 import pathlib
 import subprocess
@@ -51,29 +52,29 @@ def _usage():
     print("[INFO]   YYYYMM is the lead month to process")
     print("[INFO]   model_forcing is ID for atmospheric forcing for LIS")
 
-def _read_cmd_args():
+def read_cmd_args(argv, arg_max):
     """Read command line arguments."""
 
     # Check if argument count is correct.
-    if len(sys.argv) != 6:
+    if len(argv) != arg_max:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
     # Get path to config file
-    configfile = sys.argv[1]
+    configfile = argv[1]
     if not os.path.exists(configfile):
         print(f"[ERR] Config file {configfile} does not exist!")
         sys.exit(1)
 
     # Get top directory of LIS data
-    topdatadir = sys.argv[2]
+    topdatadir = argv[2]
     if not os.path.exists(topdatadir):
         print(f"[ERR] LIS data directory {topdatadir} does not exist!")
         sys.exit(1)
 
     # Get initial year and month
-    fcstyyyymm = sys.argv[3]
+    fcstyyyymm = argv[3]
     if len(fcstyyyymm) != 6:
         print("[ERR] Invalid length of initial forecast yyyymm, must be 6 characters!")
         sys.exit(1)
@@ -86,33 +87,22 @@ def _read_cmd_args():
         sys.exit(1)
 
     # Get valid lead year and month
-    yyyymm = sys.argv[4]
+    yyyymm = argv[4]
+    day=1
     if len(yyyymm) != 6:
-        print("[ERR] Invalid length of lead YYYYMM, must be 6 characters!")
-        sys.exit(1)
+        day = int(yyyymm[6:8])
     year = int(yyyymm[0:4])
     month = int(yyyymm[4:6])
     try:
-        startdate = datetime.datetime(year, month, day=1)
+        startdate = datetime.datetime(year, month, day=day)
     except ValueError:
         print("[ERR] Invalid lead YYYYMM passed to script!")
         sys.exit(1)
 
     # Get model forcing ID
-    model_forcing = sys.argv[5]
+    model_forcing = argv[5]
 
     return configfile, topdatadir, fcstdate, startdate, model_forcing
-
-def _move_files(topdatadir, startdate, model_forcing):
-    """Move CF files into common directory for single model forcing."""
-
-    curdate = startdate
-    subdir = f"{topdatadir}/cf_{model_forcing}"
-    subdir += f"_{curdate.year:04d}{curdate.month:02d}"
-    files = glob.glob(f"{subdir}/*.NC")
-    for filename in files:
-        shutil.move(filename, os.path.join(topdatadir, os.path.basename(filename)))
-    shutil.rmtree(subdir)
 
 def _is_lis_output_missing(curdate, model_forcing):
     """Checks for missing LIS output files."""
@@ -158,8 +148,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
             cmd += f"{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
             cmd += "0000.d01.nc"
 
-        cmd += f" {topdatadir}/cf_{model_forcing}_"
-        cmd += f"{startdate.year:04d}{startdate.month:02d}"
+        cmd += f" {topdatadir}"
 
         cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
 
@@ -175,30 +164,33 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
 
         curdate += delta
 
-def _proc_month(config, configfile, topdatadir, fcstdate, startdate, model_forcing):
+def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model_forcing, period):
     """Create the monthly CF file."""
 
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
 
-    # The very first day may be missing.  Gracefully handle this.
     firstdate = startdate
-    if _is_lis_output_missing(firstdate, model_forcing):
-        firstdate += datetime.timedelta(days=1)
+    if period == "MONTHLY":
+        # The very first day may be missing.  Gracefully handle this.    
+        if _is_lis_output_missing(firstdate, model_forcing):
+            firstdate += datetime.timedelta(days=1)
 
-    if startdate.month == 12:
-        enddate = datetime.datetime(year=(startdate.year + 1),
-                                    month=1,
-                                    day=1)
-    else:
-        enddate = datetime.datetime(year=startdate.year,
-                                    month=(startdate.month + 1),
-                                    day=1)
-    cmd = f"python {scriptdir}/monthly_s2spost_nc.py {configfile} "
-    workdir = f"{topdatadir}/cf_{model_forcing}_"
-    workdir += f"{startdate.year:04d}{startdate.month:02d}"
+        if startdate.month == 12:
+            enddate = datetime.datetime(year=(startdate.year + 1),
+                                        month=1,
+                                        day=1)
+        else:
+            enddate = datetime.datetime(year=startdate.year,
+                                        month=(startdate.month + 1),
+                                        day=1)
+    if period == "WEEKLY":
+        enddate = firstdate
+        enddate += relativedelta(days=6)
 
-    cmd += f" {workdir}"
-    cmd += f" {workdir}" # Use same directory
+    cmd = f"python {scriptdir}/temporal_aggregate.py {configfile} "
+
+    cmd += f" {topdatadir}"
+    cmd += f" {topdatadir}" 
     cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
     cmd += f" {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}"
     cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
@@ -210,23 +202,18 @@ def _proc_month(config, configfile, topdatadir, fcstdate, startdate, model_forci
         print("[ERR] Problem creating monthly file!")
         sys.exit(1)
 
-def _create_done_file(topdatadir, startdate, model_forcing):
-    """Create a 'done' file indicating batch job has finished."""
-    path = f"{topdatadir}/cf_{model_forcing}_"
-    path += f"{startdate.year:04d}{startdate.month:02d}/done"
-    pathlib.Path(path).touch()
-
 def _driver():
     """Main driver"""
-    configfile, topdatadir, fcstdate, startdate, model_forcing = _read_cmd_args()
+
+    configfile, topdatadir, fcstdate, startdate, model_forcing = read_cmd_args(sys.argv, len(sys.argv))
     # load config file
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forcing)
-    _proc_month(config, configfile, topdatadir, fcstdate, startdate, model_forcing)
-    _create_done_file(topdatadir, startdate, model_forcing)
-    _move_files(topdatadir, startdate, model_forcing)
+    if len(sys.argv) == 6:
+        _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forcing)
+    else:
+        _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model_forcing, sys.argv[6])
 
 # Invoke driver
 if __name__ == "__main__":

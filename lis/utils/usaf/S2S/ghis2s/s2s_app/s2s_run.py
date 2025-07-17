@@ -331,6 +331,10 @@ class S2Srun(DownloadForecasts):
         self.YYYY = '{:04d}'.format(year)
         self.MM = '{:02d}'.format(month)
         self.E2ESDIR = self.config['SETUP']['E2ESDIR']
+        self.hindcast = False
+        if self.config['SETUP']['DATATYPE'] == 'hindcast':
+            self.hindcast = True
+            self.E2ESDIR = self.config['SETUP']['E2ESDIR'] + "/hindcast/"
         self.LISFDIR = self.config['SETUP']['LISFDIR']
         self.LISHDIR = self.config['SETUP']['LISFDIR'] + 'lis/utils/usaf/S2S/'
         self.METFORC = self.config['SETUP']['METFORC']
@@ -1149,8 +1153,11 @@ class S2Srun(DownloadForecasts):
                     prev.append(last_item)
         else:
             prev = None
-        
-        [os.makedirs(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, exist_ok=True) for model in self.MODELS]
+
+        if self.hindcast:
+            [os.makedirs(self.E2ESDIR + 's2spost/' + self.MM + '/' + self.YYYY + self.MM + '/' + model, exist_ok=True) for model in self.MODELS]
+        else:
+            [os.makedirs(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, exist_ok=True) for model in self.MODELS]
         os.chdir(self.SCRDIR + 's2spost')
         self.create_symlink(self.E2ESDIR + 'lis_fcst/' + self.YYYY + self.MM + '/', 'lis_fcst')
         self.create_symlink(self.E2ESDIR + 'lis_fcst/input/', 'input')
@@ -1158,12 +1165,19 @@ class S2Srun(DownloadForecasts):
 
         jobname='s2spost_'        
         slurm_commands = []
+        monthly_commands = []
+        weekly_commands = []
         for model in self.MODELS:
-            self.create_symlink(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, model)
-            var1 = run_s2spost_9months.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
+            if self.hindcast:
+                self.create_symlink(self.E2ESDIR + 's2spost/' + self.MM + '/' + self.YYYY + self.MM + '/' + model, model)
+            else:
+                self.create_symlink(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, model)
+            var1, var2, var3 = run_s2spost_9months.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
             slurm_commands.extend(var1)
-            
-        # multi tasks per job
+            monthly_commands.extend(var2)
+            weekly_commands.extend(var3)
+
+        # processing dailies multi tasks per job
         l_sub = 27
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i in range(len(slurm_sub)):
@@ -1180,6 +1194,42 @@ class S2Srun(DownloadForecasts):
             utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
             #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
+        # processing monthlies multi tasks per job
+        jobname='s2spost_mon_'
+        prev = sorted(glob.glob(f"s2spost_0*_run.j"))
+        l_sub = 27
+        slurm_sub = self.split_list(monthly_commands, l_sub)
+        for i in range(len(slurm_sub)):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                        jobname + '{:02d}_'.format(i+1), 1, str(1), CWD, tfile.name)
+                self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 's2spost', prev=prev)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 1, CWD, command_list=slurm_sub[i])
+
+        # processing dailies multi tasks per job
+        jobname='s2spost_weekly_'
+        l_sub = 18
+        slurm_sub = self.split_list(weekly_commands, l_sub)
+        for i in range(len(slurm_sub)):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                        jobname + '{:02d}_'.format(i+1), 1, str(1), CWD, tfile.name)
+                self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 's2spost', prev=prev)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 1, CWD, command_list=slurm_sub[i])
         os.chdir(self.E2ESDIR)        
         return
 

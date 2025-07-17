@@ -38,6 +38,7 @@
 """
 
 # Standard modules
+import xarray as xr
 import configparser
 import copy
 import datetime
@@ -54,73 +55,6 @@ import numpy as np
 import yaml
 
 # pylint: enable=no-name-in-module
-
-_cell_methods = {
-    "AvgSurfT_tavg" : "time: mean area: point where land",
-    "BaseflowStor_tavg" : "time: mean area: point where land",
-    "Elevation_inst" : "area: point where land",
-    "Evap_tavg" : "time: mean area: point where land",
-    "FloodedArea_tavg" : "time: mean area: point where land",
-    "FloodedFrac_tavg" : "time: mean area: point where land",
-    "FloodStor_tavg" : "time: mean area: point where land",
-    "GWS_tavg" : "time: mean area: point where land",
-    "Greenness_inst" : "area: point where land",
-    "LWdown_f_tavg" : "time: mean",
-    "Psurf_f_tavg" : "time: mean",
-    "Qair_f_tavg" : "time: mean",
-    "Qs_acc" : "time: sum area: point where land",
-    "Qsb_acc" : "time: sum area: point where land",
-    "RelSMC_tavg" : "time: mean area: point where land",
-    "RiverStor_tavg" : "time: mean area: point where land",
-    "Snowcover_tavg" : "time: mean area: point where land",
-    "SnowDepth_tavg" : "time: mean area: point where land",
-    "SoilMoist_tavg" : "time: mean area: point where land",
-    "SoilTemp_tavg" : "time: mean area: point where land",
-    "Streamflow_tavg" : "time: mean area: point where land",
-    "SWdown_f_tavg" : "time: mean",
-    "SWE_tavg" : "time: mean area: point where land",
-    "SWS_tavg" : "time: mean area: point where land",
-    "Tair_f_max" : "time: maximum",
-    "Tair_f_min" : "time: minimum",
-    "Tair_f_tavg" : "time: mean",
-    "TotalPrecip_acc" : "time: sum",
-    "TWS_tavg" : "time: mean area: point where land",
-    "Wind_f_tavg" : "time: mean",
-}
-
-_new_standard_names = {
-    "AvgSurfT_tavg" : "surface_temperature",
-    "Elevation_inst" : "height_above_mean_sea_level",
-    "Evap_tavg" : "water_evapotranspiration_flux",
-    "LANDMASK" : "land_binary_mask",
-    "Psurf_f_tavg" : "surface_air_pressure",
-    "Qg_tavg" : "downward_heat_flux_at_ground_level_in_soil",
-    "SnowDepth_tavg" : "surface_snow_thickness",
-    "Soiltype_inst" : "soil_type",
-    "Streamflow_tavg" : "water_volume_transport_in_river_channel",
-    "TotalPrecip_acc" : "precipitation_amount",
-}
-
-_remove_standard_names_list = ["BaseflowStor_tavg", "RelSMC_tavg",
-                               "FloodedArea_tavg", "FloodedFrac_tavg",
-                               "FloodStor_tavg", "Greenness_inst",
-                               "GWS_tavg", "Landcover_inst",
-                               "Landmask_inst",
-                               "RiverDepth_tavg",
-                               "RiverStor_tavg",
-                               "SoilMoist_tavg", "Soiltype_inst",
-                               "SWS_tavg", "TWS_tavg"]
-
-_new_units = {
-    "ensemble" : "1",
-    "FloodedFrac_tavg" : "1",
-    "Greenness_inst" : "1",
-    "LANDMASK" : "1",
-    "Landmask_inst" : "1",
-    "RelSMC_tavg" : "1",
-    "Qair_f_tavg" : "1",
-    "SoilMoist_tavg" : "1",
-}
 
 # Private methods.
 def _usage():
@@ -239,263 +173,374 @@ def _create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
         sys.exit(1)
     return name
 
-def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date):
-    """Copy LDT, NoahMP and HYMAP2 fields into same file."""
-
-    src1 = nc4_dataset(noahmp_file, "r")
-    src2 = nc4_dataset(hymap2_file, "r")
-    src3 = nc4_dataset(ldtfile, "r")
-    dst = nc4_dataset(merge_file, "w", format="NETCDF4", )
-
-    # Define all dimensions, variables, and attributes from src1
+def _merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date):
+    """Copy LDT, NoahMP and HYMAP2 fields into same file using xarray."""
+    
+    # Define dimension mapping
     dimension_dict = {
-        "east_west" : "lon",
-        "north_south" : "lat",
-        "SoilMoist_profiles" : "soil_layer",
-        "SoilTemp_profiles" : "soil_layer",
-        "RelSMC_profiles" : "soil_layer",
+        "east_west": "lon",
+        "north_south": "lat", 
+        "SoilMoist_profiles": "soil_layer",
+        "SoilTemp_profiles": "soil_layer",
+        "RelSMC_profiles": "soil_layer",
     }
-    for dimname in src1.dimensions:
-        # Soil dimensions will be replaced by soil_layer, so just
-        # write it once.
-        if dimname in ["SoilTemp_profiles", \
-                       "RelSMC_profiles"]:
-            continue
-        dimname1 = dimname
-        if dimname in dimension_dict:
-            dimname1 = dimension_dict[dimname]
-        dst.createDimension(dimname1, src1.dimensions[dimname].size)
-    attrs = copy.deepcopy(src1.__dict__)
+    
+    # Define the attribute dictionaries
+    _cell_methods = {
+        "Evap_tavg": "time: mean area: point where land",
+        "Qs_acc": "time: sum area: point where land",
+        "Qsb_acc": "time: sum area: point where land",
+        "AvgSurfT_tavg": "time: mean area: point where land",
+        "SWE_tavg": "time: mean area: point where land",
+        "SnowDepth_tavg": "time: mean area: point where land",
+        "SoilMoist_tavg": "time: mean area: point where land",
+        "SoilTemp_tavg": "time: mean area: point where land",
+        "TWS_tavg": "time: mean area: point where land",
+        "GWS_tavg": "time: mean area: point where land",
+        "Snowcover_tavg": "time: mean area: point where land",
+        "Wind_f_tavg": "time: mean",
+        "Tair_f_tavg": "time: mean",
+        "Tair_f_min": "time: minimum",
+        "Tair_f_max": "time: maximum",
+        "Qair_f_tavg": "time: mean",
+        "Psurf_f_tavg": "time: mean",
+        "SWdown_f_tavg": "time: mean",
+        "LWdown_f_tavg": "time: mean",
+        "RelSMC_tavg": "time: mean area: point where land",
+        "TotalPrecip_acc": "time: sum",
+        "Streamflow_tavg": "time: mean area: point where land",
+        "RiverStor_tavg": "time: mean area: point where land",
+        "FloodStor_tavg": "time: mean area: point where land",
+        "FloodedFrac_tavg": "time: mean area: point where land",
+        "FloodedArea_tavg": "time: mean area: point where land",
+        "SWS_tavg": "time: mean area: point where land",
+        "Elevation_inst": "area: point where land",
+        "Greenness_inst": "area: point where land"
+    }
+    
+    _new_standard_names = {
+        "Evap_tavg": "water_evapotranspiration_flux",
+        "SnowDepth_tavg": "surface_snow_thickness",
+        "Elevation_inst": "height_above_mean_sea_level"
+    }
+    
+    _remove_standard_names_list = []
+    
+    _new_units = {
+        "SoilMoist_tavg": "1",
+        "Qair_f_tavg": "1"
+    }
+    
+    # Open datasets with xarray
+    ds_noahmp = xr.open_dataset(noahmp_file)
+    ds_hymap2 = xr.open_dataset(hymap2_file)
+    ds_ldt = xr.open_dataset(ldtfile)
+        
+    # Function to safely rename dimensions
+    def safe_rename_dims(dataset, rename_dict):
+        existing_dims = {k: v for k, v in rename_dict.items() if k in dataset.sizes}
+        if existing_dims:
+            return dataset.rename(existing_dims)
+        return dataset
+    
+    # Rename dimensions in all datasets (only if they exist)
+    ds_noahmp = safe_rename_dims(ds_noahmp, dimension_dict)
+    ds_hymap2 = safe_rename_dims(ds_hymap2, dimension_dict)
+    ds_ldt = safe_rename_dims(ds_ldt, dimension_dict)
+        
+    # Start with NoahMP as the base dataset
+    merged_ds = ds_noahmp.copy(deep=True)
+    
+    # Handle coordinate variables for CF convention
+    if 'lat' in merged_ds.variables and len(merged_ds['lat'].dims) == 2:
+        merged_ds = merged_ds.assign_coords({
+            'lat': merged_ds['lat'].isel(lon=0),
+            'lon': merged_ds['lon'].isel(lat=0)
+        })
+    
+    # Find soil variables by checking what actually exists
+    potential_soil_vars = ["SoilMoist_tavg", "SoilTemp_tavg", "RelSMC_tavg"]
+    actual_soil_vars = [var for var in potential_soil_vars if var in merged_ds.data_vars]
+    
+    #print("Found soil variables:", actual_soil_vars)
+    
+    # Transpose soil variables to match CF convention
+    for var in actual_soil_vars:
+        #print(f"Processing soil variable {var} with dimensions: {merged_ds[var].dims}")
+        
+        dims = list(merged_ds[var].dims)
+        if 'soil_layer' in dims:
+            if 'ensemble' in dims and 'time' not in dims:
+                merged_ds[var] = merged_ds[var].expand_dims('time', axis=1)
+                target_dims = ['ensemble', 'time', 'soil_layer', 'lat', 'lon']
+                current_dims = list(merged_ds[var].dims)
+                final_dims = [dim for dim in target_dims if dim in current_dims]
+                merged_ds[var] = merged_ds[var].transpose(*final_dims)
+            elif 'time' not in dims:
+                merged_ds[var] = merged_ds[var].expand_dims('time')
+    
+    # Handle other variables - add time dimension where needed
+    for var in merged_ds.data_vars:
+        if var not in actual_soil_vars and var not in ['lat', 'lon', 'time', 'ensemble']:
+            current_dims = list(merged_ds[var].dims)
+            #print(f"Processing variable {var} with dimensions: {current_dims}")
+            
+            if var in ["Landcover_inst", "Soiltype_inst", "Elevation_inst"]:
+                # Keep 2D for these specific variables - remove ensemble if present
+                if 'ensemble' in current_dims and len(current_dims) > 2:
+                    merged_ds[var] = merged_ds[var].isel(ensemble=0, drop=True)
+            elif len(current_dims) == 3 and 'time' not in current_dims:
+                # Add time dimension for 3D variables
+                merged_ds[var] = merged_ds[var].expand_dims('time', axis=1)
+    
+    # Apply landmask to TotalPrecip_acc and ensure correct dimension order
+    if 'TotalPrecip_acc' in merged_ds and 'LANDMASK' in ds_ldt:
+        landmask = ds_ldt['LANDMASK']
+        precip = merged_ds['TotalPrecip_acc']
+        masked_precip = xr.where(landmask == 1, precip, -9999.)
+        
+        if 'time' not in masked_precip.dims:
+            masked_precip = masked_precip.expand_dims('time', axis=1)
+        
+        # Ensure correct dimension order (ensemble, time, lat, lon)
+        target_dims = ['ensemble', 'time', 'lat', 'lon']
+        current_dims = list(masked_precip.dims)
+        final_dims = [dim for dim in target_dims if dim in current_dims]
+        merged_ds['TotalPrecip_acc'] = masked_precip.transpose(*final_dims)
+    
+    # Add HYMAP2 variables
+    src2_excludes = ["lat", "lon", "time", "ensemble", "RunoffStor_tavg", "BaseflowStor_tavg"]
+    hymap2_vars = [var for var in ds_hymap2.data_vars if var not in src2_excludes]
+    
+    for var_name in hymap2_vars:
+        var_data = ds_hymap2[var_name]
+        current_dims = list(var_data.dims)
+        
+        # Add time dimension if needed
+        if len(current_dims) == 3 and 'time' not in current_dims:
+            var_data = var_data.expand_dims('time', axis=1)
+        
+        merged_ds[var_name] = var_data
+    
+    # Add LANDMASK from LDT
+    if 'LANDMASK' in ds_ldt:
+        merged_ds['LANDMASK'] = ds_ldt['LANDMASK']
+    
+    # Create soil layer coordinate if it doesn't exist
+    if 'soil_layer' not in merged_ds.coords and 'soil_layer' in merged_ds.sizes:
+        merged_ds = merged_ds.assign_coords({
+            'soil_layer': xr.DataArray([1, 2, 3, 4], dims=['soil_layer'])
+        })
+    
+    # Add soil layer thickness
+    if 'soil_layer' in merged_ds.sizes:
+        merged_ds['soil_layer_thickness'] = xr.DataArray(
+            [0.1, 0.3, 0.6, 1.0], 
+            dims=['soil_layer'],
+            attrs={
+                "long_name": "soil layer thicknesses",
+                "units": "m"
+            }
+        )
+    
+    # Add forecast reference time
+    merged_ds['atime'] = xr.DataArray(
+        0., 
+        attrs={
+            "standard_name": "forecast_reference_time",
+            "units": "hours since " + fcst_date.strftime("%Y-%m-%d") + " 00:00"
+        }
+    )
+    
+    # Create time bounds
+    if 'time' in merged_ds.sizes:
+        time_size = merged_ds.sizes['time']
+        time_bnds_data = np.full((time_size, 2), [[-1440., 0.]])
+        
+        time_bnds = xr.DataArray(
+            time_bnds_data,
+            dims=['time', 'nv'],
+            coords={'time': merged_ds.coords['time']},
+            name='time_bnds'
+        )
+        merged_ds['time_bnds'] = time_bnds
+    
+    # Set global attributes
+    attrs = copy.deepcopy(ds_noahmp.attrs)
     attrs["Conventions"] = "CF-1.8"
-    del attrs["conventions"]
-    del attrs["missing_value"]
-    del attrs["SOIL_LAYER_THICKNESSES"]
+    if "conventions" in attrs:
+        del attrs["conventions"]
+    if "missing_value" in attrs:
+        del attrs["missing_value"]
+    if "SOIL_LAYER_THICKNESSES" in attrs:
+        del attrs["SOIL_LAYER_THICKNESSES"]
     attrs["source"] = "Noah-MP.4.0.1+template open water+HYMAP2"
-
-    dst.setncatts(attrs)
-
-    for name, variable in src1.variables.items():
-
-        # Special handling for certain variables to match CF convention
-        if name == "lat":
-            dst.createVariable(name, variable.datatype, ("lat"), zlib=True,
-                               complevel=6, shuffle=True)
-        elif name == "lon":
-            dst.createVariable(name, variable.datatype, ("lon"),zlib=True,
-                               complevel=6, shuffle=True)
-        elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
-                      "RelSMC_tavg"]:
-            dst.createVariable(name, variable.datatype, \
-                               ("ensemble", "time", "soil_layer","lat", "lon"),zlib=True,
-                               complevel=6, shuffle=True)
+    merged_ds.attrs = attrs
+        
+    # Set coordinate attributes - let xarray handle all encoding automatically
+    for coord_name in merged_ds.coords:
+        coord_attrs = copy.deepcopy(merged_ds[coord_name].attrs)
+        
+        # Remove any encoding-related attributes - let xarray handle everything
+        encoding_related = ['scale_factor', 'add_offset', '_FillValue', 'missing_value', 'units', 'calendar']
+        for attr in encoding_related:
+            if attr in coord_attrs:
+                del coord_attrs[attr]
+        
+        if coord_name == "time":
+            coord_attrs.update({
+                "axis": "T",
+                "bounds": "time_bnds",
+                "begin_date": fcst_date.strftime("%Y%m%d"),
+                "begin_time": "000000",
+                "long_name": "time"
+            })
+                
+        elif coord_name == "lat":
+            coord_attrs.update({
+                "axis": "Y",
+                "standard_name": "latitude",
+                "long_name": "latitude",
+                "vmin": 0.0,
+                "vmax": 0.0
+            })
+            
+        elif coord_name == "lon":
+            coord_attrs.update({
+                "axis": "X", 
+                "standard_name": "longitude",
+                "long_name": "longitude",
+                "vmin": 0.0,
+                "vmax": 0.0
+            })
+            
+        elif coord_name == "ensemble":
+            coord_attrs.update({
+                "axis": "E",
+                "units": "1",
+                "long_name": "Ensemble numbers"
+            })
+                
+        elif coord_name == "soil_layer":
+            coord_attrs.update({
+                "long_name": "soil layer level",
+                "axis": "Z",
+                "positive": "down"
+            })
+        
+        merged_ds[coord_name].attrs = coord_attrs
+    
+    # Set data variable attributes 
+    for var_name in merged_ds.data_vars:
+        var_attrs = copy.deepcopy(merged_ds[var_name].attrs)
+        
+        # Remove any existing encoding-related attributes from data variables
+        encoding_related = ['scale_factor', 'add_offset', '_FillValue']
+        for attr in encoding_related:
+            if attr in var_attrs:
+                del var_attrs[attr]
+        
+        # Set missing_value for data variables (but let encoding handle _FillValue)
+        if var_name not in ['atime']:
+            var_attrs['missing_value'] = -9999.0
+        
+        # Specific attribute modifications for each variable type
+        if var_name == "SoilMoist_tavg":
+            var_attrs["long_name"] = "volumetric soil moisture content"
+            var_attrs["units"] = "1"
+            
+        elif var_name == "Soiltype_inst":
+            var_attrs.update({
+                "flag_meanings": "sand loamy_sand sandy_loam silt_loam silt loam sandy_clay_loam silty_clay_loam clay_loam sandy_clay silty_clay clay organic_material water bedrock other+land-ice",
+                "valid_range": [1., 16.],
+                "flag_values": [np.float32(i) for i in range(1, 17)]
+            })
+            if "units" in var_attrs:
+                del var_attrs["units"]
+                
+        elif var_name == "Landcover_inst":
+            var_attrs.update({
+                "flag_meanings": "evergreen_needleleaf_forest evergreen_broadleaf_forest deciduous_needleleaf_forest deciduous_broadleaf_forest mixed_forests closed_shrublands open_shrublands woody_savannas savannas grasslands permanent_wetlands croplands urban_and_built-up cropland+natural_vegetation_mosaic snow_and_ice barren_or_sparsely_vegetated water wooded_tundra mixed_tundra barren_tundra water",
+                "valid_range": [1., 21.],
+                "flag_values": [np.float32(i) for i in range(1, 22)]
+            })
+            if "units" in var_attrs:
+                del var_attrs["units"]
+                
+        elif var_name == "LANDMASK":
+            var_attrs.update({
+                "flag_values": [np.float32(i) for i in range(0, 2)],
+                "flag_meanings": "water land",
+                "long_name": "land mask from LDT",
+                "units": ""
+            })
+            if "standard_name" in var_attrs:
+                del var_attrs["standard_name"]
+                
+        elif var_name == "TotalPrecip_acc":
+            var_attrs.update({
+                "units": "kg m-2",
+                "standard_name": "precipitation_amount", 
+                "long_name": "total precipitation amount",
+                "vmin": -1.e+15,
+                "vmax": 1.e+15
+            })
+        
+        elif var_name == "atime":
+            var_attrs.update({
+                "standard_name": "forecast_reference_time",
+                "units": "hours since " + fcst_date.strftime("%Y-%m-%d") + " 00:00"
+            })
+        
+        # Apply common attribute modifications
+        if var_name in _cell_methods:
+            var_attrs["cell_methods"] = _cell_methods[var_name]
+        if var_name in _new_standard_names:
+            var_attrs["standard_name"] = _new_standard_names[var_name]
+        if var_name in _remove_standard_names_list and "standard_name" in var_attrs:
+            del var_attrs["standard_name"]
+        if var_name in _new_units:
+            var_attrs["units"] = _new_units[var_name]
+            
+        merged_ds[var_name].attrs = var_attrs
+    
+    # Remove time_increment attribute if it exists
+    if 'time' in merged_ds and 'time_increment' in merged_ds['time'].attrs:
+        del merged_ds['time'].attrs['time_increment']
+    
+    # Define very minimal encoding - only valid netCDF4 backend parameters
+    encoding = {}
+    
+    for var in merged_ds.data_vars:
+        if var in ['time', 'lat', 'lon', 'ensemble', 'soil_layer','atime','time_bnds','soil_layer_thickness']:
+            # Skip coordinate variables - let xarray handle them automatically
+            continue      
         else:
-            # Need to account for new CF dimension names
-            dimensions = []
-            for dimension in variable.dimensions:
-                if dimension in dimension_dict:
-                    dimensions.append(dimension_dict[dimension])
-                else:
-                    dimensions.append(dimension)
-            if len(dimensions) == 3:
-                dimensions = ['ensemble', 'time', 'lat', 'lon']
-            if name == "Landcover_inst" or name == "Soiltype_inst" or name == "Elevation_inst":
-                dimensions = ['lat', 'lon']
-            var = dst.createVariable(name, variable.datatype,
-                                     dimensions,zlib=True, complevel=6, shuffle=True )
-            if name == "Landcover_inst":
-                var.flag_values = [np.float32(i) for i in range(1,22)]
-            elif name == "Soiltype_inst":
-                var.flag_values = [np.float32(i) for i in range(1,17)]
-        # Extra CF attributes
-        attrs = copy.deepcopy(src1[name].__dict__)
-        if name == "time":
-            attrs["calendar"] = "standard"
-            attrs["axis"] = "T"
-            attrs["bounds"] = "time_bnds"
-        elif name == "lat":
-            attrs["axis"] = "Y"
-        elif name == "lon":
-            attrs["axis"] = "X"
-        elif name == "ensemble":
-            attrs["axis"] = "E"
-        elif name in ["SoilMoist_tavg"]:
-            attrs["long_name"] = "volumetric soil moisture content"
-        elif name == "Soiltype_inst":
-            attrs["flag_meanings"] = \
-                "sand loamy_sand sandy_loam silt_loam silt loam" + \
-                " sandy_clay_loam silty_clay_loam clay_loam sandy_clay" + \
-                " silty_clay clay organic_material water bedrock" + \
-                " other+land-ice"
-            attrs["valid_range"] = [1., 16.]
-            del attrs["units"]
-        elif name == "Landcover_inst":
-            attrs["flag_meanings"] = \
-                "evergreen_needleleaf_forest evergreen_broadleaf_forest" + \
-                " deciduous_needleleaf_forest deciduous_broadleaf_forest" + \
-                " mixed_forests closed_shrublands open_shrublands" + \
-                " woody_savannas savannas grasslands permanent_wetlands" + \
-                " croplands urban_and_built-up" + \
-                " cropland+natural_vegetation_mosaic snow_and_ice" + \
-                " barren_or_sparsely_vegetated water wooded_tundra" + \
-                " mixed_tundra barren_tundra water"
-            attrs["valid_range"] = [1., 21.]
-            del attrs["units"]
-        if name in _cell_methods:
-            attrs["cell_methods"] = _cell_methods[name]
-        if name in _new_standard_names:
-            attrs["standard_name"] = _new_standard_names[name]
-        if name in _remove_standard_names_list:
-            del attrs["standard_name"]
-        if name in _new_units:
-            attrs["units"] = _new_units[name]
-        dst[name].setncatts(attrs)
+            # All other data variables - only valid netCDF4 encoding parameters
+            encoding[var] = {
+                'dtype': 'float32', 
+                'zlib': True, 
+                'complevel': 6, 
+                'shuffle': True,
+                '_FillValue': -9999.0
+            }
+    
+    # Save the merged dataset
+    try:
+        merged_ds.to_netcdf(merge_file, format='NETCDF4', encoding=encoding)
+    except Exception as e:
+        print(f"Error saving file: {e}")
+        print("Dataset structure:")
+        print(merged_ds)
+        raise
+    finally:
+        # Close datasets
+        ds_noahmp.close()
+        ds_hymap2.close() 
+        ds_ldt.close()
 
-    # Add select variables and attributes from src2
-    # In future, may want to blend RunoffStor and BaseflowStor with above (KRA)
-    src2_excludes = ["lat", "lon", "time", "ensemble", "RunoffStor_tavg",
-                     "BaseflowStor_tavg"]
-    for name, variable in src2.variables.items():
-        if name in src2_excludes:
-            continue
-        dimensions = []
-        for dimension in variable.dimensions:
-            if dimension in dimension_dict:
-                dimensions.append(dimension_dict[dimension])
-            else:
-                dimensions.append(dimension)
-        if len(dimensions) == 3:
-                dimensions = ['ensemble', 'time', 'lat', 'lon']
-        dst.createVariable(name, variable.datatype,
-                           dimensions,zlib=True, complevel=6, shuffle=True )
-        # Extra CF attributes
-        attrs = copy.deepcopy(src2[name].__dict__)
-        if name in _cell_methods:
-            attrs["cell_methods"] = _cell_methods[name]
-        if name in _new_standard_names:
-            attrs["standard_name"] = _new_standard_names[name]
-        if name in _remove_standard_names_list:
-            del attrs["standard_name"]
-        if name in _new_units:
-            attrs["units"] = _new_units[name]
-        dst[name].setncatts(attrs)
-
-    # Add LANDMASK variable and attributes from src3
-    dimensions = []
-    for dimension in src3["LANDMASK"].dimensions:
-        if dimension in dimension_dict:
-            dimensions.append(dimension_dict[dimension])
-        else:
-            dimensions.append(dimension)
-    dst.createVariable("LANDMASK", src3["LANDMASK"].datatype,
-                       dimensions,zlib=True, complevel=6, shuffle=True )
-    attrs = copy.deepcopy(src3["LANDMASK"].__dict__)
-    attrs["flag_values"] = [np.float32(i) for i in range(0,2)]
-    attrs["flag_meanings"] = "water land"
-    del attrs["standard_name"]
-    attrs["long_name"] = "land mask from LDT"
-    dst["LANDMASK"].setncatts(attrs)
-
-    # Add time_bnds variable
-    dst.createDimension("nv", 2)
-    dst.createVariable("time_bnds", "f4", ("time", "nv"))
-
-    # Add soil_layer and soil_layer_thickness variables
-    dst.createVariable("soil_layer", "i4", ("soil_layer"))
-    attrs = {
-        "long_name" : "soil layer level",
-        "axis" : "Z",
-        "positive" : "down",
-    }
-    dst["soil_layer"].setncatts(attrs)
-    dst.createVariable("soil_layer_thickness", "f4", ("soil_layer"))
-    attrs = {
-        "long_name" : "soil layer thicknesses",
-        "units" : "m",
-    }
-    dst["soil_layer_thickness"].setncatts(attrs)
-
-    # add atime forecast_reference_time
-    dst.createVariable("atime", "f8")
-    attrs = {"standard_name": "forecast_reference_time",
-             "units": "hours since " + fcst_date.strftime("%Y-%m-%d") + " 00:00"}
-    dst["atime"].setncatts(attrs)
-
-    # Write data from src1
-    for name, variable in src1.variables.items():
-        # Special handling for lat and lon, which should be 1d arrays
-        # for lat/lon projection in CF convention
-        if name == "lat":
-            dst[name][:] = src1[name][:,0]
-        elif name == "lon":
-            dst[name][:] = src1[name][0,:]
-        # Special handling for soil variables. CF convention requires
-        # switching the soil_layer and ensemble dimension.
-        elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
-                      "RelSMC_tavg"]:
-            _ns = dst.dimensions["soil_layer"].size
-            _es = dst.dimensions["ensemble"].size
-            for e in range(0, _es):
-                for i in range(0, _ns):
-                    dst[name][e,0,i,:,:] = src1[name][i,e,:,:]
-        #elif len(variable.dimensions) == 4:
-        #    dst[name][:,0,:,:,:] = src1[name][:,:,:,:]
-        elif len(variable.dimensions) == 3:
-            if name == "Landcover_inst" or name == "Soiltype_inst" or name == "Elevation_inst":
-                dst[name][:,:] = src1[name][0,:,:]
-            else:
-                dst[name][:,0,:,:] = src1[name][:,:,:]
-        elif len(variable.dimensions) == 2:
-            dst[name][:,:] = src1[name][:,:]
-        elif len(variable.dimensions) == 1:
-            dst[name][:] = src1[name][:]
-        if name == 'TotalPrecip_acc':
-            # apply LANDMASK
-            prec = np.array(src1[name][:])
-            mask = np.array(src3["LANDMASK"][:])
-            nens = prec.shape[0]
-            for i in range (0, nens):
-                prec[i,:,:] = np.where(mask ==1, prec[i,:,:],-9999.)
-            dst[name][:,0,:,:] = prec
-
-    # Write data from src2
-    for name, variable in src2.variables.items():
-        if name in src2_excludes:
-            continue
-        if len(variable.dimensions) == 4:
-            dst[name][:,0,:,:,:] = src2[name][:,:,:,:]
-        elif len(variable.dimensions) == 3:
-            dst[name][:,0,:,:] = src2[name][:,:,:]
-        elif len(variable.dimensions) == 2:
-            dst[name][:,:] = src2[name][:,:]
-        elif len(variable.dimensions) == 1:
-            dst[name][:] = src2[name][:]
-
-    # Write data from src3
-    dst["LANDMASK"][:,:] = src3["LANDMASK"][:,:]
-
-    # Write time_bnds
-    dst["time_bnds"][0,0] = -1440.
-    dst["time_bnds"][0,1] = 0.
-
-    # writ atime
-    dst["atime"][()] = 0.
-
-    # Write soil layer data
-    dst["soil_layer"][0] = 1
-    dst["soil_layer"][1] = 2
-    dst["soil_layer"][2] = 3
-    dst["soil_layer"][3] = 4
-    dst["soil_layer_thickness"][0] = 0.1
-    dst["soil_layer_thickness"][1] = 0.3
-    dst["soil_layer_thickness"][2] = 0.6
-    dst["soil_layer_thickness"][3] = 1.0
-    del dst['time'].time_increment
-
-    src1.close()
-    src2.close()
-    src3.close()
-    dst.close()
     sys.exit()
+
 # Test driver
 if __name__ == "__main__":
 
@@ -511,4 +556,4 @@ if __name__ == "__main__":
 
     _ldtfile = _config['SETUP']['supplementarydir'] + '/lis_darun/' + \
         _config["SETUP"]["ldtinputfile"]
-    _merge_files(_ldtfile, _noahmp_file, _hymap2_file, _final_file, _fcst_date)
+    _merge_files_xarray(_ldtfile, _noahmp_file, _hymap2_file, _final_file, _fcst_date)

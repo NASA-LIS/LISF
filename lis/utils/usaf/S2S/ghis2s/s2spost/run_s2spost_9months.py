@@ -32,9 +32,11 @@
 import sys
 import argparse
 import datetime
+from dateutil.relativedelta import relativedelta
 import yaml
 from ghis2s.shared import utils
 
+LEAD_WEEKS = 6
 # pylint: disable=too-many-locals, import-outside-toplevel
 def _usage():
     """Print command line usage."""
@@ -82,6 +84,8 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
     fcstdate = startdate
     curdate = startdate
     slurm_commands = []
+    monthly_commands = []
+    # process months
     for _ in range(0, total_months):
         txt = "[INFO] Submitting batch job for"
         txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:02d}"
@@ -98,16 +102,32 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
 
         if py_call:
             slurm_commands.append(cmd)
+            monthly_commands.append(cmd + f" MONTHLY")
         else:
             utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
             
         newdate = _advance_date_by_month(curdate)
         curdate = newdate
 
-    if py_call:
-        return slurm_commands
-        
+    # process weeks
+    fcstdate = startdate
+    curdate = startdate
+    # calendar date lags one day from the LISF HIST datestamp -- add a day
+    curdate += relativedelta(days=1)
+    weekly_commands = []
 
+    for _ in range(LEAD_WEEKS):
+        cmd = "python"
+        cmd += f" {scriptdir}/run_s2spost_1month.py"
+        cmd += f" {configfile} {topdatadir}"
+        cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}"
+        cmd += f" {curdate.year:04d}{curdate.month:02d}{curdate.day:02d} {model_forcing}"
+        weekly_commands.append(cmd + f" WEEKLY")
+        curdate += relativedelta(days=7)
+
+    if py_call:
+        return slurm_commands, monthly_commands, weekly_commands 
+        
 # Invoke driver
 if __name__ == "__main__":
     """Main driver."""
