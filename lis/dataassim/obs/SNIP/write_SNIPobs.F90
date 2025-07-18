@@ -42,6 +42,8 @@ subroutine write_SNIPobs(n, k, OBS_State)
   real, pointer            :: snowobs(:)
   integer                  :: status
 
+  external :: SNIP_obsname
+
   call ESMF_AttributeGet(OBS_State, "Data Update Status", &
        data_update, rc=status)
   call LIS_verify(status)
