@@ -30,8 +30,8 @@ subroutine noahmp401_setsnipvars(n, LSM_State)
 
   ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_surface
-  use LIS_logMod, only : LIS_logunit, LIS_verify, LIS_endrun
+  use LIS_coreMod, only : LIS_rc, LIS_surface
+  use LIS_logMod, only : LIS_verify, LIS_endrun
   use LIS_snowMod, only : LIS_snow_struc
   use noahmp401_lsmMod
 
@@ -59,6 +59,8 @@ subroutine noahmp401_setsnipvars(n, LSM_State)
   integer                :: status
   integer                :: ncount(LIS_rc%ngrid(n))
   integer                :: tid, gid
+
+  external :: noahmp401_snip_update
 
   call ESMF_StateGet(LSM_State, "SWE", sweField, rc=status)
   call LIS_verify(status)
