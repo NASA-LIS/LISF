@@ -29,7 +29,7 @@ subroutine noahmp401_getsnippred(n, k, obs_pred)
 
   ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc, LIS_surface
+  use LIS_coreMod, only : LIS_rc
   use LIS_DAobservationsMod
   use noahmp401_lsmMod
 
