@@ -159,7 +159,11 @@ subroutine LIS_DAobs_plugin
    use USAFSIobs_Mod,           only : USAFSIobs_setup
 #endif
 
-#if 0 
+#if ( defined DA_OBS_SNIP )
+   use SNIPobs_Mod,           only : SNIPobs_setup
+#endif
+
+#if 0
    use NASA_AMSREsm_Mod,        only : NASA_AMSREsm_setup
 #endif
 
@@ -355,6 +359,10 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_USAFSI )
    external read_USAFSIobs, write_USAFSIobs
+#endif
+
+#if ( defined DA_OBS_SNIP )
+   external read_SNIPobs, write_SNIPobs
 #endif
 
 #if 0
@@ -593,6 +601,15 @@ subroutine LIS_DAobs_plugin
    call registerdaobssetup(trim(LIS_usafsiobsId)//char(0),USAFSIobs_setup)
    call registerreaddaobs(trim(LIS_usafsiobsId)//char(0),read_USAFSIobs)
    call registerwritedaobs(trim(LIS_usafsiobsId)//char(0),write_USAFSIobs)
+
+#endif
+
+#if ( defined DA_OBS_SNIP )
+!SNIP obs 
+   call registerdaobsclass(trim(LIS_snipobsId),"LSM")
+   call registerdaobssetup(trim(LIS_snipobsId)//char(0),SNIPobs_setup)
+   call registerreaddaobs(trim(LIS_snipobsId)//char(0),read_SNIPobs)
+   call registerwritedaobs(trim(LIS_snipobsId)//char(0),write_SNIPobs)
 
 #endif
 
