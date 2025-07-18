@@ -27,7 +27,7 @@ subroutine noahmp401_updatesnipvars(n, LSM_State, LSM_Incr_State)
   ! !USES:
   use ESMF
   use LIS_coreMod
-  use LIS_logMod,   only : LIS_logunit, LIS_verify
+  use LIS_logMod,   only : LIS_verify
   use noahmp401_lsmMod
 
   ! Defaults
