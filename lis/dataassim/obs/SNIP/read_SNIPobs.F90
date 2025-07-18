@@ -48,8 +48,6 @@ subroutine read_SNIPobs(n, k, OBS_State, OBS_Pert_State)
   integer             :: hh
   integer             :: ierr
   integer             :: mm
-  integer             :: nc
-  integer             :: nr
   character(LIS_CONST_PATH_LEN) :: obsdir
   character(40)       :: prefix
   real,    pointer    :: obsl(:)
@@ -60,6 +58,9 @@ subroutine read_SNIPobs(n, k, OBS_State, OBS_Pert_State)
   integer             :: t
   real, allocatable   :: varfield(:,:)
   integer             :: yyyy
+
+  external :: neighbor_interp_input_withgrid
+  external :: neighbor_interp
 
   call ESMF_AttributeGet(OBS_State, "Data Directory",&
        obsdir, rc=status)
@@ -220,10 +221,8 @@ contains
     ! Local variables
     integer :: c
     integer :: dim_ids(3)
-    logical :: diff
     real :: dx
     real :: dy
-    integer :: i
     character(255) :: map_projection_name
     integer :: ncid
     integer :: nlat
@@ -460,7 +459,6 @@ contains
     integer :: c
     real, allocatable :: gi(:)
     real, allocatable :: go(:)
-    integer :: i
     logical*1, allocatable :: li(:)
     logical*1, allocatable :: lo(:)
     integer :: r
