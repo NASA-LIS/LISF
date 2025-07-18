@@ -320,7 +320,11 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_HYDROWEBWL )
    use hydrowebWLobs_module,   only : hydrowebwlobs_setup
 #endif
-    
+
+   external :: registerdaobssetup
+   external :: registerreaddaobs
+   external :: registerwritedaobs
+
 #if ( defined DA_OBS_SYNTHETICSM )
     external read_syntheticsmobs, write_syntheticsmobs
 #endif
@@ -521,7 +525,7 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_WUSUCLA )    
    external read_WUS_UCLAsnow, write_WUS_UCLAsnow
 #endif
-   
+
     LIS_DAobsFuncEntry%head_daobsfunc_list => null()
     
 #if ( defined DA_OBS_SYNTHETICSM )
