@@ -144,6 +144,7 @@ contains
     use JULES2D_obsMod,         only : JULES2D_obsinit
     use LVTbenchmarkOUT_obsMod, only : LVTbenchmarkOUT_obsInit
     use SMAP_smobsMod,          only : SMAP_smobsinit
+    use SMAPNRTsm_Mod,          only : SMAPNRT_smobsinit
     use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
     use SMAP_vodobsMod,         only : SMAP_vodobsinit
     use LPRM_vodobsMod,         only : LPRM_vodobsinit 
@@ -257,6 +258,7 @@ contains
     external readGIMMSMODIS_NDVIobs
     external readLVTbenchmarkOUTobs
     external readSMAPsmobs
+    external read_SMAPNRTsm
     external readSMAPvodobs
     external readLPRMvodobs 
     external readSMAPvwcobs ! MN vegwtation water content
@@ -576,6 +578,11 @@ contains
          SMAP_smobsInit)
     call registerobsread(trim(LVT_SMAPsmobsId)//char(0),&
          readSMAPsmobs)
+
+    call registerobssetup(trim(LVT_SMAPNRTsmobsId)//char(0), &
+         SMAPNRT_smobsinit)
+    call registerobsread(trim(LVT_SMAPNRTsmobsId)//char(0),&
+         read_SMAPNRTsm)
 
     call registerobssetup(trim(LVT_SMAPvodobsId)//char(0), &
          SMAP_vodobsInit)

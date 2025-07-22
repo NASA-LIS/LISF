@@ -235,6 +235,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_JULESobsId     = "JULES data"
    character*50, public,  parameter :: LVT_JULES2dobsId     = "JULES 2d data"
    character*50, public,  parameter :: LVT_SMAPsmobsId    = "SMAP soil moisture"
+   character*50, public,  parameter :: LVT_SMAPNRTsmobsId = "SMAP(NRT) soil moisture"
    character*50, public,  parameter :: LVT_SMAPvodobsId    = "SMAP vegetation optical depth" 
    character*50, public,  parameter :: LVT_LPRMvodobsId  = "LPRM vegetation optical depth"
    character*50, public,  parameter :: LVT_SMAPvwcobsId    = "SMAP vegetation water content" ! MN

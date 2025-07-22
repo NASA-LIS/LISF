@@ -167,6 +167,7 @@ LVT output methodology:                 "2d gridspace"
 | "`GRUN runoff`"                  | GRUN runoff data
 | "`COAMPSout`"                     | COAMPS forcing data
 | "`OPL E SMAP soil moisture retrieval`"     | Operational enhanced SMAP soil moisture retrieval data
+|  "`SMAP(NRT) soil moisture`"      |  SMAP L2 NRT soil moisture data
 |===
 
 .Example _lvt.config_ entry
@@ -2206,6 +2207,21 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt
 SMAP soil moisture observation directory: ../SPL3SMP.005
 SMAP soil moisture data designation:      SPL3SMP
 ....
+
+==== SMAP L2 NRT soil moisture
+
+`SMAP L2 NRT soil moisture observation directory:` specifies the location of the SMAP soil moisture observation directory.
+
+[cols="<,<",]
+|===
+| Value     | Description
+|===
+ 
+.Example _lvt.config_ entry
+....
+SMAP L2 NRT soil moisture observation directory: ./SMAP_L2_SM_NRL
+....
+
 
 ==== SMAP vegetation optical depth
 
