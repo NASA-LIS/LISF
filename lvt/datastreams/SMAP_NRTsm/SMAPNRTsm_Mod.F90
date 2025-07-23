@@ -17,6 +17,7 @@ module SMAPNRTsm_Mod
   !
   ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -50,7 +51,7 @@ module SMAPNRTsm_Mod
 
   type, public :: smapobsdec
 
-     character*255        :: odir
+     character(LVT_CONST_PATH_LEN) :: odir
      character*20         :: data_designation
      character*3          :: release_number
      integer              :: nc
