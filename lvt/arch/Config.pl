@@ -367,10 +367,10 @@ if($use_netcdf == 1) {
    if($netcdf_deflate eq "\n"){
       $netcdf_deflate=1;
    }
-   print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): ";
+   print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 1): ";
    $netcdf_deflate_level=<stdin>;
    if($netcdf_deflate_level eq "\n"){
-      $netcdf_deflate_level=9;
+      $netcdf_deflate_level=1;
    }
 }
 
