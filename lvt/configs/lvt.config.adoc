@@ -167,7 +167,7 @@ LVT output methodology:                 "2d gridspace"
 | "`GRUN runoff`"                  | GRUN runoff data
 | "`COAMPSout`"                     | COAMPS forcing data
 | "`OPL E SMAP soil moisture retrieval`"     | Operational enhanced SMAP soil moisture retrieval data
-|  "`SMAP(NRT) soil moisture`"      |  SMAP L2 NRT soil moisture data
+|  "`SMAP L2 NRT soil moisture`"      |  SMAP L2 NRT soil moisture data
 |===
 
 .Example _lvt.config_ entry
