@@ -8,50 +8,46 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! 
+!
 ! !MODULE: SMAPNRTsm_Mod
 ! \label(SMAPNRTsm_Mod)
 !
 ! !INTERFACE:
 module SMAPNRTsm_Mod
-! 
-! !USES: 
+!
+! !USES:
   use ESMF
 
   implicit none
 
-  PRIVATE 
+  PRIVATE
 !
-! !INPUT PARAMETERS: 
-! 
-! !OUTPUT PARAMETERS:
-!
-! !DESCRIPTION: 
-!  This module handles the observation plugin for the 
+! !DESCRIPTION:
+!  This module handles the observation plugin for the
 !  retrieval products from the Soil Moisture Active Passive
 !  (SMAP) mission
-! 
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  2 July 2025: Mahdi Navari, Initial Specification
-! 
+!
 !EOP
 
-!-----------------------------------------------------------------------------
+!--------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
-!-----------------------------------------------------------------------------
+!--------------------------------------------------------------------------
   PUBLIC :: SMAPNRT_smobsinit
-!-----------------------------------------------------------------------------
+!--------------------------------------------------------------------------
 ! !PUBLIC TYPES:
-!-----------------------------------------------------------------------------
+!--------------------------------------------------------------------------
   PUBLIC :: SMAPNRT_smobs
 !EOP
   type, public :: smapobsdec
 
-     character*100        :: odir
+     character*255        :: odir
      character*20         :: data_designation
-     character*3           :: release_number
+     character*3          :: release_number
      integer              :: nc
      integer              :: nr
      integer              :: mo
@@ -62,54 +58,54 @@ module SMAPNRTsm_Mod
 
      real,    allocatable    :: smobs(:,:)
      real,    allocatable    :: smtime(:,:)
-     integer*2, allocatable  :: smqc(:,:)     
-     logical                 :: startflag     
+     integer*2, allocatable  :: smqc(:,:)
+     logical                 :: startflag
 
   end type smapobsdec
 
   type(smapobsdec), allocatable:: SMAPNRT_smobs(:)
 
 contains
-  
+
 !BOP
-! 
+!
 ! !ROUTINE: SMAPNRT_smobsInit
 ! \label{SMAPNRT_smobsInit}
 !
-! !INTERFACE: 
+! !INTERFACE:
   subroutine SMAPNRT_smobsinit(i)
-! 
-! !USES: 
+!
+! !USES:
     use LVT_coreMod
     use LVT_histDataMod
-    use LVT_timeMgrMod
     use LVT_logMod
+    use LVT_timeMgrMod
 
     implicit none
 !
-! !INPUT PARAMETERS: 
-    integer,   intent(IN) :: i 
-! 
+! !INPUT PARAMETERS:
+    integer,   intent(IN) :: i
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This subroutine initializes and sets up the data structures required
-!  for reading SMAP L2 NRT soil moisture data. 
-! 
+!  for reading SMAP L2 NRT soil moisture data.
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
-! 
+! !REVISION HISTORY:
+!
 !EOP
 
-    integer         ezlh_convert
     integer            :: npts
     integer                 :: ease_nc,ease_nr
-    type(ESMF_TimeInterval) :: alarmInterval
-    type(ESMF_Time)         :: alarmTime
-    integer                 :: status, rc
+    integer                 :: status
 
-    if(.not.allocated(SMAPNRT_smobs)) then 
+    external :: neighbor_interp_input
+    external :: system
+
+    if (.not.allocated(SMAPNRT_smobs)) then
        allocate(SMAPNRT_smobs(LVT_rc%nDataStreams))
     endif
 
