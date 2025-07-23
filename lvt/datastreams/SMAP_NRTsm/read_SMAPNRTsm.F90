@@ -18,6 +18,7 @@ subroutine read_SMAPNRTsm(source)
   !
   ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -48,9 +49,9 @@ subroutine read_SMAPNRTsm(source)
   character*8       :: yyyymmdd
   character*4       :: yyyy
   character*2       :: mm,dd,hh
-  character*255     :: list_files
+  character(LVT_CONST_PATH_LEN) :: list_files
   integer           :: ftn,ierr
-  character*255     :: fname
+  character(LVT_CONST_PATH_LEN) :: fname
   integer           :: mn_ind
   integer           :: mn, ss
   real              :: gmt
