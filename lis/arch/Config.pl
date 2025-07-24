@@ -611,12 +611,12 @@ if($use_netcdf == 1) {
       $netcdf_deflate=1;
    }
 
-   print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): ";
+   print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 1): ";
    $netcdf_deflate_level=<stdin>;
    $netcdf_deflate_level=~s/ *#.*$//;
    chomp($netcdf_deflate_level);
    if($netcdf_deflate_level eq ""){
-      $netcdf_deflate_level=9;
+      $netcdf_deflate_level=1;
    }
 }
 
