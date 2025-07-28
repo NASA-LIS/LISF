@@ -20,7 +20,6 @@ subroutine LVT_run_SNIPpost()
 
   ! Local variables
   type(LVT_SNIPpost_t) :: SNIPpost
-  integer :: i
 
   call SNIPpost%new()
   call SNIPpost%read_snip_ncfile()
