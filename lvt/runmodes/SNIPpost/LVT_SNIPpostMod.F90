@@ -519,7 +519,7 @@ contains
 
     ! Local variables
     real :: griddesci(50), griddesco(50)
-    real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
+    real :: alat, alon
     integer :: nc_out, nr_out
     integer, allocatable :: n11(:)
     real, allocatable :: rlat_bin(:)
@@ -541,10 +541,6 @@ contains
     character(len=255) :: fname
     integer :: ftn, rc, status2, iret
     integer :: c,r
-    integer :: igrib
-    character(len=8) :: yyyymmdd
-    character(len=4) :: hhmm
-    integer :: idate8, idate4
     integer :: gridDefinitionTemplateNumber
     character(len=255) :: msg
     integer :: grid_definition
@@ -553,6 +549,12 @@ contains
     logical :: found
 
     integer, external :: LVT_create_subdirs
+    external :: upscaleByAveraging_input
+    external :: pstoll
+    external :: upscaleByAveraging
+    external :: bilinear_interp
+    external :: upscaleByMode
+    external :: neighbor_interp
 
     ! Make sure output directory exists
     inquire(file=trim(LVT_rc%output_dir), &
@@ -579,11 +581,11 @@ contains
 
     ! Set the output grid description
     if (trim(gridID) .eq. trim(GLOBAL_LL0P25)) then
-       call set_griddesco_global_ll0p25(this, griddesco)
+       call set_griddesco_global_ll0p25(griddesco)
     else if (trim(gridID) .eq. trim(NH_PS16)) then
-       call set_griddesco_nh_ps16(this, griddesco)
+       call set_griddesco_nh_ps16(griddesco)
     else if (trim(gridID) .eq. trim(SH_PS16)) then
-       call set_griddesco_sh_ps16(this, griddesco)
+       call set_griddesco_sh_ps16(griddesco)
     end if
 
     ! Useful grid variables for later
@@ -1336,13 +1338,12 @@ contains
 
   ! Internal subroutine for setting griddesco for global lat/lon 0.25
   ! deg grid
-  subroutine set_griddesco_global_ll0p25(this, griddesco)
+  subroutine set_griddesco_global_ll0p25(griddesco)
 
     ! Defaults
     implicit none
 
     ! Arguments
-    class(LVT_SNIPpost_t), intent(inout) :: this
     real, intent(inout) ::  griddesco(50)
 
     griddesco(:) = 0
@@ -1373,20 +1374,18 @@ contains
 
   ! Internal subroutine for setting griddesco for Northern Hemisphere
   ! 16th Mesh polar stereographic grid, in GRIB1.
-  subroutine set_griddesco_nh_ps16(this, griddesco)
-
-    ! Imports
-    use LVT_logMod, only: LVT_logunit
+  subroutine set_griddesco_nh_ps16(griddesco)
 
     ! Defaults
     implicit none
 
     ! Arguments
-    class(LVT_SNIPpost_t), intent(inout) :: this
     real, intent(inout) ::  griddesco(50)
 
     ! Local variables
-    real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
+    real :: xmesh, xpnmcaf, ypnmcaf, orient, alat, alon
+    external :: pstoll
+    external :: compute_earth_coord
 
     xmesh = 23.813 ! Per 557WW GRIB1 manual
     xpnmcaf = 513
@@ -1425,20 +1424,17 @@ contains
 
   ! Internal subroutine for setting griddesco for Southern Hemisphere
   ! 16th Mesh polar stereographic grid, in GRIB1.
-  subroutine set_griddesco_sh_ps16(this, griddesco)
-
-    ! Imports
-    use LVT_logMod, only: LVT_logunit
+  subroutine set_griddesco_sh_ps16(griddesco)
 
     ! Defaults
     implicit none
 
     ! Arguments
-    class(LVT_SNIPpost_t), intent(inout) :: this
     real, intent(inout) ::  griddesco(50)
 
     ! Local variables
-    real :: xmesh, xpnmcaf, ypnmcaf, orient, xj, xi, alat, alon
+    real :: xmesh, xpnmcaf, ypnmcaf, orient, alat, alon
+    external :: pstoll
 
     xmesh = 23.813 ! Per 557WW GRIB1 manual
     xpnmcaf = 513
@@ -1702,9 +1698,8 @@ contains
     ! Local variables
     integer :: igrib, rc, status2
     character(len=255) :: msg
-    character(len=4) :: cyyyy
     character(len=2) :: cmm, cdd, chh
-    integer :: iyyyy, imm, idd, ihh, iyear, iyoc, ic
+    integer :: imm, idd, ihh, iyear, iyoc, ic
 
 #if (defined USE_ECCODES)
     call grib_new_from_samples(igrib, "GRIB1", rc)
@@ -2115,7 +2110,7 @@ contains
 
   ! Internal subroutine for writing polar stereographic output in netCDF.
   ! For testing purposes.
-  subroutine write_netcdf_ps(griddesco, nc_out, nr_out, go)
+  subroutine write_netcdf_ps(nc_out, nr_out, go)
 
     ! Imports
     use LVT_coreMod, only: LVT_rc
@@ -2126,7 +2121,6 @@ contains
     implicit none
 
     ! Arguments
-    real, intent(in) :: griddesco(50)
     integer, intent(in) :: nc_out
     integer, intent(in) :: nr_out
     real, intent(in) :: go(nc_out*nr_out)
@@ -2138,14 +2132,12 @@ contains
     integer :: dim_ids(2)
     integer :: snoanl_varid
     integer :: lon_varid, lat_varid, xc_varid, yc_varid
-    character*4 :: cyyyy
-    character*2 :: cmm,cdd,chh
-    character*120 :: time_units
     real, allocatable :: lats(:,:), lons(:,:)
     real, allocatable :: xc(:), yc(:)
-    integer :: i,j,c,r
+    integer :: c, r
     real, allocatable :: snoanl(:,:)
     real :: alat, alon
+    external :: pstoll
 
     outfilename = "foo.nc"
     write(LVT_logunit,*)'[INFO] Creating netCDF file ', trim(outfilename)
@@ -2331,6 +2323,8 @@ contains
     integer :: i1, i2, j1, j2
     integer, external :: get_fieldpos
     real, parameter     :: fill = -9999.0
+    external :: compute_earth_coord
+    external :: compute_grid_coord
 
     mo = npts
     if (trim(afwa_grid) .ne. NH_PS16 .and. &
@@ -2403,6 +2397,8 @@ contains
     real                :: xi, yi
     integer, external   :: get_fieldpos
     real, parameter     :: fill = -9999.0
+    external :: compute_earth_coord
+    external :: compute_grid_coord
 
     mo = npts
     if (trim(afwa_grid) .ne. NH_PS16 .and. &
