@@ -1,10 +1,12 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
-!-------------------------END NOTICE -- DO NOT EDIT----------------------- 
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 ! !REVISION HISTORY: 
 ! 27 Sep 2014: Augusto Getirana, Initial implementation
 ! 30 Jan 2016: Augusto Getirana, Adapt to run in LIS v7.1 

@@ -1,9 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center
-! Land Information System Framework (LISF)
-! Version 7.5
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2015 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -49,8 +47,8 @@ module HYMAP3_routingMod
 !-----------------------------------------------------------------------------
   public :: HYMAP3_routingInit
   public :: HYMAP3_logunit ! file unit number used for diagnostic logging
-  public :: HYMAP3_gather_tiles_int
-  public :: HYMAP3_gather_tiles
+!  public :: HYMAP3_gather_tiles_int
+!  public :: HYMAP3_gather_tiles
   public :: HYMAP3_map_g2l
   public :: HYMAP3_map_gxy2l_index
   public :: HYMAP3_map_l2g_index
@@ -196,8 +194,8 @@ module HYMAP3_routingMod
   real,   allocatable  :: rivstotmp(:,:)     !River Storage [m3]
   real,   allocatable  :: fldstotmp(:,:)     !Flood Storage [m3]
   real,   allocatable  :: fldfrctmp(:,:)     !Flooded Fraction [m3]
-  integer                   :: enable2waycpl
-  real                        :: fldfrc2waycpl
+  integer              :: enable2waycpl
+  real                 :: fldfrc2waycpl
 
 !ag(27Apr2020)
 ! === urban drainage and flood modeling ===
@@ -704,13 +702,12 @@ contains
       call ESMF_ConfigGetAttribute(LIS_config,&
            HYMAP3_routing_struc(n)%sealevelflag,rc=status)
       if(HYMAP3_routing_struc(n)%sealevelflag==1)then
-!ag(27Jul2025)
-!        call ESMF_ConfigFindLabel(LIS_config,&
-!             "HYMAP3 sea level time series length:",rc=status)
-!        call ESMF_ConfigGetAttribute(LIS_config,&
-!             HYMAP3_routing_struc(n)%ntsealevel,rc=status)
-!        call LIS_verify(status,&
-!             "HYMAP3 sea level time series length: not defined")
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP3 sea level time series length:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP3_routing_struc(n)%ntsealevel,rc=status)
+        call LIS_verify(status,&
+             "HYMAP3 sea level time series length: not defined")
 
         call ESMF_ConfigFindLabel(LIS_config,&
              "HYMAP3 sea level input directory:",rc=status)
@@ -726,9 +723,8 @@ contains
         call LIS_verify(status,&
              "HYMAP3 sea level header filename: not defined")
 
-        !ag(27Jul2025)
-        call HYMAP3_read_header_size1(trim(HYMAP3_routing_struc(n)%sealevelheader),&
-             HYMAP3_routing_struc(n)%nsealevel,HYMAP3_routing_struc(n)%ntsealevel)
+        call HYMAP3_read_header_size(trim(HYMAP3_routing_struc(n)%sealevelheader),&
+             HYMAP3_routing_struc(n)%nsealevel)
 
         call ESMF_ConfigFindLabel(LIS_config,&
            "HYMAP3 sea level outlet list:",rc=status)
@@ -762,9 +758,6 @@ contains
              HYMAP3_routing_struc(n)%biffile,rc=status)
         call LIS_verify(status,&
              "HYMAP3 river bifurcation pathway file: not defined")
-        !ag(27Jul2025)
-        !get number of bifurcations and elevations
-        call HYMAP3_read_header_size1(HYMAP3_routing_struc(n)%biffile,HYMAP3_routing_struc(n)%nbif,HYMAP3_routing_struc(n)%nbifelv)
       endif
     enddo
  
@@ -786,20 +779,19 @@ contains
            HYMAP3_routing_struc(n)%resopflag,default=0,rc=status)
 
       if(HYMAP3_routing_struc(n)%resopflag==1)then
-!ag(27Jul2025)
-!        call ESMF_ConfigFindLabel(LIS_config,&
-!             "HYMAP3 number of reservoirs:",rc=status)
-!        call ESMF_ConfigGetAttribute(LIS_config,&
-!             HYMAP3_routing_struc(n)%nresop,rc=status)
-!        call LIS_verify(status,&
-!             "HYMAP3 number of reservoirs: not defined")
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP3 number of reservoirs:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP3_routing_struc(n)%nresop,rc=status)
+        call LIS_verify(status,&
+             "HYMAP3 number of reservoirs: not defined")
 
-!        call ESMF_ConfigFindLabel(LIS_config,&
-!             "HYMAP3 reservoir operation input time series length:",rc=status)
-!        call ESMF_ConfigGetAttribute(LIS_config,&
-!             HYMAP3_routing_struc(n)%ntresop,rc=status)
-!        call LIS_verify(status,&
-!             "HYMAP3 reservoir operation input time series length: not defined")
+        call ESMF_ConfigFindLabel(LIS_config,&
+             "HYMAP3 reservoir operation input time series length:",rc=status)
+        call ESMF_ConfigGetAttribute(LIS_config,&
+             HYMAP3_routing_struc(n)%ntresop,rc=status)
+        call LIS_verify(status,&
+             "HYMAP3 reservoir operation input time series length: not defined")
 
         call ESMF_ConfigFindLabel(LIS_config,&
              "HYMAP3 reservoir operation input directory:",rc=status)
@@ -814,9 +806,6 @@ contains
              HYMAP3_routing_struc(n)%resopheader,rc=status)
         call LIS_verify(status,&
              "HYMAP3 reservoir operation header filename: not defined")
-        !ag(27Jul2025)
-        call HYMAP3_read_header_size1(trim(HYMAP3_routing_struc(n)%resopheader),&
-             HYMAP3_routing_struc(n)%nresop,HYMAP3_routing_struc(n)%ntresop)
       !ag(1Apr2025)
       !Yassin's scheme
       elseif(HYMAP3_routing_struc(n)%resopflag==2)then
@@ -833,9 +822,6 @@ contains
              HYMAP3_routing_struc(n)%resopheader,rc=status)
         call LIS_verify(status,&
            "HYMAP3 reservoir list: not defined")
-        !ag(27Jul2025)
-        call HYMAP3_read_header_size(trim(HYMAP3_routing_struc(n)%resopheader),&
-             HYMAP3_routing_struc(n)%nresop)
       endif
     enddo
 
@@ -1001,6 +987,7 @@ contains
       !ag(4Apr2025)
       !Yassin's scheme 
       elseif(HYMAP3_routing_struc(n)%resopflag==2)then
+        call get_resop_count(trim(HYMAP3_routing_struc(n)%resopheader),HYMAP3_routing_struc(n)%nresop) 
         allocate(HYMAP3_routing_struc(n)%resoploc(HYMAP3_routing_struc(n)%nresop))
         allocate(HYMAP3_routing_struc(n)%resoploc_dwn(HYMAP3_routing_struc(n)%nresop))
         allocate(HYMAP3_routing_struc(n)%resoploc_glb(HYMAP3_routing_struc(n)%nresop))
@@ -1251,7 +1238,8 @@ contains
              HYMAP3_routing_struc(n)%outlet,&
              HYMAP3_routing_struc(n)%seqx,&
              HYMAP3_routing_struc(n)%seqy,HYMAP3_routing_struc(n)%next)
-    
+
+!#if 0    
 #if (defined SPMD)
         call MPI_ALLGATHERV(HYMAP3_routing_struc(n)%seqx,&
              LIS_rc%nroutinggrid(n),MPI_INTEGER,&
@@ -1269,6 +1257,7 @@ contains
              MPI_INTEGER,&
              LIS_mpi_comm,status)
 #endif
+!#endif
 
         allocate(tmp_real(LIS_rc%lnc(n),LIS_rc%lnr(n)))
         allocate(tmp_real_nz(LIS_rc%lnc(n),LIS_rc%lnr(n),&
@@ -1773,6 +1762,7 @@ print*,'done'
         where(HYMAP3_routing_struc(n)%resopoutmin==real(HYMAP3_routing_struc(n)%imis).or.HYMAP3_routing_struc(n)%resopoutmin<0.)&
               HYMAP3_routing_struc(n)%resopoutmin=0.
 
+#if 0
         !ag(11Oct2024)
         allocate(elevtn_glb(LIS_rc%glbnroutinggrid(n)))
         allocate(grarea_glb(LIS_rc%glbnroutinggrid(n)))
@@ -1814,6 +1804,19 @@ print*,'done'
         deallocate(rivwth_glb)
         deallocate(rivstomax_glb)
         deallocate(fldstomax_glb)
+#endif
+
+        do iresop=1,HYMAP3_routing_struc(n)%nresop
+          ic=HYMAP3_routing_struc(n)%resoploc(iresop)
+          HYMAP3_routing_struc(n)%elevtn_resop(iresop)=HYMAP3_routing_struc(n)%elevtn(ic)
+          HYMAP3_routing_struc(n)%fldhgt_resop(iresop,:)=HYMAP3_routing_struc(n)%fldhgt(ic,:)
+          HYMAP3_routing_struc(n)%fldstomax_resop(iresop,:)=HYMAP3_routing_struc(n)%fldstomax(ic,:,1)
+          HYMAP3_routing_struc(n)%grarea_resop(iresop)=HYMAP3_routing_struc(n)%grarea(ic)
+          HYMAP3_routing_struc(n)%rivstomax_resop(iresop)=HYMAP3_routing_struc(n)%rivstomax(ic,1)
+          HYMAP3_routing_struc(n)%rivelv_resop(iresop)=HYMAP3_routing_struc(n)%rivelv(ic)
+          HYMAP3_routing_struc(n)%rivlen_resop(iresop)=HYMAP3_routing_struc(n)%rivlen(ic)
+          HYMAP3_routing_struc(n)%rivwth_resop(iresop)=HYMAP3_routing_struc(n)%rivwth(ic,1)
+        enddo
 
       !Yassin's scheme
       elseif(HYMAP3_routing_struc(n)%resopflag==2)then
@@ -1943,7 +1946,7 @@ print*,'done'
        if(HYMAP3_routing_struc(n)%managflag==1)then
           !get number of water management locations
           call HYMAP3_read_header_size(HYMAP3_routing_struc(n)%managheader,HYMAP3_routing_struc(n)%nmanag)
-          HYMAP3_routing_struc(n)%nmanagcoef=12
+          HYMAP3_routing_struc(n)%nmanagcoef=11
           allocate(HYMAP3_routing_struc(n)%managqmax(HYMAP3_routing_struc(n)%nmanag))
           allocate(HYMAP3_routing_struc(n)%managact(HYMAP3_routing_struc(n)%nmanag))
           allocate(HYMAP3_routing_struc(n)%managloc(HYMAP3_routing_struc(n)%nmanag,2))
@@ -1964,9 +1967,8 @@ print*,'done'
     !ag(7Sep2022) - read bifurcation pathway file
     do n=1, LIS_rc%nnest
       if(HYMAP3_routing_struc(n)%bifflag==1)then
-!ag(27Jul2025)
-!        !get number of bifurcations and elevations
-!        call HYMAP3_read_header_size1(HYMAP3_routing_struc(n)%biffile,HYMAP3_routing_struc(n)%nbif,HYMAP3_routing_struc(n)%nbifelv)
+        !get number of bifurcations and elevations
+        call HYMAP3_read_header_bifurcation(HYMAP3_routing_struc(n)%biffile,HYMAP3_routing_struc(n)%nbif,HYMAP3_routing_struc(n)%nbifelv)
         allocate(HYMAP3_routing_struc(n)%bifloc(HYMAP3_routing_struc(n)%nbif,2))
         allocate(HYMAP3_routing_struc(n)%bifelv(HYMAP3_routing_struc(n)%nbif))
         allocate(HYMAP3_routing_struc(n)%bifdelv(HYMAP3_routing_struc(n)%nbifelv))
@@ -1988,6 +1990,7 @@ print*,'done'
              HYMAP3_routing_struc(n)%biflen,&
              HYMAP3_routing_struc(n)%bifwth)
 
+#if 0
         allocate(elevtn_glb(LIS_rc%glbnroutinggrid(n)))
         allocate(grarea_glb(LIS_rc%glbnroutinggrid(n)))
         allocate(rivelv_glb(LIS_rc%glbnroutinggrid(n)))
@@ -2008,6 +2011,7 @@ print*,'done'
           call HYMAP3_gather_tiles(n,HYMAP3_routing_struc(n)%fldhgt(:,iz),fldhgt_glb(:,iz))
           call HYMAP3_gather_tiles(n,HYMAP3_routing_struc(n)%fldstomax(:,iz,1),fldstomax_glb(:,iz))
         enddo 
+#endif
 
         do ibif=1,HYMAP3_routing_struc(n)%nbif
           icg=HYMAP3_routing_struc(n)%bifloc(ibif,1)
@@ -2015,9 +2019,12 @@ print*,'done'
             bifelv1=HYMAP3_routing_struc(n)%bifelv(ibif)+HYMAP3_routing_struc(n)%bifdelv(ielv)
             call HYMAP3_get_volume_profile(HYMAP3_routing_struc(n)%nz,dble(elevtn_glb(icg)),dble(fldhgt_glb(icg,:)),dble(fldstomax_glb(icg,:)),&
                  dble(grarea_glb(icg)),dble(rivstomax_glb(icg)),dble(rivelv_glb(icg)),dble(rivlen_glb(icg)),dble(rivwth_glb(icg)),bifelv1,bifsto1)
+!            call HYMAP3_get_volume_profile(HYMAP3_routing_struc(n)%nz,dble(elevtn(icg)),dble(fldhgt(icg,:)),dble(fldstomax(icg,:)),&
+!                 dble(grarea(icg)),dble(rivstomax(icg)),dble(rivelv(icg)),dble(rivlen(icg)),dble(rivwth(icg)),bifelv1,bifsto1)
             HYMAP3_routing_struc(n)%bifsto(ibif,ielv)=bifsto1
           enddo
         enddo
+#if 0
         deallocate(elevtn_glb)
         deallocate(fldhgt_glb)
         deallocate(grarea_glb)
@@ -2026,6 +2033,7 @@ print*,'done'
         deallocate(rivwth_glb)
         deallocate(rivstomax_glb)
         deallocate(fldstomax_glb)
+#endif
       endif
     enddo
 
@@ -2686,6 +2694,15 @@ print*,'done'
 
   end subroutine read_netcdf_1d_real
   !===============================================================================
+  subroutine get_resop_count(infile,nresop)
+    implicit none
+    character(*), intent(in)  :: infile
+    integer,      intent(out) :: nresop
+    open(1,file=trim(infile),status='old')
+    read(1,*)nresop
+    close(1)
+  end subroutine get_resop_count
+  !===============================================================================
   subroutine HYMAP3_read_header_resop_yassin(n,yheader,inst,local_index,down_local_index,glb_index,down_glb_index,nc_index)
     use LIS_logMod
     implicit none
@@ -3083,33 +3100,6 @@ print*,'done'
   end subroutine HYMAP3_read_header_size
   !=============================================
   !=============================================  
-  !ag(27Jul2025)
-  subroutine HYMAP3_read_header_size1(yheader,isize,isize1)
-    use LIS_logMod
-    implicit none
-    character(*), intent(in)    :: yheader
-    integer,      intent(out)   :: isize,isize1
-    logical                     :: file_exists
-          
-    inquire(file=yheader,exist=file_exists)
-    if(file_exists) then
-      write(LIS_logunit,*)'read header size '//trim(yheader)
-      open(2,file=trim(yheader), status='old')
-      read(2,*,end=10)isize,isize1
-      close(2) 
-    else       
-      write(LIS_logunit,*) 'header '//trim(yheader)
-      write(LIS_logunit,*) 'failed in opening file in HYMAP3_routingMod'
-      call LIS_endrun()
-    endif
-    return 
-10  continue
-    write(LIS_logunit,*) 'check header size in file '//trim(yheader)
-    call LIS_endrun()
-        
-  end subroutine HYMAP3_read_header_size1
-  !=============================================
-  !=============================================  
   subroutine HYMAP3_read_outlet_list(n,yheader,inst,id,local_index)
     use LIS_logMod
     implicit none
@@ -3208,6 +3198,7 @@ print*,'done'
   end subroutine HYMAP3_get_discharge_data
   !=============================================
   !=============================================  
+!  subroutine HYMAP3_read_header_resop(n,yheader,inst,yqname,local_index,down_local_index,glb_index,down_glb_index,outmin,resoptype)
   subroutine HYMAP3_read_header_resop(n,yheader,inst,yqname,local_index,down_local_index,glb_index,down_glb_index,outmin,resoptype)
                
     use LIS_logMod
@@ -3230,13 +3221,12 @@ print*,'done'
       write(LIS_logunit,*)'[read_header] get stations info: name and coordinates'
       write(LIS_logunit,*)'[read_header] ',yheader,inst
       open(2,file=trim(yheader), status='old')
-      !ag(27Jul2025)
-      read(2,*)
       do ist=1,inst
         read(2,*,end=10)yqname(ist),ix,iy,outmin(ist),resoptype(ist)
         call HYMAP3_map_gxy2l_index(n,ix,iy,local_index(ist))
         glb_index(ist) = HYMAP3_routing_struc(n)%sindex(ix,iy)
-        down_glb_index(ist)=HYMAP3_routing_struc(n)%next_glb(glb_index(ist))
+!        down_glb_index(ist)=HYMAP3_routing_struc(n)%next_glb(glb_index(ist))
+        down_index(ist)=HYMAP3_routing_struc(n)%next(glb_index(ist))
         ix_down=HYMAP3_routing_struc(n)%nextx(ix,iy)
         iy_down=HYMAP3_routing_struc(n)%nexty(ix,iy)
         call HYMAP3_map_gxy2l_index(n,ix_down,iy_down,down_local_index(ist))
@@ -3324,6 +3314,8 @@ print*,'done'
 
   end subroutine HYMAP3_read_time_series
   !============================================= 
+
+!#if 0
 !ag(27Apr2020)
 ! ================================================
 !BOP
@@ -3428,6 +3420,7 @@ subroutine HYMAP3_gather_tiles(n,var,var_glb)
   enddo
 
 end subroutine HYMAP3_gather_tiles
+!#endif
 ! ================================================
 !BOP
 ! !ROUTINE: HYMAP3_map_g2l
@@ -3528,5 +3521,5 @@ subroutine HYMAP3_map_l2g_index(n, local_index,glb_index)
 
 end subroutine HYMAP3_map_l2g_index
 ! ================================================
- 
+
 end module HYMAP3_routingMod
