@@ -79,6 +79,9 @@ contains
     external LVT_init_USAFSIpost
     external LVT_run_USAFSIpost
 
+    external LVT_init_SNIPpost
+    external LVT_run_SNIPpost
+
     external LVT_init_LISpost
     external LVT_run_LISpost
 
@@ -103,6 +106,10 @@ contains
     call registerlvtinit(trim(LVT_USAFSIpostId)//char(0),LVT_init_USAFSIpost)
     call registerlvtrun(trim(LVT_USAFSIpostId)//char(0),LVT_run_USAFSIpost)
 
+    call registerlvtinit(trim(LVT_SNIPpostId)//char(0),LVT_init_SNIPpost)
+    call registerlvtrun(trim(LVT_SNIPpostId)//char(0),LVT_run_SNIPpost)
+
+    
     call registerlvtinit(trim(LVT_LISpostId)//char(0),LVT_init_LISpost)
     call registerlvtrun(trim(LVT_LISpostId)//char(0),LVT_run_LISpost)
 

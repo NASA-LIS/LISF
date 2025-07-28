@@ -140,6 +140,7 @@ module LVT_pluginIndices
        "RTM output processing"
   character*50, public,  parameter :: LVT_557postId = "557 post"
   character*50, public,  parameter :: LVT_usafsipostId = "USAFSI post"
+  character*50, public,  parameter :: LVT_SNIPpostId = "SNIP post"
   character*50, public,  parameter :: LVT_LISpostId = "LIS postprocessing"
 
   !-----------------------------------------------------------------------
