@@ -45,7 +45,7 @@ subroutine LIS_lsmrouting_plugin
    use LIS_pluginIndices
    use LIS_routingMod, only : LIS_runoff_state
 
-#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) || ( defined ROUTE_RAPID_ROUTER ))
+#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) ||  ( defined ROUTE_HYMAP3_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) || ( defined ROUTE_RAPID_ROUTER ))
 
 #if ( defined SM_LSM_TEMPLATE )
    external template_getrunoffs
@@ -316,6 +316,92 @@ subroutine LIS_lsmrouting_plugin
         jules50_getrunoffs_hymap2)
    call registerlsmroutinggetsws(trim(LIS_jules50Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
+        jules50_getsws_hymap2)
+#endif
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+#if ( defined SM_LSM_TEMPLATE )
+   call registerlsmroutinggetrunoff(trim(LIS_templateLSMId)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        template_getrunoffs)
+#endif
+
+#if ( defined SM_NOAH_3_2 )
+   call registerlsmroutinggetrunoff(trim(LIS_noah32Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noah32_getrunoffs_mm)
+#endif
+
+#if ( defined SM_NOAH_3_3 )
+   call registerlsmroutinggetrunoff(trim(LIS_noah33Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noah33_getrunoffs_et)
+#endif
+
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmroutinggetrunoff(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noah36_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noah36_getsws_hymap2) 
+#endif
+
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmroutinggetrunoff(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noah39_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noah39_getsws_hymap2)
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noahmp36_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noahmp36_getsws_hymap2)
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noahmp401_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        noahmp401_getsws_hymap2)
+#endif
+
+#if ( defined SM_RUC_3_7 )
+   call registerlsmroutinggetrunoff(trim(LIS_ruc37Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        ruc37_getrunoffs_mm)
+#endif
+
+#if ( defined SM_CLSM_F2_5 )
+   call registerlsmroutinggetrunoff(trim(LIS_clsmf25Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        clsmf25_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_clsmf25Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        clsmf25_getsws_hymap2)
+#endif
+
+#if ( defined SM_VIC_4_1_2 )
+   call registerlsmroutinggetrunoff(trim(LIS_vic412Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        vic412_getrunoffs_mm)
+#endif
+
+#if ( defined SM_JULES_5_0 )
+   call registerlsmroutinggetrunoff(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        jules50_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
         jules50_getsws_hymap2)
 #endif
 #endif
