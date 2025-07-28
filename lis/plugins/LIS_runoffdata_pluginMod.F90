@@ -39,7 +39,7 @@ contains
 subroutine LIS_runoffdata_plugin
 !EOP
 
-#if ( defined ROUTE_HYMAP2_ROUTER )
+#if ( ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_HYMAP3_ROUTER ) )
    use LIS_pluginIndices
    use LISrunoffdataMod
 !   use GLDAS1runoffdataMod

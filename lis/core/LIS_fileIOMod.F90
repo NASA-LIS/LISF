@@ -734,6 +734,9 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
       if (LIS_rc%routingmodel .eq. "HYMAP2 router") then
          dname = trim(dname) &
            //'-HYMAP'
+      else if (LIS_rc%routingmodel .eq. "HYMAP3 router") then
+         dname = trim(dname) &
+           //'-HYMAP3'
       else if (LIS_rc%routingmodel .eq. "RAPID router") then
          dname = trim(dname) &
            //'-RAPID'
@@ -847,6 +850,9 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
       if (LIS_rc%routingmodel .eq. "HYMAP2 router") then
          dname = trim(dname) &
            //'-HYMAP'
+      else if (LIS_rc%routingmodel .eq. "HYMAP3 router") then
+         dname = trim(dname) &
+           //'-HYMAP3'
       else if (LIS_rc%routingmodel .eq. "RAPID router") then
          dname = trim(dname) &
            //'-RAPID'
@@ -1426,6 +1432,9 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
       if (LIS_rc%routingmodel .eq. "HYMAP2 router") then
          dname = trim(dname) &
            //'-HYMAP'
+      else if (LIS_rc%routingmodel .eq. "HYMAP3 router") then
+         dname = trim(dname) &
+           //'-HYMAP3'
       else if (LIS_rc%routingmodel .eq. "RAPID router") then
          dname = trim(dname) &
            //'-RAPID'
@@ -1540,6 +1549,9 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
       if (LIS_rc%routingmodel .eq. "HYMAP2 router") then
          dname = trim(dname) &
            //'-HYMAP'
+      else if (LIS_rc%routingmodel .eq. "HYMAP3 router") then
+         dname = trim(dname) &
+           //'-HYMAP3'
       else if (LIS_rc%routingmodel .eq. "RAPID router") then
          dname = trim(dname) &
            //'-RAPID'

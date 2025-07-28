@@ -1,13 +1,13 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.3
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-subroutine HYMAP2_routing_output(n)
+subroutine HYMAP3_routing_output(n)
   
   ! Augusto Getirana - 11/15/2011
   
@@ -18,8 +18,7 @@ subroutine HYMAP2_routing_output(n)
   use LIS_histDataMod
   use LIS_historyMod
   use LIS_fileIOMod
-  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
-  use HYMAP2_routingMod
+  use HYMAP3_routingMod
 
   use LIS_mpiMod
   implicit none
@@ -28,8 +27,8 @@ subroutine HYMAP2_routing_output(n)
   
   character(len=12)     :: cdate1
   integer               :: iret
-  character(len=LIS_CONST_PATH_LEN) :: filename
-  character(len=LIS_CONST_PATH_LEN) :: name
+  character*100         :: filename
+  character*100         :: name
   integer               :: ftn
   integer               :: mo, da
   logical               :: open_stats
@@ -67,28 +66,28 @@ subroutine HYMAP2_routing_output(n)
            endif
         else
            alarmCheck = LIS_isAlarmRinging(LIS_rc,&
-                "HYMAP2 router output alarm")
+                "HYMAP3 router output alarm")
         endif
         if(alarmCheck) then 
 
            open_stats = .false.
            if(LIS_masterproc) then 
-              HYMAP2_routing_struc(n)%numout=HYMAP2_routing_struc(n)%numout+1    
+              HYMAP3_routing_struc(n)%numout=HYMAP3_routing_struc(n)%numout+1    
               call LIS_create_output_directory('ROUTING')
 
 !-----------------------------------------------------------------------
 ! Open statistical output file
 !-----------------------------------------------------------------------
-              if(HYMAP2_routing_struc(n)%fileopen.eq.0)then
-                 call LIS_create_stats_filename(n, name,'HYMAP2_routerstats')
-                 HYMAP2_routing_struc(n)%fileopen=1
+              if(HYMAP3_routing_struc(n)%fileopen.eq.0)then
+                 call LIS_create_stats_filename(n, name,'HYMAP3_routerstats')
+                 HYMAP3_routing_struc(n)%fileopen=1
                  open_stats = .true.
               endif
            endif
 
            call LIS_create_output_filename(n, filename, &
                 model_name='ROUTING', &
-                writeint=HYMAP2_routing_struc(n)%outInterval)
+                writeint=HYMAP3_routing_struc(n)%outInterval)
 
 !-----------------------------------------------------------------------
 ! Write Output 
@@ -96,7 +95,7 @@ subroutine HYMAP2_routing_output(n)
            ! Grib expects soil layers to be in cm.
            ! lyrthk = (/100.0,300.0,600.0,1000.0/) mm.
            call LIS_writeRoutingModelOutput(n,filename, name, open_stats,  &
-                outInterval=HYMAP2_routing_struc(n)%outInterval,     &
+                outInterval=HYMAP3_routing_struc(n)%outInterval,     &
                 nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
                 group=2)
         endif
@@ -104,4 +103,4 @@ subroutine HYMAP2_routing_output(n)
   endif
 endif
 
-end subroutine HYMAP2_routing_output
+end subroutine HYMAP3_routing_output

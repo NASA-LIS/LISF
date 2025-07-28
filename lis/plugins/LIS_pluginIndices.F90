@@ -370,6 +370,7 @@ module LIS_pluginIndices
    character*50, public, parameter :: LIS_NLDASrouterId = "NLDAS router"
    character*50, public, parameter :: LIS_HYMAProuterId = "HYMAP router"
    character*50, public, parameter :: LIS_HYMAP2routerId = "HYMAP2 router"
+   character*50, public, parameter :: LIS_HYMAP3routerId = "HYMAP3 router"
    character*50, public, parameter :: LIS_RAPIDrouterId = "RAPID router"
 !-------------------------------------------------------------------------
 ! Runoff data support
