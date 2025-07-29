@@ -29,12 +29,14 @@
 
 module LVT_SNIPpostMod
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
   implicit none
   private
 
   type, public :: LVT_SNIPpost_t
      private
-     character(len=255) :: input_nc_file
+     character(LVT_CONST_PATH_LEN) :: input_nc_file
      integer :: nc
      integer :: nr
      real, allocatable :: snoanl(:,:)
@@ -163,7 +165,7 @@ contains
     real, allocatable :: tmp(:,:,:)
     integer :: snoanl_varid, snoage_varid, icecon_varid, icemask_varid, &
          iceage_varid
-    integer :: c,r
+    integer :: c, r
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     write(LVT_logunit,*)'[INFO] Reading SNIP file ', &
@@ -386,6 +388,7 @@ contains
 
     ! Imports
     use grib_api
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod, only: LVT_rc
     use LVT_logMod, only: LVT_logunit, LVT_endrun
 
@@ -397,7 +400,7 @@ contains
 
     ! Local variables
     real :: griddesci(50)
-    character(len=255) :: fname
+    character(LVT_CONST_PATH_LEN) :: fname
     integer :: ftn, rc, status2
     character(len=255) :: msg
     real, allocatable :: go(:)
@@ -507,6 +510,7 @@ contains
 
     ! Imports
     use grib_api
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod, only: LVT_rc
     use LVT_logMod, only: LVT_logunit, LVT_endrun
 
@@ -538,7 +542,7 @@ contains
     logical*1, allocatable :: li(:), lo(:), lo_bin(:), lo_neighbor(:)
     real, allocatable :: gi(:), go(:), go_bin(:), go_neighbor(:)
     real, allocatable :: go2d(:,:)
-    character(len=255) :: fname
+    character(LVT_CONST_PATH_LEN) :: fname
     integer :: ftn, rc, status2, iret
     integer :: c,r
     integer :: gridDefinitionTemplateNumber
@@ -1208,15 +1212,16 @@ contains
   subroutine build_filename_g2(output_dir, yyyymmddhh, filename)
 
     ! Imports
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod, only: LVT_rc
 
     ! Defaults
     implicit none
 
     ! Arguments
-    character(len=255), intent(in) :: output_dir
-    character(len=10), intent(in) :: yyyymmddhh
-    character(len=255), intent(out) :: filename
+    character(*), intent(in) :: output_dir
+    character(10), intent(in) :: yyyymmddhh
+    character(LVT_CONST_PATH_LEN), intent(out) :: filename
 
     filename = trim(output_dir)  &
          // '/PS.557WW_SC.' &
@@ -1233,14 +1238,17 @@ contains
   ! Build the grib1 filename
   subroutine build_filename_g1(gridID, output_dir, yyyymmddhh, filename)
 
+    ! Imports
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
     ! Defaults
     implicit none
 
     ! Arguments
-    character(len=*), intent(in) :: gridID
-    character(len=255), intent(in) :: output_dir
-    character(len=10), intent(in) :: yyyymmddhh
-    character(len=255), intent(out) :: filename
+    character(*), intent(in) :: gridID
+    character(*), intent(in) :: output_dir
+    character(10), intent(in) :: yyyymmddhh
+    character(LVT_CONST_PATH_LEN), intent(out) :: filename
 
     ! Local variables
     character(len=10) :: grid
@@ -1274,14 +1282,17 @@ contains
   subroutine build_filename_g1_snodep(gridID, output_dir, yyyymmddhh, &
        filename)
 
+    ! Imports
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
     ! Defaults
     implicit none
 
     ! Arguments
-    character(len=*), intent(in) :: gridID
-    character(len=255), intent(in) :: output_dir
-    character(len=10), intent(in) :: yyyymmddhh
-    character(len=255), intent(out) :: filename
+    character(*), intent(in) :: gridID
+    character(*), intent(in) :: output_dir
+    character(10), intent(in) :: yyyymmddhh
+    character(LVT_CONST_PATH_LEN), intent(out) :: filename
 
     ! Local variables
     character(len=10) :: area
@@ -1872,6 +1883,7 @@ contains
   subroutine write_netcdf_latlon(griddesco, nc_out, nr_out, go)
 
     ! Imports
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod, only: LVT_rc
     use LVT_logMod, only: LVT_logunit, LVT_verify, LVT_endrun
     use netcdf
@@ -1886,7 +1898,7 @@ contains
     real, intent(in) :: go(nc_out*nr_out)
 
     ! Local variables
-    character(len=255) :: outfilename
+    character(LVT_CONST_PATH_LEN) :: outfilename
     integer :: shuffle, deflate, deflate_level
     integer :: iret, ncid
     integer :: dim_ids(3)
@@ -2113,6 +2125,7 @@ contains
   subroutine write_netcdf_ps(nc_out, nr_out, go)
 
     ! Imports
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod, only: LVT_rc
     use LVT_logMod, only: LVT_logunit, LVT_verify, LVT_endrun
     use netcdf
@@ -2126,7 +2139,7 @@ contains
     real, intent(in) :: go(nc_out*nr_out)
 
     ! Local variables
-    character(len=255) :: outfilename
+    character(LVT_CONST_PATH_LEN) :: outfilename
     integer :: shuffle, deflate, deflate_level
     integer :: iret, ncid
     integer :: dim_ids(2)
