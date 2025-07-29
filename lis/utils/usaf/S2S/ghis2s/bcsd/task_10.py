@@ -157,6 +157,16 @@ def driver():
         src_dir = f"{forcedir_fcst}/final/6-Hourly/{month_abbr}01/{current_year}/ens{ens_fcst}"
         dst_dir = f"{outdir}/{month_abbr}01/{current_year}/ens{ens_nmme}"
 
+        # last PRECTOT file
+        last_yyyymm = len(src_yyyymm) -1 
+        src_file = f"{dst_dir}/PRECTOT.{src_yyyymm[last_yyyymm]}.nc4"
+        dst_file = f"{dst_dir}/PRECTOT.{dst_yyyymm[last_yyyymm]}.nc4"
+        cmd = f"ln -sfn {src_file} {dst_file}"
+        returncode = subprocess.call(cmd, shell=True)
+        if returncode != 0:
+            print("[ERR] Problem calling creating last precip symbolic link!")
+            sys.exit(1)
+        
         for ilead, src_lead in enumerate(src_yyyymm):
             src_file = f"{src_dir}/{basemodname_src}.{src_lead}.nc4"
             dst_file = f"{dst_dir}/{basemodname_dst}.{dst_yyyymm[ilead]}.nc4"

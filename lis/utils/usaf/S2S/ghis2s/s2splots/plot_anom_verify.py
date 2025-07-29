@@ -273,7 +273,7 @@ if __name__ == "__main__":
     with open(args.config_file, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     
-    plotdir = cwd + '/s2splots/{:04d}{:02d}/'.format(fyear,fmonth) + cfg["EXP"]["lsmdir"] + '/'
+    plotdir = cwd + '/s2splots/{:04d}{:02d}/'.format(fyear,fmonth)
     cartopy.config['data_dir'] = cfg['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     if month == 12:
         ndays = (date(year+1, 1, 1) - date(year, month, 1)).days
@@ -293,8 +293,7 @@ if __name__ == "__main__":
 
     # forcecast anomaly
     end_date = date(year, month, 1) + relativedelta(months=int(cfg["EXP"]["lead_months"]))
-    s2smdir = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/'.format(year,month) + \
-        cfg["EXP"]["lsmdir"] + '/'
+    s2smdir = cwd + '/s2smetric/{:04d}{:02d}/'.format(year,month)
     domain = plot_utils.dicts('boundary', 'GLOBAL')
 
     levels_dict = {

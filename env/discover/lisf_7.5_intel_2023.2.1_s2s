@@ -163,6 +163,7 @@ prepend-path   LD_LIBRARY_PATH   "$def_lis_petsc/lib"
 prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"
 
 # EMK Miniconda3 environment for S2S
-prepend-path   PATH  "/discover/nobackup/projects/usaf_lis/emkemp/miniconda3/20240712_py311_sles15_hpc11/bin"
-setenv ESMFMKFILE /discover/nobackup/projects/usaf_lis/emkemp/miniconda3/20240712_py311_sles15_hpc11/lib/esmf.mk
-setenv PROJ_LIB /discover/nobackup/projects/usaf_lis/emkemp/miniconda3/20240712_py311_sles15_hpc11/share/proj/
+
+prepend-path   PATH  "/discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250728_cylc850_py311_sles15/bin/"
+setenv ESMFMKFILE /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250728_cylc850_py311_sles15/lib/esmf.mk
+setenv PROJ_LIB /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250728_cylc850_py311_sles15/share/proj/

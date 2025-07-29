@@ -29,6 +29,7 @@ import yaml
 from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 import plot_utils
+from ghis2s.s2smetric.metricslib import get_anom
 # pylint: enable=import-error
 
 STANDARDIZED_ANOMALY = 'Y'
@@ -40,19 +41,17 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     '''
     This function processes arguments and make plots.
     '''
-
-    infile_template = '{}/{}_ANOM_init_monthly_{:02d}_{:04d}.nc'
+    metric = "ANOM"
     figure_template = '{}/NMME_plot_{}_{}_FCST_anom.png'
     if STANDARDIZED_ANOMALY == 'Y':
-        infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
+        metric = "SANOM"
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
-    data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + config["EXP"]["lsmdir"] + '/'
-    data_dir = data_dir_template.format(syear, smonth)
+    data_dir = cwd + f'/s2smetric/{syear:04d}{smonth:02d}/'
 
     lead_month = [0, 1, 2]
     nrows = 1
@@ -62,13 +61,11 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     if STANDARDIZED_ANOMALY == 'Y':
         levels = plot_utils.dicts('anom_levels', 'standardized')
 
-    infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
-    print("Reading infile {}".format(infile))
-
-    anom = xr.open_mfdataset(infile, concat_dim='ens',
-                             preprocess=plot_utils.preproc, combine='nested')
-    anom_crop = plot_utils.crop(boundary, anom.latitude, anom.longitude, anom)
+    # READ ANOMALIES
+    anom = get_anom(data_dir, var_name, metric)
+    anom_crop = plot_utils.crop(boundary, anom)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
+
     plot_arr = median_anom[lead_month, ]
     for i in range (0, len(lead_month)):
         plot_arr[i,:,:] = np.where(hybas_mask > 0, plot_arr[i,:,:],-9999.)
@@ -90,7 +87,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
 
     under_over = plot_utils.dicts('lowhigh', 'CB11W')
     cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
-    plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+    plot_utils.google_map(anom_crop.lon.values, anom_crop.lat.values, nrows,
                           ncols, plot_arr, 'CB11W', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
@@ -122,7 +119,7 @@ def process_domain (fcst_year, fcst_mon, cwd, config, plot_domain):
                     math.floor(tx_.min()), math.ceil(tx_.max())]
         vmask = (((upstream_lon >= boundary[2]) & (upstream_lon <= boundary[3])) &
              ((upstream_lat >= boundary[0]) & (upstream_lat <= boundary[1])))
-        sub_mask = plot_utils.crop(boundary, bmask.lat, bmask.lon, bmask.basin_mask)
+        sub_mask = plot_utils.crop(boundary, bmask.basin_mask)
         region = "{:10d}".format(bid)
         plot_anoms(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
                    downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],
