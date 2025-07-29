@@ -40,7 +40,7 @@ subroutine read_HYMAP_node_lon(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%nodelonfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Node longitude, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP node longitude map, ',&
            trim(HYMAP_struc(n)%nodelonfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
