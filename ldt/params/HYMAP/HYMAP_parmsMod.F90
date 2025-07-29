@@ -23,14 +23,12 @@ module HYMAP_parmsMod
 !   2 Dec 2015: Augusto Getirana: Included drainage area and basin maps
 !   1 Nov 2017: Augusto Getirana: Included flow type maps, baseflow and surface runoff dwi maps
 !   9 Jun 2020: Yeosang Yoon: Support flexible grid setting (dx~=dy)
-!  24 Aug 2021: Hiroko Beaudoing: Fix boundary for global domain
 !
   use ESMF
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
-  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -52,29 +50,35 @@ module HYMAP_parmsMod
      character*50  :: hymap_proj
      character*50  :: hymap_gridtransform
 
-     integer       :: bfdwicode, rundwicode, rivflocode
+     integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode,leveehgtcode,landareacode,nodeloncode,nodelatcode
+     integer       :: baseflowdelaycode,runoffdelaycode,runoffdelaymcode
 
-     character(len=LDT_CONST_PATH_LEN) :: riverwidthfile
-     character(len=LDT_CONST_PATH_LEN) :: riverheightfile
-     character(len=LDT_CONST_PATH_LEN) :: riverlengthfile
-     character(len=LDT_CONST_PATH_LEN) :: riverzfile
-     character(len=LDT_CONST_PATH_LEN) :: fldheightfile
-     character(len=LDT_CONST_PATH_LEN) :: fldzfile
-     character(len=LDT_CONST_PATH_LEN) :: flowdirxfile
-     character(len=LDT_CONST_PATH_LEN) :: flowdiryfile
-     character(len=LDT_CONST_PATH_LEN) :: gridelevfile
-     character(len=LDT_CONST_PATH_LEN) :: griddistfile
-     character(len=LDT_CONST_PATH_LEN) :: gridareafile
-     character(len=LDT_CONST_PATH_LEN) :: drainareafile
-     character(len=LDT_CONST_PATH_LEN) :: basinfile
-     character(len=LDT_CONST_PATH_LEN) :: runoffdelayfile
-     character(len=LDT_CONST_PATH_LEN) :: runoffdelaymfile
-     character(len=LDT_CONST_PATH_LEN) :: baseflowdelayfile
-     character(len=LDT_CONST_PATH_LEN) :: refqfile
-     character(len=LDT_CONST_PATH_LEN) :: basinmaskfile
-     character(len=LDT_CONST_PATH_LEN) :: flowtypefile 
-     character(len=LDT_CONST_PATH_LEN) :: baseflowdwiratiofile 
-     character(len=LDT_CONST_PATH_LEN) :: runoffdwiratiofile 
+     character*100 :: riverwidthfile
+     character*100 :: riverheightfile
+     character*100 :: riverlengthfile
+     character*100 :: riverzfile
+     character*100 :: fldheightfile
+     character*100 :: fldzfile
+     character*100 :: flowdirxfile
+     character*100 :: flowdiryfile
+     character*100 :: gridelevfile
+     character*100 :: griddistfile
+     character*100 :: gridareafile
+     character*100 :: drainareafile
+     character*100 :: basinfile
+     character*100 :: runoffdelayfile
+     character*100 :: runoffdelaymfile
+     character*100 :: baseflowdelayfile
+     character*100 :: refqfile
+     character*100 :: basinmaskfile
+     character*100 :: flowtypefile 
+     character*100 :: baseflowdwiratiofile 
+     character*100 :: runoffdwiratiofile 
+     character*100 :: urbandrainoutletfile
+     character*100 :: leveeheightfile
+     character*100 :: landgridareafile
+     character*100 :: nodelonfile
+     character*100 :: nodelatfile
 
      type(LDT_paramEntry) :: hymap_river_width
      type(LDT_paramEntry) :: hymap_river_height
@@ -96,6 +100,12 @@ module HYMAP_parmsMod
      type(LDT_paramEntry) :: hymap_flow_type
      type(LDT_paramEntry) :: hymap_baseflow_dwi_ratio
      type(LDT_paramEntry) :: hymap_runoff_dwi_ratio
+     type(LDT_paramEntry) :: hymap_urban_drain_outlet
+     type(LDT_paramEntry) :: hymap_levee_height
+     type(LDT_paramEntry) :: land_grid_area
+     type(LDT_paramEntry) :: hymap_node_lon
+     type(LDT_paramEntry) :: hymap_node_lat
+
   end type hymap_type_dec
 
   type(hymap_type_dec), allocatable :: HYMAP_struc(:)
@@ -130,7 +140,8 @@ contains
    implicit none
    integer       :: n
    integer       :: rc
-   integer       :: bfdwicode, rundwicode, rivflocode
+   integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode,leveehgtcode,landareacode,nodeloncode,nodelatcode
+   integer       :: baseflowdelaycode,runoffdelaycode,runoffdelaymcode
    integer, allocatable :: nextx(:,:)
    integer, allocatable :: nexty(:,:)
    integer, allocatable :: mask(:,:)
@@ -185,7 +196,17 @@ contains
            "HYMAP_baseflow_dwi_ratio")
       call set_param_attribs(HYMAP_struc(n)%hymap_runoff_dwi_ratio,&
            "HYMAP_runoff_dwi_ratio")
-      
+      call set_param_attribs(HYMAP_struc(n)%hymap_urban_drain_outlet,&
+           "HYMAP_urban_drainage_outlet")
+      call set_param_attribs(HYMAP_struc(n)%hymap_levee_height,&
+           "HYMAP_levee_height")
+      call set_param_attribs(HYMAP_struc(n)%land_grid_area,&
+           "land_grid_area")
+      call set_param_attribs(HYMAP_struc(n)%hymap_node_lon,&
+           "HYMAP_node_lon")
+      call set_param_attribs(HYMAP_struc(n)%hymap_node_lat,&
+           "HYMAP_node_lat")
+
    end do
 
    call ESMF_ConfigFindLabel(LDT_config,"HYMAP floodplain height levels:",rc=rc)
@@ -277,7 +298,28 @@ contains
 
       allocate(HYMAP_struc(n)%hymap_runoff_dwi_ratio%value(&
            LDT_rc%lnc(n),LDT_rc%lnr(n),&
-           HYMAP_struc(n)%hymap_runoff_dwi_ratio%vlevels))                        
+           HYMAP_struc(n)%hymap_runoff_dwi_ratio%vlevels)) 
+                       
+      allocate(HYMAP_struc(n)%hymap_urban_drain_outlet%value(&
+           LDT_rc%lnc(n),LDT_rc%lnr(n),&
+           HYMAP_struc(n)%hymap_urban_drain_outlet%vlevels))
+
+      allocate(HYMAP_struc(n)%hymap_levee_height%value(&
+           LDT_rc%lnc(n),LDT_rc%lnr(n),&
+           HYMAP_struc(n)%hymap_levee_height%vlevels))
+
+      allocate(HYMAP_struc(n)%land_grid_area%value(&
+           LDT_rc%lnc(n),LDT_rc%lnr(n),&
+           HYMAP_struc(n)%land_grid_area%vlevels))
+
+      allocate(HYMAP_struc(n)%hymap_node_lon%value(&
+           LDT_rc%lnc(n),LDT_rc%lnr(n),&
+           HYMAP_struc(n)%hymap_node_lon%vlevels))
+
+      allocate(HYMAP_struc(n)%hymap_node_lat%value(&
+           LDT_rc%lnc(n),LDT_rc%lnr(n),&
+           HYMAP_struc(n)%hymap_node_lat%vlevels))
+
    enddo
 
    call ESMF_ConfigFindLabel(LDT_config,"HYMAP river width map:",rc=rc)
@@ -347,20 +389,33 @@ contains
       call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%basinfile,rc=rc)
       call LDT_verify(rc,'HYMAP basin map: not specified')
    enddo
-   call ESMF_ConfigFindLabel(LDT_config,"HYMAP runoff time delay map:",rc=rc)
+
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP runoff time delay map:",rc=runoffdelaycode)
    do n=1,LDT_rc%nnest
       call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%runoffdelayfile,rc=rc)
-      call LDT_verify(rc,'HYMAP runoff time delay map: not specified')
+      if (runoffdelaycode.eq.0) then
+        call LDT_verify(rc,'HYMAP runoff time delay map: not specified')
+      endif
+      HYMAP_struc(n)%runoffdelaycode = runoffdelaycode
    enddo
-   call ESMF_ConfigFindLabel(LDT_config,"HYMAP runoff time delay multiplier map:",rc=rc)
+
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP runoff time delay multiplier map:",rc=runoffdelaymcode)
    do n=1,LDT_rc%nnest
       call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%runoffdelaymfile,rc=rc)
-      call LDT_verify(rc,'HYMAP runoff time delay multiplier map: not specified')
+      if (runoffdelaymcode.eq.0) then
+        call LDT_verify(rc,'HYMAP runoff time delay multiplier map: not specified')
+      endif
+      HYMAP_struc(n)%runoffdelaymcode = runoffdelaymcode
    enddo
-   call ESMF_ConfigFindLabel(LDT_config,"HYMAP baseflow time delay map:",rc=rc)
+
+
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP baseflow time delay map:",rc=baseflowdelaycode)
    do n=1,LDT_rc%nnest
       call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%baseflowdelayfile,rc=rc)
-      call LDT_verify(rc,'HYMAP baseflow time delay map: not specified')
+      if (baseflowdelaycode.eq.0) then
+        call LDT_verify(rc,'HYMAP baseflow time delay map: not specified')
+      endif
+      HYMAP_struc(n)%baseflowdelaycode = baseflowdelaycode
    enddo
 
    call ESMF_ConfigFindLabel(LDT_config,"HYMAP basin mask map:",rc=rc)
@@ -394,6 +449,51 @@ contains
          call LDT_verify(rc,'HYMAP runoff dwi ratio map: not specified')
       endif
       HYMAP_struc(n)%rundwicode = rundwicode
+   enddo
+
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP urban drainage outlet map:",rc=urbdroutcode)
+   do n=1,LDT_rc%nnest
+      call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%urbandrainoutletfile,rc=rc)
+      if (urbdroutcode.eq.0) then
+         call LDT_verify(rc,'HYMAP urban drainage outlet map: not specified')
+      endif
+      HYMAP_struc(n)%urbdroutcode = urbdroutcode
+   enddo
+
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP levee height map:",rc=leveehgtcode)
+   do n=1,LDT_rc%nnest
+      call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%leveeheightfile,rc=rc)
+      if (leveehgtcode.eq.0) then
+         call LDT_verify(rc,'HYMAP levee height map: not specified')
+      endif
+      HYMAP_struc(n)%leveehgtcode = leveehgtcode
+   enddo
+
+   call ESMF_ConfigFindLabel(LDT_config,"Land grid area map:",rc=landareacode)
+   do n=1,LDT_rc%nnest
+      call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%landgridareafile,rc=rc)
+      if (landareacode.eq.0) then
+        call LDT_verify(rc,'Land grid area map: not specified')
+      endif
+      HYMAP_struc(n)%landareacode = landareacode
+   enddo
+
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP node lon:",rc=nodeloncode)
+   do n=1,LDT_rc%nnest
+      call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%nodelonfile,rc=rc)
+      if (nodeloncode.eq.0) then
+         call LDT_verify(rc,'HYMAP node lon: not specified')
+      endif
+      HYMAP_struc(n)%nodeloncode = nodeloncode
+   enddo
+
+   call ESMF_ConfigFindLabel(LDT_config,"HYMAP node lat:",rc=nodelatcode)
+   do n=1,LDT_rc%nnest
+      call ESMF_ConfigGetAttribute(LDT_config,HYMAP_struc(n)%nodelatfile,rc=rc)
+      if (nodelatcode.eq.0) then
+         call LDT_verify(rc,'HYMAP node lat: not specified')
+      endif
+      HYMAP_struc(n)%nodelatcode = nodelatcode
    enddo
 
    write(LDT_logunit,*)" - - - - - - - - HYMAP Router Parameters - - - - - - - - - -"
@@ -521,30 +621,40 @@ contains
             HYMAP_struc(n)%hymap_basin%value(:,:,1))
        write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%basinfile)
 
-       call LDT_gridOptChecks( n, "HYMAP runoff delay", &
-            HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
-            hymapparms_gridDesc(n,9) )       
-       write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%runoffdelayfile)
-       call read_HYMAP_runoff_delay(n,&
-            HYMAP_struc(n)%hymap_runoff_delay%value(:,:,1))
-       write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdelayfile)
 
-       call LDT_gridOptChecks( n, "HYMAP runoff delay multiplier", &
-            HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
-            hymapparms_gridDesc(n,9) )
-       write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%runoffdelaymfile)
-       call read_HYMAP_runoff_delaym(n,&
-            HYMAP_struc(n)%hymap_runoff_delay_m%value(:,:,1))
-       write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdelaymfile)
-       
-       call LDT_gridOptChecks( n, "HYMAP baseflow delay", &
-            HYMAP_struc(n)%hymap_gridtransform, hymap_proj,  &
-            hymapparms_gridDesc(n,9) )
-       write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%baseflowdelayfile)
-       call read_HYMAP_baseflow_delay(&
-            n,HYMAP_struc(n)%hymap_baseflow_delay%value(:,:,1))
-       write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%baseflowdelayfile)
-       
+       if (HYMAP_struc(n)%runoffdelaycode.eq.0) then
+         call LDT_gridOptChecks( n, "HYMAP runoff delay", &
+              HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+              hymapparms_gridDesc(n,9) )       
+         write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%runoffdelayfile)
+
+         call read_HYMAP_runoff_delay(n,&
+              HYMAP_struc(n)%hymap_runoff_delay%value(:,:,1))
+         write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdelayfile)
+       endif
+
+       if (HYMAP_struc(n)%runoffdelaymcode.eq.0) then
+         call LDT_gridOptChecks( n, "HYMAP runoff delay multiplier", &
+              HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+              hymapparms_gridDesc(n,9) )
+         write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%runoffdelaymfile)
+
+         call read_HYMAP_runoff_delaym(n,&
+              HYMAP_struc(n)%hymap_runoff_delay_m%value(:,:,1))
+         write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdelaymfile)
+       endif
+ 
+       if (HYMAP_struc(n)%baseflowdelaycode.eq.0) then
+         call LDT_gridOptChecks( n, "HYMAP baseflow delay", &
+              HYMAP_struc(n)%hymap_gridtransform, hymap_proj,  &
+              hymapparms_gridDesc(n,9) )
+         write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%baseflowdelayfile)
+
+         call read_HYMAP_baseflow_delay(&
+              n,HYMAP_struc(n)%hymap_baseflow_delay%value(:,:,1))
+         write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%baseflowdelayfile)
+       endif
+ 
        call LDT_gridOptChecks( n, "HYMAP basin mask", &
             HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
             hymapparms_gridDesc(n,9) )
@@ -586,6 +696,38 @@ contains
           write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%runoffdwiratiofile)
        endif
 
+       if (HYMAP_struc(n)%urbdroutcode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP urban drainage outlet map", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
+
+          write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%urbandrainoutletfile)
+          call read_HYMAP_urban_drain_outlet(&
+               n,HYMAP_struc(n)%hymap_urban_drain_outlet%value(:,:,1))
+          write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%urbandrainoutletfile)
+       endif
+
+       if (HYMAP_struc(n)%leveehgtcode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP levee height map", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
+
+          write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%leveeheightfile)
+          call read_HYMAP_levee_height(&
+               n,HYMAP_struc(n)%hymap_levee_height%value(:,:,1))
+          write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%leveeheightfile)
+       endif
+
+       if (HYMAP_struc(n)%landareacode.eq.0) then
+         call LDT_gridOptChecks( n, "Land grid area", &
+              HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+              hymapparms_gridDesc(n,9) )       
+         write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%landgridareafile)
+         call read_land_grid_area(n,&
+              HYMAP_struc(n)%land_grid_area%value(:,:,1))
+         write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%landgridareafile)
+       endif
+
        allocate(nextx(LDT_rc%lnc(n),LDT_rc%lnr(n)))
        allocate(nexty(LDT_rc%lnc(n),LDT_rc%lnr(n)))
        allocate(mask(LDT_rc%lnc(n),LDT_rc%lnr(n)))
@@ -617,6 +759,29 @@ contains
        deallocate(nextx)
        deallocate(nexty)
        deallocate(mask)
+
+       if (HYMAP_struc(n)%nodeloncode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP node lon", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
+
+          write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%nodelonfile)
+          call read_HYMAP_node_lon(&
+               n,HYMAP_struc(n)%hymap_node_lon%value(:,:,1))
+          write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%nodelonfile)
+       endif
+
+       if (HYMAP_struc(n)%nodelatcode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP node lat", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
+    
+          write(LDT_logunit,*) 'reading '//trim(HYMAP_struc(n)%nodelatfile)
+          call read_HYMAP_node_lat(&
+               n,HYMAP_struc(n)%hymap_node_lat%value(:,:,1))
+          write(LDT_logunit,*) 'Done reading '//trim(HYMAP_struc(n)%nodelatfile)
+       endif
+
     enddo
     
   end subroutine HYMAPparms_init
@@ -669,12 +834,22 @@ contains
          HYMAP_struc(n)%hymap_drain_area)
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
          HYMAP_struc(n)%hymap_basin)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-         HYMAP_struc(n)%hymap_runoff_delay)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-         HYMAP_struc(n)%hymap_runoff_delay_m)
-    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
-         HYMAP_struc(n)%hymap_baseflow_delay)
+
+    if (HYMAP_struc(n)%runoffdelaycode.eq.0) then
+      call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+           HYMAP_struc(n)%hymap_runoff_delay)
+    endif
+
+    if (HYMAP_struc(n)%runoffdelaymcode.eq.0) then
+      call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+           HYMAP_struc(n)%hymap_runoff_delay_m)
+    endif
+
+    if (HYMAP_struc(n)%baseflowdelaycode.eq.0) then
+      call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+           HYMAP_struc(n)%hymap_baseflow_delay)
+    endif
+
 !    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
 !         HYMAP_struc(n)%hymap_ref_q)
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
@@ -691,6 +866,30 @@ contains
        call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             HYMAP_struc(n)%hymap_runoff_dwi_ratio)
     endif
+    if (HYMAP_struc(n)%urbdroutcode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%hymap_urban_drain_outlet)
+    endif
+    if (HYMAP_struc(n)%leveehgtcode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%hymap_levee_height)
+    endif
+
+    if (HYMAP_struc(n)%nodeloncode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%hymap_node_lon)
+    endif
+
+    if (HYMAP_struc(n)%nodelatcode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%hymap_node_lat)
+    endif
+
+    if (HYMAP_struc(n)%landareacode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            HYMAP_struc(n)%land_grid_area)
+    endif
+
   end subroutine HYMAPparms_writeHeader
   
   subroutine HYMAPparms_writeData(n,ftn)
@@ -713,9 +912,19 @@ contains
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_grid_area)
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_drain_area)
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_basin)
+
+    if (HYMAP_struc(n)%runoffdelaycode.eq.0) then
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_runoff_delay)
+    endif
+
+    if (HYMAP_struc(n)%runoffdelaymcode.eq.0) then
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_runoff_delay_m)
+    endif
+
+    if (HYMAP_struc(n)%baseflowdelaycode.eq.0) then
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_baseflow_delay)
+    endif
+
 !    call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_ref_q)
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_mask)
     if (HYMAP_struc(n)%rivflocode.eq.0) then
@@ -727,6 +936,25 @@ contains
     if (HYMAP_struc(n)%rundwicode.eq.0) then
        call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_runoff_dwi_ratio)
     endif
+    if (HYMAP_struc(n)%urbdroutcode.eq.0) then
+       call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_urban_drain_outlet)
+    endif
+    if (HYMAP_struc(n)%leveehgtcode.eq.0) then
+       call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_levee_height)
+    endif
+    if (HYMAP_struc(n)%landareacode.eq.0) then
+      call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%land_grid_area)
+    endif
+    if (HYMAP_struc(n)%landareacode.eq.0) then
+      call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%land_grid_area)
+    endif
+    if (HYMAP_struc(n)%nodeloncode.eq.0) then
+      call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_node_lon)
+    endif
+    if (HYMAP_struc(n)%nodelatcode.eq.0) then
+      call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_node_lat)
+    endif      
+
 
   end subroutine HYMAPparms_writeData
 
@@ -738,8 +966,6 @@ contains
     ! at HSL/GSFC/NASA
     ! ================================================   
     
-    use LDT_logmod, only : LDT_logunit
-
     implicit none       
   
     integer, intent(in)    :: nx                  ! number of grids in horizontal
@@ -760,13 +986,14 @@ contains
 
     idx=int((zgx-zpx)/xres)
     idy=int((zgy-zpy)/yres)
-    
+
     where(i2nextx>0)i2nextx=i2nextx-idx
     where(i2nexty>0)i2nexty=i2nexty-idy
 
 !Hiroko: do not insert boundary if global domain
 !        this fix only works on single processor run
-    if ( idx.eq.0 .and. idy.eq.0 ) then
+    !if ( idx.eq.0 .and. idy.eq.0 ) then
+    if ( idx.eq.0 ) then
      write(LDT_logunit,*) '[INFO] HYMAP parameter global'
      where(i2nextx<1.and.i2nextx/=imis.and.i2mask>0)
         i2nextx=ibound
@@ -781,28 +1008,28 @@ contains
      i2nexty(nx,:)=imis
      i2nexty(:,1)=imis
      i2nexty(:,ny)=imis
-    
+
      i2nextx(1,:)=imis
      i2nextx(nx,:)=imis
      i2nextx(:,1)=imis
      i2nextx(:,ny)=imis
- 
+
      where(i2nextx<=1.and.i2nextx/=imis.and.i2mask>0)
         i2nextx=ibound
         i2nexty=ibound
      endwhere
-    
+
      where(i2nextx>=nx.and.i2mask>0)
         i2nextx=ibound
         i2nexty=ibound
      endwhere
     endif    ! global
-    
+
     where(i2nexty<=1.and.i2nexty/=imis.and.i2mask>0)
        i2nextx=ibound
        i2nexty=ibound
     endwhere
-    
+
     where(i2nexty>=ny.and.i2mask>0)
        i2nextx=ibound
        i2nexty=ibound
