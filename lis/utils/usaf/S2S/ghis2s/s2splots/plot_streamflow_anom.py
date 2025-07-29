@@ -28,6 +28,7 @@ from netCDF4 import Dataset
 import numpy as np
 import yaml
 # pylint: disable=import-error
+from ghis2s.s2smetric.metricslib import get_anom
 import plot_utils
 # pylint: enable=import-error
 
@@ -35,19 +36,17 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     '''
     This function processes arguments and make plots.
     '''
-    # Input file template for straight anomalies:
-    infile_template = '{}/{}_ANOM_init_monthly_{:02d}_{:04d}.nc'
+    metric = "ANOM"
     figure_template = '{}/NMME_plot_{}_{}_FCST_anom_g.png'
     if standardized_anomaly == 'Y':
-        infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
+        metric = "SANOM"
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom_g.png'
 
-    plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/' + '/' + config_["EXP"]["lsmdir"] + '/'
-    plotdir = plotdir_template.format(fcst_year, fcst_mon)
+    plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/'
+    plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
-    data_dir_template = cwd_ + '/s2smetric/{:04d}{:02d}/metrics_cf/' + config_["EXP"]["lsmdir"] + '/'
-    data_dir = data_dir_template.format(fcst_year, fcst_mon)
+    data_dir = cwd_ + f'/s2smetric/{syear:04d}{smonth:02d}/'
 
     lead_month = [0, 1, 2, 3, 4, 5]
 
@@ -69,13 +68,9 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         levels = plot_utils.dicts('anom_levels', 'standardized')
     under_over = ['gray', 'blue']
 
-    infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
-    print("Reading infile {}".format(infile))
-
-    print(infile)
-    anom = xr.open_mfdataset(infile, concat_dim='ens',
-                             preprocess=plot_utils.preproc, combine='nested')
-    anom_crop = plot_utils.crop(boundary, anom.latitude, anom.longitude, anom)
+    # READ ANOMALIES
+    anom = get_anom(data_dir, var_name, metric)
+    anom_crop = plot_utils.crop(boundary, anom)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
     plot_arr = median_anom[lead_month, ]
     figure = figure_template.format(plotdir, region, var_name)
@@ -92,7 +87,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
     if standardized_anomaly == 'Y':
         clabel = 'Standardized Anomaly'
-    plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+    plot_utils.google_map(anom_crop.lon.values, anom_crop.lat.values, nrows,
                           ncols, plot_arr, 'DROUGHT_INV', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels)

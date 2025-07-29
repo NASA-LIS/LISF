@@ -9,15 +9,15 @@ import numpy as np
 import yaml
 # pylint: disable=import-error
 import plot_utils
+from ghis2s.s2smetric.metricslib import get_anom
 # pylint: enable=import-error
 
 def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
-    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + config["EXP"]["lsmdir"] + '/'
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
     plotdir = plotdir_template.format(fcst_year, fcst_mon)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
 
-    infile_template = '{}/{}_{}_init_weeks1-6_{:02d}_{:04d}.nc'
     figure_template = '{}/NMME_plot_{}_{}_weeks1-6_{}.png'
     
     lead_week = [0, 1, 2, 3, 4, 5]
@@ -26,10 +26,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
     ncols = 3
     domain = plot_utils.dicts('boundary', region)
 
-    data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/DYN_{}/' + \
-        config["EXP"]["lsmdir"] + '/'
-
-    data_dir = data_dir_template.format(fcst_year, fcst_mon, anom_type)
+    data_dir = cwd + f'/s2smetric/{fcst_year:04d}{fcst_mon:02d}/'
     cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     
     for var_name in config["POST"]["weekly_vars"]:
@@ -46,10 +43,9 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
                 load_table = 'CB11W'
 
         under_over = plot_utils.dicts('lowhigh', load_table)               
-        infile = infile_template.format(data_dir, '*_' + var_name, anom_type, fcst_mon, fcst_year)
-        print("Reading infile {}".format(infile))
-        anom = xr.open_mfdataset(infile, concat_dim='ens', combine='nested')
-        anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
+        # READ ANOMALIES
+        anom = get_anom(data_dir, var_name, anom_type, weekly=True)
+        anom_crop = plot_utils.crop(domain, anom)
         median_anom = np.median(anom_crop.anom.values, axis=0)
         plot_arr = median_anom[lead_week, ]
         if anom_type == 'SANOM':
@@ -57,7 +53,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
             plot_arr = np.where(plot_arr < np.max(levels), plot_arr, np.nan)
             plot_arr = np.where(plot_arr > np.min(levels), plot_arr, np.nan)
             
-        BEGDATE = date(fcst_year, fcst_mon, 1)
+        BEGDATE = date(fcst_year, fcst_mon, 2)
         titles = []
         for lead in lead_week:
             ENDDATE = BEGDATE + relativedelta(days=6)
@@ -69,13 +65,13 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
         stitle = var_name + ' Forecast'
         if anom_type == 'ANOM':
             anom_minmax = plot_utils.dicts('anom_minmax', var_name) 
-            plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+            plot_utils.contours (anom_crop.lon.values, anom_crop.lat.values, nrows,
                                  ncols, plot_arr, load_table, titles, domain,
                                  figure, under_over,
                                  fscale=1.2, stitle=stitle, clabel=clabel, min_val=anom_minmax[0], max_val=anom_minmax[1],
                                  cartopy_datadir=cartopy_dir, projection=['polar', 90.])
         else:
-            plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+            plot_utils.contours (anom_crop.lon.values, anom_crop.lat.values, nrows,
                                  ncols, plot_arr, load_table, titles, domain,
                                  figure, under_over,
                                  fscale=1.2, stitle=stitle, clabel=clabel, levels=levels,

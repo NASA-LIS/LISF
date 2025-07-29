@@ -77,8 +77,12 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
             else:
                 _f.write('#SBATCH --ntasks-per-node=' + str(parallel_run['TPN']) + '\n')
         else:
-            _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
-        _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
+            if not cfg['SETUP']['CONSTRAINT'] == 'cssrw':
+                _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
+        if len(hours) > 1:
+            _f.write('#SBATCH --time=' + f'00:{hours}:00' + '\n')
+        else:
+            _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             if group_jobs:   
@@ -92,9 +96,11 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
                         _f.write('#SBATCH --mem-per-cpu=' + parallel_run['MEM'] + '\n')
                     _f.write('#SBATCH --cpus-per-task=' + parallel_run['CPT'] + '\n')
                 else:
+                    if 'cssrw' in cfg['SETUP']['CONSTRAINT']:
+                        _f.write('#SBATCH --partition=datamove'  + '\n')
                     if 'mil' in cfg['SETUP']['CONSTRAINT']:
                         _f.write('#SBATCH --partition=packable'  + '\n')
-                    _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
+                        _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
             else:
                 _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
                 if 'mil' in cfg['SETUP']['CONSTRAINT']:

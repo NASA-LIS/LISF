@@ -611,16 +611,11 @@ def compute_radius(ortho, radius_degrees, lon, lat):
     _, _y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
     return abs(_y1)
 
-def preproc(ds_):
-    ''' select only the 1st ensemble for streamflow '''
-    ds_ = ds_.isel(ens=0)
-    return ds_
-
-def crop (limits, lat, lon, xrin):
+def crop (limits, xrin):
     ''' crops a data set'''
     with dask.config.set(**{'array.slicing.split_large_chunks': True}):
-        xr_lon = (lon >= limits[2]) & (lon <= limits[3])
-        xr_lat = (lat >= limits[0]) & (lat <= limits[1])
+        xr_lon = (xrin.lon >= limits[2]) & (xrin.lon <= limits[3])
+        xr_lat = (xrin.lat >= limits[0]) & (xrin.lat <= limits[1])
         xr_lon = xr_lon.compute()
         xr_lat = xr_lat.compute()
         crop_xcm = xrin.where(xr_lon & xr_lat, drop=True)

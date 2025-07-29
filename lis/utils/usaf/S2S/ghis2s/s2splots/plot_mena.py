@@ -29,8 +29,8 @@ import numpy as np
 import yaml
 # pylint: disable=import-error
 import plot_utils
+from ghis2s.s2smetric.metricslib import get_anom
 # pylint: enable=import-error
-
 
 USAF_COLORS = True
 
@@ -39,17 +39,15 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     '''
     This function processes arguments and make plots.
     '''
-
-    infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
+    metric = "SANOM"
     figure_template = '{}/NMME_plot_{}_{}_basins_sanom.png'
 
-    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
-    data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + config["EXP"]["lsmdir"] + '/'
-    data_dir = data_dir_template.format(syear, smonth)
 
+    data_dir = cwd_ + f'/s2smetric/{syear:04d}{smonth:02d}/'
     lead_month = [0, 1, 2, 3, 4, 5]
     nrows = 2
     ncols = 3
@@ -58,13 +56,11 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     levels = plot_utils.dicts('anom_levels', 'standardized')
     under_over = ['gray', 'blue']
 
-    infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
-    print("Reading infile {}".format(infile))
-
-    anom = xr.open_mfdataset(infile, concat_dim='ens',
-                             preprocess=plot_utils.preproc, combine='nested')
-    anom_crop = plot_utils.crop(boundary, anom.latitude, anom.longitude, anom)
+    # READ ANOMALIES
+    anom = get_anom(data_dir, var_name, metric)
+    anom_crop = plot_utils.crop(boundary, anom)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
+
     plot_arr = median_anom[lead_month, ]
     for i in range (0, len(lead_month)):
         plot_arr[i,:,:] = np.where(hymap_mask >= 1.0e9, plot_arr[i,:,:],-9999.)
@@ -83,7 +79,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     clabel = 'Standardized Anomaly'
 
     cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
-    plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+    plot_utils.google_map(anom_crop.lon.values, anom_crop.lat.values, nrows,
                           ncols, plot_arr, 'CB11W_', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
@@ -94,29 +90,21 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     '''
     This function processes arguments and make plots.
     '''
-    #def preproc(ds):
-    #    ds = ds.isel(ens=0)
-    #    return ds
-
-    # Input file template for straight anomalies:
-    infile_template = '{}/{}_ANOM_init_monthly_{:02d}_{:04d}.nc'
-    # Figure file template for straight anomalies:
+    metric = "ANOM"
     figure_template = '{}/NMME_plot_{}_{}_FCST_anom.png'
 
     # Standardized anomaly input and plot file templates (option):
     if standardized_anomaly == 'Y':
-        infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
+        metric = "SANOM"
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + config["EXP"]["lsmdir"] + '/'
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
 
     # Where input data files are located ("s2smetric dir - CF-convention nc files):
-    data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + \
-        config["EXP"]["lsmdir"] + '/'
-    data_dir = data_dir_template.format(syear, smonth)
+    data_dir = cwd + f'/s2smetric/{syear:04d}{smonth:02d}/'
 
     lead_month = [0, 1, 2, 3, 4, 5]
 
@@ -131,7 +119,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
             ldt = xr.open_mfdataset(ldtfile)
-            ldt_crop = plot_utils.crop(domain, ldt.lat, ldt.lon, ldt)
+            ldt_crop = plot_utils.crop(domain, ldt)
             mask = ldt_crop.HYMAP_drain_area.values
 
         levels = plot_utils.dicts('anom_levels', var_name)
@@ -152,15 +140,9 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
-        infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
-        print("Reading infile {}".format(infile))
-        if var_name == 'Streamflow':
-            anom = xr.open_mfdataset(infile, concat_dim='ens',
-                                     preprocess=plot_utils.preproc, combine='nested')
-        else:
-            anom = xr.open_mfdataset(infile, concat_dim='ens', combine='nested')
-        anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
-        median_anom = np.median(anom_crop.anom.values, axis=0)
+        anom = get_anom(data_dir, var_name, metric)
+        anom_crop = plot_utils.crop(boundary, anom)
+        median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
         if (var_name in {'AirT', 'Air-T', 'Air_T'}) and \
            USAF_COLORS and standardized_anomaly is None:
@@ -196,7 +178,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         if standardized_anomaly == 'Y':
             clabel = 'Standardized Anomaly'
         cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
-        plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+        plot_utils.contours (anom_crop.lon.values, anom_crop.lat.values, nrows,
                              ncols, plot_arr, load_table, titles, domain, figure, under_over,
                              fscale=0.8, stitle=stitle, clabel=clabel, levels=levels,
                              cartopy_datadir=cartopy_dir)
@@ -220,7 +202,7 @@ def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, region):
     ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
         config['SETUP']['ldtinputfile']
     ldt = xr.open_mfdataset(ldtfile)
-    ldt_crop = plot_utils.crop(boundary, ldt.lat, ldt.lon, ldt)
+    ldt_crop = plot_utils.crop(boundary, ldt)
     hymap_mask = ldt_crop.HYMAP_drain_area.values
 
     plot_anoms_basin(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],

@@ -117,40 +117,40 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     # Now write task 11 scripts
 
-    cmd = "python"
-    cmd += f" {srcdir2}/task_11.py"
-    cmd += f" -s {year}"
-    cmd += f" -m {month_abbr}"
-    cmd += f" -c {config_file}"
-    cmd += f" -w {cwd}"
-    cmd += f" -n {month_num}"
-    jobfile = 'bcsd11_run.j'
-    jobname = 'bcsd11_'
+    #cmd = "python"
+    #cmd += f" {srcdir2}/task_11.py"
+    #cmd += f" -s {year}"
+    #cmd += f" -m {month_abbr}"
+    #cmd += f" -c {config_file}"
+    #cmd += f" -w {cwd}"
+    #cmd += f" -n {month_num}"
+    #jobfile = 'bcsd11_run.j'
+    #jobname = 'bcsd11_'
 
-    if py_call:
-        slurm_11_12.append(cmd)
-    else:
-        utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
+    #if py_call:
+    #    slurm_11_12.append(cmd)
+    #else:
+    #    utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
 
     # Now write task 12 scripts
 
-    cmd = "python"
-    cmd += f" {srcdir2}/task_12.py"
-    cmd += f" -s {year}"
-    cmd += f" -m {month_abbr}"
-    cmd += f" -c {config_file}"
-    cmd += f" -w {cwd}"
-    cmd += f" -n {month_num}"
-    jobfile = 'bcsd12_run.j'
-    jobname = 'bcsd12_'
+    #cmd = "python"
+    #cmd += f" {srcdir2}/task_12.py"
+    #cmd += f" -s {year}"
+    #cmd += f" -m {month_abbr}"
+    #cmd += f" -c {config_file}"
+    #cmd += f" -w {cwd}"
+    #cmd += f" -n {month_num}"
+    #jobfile = 'bcsd12_run.j'
+    #jobname = 'bcsd12_'
+
+    #if py_call:
+    #    slurm_11_12.append(cmd)
+    #else:
+    #    utils.job_script(config_file, jobfile, jobname, ntasks, '3', cwd, in_command=cmd)
 
     if py_call:
-        slurm_11_12.append(cmd)
-    else:
-        utils.job_script(config_file, jobfile, jobname, ntasks, '3', cwd, in_command=cmd)
-
-    if py_call:
-        return slurm_9_10, slurm_11_12
+        return slurm_9_10
 #
 # Main Method
 #

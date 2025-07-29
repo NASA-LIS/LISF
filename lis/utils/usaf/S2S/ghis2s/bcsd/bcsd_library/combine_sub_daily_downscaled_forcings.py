@@ -63,6 +63,10 @@ resolution_x, resolution_y, time_increment):
     varname6 = rootgrp.createVariable(varname[5], 'f4', ('time', \
     'latitude', 'longitude',), fill_value=-9999, zlib=True, \
     least_significant_digit=sig_digit)
+    varname7 = rootgrp.createVariable('V10M', 'f4', ('time', \
+    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
+    least_significant_digit=sig_digit)
+
     rootgrp.missing_value = -9999
     rootgrp.description = description
     rootgrp.zenith_interp = "true,false,"
@@ -86,6 +90,8 @@ resolution_x, resolution_y, time_increment):
     varname4.units = var_units[3]
     varname5.units = var_units[4]
     varname6.units = var_units[5]
+    varname7.units = 'm/s'
+    
     ### Assigning standard names for each variables
     varname1.standard_name = var_standard_name[0]
     varname2.standard_name = var_standard_name[1]
@@ -93,7 +99,8 @@ resolution_x, resolution_y, time_increment):
     varname4.standard_name = var_standard_name[3]
     varname5.standard_name = var_standard_name[4]
     varname6.standard_name = var_standard_name[5]
-
+    varname7.standard_name = 'V10M'
+    
     string_date = datetime.strftime(sdate, "%Y-%m-%d %H:%M:%S")
     times.units = 'minutes since ' + string_date
     times.time_increment = time_increment
@@ -109,6 +116,7 @@ resolution_x, resolution_y, time_increment):
     varname4[:, :, :] = var[3, ]
     varname5[:, :, :] = var[4, ]
     varname6[:, :, :] = var[5, ]
+    varname7[:, :, :] = np.zeros_like(var[5,])
     times[:] = nc4_date2num(dates, units=times.units, calendar=times.calendar)
     rootgrp.close()
 

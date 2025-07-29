@@ -21,6 +21,7 @@ import sys
 import argparse
 import datetime
 import subprocess
+from concurrent.futures import ProcessPoolExecutor
 import yaml
 from ghis2s.shared import utils
 # pylint: disable=consider-using-f-string, too-many-locals, import-outside-toplevel
@@ -39,100 +40,6 @@ def _handle_dates(year, month):
     print(f"[INFO] Current year / month: {year:04d} / {month:02d}")
     return currentdate
 
-def _run_convert_s2s_anom_cf(config, currentdate, baseoutdir):
-    """Automate convert_s2s_anom_cf.py for each NMME run."""
-    cfoutdir = \
-        f"{baseoutdir}" + \
-        f"/metrics_cf/{config['EXP']['lsmdir']}"
-    if not os.path.exists(cfoutdir):
-        os.makedirs(cfoutdir)
-
-    year = currentdate.year
-    month = currentdate.month
-    metric_vars = config["POST"]["metric_vars"]
-    nmme_models = config["EXP"]["NMME_models"]
-    for nmme_model in nmme_models:
-        for anom_type in ("anom", "sanom"):
-            touchfile = f"{baseoutdir}/DYN_"
-            touchfile += f"{anom_type.upper()}"
-            touchfile += f"/{config['EXP']['lsmdir']}"
-            touchfile += f"/{anom_type}.{config['EXP']['lsmdir']}"
-            touchfile += f".{nmme_model}.done"
-           #while not os.path.exists(touchfile):
-           #    print(f"[INFO] Waiting for {touchfile}... " + time.asctime() )
-           #    time.sleep(30)
-            rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
-            for metric_var in metric_vars:
-                metricfile = os.path.dirname(touchfile)
-                metricfile += f"/{nmme_model}_{metric_var}"
-                metricfile += f"_{anom_type.upper()}_init_monthly_"
-                metricfile += f"{month:02d}_{year:04d}.nc"
-                cmd = f"python {rundir}/convert_s2s_anom_cf.py"
-                cmd += f" {metricfile} {cfoutdir}"
-                print(cmd)
-                if subprocess.call(cmd, shell=True) != 0:
-                    print("[ERR] Problem running convert_s2s_anom_cf.py!")
-                    sys.exit(1)
-
-def _calc_enddate(config, startdate):
-    """Calculates end date based on number of forecast months"""
-    count = 0
-    year = startdate.year
-    month = startdate.month
-    lead = int(config["EXP"]["lead_months"])
-    while count < lead:
-        count += 1
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
-    enddate = datetime.date(year=year, month=month, day=1)
-    return enddate
-
-def _run_merge_s2s_anom_cf(config, currentdate, configfile, baseoutdir):
-    """Automate merge_s2s_anom_cf.py"""
-    lsm_model = config["EXP"]["lsmdir"]
-    input_dir = f"{baseoutdir}/metrics_cf/{lsm_model}"
-    output_dir = input_dir
-    startdate = datetime.date(year=currentdate.year,
-                              month=currentdate.month,
-                              day=1)
-    enddate = _calc_enddate(config, startdate)
-    rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
-    nmme_models = config["EXP"]["NMME_models"]
-    for nmme_model in nmme_models:
-        cmd = "python"
-        cmd += f" {rundir}/merge_s2s_anom_cf.py"
-        cmd += f" {input_dir} {output_dir}"
-        cmd += f" {startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
-        cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
-        cmd += f" {nmme_model} {configfile}"
-        print(cmd)
-        if subprocess.call(cmd, shell=True) != 0:
-            print("[ERR] Problem calling merge_s2s_anom_cf.py!")
-            sys.exit(1)
-
-def _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir):
-    """Automate make_s2s_median_metric_geotiff.py"""
-    lsm_model = config["EXP"]["lsmdir"]
-    input_dir = f"{baseoutdir}/metrics_cf/{lsm_model}"
-    rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
-
-    metrics1 = config["POST"]["metric_vars"]
-    metrics = ["{}{}".format(i, '_ANOM') for i in metrics1]
-    metrics.extend(["{}{}".format(i, '_SANOM') for i in metrics1])
-
-    for metric1 in metrics:
-        metric = metric1.replace('-', '_')
-        cmd = "python"
-        cmd += f" {rundir}"
-        cmd += "/make_s2s_median_metric_geotiff.py"
-        cmd += f" {input_dir} {metric} {configfile}"
-        print(cmd)
-        if subprocess.call(cmd, shell=True) != 0:
-            print("[ERR] Problem running make_s2s_median_metric_geotiff.py")
-            sys.exit(1)
-
 def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
          ntasks=None, hours=None, py_call=False, weekly=False):
     """Main driver"""
@@ -142,46 +49,44 @@ def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    if nmme_model is None:
-        _run_convert_s2s_anom_cf(config, currentdate, baseoutdir)
-        _run_merge_s2s_anom_cf(config, currentdate, configfile, baseoutdir)
-        _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir)
-    else:
-        pylibdir = config['SETUP']['LISFDIR'] + \
-            '/lis/utils/usaf/S2S/ghis2s/s2smetric/metrics_library/'
-        slurm_commands = []
-        for anom_type in ["anom", "sanom"]:
-            if not weekly:
-                py_script = "convert_dyn_fcst_to_" + anom_type + ".py"
-                cmd = "python"
-                cmd += f" {pylibdir}{py_script}"
-                cmd += f" {currentdate.month:02d}"
-                cmd += f" {currentdate.year:04d}"
-                cmd += f" {nmme_model}"
-                cmd += f" {configfile}"
-                cmd += f" {baseoutdir}"
-                jobfile = jobname + '_' + nmme_model + '_' + anom_type + '_run.j'
-                job_name = jobname + '_' + nmme_model + '_' + anom_type + '_'
-            else:
-                py_script = "compute_weekly_anom.py"
-                cmd = "python"
-                cmd += f" {pylibdir}{py_script}"
-                cmd += f" {currentdate.month:02d}"
-                cmd += f" {currentdate.year:04d}"
-                cmd += f" {nmme_model}"
-                cmd += f" {configfile}"
-                cmd += f" {baseoutdir}"
-                cmd += f" {anom_type.upper()}"
-                jobfile = jobname + '_' + nmme_model + '_' + anom_type + '_run.j'
-                job_name = jobname + '_' + nmme_model + '_' + anom_type + '_'
-            print(cmd)
-            if py_call:
-                slurm_commands.append(cmd)
-            else:
-                utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
-
+    pylibdir = config['SETUP']['LISFDIR'] + \
+        '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
+    slurm_commands = []
+    if not weekly:
+        py_script = "convert_dyn_fcst_to_anom.py"
+        cmd = "python"
+        cmd += f" {pylibdir}{py_script}"
+        cmd += f" {currentdate.month:02d}"
+        cmd += f" {currentdate.year:04d}"
+        cmd += f" {nmme_model}"
+        cmd += f" {configfile}"
+        cmd += f" {baseoutdir}"
+        jobfile = jobname + '_' + nmme_model + '_anom_run.j'
+        job_name = jobname + '_' + nmme_model + '_anom_'
+        print(cmd)
         if py_call:
-            return slurm_commands
+            slurm_commands.append(cmd)
+        else:
+            utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
+    else:
+        py_script = "compute_weekly_anom.py"
+        cmd = "python"
+        cmd += f" {pylibdir}{py_script}"
+        cmd += f" {currentdate.month:02d}"
+        cmd += f" {currentdate.year:04d}"
+        cmd += f" {nmme_model}"
+        cmd += f" {configfile}"
+        cmd += f" {baseoutdir}"
+        jobfile = jobname + '_' + nmme_model + '_anom_run.j'
+        job_name = jobname + '_' + nmme_model + '_anom_'
+        print(cmd)
+        if py_call:
+            slurm_commands.append(cmd)
+        else:
+            utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
+
+    if py_call:
+        return slurm_commands
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -193,9 +98,50 @@ if __name__ == "__main__":
     parser.add_argument('-H', '--hours', help='hours')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
     parser.add_argument('-M', '--nmme_model', required=False, help='NMME Model')
+    parser.add_argument('-W', '--weekly', action='store_true', help='weekly metrics (default: False)?')
 
     args = parser.parse_args()
+    if args.nmme_model is None:
+        def run_tiff_py(cmd):
+            if subprocess.call(cmd, shell=True) != 0:
+                print("[ERR] Problem running make_s2s_median_metric_geotiff.py")
+                sys.exit(1)
+                
+        baseoutdir = args.cwd + '/s2smetric/{:04d}{:02d}'.format(int(args.fcst_year), int(args.fcst_mon))
+        with open(args.configfile, 'r', encoding="utf-8") as file:
+            config = yaml.safe_load(file)
 
-    main(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.cwd,
-         nmme_model=args.nmme_model, jobname=args.jobname, ntasks=args.ntasks,
-         hours=args.hours)
+        input_dir = f"{baseoutdir}/"
+        rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
+
+        if args.weekly:
+            metrics1 = config["POST"]["weekly_vars"]
+        else:
+            metrics1 = config["POST"]["metric_vars"]
+        num_vars = 2*len(metrics1)
+        num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
+        metrics = ["{}{}".format(i, '_ANOM') for i in metrics1]
+        metrics.extend(["{}{}".format(i, '_SANOM') for i in metrics1])
+
+        # ProcessPoolExecutor parallel processing
+        with ProcessPoolExecutor(max_workers=num_workers) as executor:
+            futures = []
+            for metric1 in metrics:
+                metric = metric1.replace('-', '_')
+                cmd = "python"
+                cmd += f" {rundir}"
+                cmd += "/make_s2s_median_metric_geotiff.py"
+                cmd += f" {input_dir} {metric} {args.configfile}"
+                if args.weekly:
+                    cmd += f" weekly"
+                print(cmd)
+                future = executor.submit(run_tiff_py, cmd)
+                futures.append(future)
+
+            for future in futures:
+                result = future.result()
+
+    else:
+        main(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.cwd,
+             nmme_model=args.nmme_model, jobname=args.jobname, ntasks=args.ntasks,
+             hours=args.hours)

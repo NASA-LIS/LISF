@@ -105,6 +105,7 @@ def driver():
             cmd += f" {outdir}/PRECTOT.{src_date}.nc4"
             cmd += f" {outdir}/PRECTOT.{dst_date}.nc4"
             print(cmd)
+            sys.exit()
             returncode = subprocess.call(cmd, shell=True)
             if returncode != 0:
                 print("[ERR] Problem calling copy subroutine!")

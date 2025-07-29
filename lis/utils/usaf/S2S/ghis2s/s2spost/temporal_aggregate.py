@@ -164,7 +164,7 @@ def _create_daily_s2s_filename(input_dir, fcstdate, curdate, model_forcing, doma
     _check_filename_size(name)
     return name
 
-def _create_monthly_s2s_filename(output_dir, fcstdate, startdate, enddate,
+def create_monthly_s2s_filename(output_dir, fcstdate, startdate, enddate,
                                  model_forcing, domain):
     """Create path to monthly S2S netCDF file."""
     name = f"{output_dir}"
@@ -337,7 +337,7 @@ def _create_monthly_file_xarray(varlists, input_dir, output_dir, fcstdate, start
             encoding[var] = {'zlib': True, 'complevel': 6, 'shuffle': True, '_FillValue': -9999.0}
     
     # Write output file
-    outfile = _create_monthly_s2s_filename(output_dir, fcstdate, startdate,
+    outfile = create_monthly_s2s_filename(output_dir, fcstdate, startdate,
                                          enddate, model_forcing, config["EXP"]["DOMAIN"])
     
     try:

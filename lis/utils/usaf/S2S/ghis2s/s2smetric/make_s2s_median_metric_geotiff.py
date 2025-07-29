@@ -57,11 +57,12 @@ from osgeo import gdal, osr
 class _MetricGeoTiff:
     """Class for building GeoTIFF files from medians of S2S metrics."""
 
-    def __init__(self, topdir, metric, config):
+    def __init__(self, topdir, metric, config, weekly=False):
         """Constructor"""
         self.topdir = topdir
         self.metric = metric
         self.config = config
+        self.weekly = weekly
         self.nmme_metric_files = {}
         self.filename_elements = {}
         self.median_data = {}
@@ -77,7 +78,10 @@ class _MetricGeoTiff:
                     f"[WARN] Cannot find directory {subdir} for S2S metrics!"
                 print(txt)
                 continue
-            regex = f"{subdir}/PS.*GP.LIS-S2S-{nmme.upper()}*DF.NC"
+            if self.weekly:
+                regex = f"{subdir}/PS.*GP.LIS-S2S-{nmme.upper()}*S2SMETRICS_WEEKLY*DF.NC"
+            else:
+                regex = f"{subdir}/PS.*GP.LIS-S2S-{nmme.upper()}*S2SMETRICS_DD*DF.NC"
             files = glob.glob(regex)
             if len(files) == 0:
                 print(f"[WARN] Cannot find metric file in {subdir}")
@@ -92,6 +96,8 @@ class _MetricGeoTiff:
         nmme = next(iter(self.nmme_metric_files))
         metric_file = self.nmme_metric_files[nmme]
         metric_file = os.path.basename(metric_file)
+        if self.weekly:
+            metric_file = metric_file.replace("S2SMETRICS_WEEKLY", "S2SMETRICS")
         filename_elements = {}
         element_list = metric_file.split("_")
         for element in element_list:
@@ -116,7 +122,7 @@ class _MetricGeoTiff:
                 continue
             metric_file = self.nmme_metric_files[nmme]
             rootgrp = nc4_dataset(metric_file, 'r',
-                                  format="NETCDF4_CLASSIC")
+                                  format="NETCDF4")
             total_ens_size += rootgrp.dimensions["ens"].size
             lead = rootgrp.dimensions["time"].size
             latitude = rootgrp.dimensions["latitude"].size
@@ -287,7 +293,7 @@ def _usage():
 
 def _read_cmd_args():
     """Read command line arguments."""
-    if len(sys.argv) != 4:
+    if len(sys.argv) > 5:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -341,7 +347,10 @@ def _driver():
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    mgt = _MetricGeoTiff(topdir, metric, config)
+    if len(sys.argv) == 4:
+        mgt = _MetricGeoTiff(topdir, metric, config)
+    else:
+        mgt = _MetricGeoTiff(topdir, metric, config, weekly=True)
     mgt.save_nmme_metric_filenames()
     mgt.save_filename_elements()
     mgt.calc_medians()

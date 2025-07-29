@@ -2,9 +2,9 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: convert_dyn_fcst_to_sanom.py
+# SCRIPT: convert_dyn_fcst_to_anom.py
 #
-# PURPOSE: Calculates standardized anomaly of NMME-forced LIS FORECASTS.
+# PURPOSE: Calculates anomaly of NMME-forced LIS FORECASTS.
 #
 # REVISION HISTORY:
 # ?? Mar 2017: Shrad Shukla/UCSB, first version.
@@ -16,11 +16,9 @@
 #------------------------------------------------------------------------------
 """
 
-
-
-
 # Standard modules
 from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
 import glob
 import os
 import subprocess
@@ -31,12 +29,15 @@ import yaml
 from dateutil.relativedelta import relativedelta
 import numpy as np
 import xarray as xr
-
+from concurrent.futures import ProcessPoolExecutor
 # Local modules
 # pylint: disable=import-error
-from metricslib import sel_var, compute_sanomaly
+from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
+                        LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
 # pylint: enable=import-error
 # pylint: disable=consider-using-f-string
+#
+
 # Start reading from command line.
 FCST_INIT_MON = int(sys.argv[1])
 TARGET_YEAR = int(sys.argv[2])
@@ -44,7 +45,7 @@ NMME_MODEL = sys.argv[3]
 CONFIGFILE = sys.argv[4]
 BASEOUTDIR = sys.argv[5]
 
-# load CONFIG file
+# Load CONFIG file
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     CONFIG = yaml.safe_load(file)
 HYD_MODEL = CONFIG["EXP"]["lsmdir"]
@@ -52,19 +53,18 @@ LEAD_NUM = int(CONFIG["EXP"]["lead_months"])
 DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
-BASEDIR = BASEOUTDIR + "/DYN_SANOM/"
 METRIC_VARS = CONFIG["POST"]["metric_vars"]
 HINDCASTS = CONFIG["SETUP"]["E2ESDIR"] + '/hindcast/s2spost/' + '{:02d}/'.format(FCST_INIT_MON)
 FORECASTS = "./s2spost/"
 CURRENTDATE = date(TARGET_YEAR, FCST_INIT_MON, 1)
-
+ENDDATE = CURRENTDATE
+ENDDATE += relativedelta(months=int(CONFIG["EXP"]["lead_months"]))
 FCST_INIT_DAY = 1
-OUTDIR = BASEDIR + '/' + HYD_MODEL
-if not os.path.exists(OUTDIR):
-    os.makedirs(OUTDIR, exist_ok=True)
+OUTDIR = BASEOUTDIR + '/' 
+os.makedirs(OUTDIR, exist_ok=True)
 
-OUTFILE_TEMPLATE = '{}/{}_{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
 # name of variable, forecast initial month and forecast year is in the file
+
 if DOMAIN_NAME == 'AFRICOM':
     TARGET_INFILE_TEMPLATE1 = \
         '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
@@ -78,14 +78,25 @@ elif DOMAIN_NAME == 'GLOBAL':
 
 TARGET_INFILE_TEMPLATE2 = \
     'PA.ALL_DD.{:04d}{:02d}01_DT.0000_FP.{:04d}{:02d}??-{:04d}{:02d}??_DF.NC'
-TARGET_INFILE_TEMPLATE = TARGET_INFILE_TEMPLATE1 + TARGET_INFILE_TEMPLATE2
 
 CLIM_INFILE_TEMPLATE2 = 'PA.ALL_DD.*{:02d}01_DT.0000_FP.*{:02d}??-*{:02d}??_DF.NC'
 
+TARGET_INFILE_TEMPLATE = TARGET_INFILE_TEMPLATE1 + TARGET_INFILE_TEMPLATE2
 CLIM_INFILE_TEMPLATE = CLIM_INFILE_TEMPLATE1 + CLIM_INFILE_TEMPLATE2
-## String in this format allows the select all the files for the given month
+## String in this format allows to select all the files for the given month
+num_vars = 2*len(METRIC_VARS)
+num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
 
-for var_name in METRIC_VARS:
+OUTFILE = merged_metric_filename(OUTDIR, CURRENTDATE, ENDDATE, NMME_MODEL, DOMAIN_NAME)
+
+def process_variable(var_name, METRIC_NAME):
+    if METRIC_NAME == "ANOM":
+        LONG_NAMES = LONG_NAMES_ANOM
+        UNITS = UNITS_ANOM
+    else:
+        LONG_NAMES = LONG_NAMES_SANOM
+        UNITS = UNITS_SANOM
+        
     for lead in range(LEAD_NUM):
         print('[INFO] Reading output from Hindcast runs')
         print(f'[INFO] var_name, lead: {var_name} {lead}')
@@ -103,8 +114,8 @@ for var_name in METRIC_VARS:
                                              FCST_INIT_MON, \
                                              smon.month, emon.month)
 
+        print(f"[INFO] Reading forecast climatology {INFILE}")
         infile1 = glob.glob(INFILE)
-        print("[INFO] Reading forecast climatology")
 
         # First reading all available years for the given
         # forecast initialization month
@@ -124,7 +135,7 @@ for var_name in METRIC_VARS:
         # together in a file so we don't have to read climatologies every time
 
         ####### Step-2: Read the target forecast which needs to be converted
-        ## into standardized anomaly
+        ## into anomaly
         smon1 = datetime(TARGET_YEAR, FCST_INIT_MON, FCST_INIT_DAY) + \
             relativedelta(months=lead)
         emon1 = datetime(TARGET_YEAR, FCST_INIT_MON, FCST_INIT_DAY) + \
@@ -147,9 +158,8 @@ for var_name in METRIC_VARS:
         target_fcst_data = target_fcst_data.load()
         all_clim_data = all_clim_data.load()
 
-        ## Step-3 loop through each grid cell and convert data into
-        # standardized anomaly
-        # Defining array to store standardized anomaly data
+        ## Step-3 loop through each grid cell and convert data into anomaly
+        # Defining array to store anomaly data
         lat_count, lon_count, ens_count = \
             len(target_data.coords['lat']), \
             len(target_data.coords['lon']), \
@@ -157,42 +167,55 @@ for var_name in METRIC_VARS:
 
         ## Note that ens_count is coming from the Target FORECASTS,
         ## so if the target_FORECASTS have 4 members there will be
-        ## 4 members in standardized anomaly output and so on.
+        ## 4 members in anomaly output and so on.
         if lead == 0:
-            all_anom = np.ones((ens_count, LEAD_NUM, lat_count, lon_count))*-99
-        print('[INFO] Converting data into standardized anomaly')
+            all_anom = np.ones((ens_count, LEAD_NUM, lat_count, lon_count))*-9999
+        print('[INFO] Converting data into anomaly')
 
         all_clim_mean = all_clim_data.mean (dim = ['time','ensemble'], skipna = True)
-        all_clim_std  = all_clim_data.std (dim = ['time','ensemble'], skipna = True)
 
+        if METRIC_NAME == "SANOM":
+            all_clim_std  = all_clim_data.std (dim = ['time','ensemble'], skipna = True)
+            
         if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or \
            (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
-            all_clim_mean = \
-                all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
-                                             "lat": target_fcst_data.lat.values})
-            all_clim_std = \
-                all_clim_std.assign_coords({"lon": target_fcst_data.lon.values,
-                                            "lat": target_fcst_data.lat.values})
-
-        this_anom = xr.apply_ufunc(
-            compute_sanomaly,
-            target_fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
-            all_clim_mean.chunk({"lat": "auto", "lon": "auto"}).compute(),
-            all_clim_std.chunk({"lat": "auto", "lon": "auto"}).compute(),
-            input_core_dims=[['ensemble','time',],[],[]],
-            exclude_dims=set(('ensemble','time',)),
-            output_core_dims=[['ensemble','time',]],
-            vectorize=True,  # loop over non-core dims
-            dask="forbidden",
-            output_dtypes=[np.float64])
-
+            all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
+                                                         "lat": target_fcst_data.lat.values})
+            if METRIC_NAME == "SANOM":
+                all_clim_std = \
+                    all_clim_std.assign_coords({"lon": target_fcst_data.lon.values,
+                                                "lat": target_fcst_data.lat.values})
+        if METRIC_NAME == "ANOM":
+            this_anom = xr.apply_ufunc(
+                compute_anomaly,
+                target_fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                all_clim_mean.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                input_core_dims=[['ensemble','time',],[]],
+                exclude_dims=set(('ensemble','time',)),
+                output_core_dims=[['ensemble','time',]],
+                vectorize=True,  # loop over non-core dims
+                dask="forbidden",
+                output_dtypes=[np.float64])
+        else:
+            this_anom = xr.apply_ufunc(
+                compute_sanomaly,
+                target_fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                all_clim_mean.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                all_clim_std.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                input_core_dims=[['ensemble','time',],[],[]],
+                exclude_dims=set(('ensemble','time',)),
+                output_core_dims=[['ensemble','time',]],
+                vectorize=True,  # loop over non-core dims
+                dask="forbidden",
+                output_dtypes=[np.float64])
+           
         for ens in range(ens_count):
             all_anom[ens, lead, :, :] = this_anom [:,:,ens,0]
 
-        del all_clim_data, target_fcst_data, all_clim_mean, all_clim_std
+        del all_clim_data, target_fcst_data, all_clim_mean
 
     ### Step-4 Writing output file
-    all_anom = np.ma.masked_array(all_anom, mask=(all_anom == -99))
+    all_anom = np.ma.masked_array(all_anom, mask=(all_anom == -9999.))
 
     ## Creating an latitude and longitude array based on locations of corners
     lats = np.arange(target_data.attrs['SOUTH_WEST_CORNER_LAT'], \
@@ -201,21 +224,66 @@ for var_name in METRIC_VARS:
     lons = np.arange(target_data.attrs['SOUTH_WEST_CORNER_LON'], \
                      target_data.attrs['SOUTH_WEST_CORNER_LON'] + \
                      (lon_count*0.25), 0.25)
-    OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, NMME_MODEL, \
-                                      var_name, FCST_INIT_MON, TARGET_YEAR)
 
     anom_xr = xr.Dataset()
-    anom_xr['anom'] = (('ens', 'time', 'latitude', 'longitude'), all_anom)
-    anom_xr.coords['ens'] = (('ens'), np.arange(0, ens_count, dtype=int))
+    anom_xr[var_name.replace('-','_') + '_' + METRIC_NAME] = (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
     anom_xr.coords['time'] = (('time'), np.arange(0, LEAD_NUM, dtype=int))
-    print(f"[INFO] Writing {OUTFILE}")
-    anom_xr.to_netcdf(OUTFILE)
+    anom_xr.coords['ens'] = (('ens'), np.arange(0, ens_count, dtype=int))
 
-# Create file tag indicating completion
-FILENAME = f"{OUTDIR}/sanom.{HYD_MODEL}.{NMME_MODEL}.done"
-CMD = f"touch {FILENAME}"
-if subprocess.call(CMD, shell=True) != 0:
-    print(f"[ERR] Cannot create {FILENAME}")
-#    sys.exit(1)
+    # Add attributes
+    anom_xr.attrs['Conventions'] = 'CF-1.8'
+    anom_xr['latitude'].attrs = {
+        'long_name': 'latitude',
+        'standard_name': 'latitude',
+        'units': 'degree_north',
+        'axis': 'Y'
+    }
+    anom_xr['longitude'].attrs = {
+        'long_name': 'longitude',
+        'standard_name': 'longitude',
+        'units': 'degree_east',
+        'axis': 'X'
+    }
+    anom_xr['ens'].attrs = {
+        'long_name': 'Ensemble members',
+        'axis': 'E',
+        'units': '1'
+    }
+    anom_xr['time'].attrs = {
+        'long_name': 'Forecast month',
+        'units': 'months'
+    }
+    anom_xr[var_name + '_' + METRIC_NAME].attrs = {
+        'long_name': LONG_NAMES[var_name],
+        'units': UNITS[var_name]
+    }
+    print(f"[INFO] Processed variable: {var_name}")
+    return anom_xr
+
+# ProcessPoolExecutor parallel processing
+with ProcessPoolExecutor(max_workers=num_workers) as executor:
+    futures = []
+    for var_name in METRIC_VARS:
+        future = executor.submit(process_variable, var_name, "ANOM")
+        futures.append(future)
+        future = executor.submit(process_variable, var_name, "SANOM")
+        futures.append(future)
+
+    # Collect all anom_xr data sets
+    datasets = []
+    for future in futures:
+        result = future.result()
+        datasets.append(result)
+
+# Merge all datasets
+merged_dataset = xr.merge(datasets)
+comp = dict(zlib=True, complevel=6, shuffle=True, missing_value= -9999., _FillValue= -9999.)
+encoding = {var: comp for var in merged_dataset.data_vars}
+
+# Write the merged dataset to a single file
+print(f"[INFO] Writing merged output to {OUTFILE}")
+merged_dataset.to_netcdf(OUTFILE, format="NETCDF4", encoding=encoding)
+
+
