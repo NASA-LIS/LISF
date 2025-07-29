@@ -40,7 +40,7 @@ subroutine read_HYMAP_urban_drain_outlet(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%urbandrainoutletfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Urban drainage outlet map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP urban drainage outlet map, ',&
            trim(HYMAP_struc(n)%urbandrainoutletfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

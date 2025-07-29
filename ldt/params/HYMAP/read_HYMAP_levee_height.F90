@@ -40,7 +40,7 @@ subroutine read_HYMAP_levee_height(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%leveeheightfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Levee height map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP levee height map, ',&
            trim(HYMAP_struc(n)%leveeheightfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

@@ -40,7 +40,7 @@ subroutine read_HYMAP_node_lat(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%nodelatfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Node latitude, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP node latitude map, ',&
            trim(HYMAP_struc(n)%nodelatfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun
