@@ -19,8 +19,8 @@ ENV_DEFINITION = {
     "S2S_STEP": (str, "E2E"),
     "ONE_STEP": (bool, False),
     "SUBMIT_JOB": (bool, False),
-    "E2ESDIR": (str, "/discover/nobackup/projects/ghilis/smahanam/Cylc_test/"),
-    "OUTPUT_ROOT": (str, "/discover/nobackup/projects/ghilis/smahanam/GHI-repos/ghi-config/pkg/"),
+    "E2ESDIR": (str, "/discover/nobackup/projects/ghilis/smahanam/ghi-coupling/"),
+    "OUTPUT_ROOT": (str, "/discover/nobackup/projects/ghilis/smahanam/GHI-repos/s2s_workflows/"),
     "MODEL": (str, "S2S"),
     "VARIANT": (str, ""),
     "PYTHONPATH": (str, None),
@@ -282,10 +282,10 @@ class Ghis2sProgram():
         # Setup Cylc workflow
         self._setup_cylc_workflow()
         self._update_cylc_config()
-        self._install_cylc_workflow()
+        #self._install_cylc_workflow()
         
         # Print helpful commands
-        self._print_cylc_commands()
+        #self._print_cylc_commands()
         
         logging.info("ghis2s S2S workflow integration completed successfully")
         
