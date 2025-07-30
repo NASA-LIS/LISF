@@ -41,13 +41,17 @@ fi
 WORKFLOW_NAME="S2S-${FORECAST_YEAR}${MM}"
 WORKFLOW_DIR="${OUTPUT_ROOT}/${WORKFLOW_NAME}"
 LOGDIR="${E2ESDIR}/scratch/${FORECAST_YEAR}${MM}"
-CWD=`pwd`
 
 # Install CYLC workflow
 cd $WORKFLOW_DIR
+CWD=`pwd`
 cylc install --symlink-dirs=run=$LOGDIR
 
+echo
+
+echo "======================================================================================================="
 echo "Useful CYLC commands from ${CWD}"
+echo "======================================================================================================="
 echo
 echo "Run ${WORKFLOW_NAME}: cylc play ${WORKFLOW_NAME}"
 echo "Monitor ${WORKFLOW_NAME}: cylc tui ${WORKFLOW_NAME}"
