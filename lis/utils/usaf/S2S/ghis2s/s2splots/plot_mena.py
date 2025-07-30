@@ -141,7 +141,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
 
         # READ ANOMALIES
         anom = get_anom(data_dir, var_name, metric)
-        anom_crop = plot_utils.crop(boundary, anom)
+        anom_crop = plot_utils.crop(domain, anom)
         median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
         if (var_name in {'AirT', 'Air-T', 'Air_T'}) and \
