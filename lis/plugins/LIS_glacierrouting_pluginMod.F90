@@ -42,7 +42,7 @@ subroutine LIS_glacierrouting_plugin
 
    use LIS_pluginIndices
 
-#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) )
+#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) ||  ( defined ROUTE_HYMAP3_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) )
 
 #if ( defined SM_GLACIER_TEMPLATE )
    external templateGL_getrunoffs_mm
@@ -66,6 +66,10 @@ subroutine LIS_glacierrouting_plugin
 
    call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
+        noahmpglacier3911_getrunoffs_hymap2)
+
+   call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
         noahmpglacier3911_getrunoffs_hymap2)
 #endif
 
