@@ -97,15 +97,18 @@ if($opt_lev eq ""){
    $opt_lev=2;
 }
 if($opt_lev == -3) {
-   # Default flags for C.
-    $sys_c_opt = "-g";
+    $sys_opt = "-g -O0"; # Default flags for Fortran.
+    $sys_c_opt = "-g -O0"; # Default flags for C.
     if($sys_arch eq "linux_ifc"){
-	$sys_opt = "-g -warn";
-	$sys_opt .= 
-	    " -check bounds,format,output_conversion,pointers,stack,uninit";
-	$sys_opt .= " -fp-stack-check -ftrapuv ";
-	
-	$sys_c_opt = "-g -Wall -Wcast-qual -Wcheck -Wdeprecated";
+        # Fortran flags
+	$sys_opt = "-g -O0 -warn";
+	$sys_opt .= " -check bounds,format,output_conversion,pointers,";
+        $sys_opt .= "stack,uninit";
+	$sys_opt .= " -fp-stack-check -ftrapuv";
+        $sys_opt .= " -mcmodel=medium ";
+
+        # C flags
+	$sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wdeprecated";
 	$sys_c_opt .= " -Wextra-tokens -Wformat";
 	$sys_c_opt .= " -Wformat-security -Wmissing-declarations";
 	$sys_c_opt .= " -Wmissing-prototypes -Wpointer-arith -Wremarks";
@@ -113,10 +116,10 @@ if($opt_lev == -3) {
 	$sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
 	$sys_c_opt .= " -Wunused-function -Wunused-parameter";
 	$sys_c_opt .= " -Wunused-variable -Wwrite-strings";
-	# Run-time flags
-	$sys_c_opt .= " -check=conversions,stack,uninit";
-	$sys_c_opt .= " -fp-stack-check -fp-trap=common -fp-trap-all=common";
-	$sys_c_opt .= " -ftrapuv";
+	$sys_c_opt .= " -fp-stack-check -fp-trap=common";
+        $sys_c_opt .= " -fp-trap-all=common";
+	$sys_c_opt .= " -ftrapv";
+        $sys_c_opt .= " -mcmodel=medium ";
     }
     elsif($sys_arch eq "linux_pgi") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
@@ -159,9 +162,32 @@ if($opt_lev == -3) {
 }
 
 if($opt_lev == -2) {
-   if($sys_arch eq "linux_ifc") {
-      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit ";
-      $sys_c_opt = "-g ";
+    $sys_opt = "-g -O0"; # Default flags for Fortran.
+    $sys_c_opt = "-g -O0"; # Default flags for C.
+    if($sys_arch eq "linux_ifc") {
+
+        # Fortran flags
+        $sys_opt = "-g -O0 -warn alignments,declarations,externals,";
+        $sys_opt .= "general,truncated_source,unused,uncalled";
+        $sys_opt .= " -check bounds,format,output_conversion,pointers,";
+        $sys_opt .= "stack,uninit";
+        $sys_opt .= " -fp-stack-check -ftrapuv ";
+        $sys_opt .= " -mcmodel=medium ";
+
+        # C flags
+        $sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wdeprecated";
+        $sys_c_opt .= " -Wextra-tokens -Wformat";
+        $sys_c_opt .= " -Wformat-security -Wmissing-declarations";
+        $sys_c_opt .= " -Wmissing-prototypes -Wpointer-arith -Wremarks";
+        $sys_c_opt .= " -Wreturn-type -Wshadow -Wsign-compare";
+        $sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
+        $sys_c_opt .= " -Wunused-function -Wunused-parameter";
+        $sys_c_opt .= " -Wunused-variable -Wwrite-strings";
+        $sys_c_opt .= " -fp-stack-check -fp-trap=common";
+        $sys_c_opt .= " -fp-trap-all=common";
+        $sys_c_opt .= " -ftrapv";
+        $sys_c_opt .= " -mcmodel=medium ";
+
    }
    elsif($sys_arch eq "linux_gfortran") {
       $sys_opt = "-g -Wall -fbounds-check ";
@@ -175,8 +201,8 @@ if($opt_lev == -2) {
    }
 }
 if($opt_lev == -1) {
-   $sys_opt = "-g ";
-   $sys_c_opt = "-g ";
+    $sys_opt = "-g -O0"; # Default flags for Fortran.
+    $sys_c_opt = "-g -O0"; # Default flags for C.
 }
 elsif($opt_lev == 0) {
    $sys_opt = "-O0 ";
@@ -622,12 +648,14 @@ if($sys_arch eq "linux_ifc") {
       if($use_endian == 1) {
          $fflags77= "-c ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
+         $ldflags  = " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
+         $ldflags .= " -mcmodel=medium ";
       }
       else {
          $fflags77= "-c ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
+         $ldflags .= " -mcmodel=medium ";
       }
    }
 
