@@ -163,7 +163,19 @@ prepend-path   LD_LIBRARY_PATH   "$def_lis_petsc/lib"
 prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"
 
 # EMK Miniconda3 environment for S2S
+# Check for optional CYLC environment override
+set use_cylc_env [info exists env(USE_CYLC_ENV)]
+if { $use_cylc_env && $env(USE_CYLC_ENV) == "1" } {
+    # CYLC-specific environment
+    prepend-path   PATH  "/discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250730_cylc850only_py311_sles15/bin/"
+    setenv ESMFMKFILE /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250730_cylc850only_py311_sles15/lib/esmf.mk
+    setenv PROJ_LIB /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250730_cylc850only_py311_sles15/share/proj/
+    puts stderr "Using CYLC environment: 20250730_cylc850only_py311_sles15"
+} else {
+    # Default S2S environment
+    prepend-path   PATH  "/discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250717_py311_sles15_hpc11/bin/"
+    setenv ESMFMKFILE /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250717_py311_sles15_hpc11/lib/esmf.mk
+    setenv PROJ_LIB /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250717_py311_sles15_hpc11/share/proj/
+    puts stderr "Using default S2S environment: 20250717_py311_sles15_hpc11"
+}
 
-prepend-path   PATH  "/discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250728_cylc850_py311_sles15/bin/"
-setenv ESMFMKFILE /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250728_cylc850_py311_sles15/lib/esmf.mk
-setenv PROJ_LIB /discover/nobackup/projects/usaf_lis/emkemp/miniforge3/20250728_cylc850_py311_sles15/share/proj/
