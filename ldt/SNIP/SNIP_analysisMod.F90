@@ -2404,6 +2404,7 @@ contains
        elevations, sfctmp_found, sfctmp_lis, bratseth)
 
     ! Imports
+    use ieee_arithmetic, only: ieee_is_nan
     use LDT_coreMod, only: LDT_domain
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_snipMod, only: snip_settings
@@ -2443,6 +2444,7 @@ contains
     character*32 :: new_name
     integer :: gindex
     real :: rlat
+    real :: satdep
 
     ! Initializations
     allocate(snomask(nc,nr))
@@ -2490,43 +2492,27 @@ contains
        end do ! c
     end do ! r
 
-    ! TODO Replace with AMSR2 retrievals
-    ! ! Adjust the first-guess towards gridded SSMIS.
-    ! do r = 1, nr
-    !    do c = 1, nc
+    ! Adjust the first-guess towards gridded AMSR2
+    do r = 1, nr
+       do c = 1, nc
 
-    !       if (skip_grid_points(c,r)) cycle
+          if (skip_grid_points(c,r)) cycle
 
-    !       ! Get SSMIS value
-    !       satdep = misanl
-    !       if (SNIP_arrays%ssmis_depth(c,r) >= 0) then
-    !          satdep = SNIP_arrays%ssmis_depth(c,r)
-    !       end if
+          if (ieee_is_nan(SNIP_arrays%amsr2_snowdepth(c,r))) cycle
 
-    !       ! Handle SSMIS detection problem with very shallow snow.  If
-    !       ! below minimum depth, preserve prior analysis if larger than
-    !       ! SSMIS.
-    !       if (satdep >= 0) then
-    !          if (satdep .le. snip_settings%minsat) then
-    !             if (satdep > SNIP_arrays%olddep(c,r)) then
-    !                SNIP_arrays%snoanl(c,r) = satdep
-    !                updated(c,r) = .true.
-    !                if (satdep > 0) then
-    !                   snomask(c,r) = 1
-    !                end if
-    !             end if
-    !          else
-    !             SNIP_arrays%snoanl(c,r) = satdep
-    !             updated(c,r) = .true.
-    !             if (satdep > 0) then
-    !                snomask(c,r) = 1
-    !             end if
-    !          end if
-    !       end if
+          ! Get AMSR2 value
+          satdep = misanl
+          if (SNIP_arrays%amsr2_snowdepth(c,r) >= 0) then
+             satdep = SNIP_arrays%amsr2_snowdepth(c,r)
+          end if
+          SNIP_arrays%snoanl(c,r) = satdep
+          updated(c,r) = .true.
+          if (satdep > 0) then
+             snomask(c,r) = 1
+          end if
 
-    !    end do ! c
-    ! end do ! r
-
+       end do ! c
+    end do ! r
 
     ! Adjust snow mask based on VIIRS
     if (snip_settings%useviirs) then
