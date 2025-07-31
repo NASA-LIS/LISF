@@ -14,10 +14,11 @@
 ! 01 Mar 2019  Eric Kemp  First version.
 ! 09 Jul 2025  Eric Kemp  SNIP version.
 ! 11 Jul 2025  Eric Kemp  Create USAFSI netCDF readers.
+! 30 Jul 2025  Eric Kemp  Add AMSR2 snow depth netCDF reader.
 !
 ! DESCRIPTION:
-! Source code for writing Air Force snow depth analysis variables to
-! NETCDF.
+! Source code for reading/writing Air Force snow depth analysis variables
+! to NETCDF.
 !-------------------------------------------------------------------------
 
 #include "LDT_misc.h"
@@ -35,6 +36,7 @@ module SNIP_netcdfMod
   public :: SNIP_read_netcdf_12z
   public :: SNIP_read_netcdf_usafsi
   public :: SNIP_read_netcdf_usafsi_12z
+  public :: SNIP_read_netcdf_amsr2_sd
 
 contains
 
@@ -1165,4 +1167,123 @@ contains
 
 #endif
 
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+  subroutine SNIP_read_netcdf_amsr2_sd(date10, ierr)
+
+    ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+    use LDT_coreMod, only: LDT_rc
+    use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
+    use LDT_SNIPMod, only: SNIP_settings
+    use netcdf
+    use SNIP_arraysMod, only: SNIP_arrays
+    use SNIP_paramsMod, only: misanl
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    character*10, intent(in) :: date10
+    integer, intent(out) :: ierr
+
+    ! Locals
+    character(LDT_CONST_PATH_LEN) :: infilename
+    logical :: file_exists
+    integer :: ncid, dim_ids(2)
+    integer :: snowdepth_varid
+    integer :: nc, nr, nlat, nlon
+
+    ierr = 1 ! Update below
+
+    nc = LDT_rc%lnc(1)
+    nr = LDT_rc%lnr(1)
+
+    SNIP_arrays%amsr2_snowdepth = misanl
+
+    ! See if file exists
+    infilename = trim(SNIP_settings%amsr2dir) // &
+         "amsr2_snip_0p1deg_" // date10 // "00_AFgrid.nc"
+    inquire(file=trim(infilename), exist=file_exists)
+    if (.not. file_exists) then
+       write(LDT_logunit,*)'[WARN] Cannot find ', trim(infilename)
+       return
+    end if
+
+    write(LDT_logunit,*) '[INFO] Reading AMSR2 snowdepth NETCDF file ', &
+         trim(infilename)
+
+    ! Open the file for reading
+    call LDT_verify(nf90_open(path=trim(infilename), &
+         mode=NF90_NOWRITE, &
+         ncid=ncid), &
+         '[ERR] Error in nf90_open for '//trim(infilename))
+
+    call LDT_verify(nf90_inq_dimid(ncid=ncid, &
+         name='lat', &
+         dimid=dim_ids(2)), &
+         '[ERR] Error in nf90_inq_dimid for dimension lat')
+    call LDT_verify(nf90_inq_dimid(ncid=ncid, &
+         name='lon', &
+         dimid=dim_ids(1)), &
+         '[ERR] Error in nf90_inq_dimid for dimension lon')
+
+    ! Get the actual dimension sizes
+    call LDT_verify(nf90_inquire_dimension(ncid=ncid, &
+         dimid=dim_ids(2), &
+         len=nlat), &
+         '[ERR] Error in nf90_inquire_dimension for dimension lat')
+    call LDT_verify(nf90_inquire_dimension(ncid=ncid, &
+         dimid=dim_ids(1), &
+         len=nlon), &
+         '[ERR] Error in nf90_inquire_dimension for dimension lon')
+
+    ! Sanity checks
+    if (nlat .ne. nr .or. &
+         nlon .ne. nc) then
+       write(LDT_logunit, *) &
+            '[ERR] Dimension mismatch between LDT and AMSR2 input'
+       write(LDT_logunit,*) &
+            '[ERR] Expected lat = ', nr, ' lon = ', nc
+       write(LDT_logunit,*) &
+            '[ERR] Found lat = ', nlat, ' lon = ', nlon
+       call LDT_endrun()
+    end if
+
+    ! Fetch the AMSR2 snow depth variable ID
+    call LDT_verify(nf90_inq_varid(ncid=ncid, &
+         name='snowdepth', &
+         varid=snowdepth_varid), &
+         '[ERR] Error in nf90_inq_varid for snowdepth')
+
+    ! Read the snowdepth variable
+    call LDT_verify(nf90_get_var(ncid=ncid, &
+         varid=snowdepth_varid, &
+         values=SNIP_arrays%amsr2_snowdepth), &
+         '[ERR] Error in nf90_get_var for snowdepth')
+
+    ! Close the file
+    call LDT_verify(nf90_close(ncid), &
+         '[ERR] Error in nf90_close for '//trim(infilename))
+
+    ! Normal exit
+    ierr = 0
+
+  end subroutine SNIP_read_netcdf_amsr2_sd
+
+#else
+  ! Dummy version
+  subroutine SNIP_read_netcdf_amsr2_sd(date10, ierr)
+    use LDT_logMod, only: LDT_logunit, LDT_endrun
+    implicit none
+    character*10, intent(in) :: date10
+    integer, intent(out) :: ierr
+    ierr = 1
+    write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
+    write(LDT_logunit,*)'Cannot read in ASMR2 SD NETCDF data'
+    write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
+    call LDT_endrun()
+  end subroutine SNIP_read_netcdf_amsr2_sd
+
+#endif
 end module SNIP_netcdfMod

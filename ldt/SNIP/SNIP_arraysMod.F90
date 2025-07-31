@@ -35,6 +35,8 @@
 !**  19 Jul 24  Renamed gofs_icecon array to navy_icecon array to reflect
 !               source as either ESPC-D or GOFS.
 !**  09 Jul 25  Ported for SNIP...Eric Kemp, NASA GSFC/SSAI
+!**  30 Jul 25  Added AMSR2 snow depth retrievals...Eric Kemp, NASA
+!               GSFC/SSAI
 !*****************************************************************************************
 !*****************************************************************************************
 
@@ -66,6 +68,7 @@ module SNIP_arraysMod
      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNIP GRID
      real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
      real, allocatable :: navy_icecon(:,:)
+     real, allocatable :: amsr2_snowdepth(:,:)
   end type SNIP_arrays_t
 
   type(SNIP_arrays_t), public :: SNIP_arrays
