@@ -88,6 +88,7 @@ subroutine SNIP_run(n)
   !**  09 Jul 25  Migrated to SNIP...........................Eric Kemp/SSAI
   !**  11 Jul 25  Removed legacy satellite SD retrievals.  Added code
   !               to read SNIP or USAFSI prior analyses......Eric Kemp/SSAI
+  !**  30 Jul 25  Add ASMR2 snow depth support...............Eric Kemp/SSAI
   !************************************************************************
   !************************************************************************
 
@@ -219,6 +220,7 @@ subroutine SNIP_run(n)
      allocate (SNIP_arrays%sst              (nc,     nr))
      allocate (SNIP_arrays%viirsmap         (nc,     nr))
      allocate (SNIP_arrays%navy_icecon(nc,nr))
+     allocate (SNIP_arrays%amsr2_snowdepth(nc,nr))
 
      ! RETRIEVE STATIC DATA SETS.
      write (LDT_logunit,*) '[INFO] CALLING GETGEO TO GET STATIC FIELDS'
@@ -421,7 +423,8 @@ subroutine SNIP_run(n)
            if (ierr == 0) found_navy_cice = .true.
         end if
 
-        ! TODO:  Read externally generated AMSR2 snow depth retrievals.
+        ! Read externally generated AMSR2 snow depth retrievals.
+        call SNIP_read_netcdf_amsr2_sd(date10, ierr)
 
         ! RETRIEVE VIIRS DATA.
         if (SNIP_settings%useviirs) then
