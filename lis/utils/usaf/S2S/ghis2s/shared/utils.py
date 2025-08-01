@@ -120,6 +120,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('#                  Run LISF S2S ' + job_name + '\n')
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
+        _f.write('export USE_CYLC_ENV=0' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('source /etc/profile.d/modules.sh' + '\n')
             _f.write('module purge' + '\n')

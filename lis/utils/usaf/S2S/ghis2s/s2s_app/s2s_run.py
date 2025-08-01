@@ -667,6 +667,7 @@ class S2Srun(DownloadForecasts):
             file.write("            config = $CYLC_SUITE_DEF_PATH/config.yml\n")
             file.write("            inputdata = $CYLC_SUITE_DEF_PATH/inputdata.yml\n")
             file.write("            INSTALL_PATH = $CYLC_SUITE_DEF_PATH\n")
+            file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
             file.write("        [[[events]]]\n")
             file.write("            mail to = USEREMAIL\n")
             file.write("            mail events = failed\n")
@@ -683,7 +684,7 @@ class S2Srun(DownloadForecasts):
                 if len(inherit_list) == 0:
                     inherit_list = None
                 write_lines(file, jfile.removesuffix('.j'), inherit_list, subdir, pre_script, directives, environment)
-                
+            
     def lis_darun(self):
         """ LIS DARUN STEP """
         
