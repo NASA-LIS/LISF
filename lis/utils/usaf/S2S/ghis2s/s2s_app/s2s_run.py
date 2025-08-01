@@ -667,6 +667,7 @@ class S2Srun(DownloadForecasts):
             file.write("            config = $CYLC_SUITE_DEF_PATH/config.yml\n")
             file.write("            inputdata = $CYLC_SUITE_DEF_PATH/inputdata.yml\n")
             file.write("            INSTALL_PATH = $CYLC_SUITE_DEF_PATH\n")
+            file.write("            USE_CYLC_ENV = 1\n") 
             file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
             file.write("        [[[events]]]\n")
             file.write("            mail to = USEREMAIL\n")
