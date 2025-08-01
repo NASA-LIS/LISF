@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Set required environment variables
-export CONFIG_FILE="s2s_config_global_fcast"
+export CONFIG_FILE="s2s_config_global_par"
 export FORECAST_YEAR=2025
-export FORECAST_MONTH=3
-export USER_EMAIL="kristi.r.arsenault@nasa.gov"
-#export USER_EMAIL="sarith.p.mahanama@nasa.gov"
+export FORECAST_MONTH=2
+#export USER_EMAIL="kristi.r.arsenault@nasa.gov"
+export USER_EMAIL="sarith.p.mahanama@nasa.gov"
 export E2ESDIR="/discover/nobackup/projects/ghilis/S2S/GLOBAL/cylc_test1/"
 export OUTPUT_ROOT="/discover/nobackup/projects/ghilis/S2S/GHI-repos/s2s_workflows/"
 export LISFDIR=`grep LISFDIR $E2ESDIR/$CONFIG_FILE | cut -d':' -f2 | tr -d "[:space:]"`
@@ -14,12 +14,13 @@ export PYTHONPATH="${LISFDIR}/lis/utils/usaf/S2S/"
 mkdir -p -m 775 $OUTPUT_ROOT
 
 # Optional variables
-export S2S_STEP="POST"
-export ONE_STEP=false
+export S2S_STEP="BCSD"
+export ONE_STEP=true
 export SUBMIT_JOB=false
 
 source /etc/profile.d/modules.sh
 module purge
+USE_CYLC_ENV=0
 module use -a "${LISFDIR}/env/discover/"
 module --ignore-cache load $LISFMOD
 
