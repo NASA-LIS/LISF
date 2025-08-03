@@ -20,7 +20,6 @@ ENV_DEFINITION = {
     "ONE_STEP": (bool, False),
     "SUBMIT_JOB": (bool, False),
     "E2ESDIR": (str, "/discover/nobackup/projects/ghilis/smahanam/ghi-coupling/"),
-    "OUTPUT_ROOT": (str, "/discover/nobackup/projects/ghilis/smahanam/GHI-repos/s2s_workflows/"),
     "MODEL": (str, "S2S"),
     "VARIANT": (str, ""),
     "PYTHONPATH": (str, None),
@@ -62,7 +61,7 @@ class Ghis2sProgram():
     def _setup_paths(self):
         """Setup necessary paths for the workflow."""
         self._e2es_dir = Path(self.env["E2ESDIR"])
-        self._cylc_home = Path(self.env["OUTPUT_ROOT"])
+        self._cylc_home = self._e2es_dir / "scratch" / f"{self.env['FORECAST_YEAR']:04d}{self.env['FORECAST_MONTH']:02d}"
         self._log_dir = self._e2es_dir / "scratch" / f"{self.env['FORECAST_YEAR']:04d}{self.env['FORECAST_MONTH']:02d}"
         
     @property
@@ -78,7 +77,7 @@ class Ghis2sProgram():
     @property
     def workflow_name(self):
         """The Cylc workflow name."""
-        return f"S2S-{self.env['FORECAST_YEAR']:04d}{self.env['FORECAST_MONTH']:02d}"
+        return f"CYLC-{self.env['FORECAST_YEAR']:04d}{self.env['FORECAST_MONTH']:02d}"
 
     def _import_ghis2s(self):
         """Import ghis2s module with proper PYTHONPATH setup."""
