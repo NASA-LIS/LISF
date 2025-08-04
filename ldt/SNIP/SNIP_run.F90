@@ -123,14 +123,15 @@ subroutine SNIP_run(n)
   character*10               ::  date10               ! DATE-TIME GROUP OF CYCLE
   character*90               ::  message    (msglns)  ! ERROR MESSAGE
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
-  character(LDT_CONST_PATH_LEN) ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
+  character(LDT_CONST_PATH_LEN) ::  snodep_modif         ! PATH TO MODIFIED DATA DIRECTORY
+  character(LDT_CONST_PATH_LEN) ::  snodep_unmod         ! PATH TO UNMODIFIED DATA DIRECTORY
   character(LDT_CONST_PATH_LEN) ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
   integer :: sfcobsfmt ! Format of sfcobs file
   character*32,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character(LDT_CONST_PATH_LEN) ::  static               ! STATIC FILE DIRECTORY PATH
   character(LDT_CONST_PATH_LEN) ::  stmpdir              ! SFC TEMP DIRECTORY PATH
   character(LDT_CONST_PATH_LEN) :: sstdir ! EMK 20220113
-  character(LDT_CONST_PATH_LEN) ::  unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
+
   character(LDT_CONST_PATH_LEN) ::  viirsdir             ! PATH TO VIIRS DATA DIRECTORY
   integer                    ::  runcycle             ! CYCLE HOUR
   integer                    ::  hemi                 ! HEMISPHERE (1 = NH, 2 = SH, 3 = GLOBAL)
@@ -186,13 +187,14 @@ subroutine SNIP_run(n)
 
      ! Copy ldt.config files to local variables
      date10 = trim(SNIP_settings%date10)
-     modif = trim(SNIP_settings%modif)
+     snodep_modif = trim(SNIP_settings%snodep_modif)
+     snodep_unmod = trim(SNIP_settings%snodep_unmod)
+
      sfcobs = trim(SNIP_settings%sfcobs)
      sfcobsfmt = SNIP_settings%sfcobsfmt
      stmpdir = trim(SNIP_settings%stmpdir)
      sstdir = trim(SNIP_settings%sstdir)
      static = trim(SNIP_settings%static)
-     unmod = trim(SNIP_settings%unmod)
      viirsdir = trim(SNIP_settings%viirsdir)
 
      ! EXTRACT MONTH FROM DATE-TIME GROUP.
@@ -280,8 +282,8 @@ subroutine SNIP_run(n)
         else
            just_12z = .false.
         end if
-        call getsno (date10, modif, unmod, nc, nr, landice, julhr_beg, &
-             just_12z)
+        call getsno (date10, snodep_modif, snodep_unmod, nc, nr, &
+             landice, julhr_beg, just_12z)
      end if
 
      julhr = julhr_beg
