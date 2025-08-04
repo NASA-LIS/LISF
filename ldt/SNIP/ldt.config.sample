@@ -1,12 +1,12 @@
 
 # Overall driver options
-LDT running mode:                   "USAFSI analysis"
-Processed LSM parameter filename:   LDTOUT/lis_input.global.noah39.nc # When using LIS-Noah
+LDT running mode:                   "SNIP analysis"
+Processed LSM parameter filename:   input/lis_input.nrt_streamflow.noah39.nc # When using LIS-Noah
 LIS number of nests:                 1
 Number of surface model types:       0
 Number of met forcing sources: 0
-LDT diagnostic file: logs/ldtlog
-LDT output directory: LDTOUT
+LDT diagnostic file:  output/logs/ldtlog
+LDT output directory: output
 Undefined value: -9999.0
 
 # Rotated GALWEM 10-km domain
@@ -19,98 +19,87 @@ Run domain resolution (dx):             0.140625
 Run domain resolution (dy):             0.093750
 
 # ------------------------
-# Section for USAFSI
+# Section for SNIP
 
-# *** Former Environment Variables ***
-USAFSI netcdf filename prefix:                        USAFSI
-USAFSI valid date (YYYYMMDDHH):                       2020020318
-USAFSI fractional snow data directory:                ./USAFSIIN/snofrac/
-USAFSI modified data directory:                       ./USAFSIIN/modified/
-USAFSI surface obs data directory:                    ./USAFSIIN/sfcobs/
-# note: options for 2: XCAL GMI and 3: AMSR2 are still in development or test state
-USAFSI brightness temperature data option:             1  # 1: SSMIS, 2: XCAL GMI, 3: AMSR2
-USAFSI XCAL GMI data directory:                       ./GMI_retrievals/
-USAFSI AMSR2 data directory:                          ./AMSR2_retrievals/
-USAFSI SSMIS data directory:                          ./SSMIS_retrievals/
-USAFSI surface temperature data directory:            ./USAFSIIN/sfctmps/
-USAFSI FNMOC SST GRIB1 data directory:                ./USAFSIIN/FNMOC_SST/
-USAFSI static data directory:                         ./USAFSIIN/static/
-USAFSI unmodified data directory:                     ./USAFSIIN/unmodified/
-USAFSI VIIRS data directory:                          ./USAFSIIN/viirs
+SNIP valid date (YYYYMMDDHH):                    2025012006
+SNIP SNIP netcdf data directory:                ./input/snip
+SNIP USAFSI netcdf data directory:              ./input/usafsi
+SNIP modified SNODEP data directory:            ./input/snodep_modified/
+SNIP unmodified SNODEP data directory:          ./input/snodep_unmodified/
+SNIP surface obs data format:                   1 # Legacy format
+SNIP surface obs data directory:                ./input/sfcobs/
+SNIP surface temperature data directory:        ./input/sfctmps/
+SNIP FNMOC SST GRIB1 data directory:            ./input/FNMOC_SST/
+SNIP static data directory:                     ./input/static/
 
-# *** PMW snow depth retrieval algorithm
-USAFSI XCAL GMI raw data directory:                   ./GMI_L1CR_web/
-USAFSI AMSR2 raw data directory:                      ./AMSR2_L1R/
-USAFSI SSMIS raw data directory:                      ./USAFSIIN/OBSI_SSMISUPP/
-# note: 4: Kelly, 2009 algorithm only works for XCAL GMI and AMSR2 datasets
-USAFSI PMW snow depth retrieval algorithm option:     3  # 1: Hollinger,1991,       2: Chang et al.,1987
-                                                         # 3:Foster et al.,1997,    4: Kelly, 2009
-USAFSI forest fraction file:                          ./USAFSIIN/ForestFraction_0p25deg.nc # for algorithm 3 and 4
-USAFSI forest density file:                           ./MOD44B/PTC_MOD44B_0p25.nc  # for algorithm 4
+SNIP VIIRS data directory:                      ./input/viirs/
+SNIP AMSR2 snowdepth data directory:            ./input/AMSR2_retrievals/
+SNIP Snow Climatology:                1  # 1: legacy 2: updated 10-km climo
 
-# *** Snow climatology
-USAFSI Snow Climatology:                              1  # 1: legacy 2: updated 10-km climo
-
-# *** Former Namelist Variables ***
-USAFSI decimal fraction adjustment of snow depth towards climo: 0.1
-USAFSI default snow depth (m) when actual depth unknown: 0.1
-USAFSI minimum snow depth (m) for which to print a diagnostic: 0.025
-USAFSI maximum number of surface observations allowed: 200000
-USAFSI SSMIS shallow snow depth threshold (m): 0.15
-# There should be three latitudes listed below, defining three latitude bands
+SNIP decimal fraction adjustment of snow depth towards climo: 0.1
+SNIP default snow depth (m) when actual depth unknown: 0.1
+SNIP minimum snow depth (m) for which to print a diagnostic: 0.025
+SNIP maximum number of surface observations allowed: 200000
+SNIP AMSR2 shallow snow depth threshold (m): 0.05
+# There should be three latitudes listed below, defining three bands
 # for sanity checking snow reports in different seasons.
 # Strongly recommend 4000 3000 2000
-USAFSI latitudes (deg * 100) for summer climo check: 4000 3000 2000
+SNIP latitudes (deg * 100) for summer climo check: 4000 3000 2000
 # There should be four elevations listed below, defining four elevation
 # levels for sanity checking snow reports in different seasons.
 # Strongly recommend 1000 1500 1000 1000
-USAFSI elevations (m) for summer climo check: 1000 1500 1000 1000
-USAFSI temperature (deg K * 10) above which no snow is allowed: 2820
-USAFSI max reported temperature (deg K * 10) allowed around poles: 3030
-USAFSI minimum ice concentration (%) needed to set ice flag: 15
+SNIP elevations (m) for summer climo check: 1000 1500 1000 1000
+SNIP temperature (deg K * 10) above which no snow is allowed: 2820
+SNIP max reported temperature (deg K * 10) allowed around poles: 3030
+SNIP minimum ice concentration (%) needed to set ice flag: 15
 # There should 24 latitudes defined below, each row definining a hemisphere
 # (NH first row, SH second row), and each column defining a month
 # (J F M A M J J A S O N D).  These are used to define "high latitudes"
-# in the SSMIS-based sea ice analysis.
-USAFSI high latitude thresholds (deg) for sea ice::
+# in the sea ice analysis.
+SNIP high latitude thresholds (deg) for sea ice::
        81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0
        90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0
 ::
 # There should 24 latitudes defined below, each row definining a hemisphere
 # (NH first row, SH second row), and each column defining a month
 # (J F M A M J J A S O N D).  These are used to define "low latitudes"
-# in the SSMIS-based sea ice analysis.
-USAFSI low latitude thresholds (deg) for sea ice::
+# in the sea ice analysis.
+SNIP low latitude thresholds (deg) for sea ice::
        45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0
        60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0
 ::
-USAFSI max age of VIIRS pixels to use: 3
-USAFSI min VIIRS fraction to mark point as bare ground:  0.6
-USAFSI min VIIRS/CDFS-II fraction to mark point as snow: 0.4
-USAFSI use CDFS-II fractional snow data: .true.
-USAFSI use VIIRS snow mask: .true.
-# Bratseth settings
-USAFSI observation error variance (m^2):  0.0006
-USAFSI background error variance (m^2):   0.0010
-USAFSI background error horizontal correlation length (m):  55555.
-USAFSI background error vertical correlation length (m):      800.
-USAFSI elevQC difference threshold (m): 400.
-USAFSI skewed backQC snow depth threshold (m):  0.4
-# Other new settings
-USAFSI bogus climatology snow depth value (m): 0.2
-USAFSI source of ocean data: "ESPC-D"
-USAFSI GOFS SST data directory:   ./USAFSIIN/GOFS
-USAFSI GOFS CICE data directory:  ./USAFSIIN/GOFS
-USAFSI ESPC-D SST data directory:   ./USAFSIIN/ESPC-D
-USAFSI ESPC-D CICE data directory:  ./USAFSIIN/ESPC-D
-USAFSI LIS GRIB2 data directory:  ./USAFSIIN/LIS_T2
-USAFSI LIS GRIB2 security class:  U
-USAFSI LIS GRIB2 data category:   C
-USAFSI LIS GRIB2 data resolution: C0P09DEG
-USAFSI LIS GRIB2 area of data:    GLOBAL
+SNIP max age of VIIRS pixels to use: 3
+SNIP min VIIRS fraction to mark point as bare ground:  0.6
+SNIP min VIIRS fraction to mark point as snow: 0.4
+SNIP use VIIRS snow mask: .true.
 
-USAFSI GALWEM root directory: GALWEM_FOR_USAFSI
-USAFSI GALWEM subdirectory: GALWEM
-USAFSI GALWEM use timestamp directories: 1
-USAFSI GALWEM nominal resolution (km): 17
+# Bratseth settings
+SNIP observation error variance (m^2):  0.0006
+SNIP background error variance (m^2):   0.0010
+SNIP background error horizontal correlation length (m):  55555.
+SNIP background error vertical correlation length (m):      800.
+SNIP elevQC difference threshold (m): 400.
+SNIP skewed backQC snow depth threshold (m):  0.4
+
+SNIP bogus climatology snow depth value (m): 0.2
+SNIP source of ocean data: "ESPC-D"
+SNIP GOFS SST data directory:   ./input/GOFS/
+SNIP GOFS CICE data directory:  ./input/GOFS/
+SNIP ESPC-D SST data directory:  ./input/ESPC-D/
+SNIP ESPC-D CICE data directory: ./input/ESPC-D/
+
+# Legacy option if GALWEM not available
+SNIP LIS GRIB2 data directory:  ./input/LIS_T2/
+SNIP LIS GRIB2 security class:  U
+SNIP LIS GRIB2 data category:   C
+SNIP LIS GRIB2 data resolution: C0P09DEG
+SNIP LIS GRIB2 area of data:    GLOBAL
+
+SNIP GALWEM root directory: ./input/GALWEM
+SNIP GALWEM subdirectory: GALWEM
+SNIP GALWEM use timestamp directories: 1
+SNIP GALWEM nominal resolution (km): 17
+
+SNIP netcdf filename prefix for SNIP:    SNIP
+SNIP netcdf filename prefix for USAFSI:  USAFSI
 
