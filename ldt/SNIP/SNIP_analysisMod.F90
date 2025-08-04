@@ -2505,10 +2505,26 @@ contains
           if (SNIP_arrays%amsr2_snowdepth(c,r) >= 0) then
              satdep = SNIP_arrays%amsr2_snowdepth(c,r)
           end if
-          SNIP_arrays%snoanl(c,r) = satdep
-          updated(c,r) = .true.
-          if (satdep > 0) then
-             snomask(c,r) = 1
+
+          ! Handle AMSR2 detection problem with very shallow snow.  If
+          ! below minimum depth, preserve prior analysis if larger than
+          ! AMSR2.
+          if (satdep >= 0) then
+             if (satdep .le. snip_settings%minsat) then
+                if (satdep > SNIP_arrays%olddep(c,r)) then
+                   SNIP_arrays%snoanl(c,r) = satdep
+                   updated(c,r) = .true.
+                   if (satdep > 0) then
+                      snomask(c,r) = 1
+                   end if
+                end if
+             else
+                SNIP_arrays%snoanl(c,r) = satdep
+                updated(c,r) = .true.
+                if (satdep > 0) then
+                   snomask(c,r) = 1
+                end if
+             end if
           end if
 
        end do ! c

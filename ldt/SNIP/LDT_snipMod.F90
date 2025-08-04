@@ -43,6 +43,7 @@ module LDT_snipMod
      real :: unkdep
      real :: minprt
      integer :: maxsobs
+     real :: minsat
      integer :: trplat(3)
      integer :: elvlim(4)
      integer :: thresh
@@ -233,6 +234,14 @@ contains
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%maxsobs,&
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get minsat
+    cfg_entry = "SNIP AMSR2 shallow snow depth threshold (m):"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minsat,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
