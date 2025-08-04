@@ -26,7 +26,6 @@ EXP:
   routing_name: hymap2
   pertmode: restart
   lead_months: 9
-  NMME_ALL: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]
   NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]
   ensemble_sizes:
   - CanESM5: 10
