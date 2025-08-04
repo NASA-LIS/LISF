@@ -23,18 +23,21 @@ module LDT_snipMod
   public :: LDT_snipInit
   public :: LDT_snipRun
 
-  ! Public type.  These are formerly environment and namelist variables from
-  ! the original SNODEP.
+  ! Public type.  These are formerly environment and namelist variables
+  ! from the original SNODEP.
   type, public :: snip_t
-     ! Former environment variables
+
      character*10  :: date10
-     character(LDT_CONST_PATH_LEN) :: modif
+     character(LDT_CONST_PATH_LEN) :: snip_dir
+     character(LDT_CONST_PATH_LEN) :: usafsi_dir
+     character(LDT_CONST_PATH_LEN) :: snodep_modif
+     character(LDT_CONST_PATH_LEN) :: snodep_unmod
      integer :: sfcobsfmt
      character(LDT_CONST_PATH_LEN) :: sfcobs
      character(LDT_CONST_PATH_LEN) :: stmpdir
      character(LDT_CONST_PATH_LEN) :: sstdir
      character(LDT_CONST_PATH_LEN) :: static
-     character(LDT_CONST_PATH_LEN) :: unmod
+
      character(LDT_CONST_PATH_LEN) :: viirsdir
      character(LDT_CONST_PATH_LEN) :: amsr2dir
 
@@ -115,7 +118,7 @@ contains
     integer :: rc
     integer :: c,r
 
-    ! *** Get former environment variables ***
+
 
     ! Get date10
     cfg_entry = "SNIP valid date (YYYYMMDDHH):"
@@ -124,11 +127,36 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%date10, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! Get modif
-    cfg_entry = "SNIP modified data directory:"
+    ! Get SNIP
+    cfg_entry = "SNIP SNIP netcdf data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%modif, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%snip_dir, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get USAFSI
+    cfg_entry = "SNIP USAFSI netcdf data directory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%usafsi_dir, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get modif
+    cfg_entry = "SNIP modified SNODEP data directory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%snodep_modif, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get unmod
+    cfg_entry = "SNIP unmodified SNODEP data directory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%snodep_unmod, &
+         rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! New sfcobs format for WIGOS
@@ -166,13 +194,6 @@ contains
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%static, rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-    ! Get unmod
-    cfg_entry = "SNIP unmodified data directory:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%unmod, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get viirsdir

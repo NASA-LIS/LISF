@@ -96,9 +96,8 @@ contains
 
        ! Copy ldt.config files to local variables
        output_prefix = trim(SNIP_settings%netcdf_prefix_snip)
-
-       ! FIXME:  Set this in ldt.config
-       outfilename = trim(output_prefix) // "_" // date10 // ".nc"
+       outfilename = trim(SNIP_settings%snip_dir) // "/" // &
+            trim(output_prefix) // "_" // date10 // ".nc"
 
        write(LDT_logunit,*) '[INFO] Creating NETCDF file ', &
             trim(outfilename)
@@ -472,7 +471,7 @@ contains
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   ! Subroutine for reading SNIP analysis to netCDF
-  subroutine SNIP_read_netcdf(date10,ierr)
+  subroutine SNIP_read_netcdf(date10, ierr)
 
     ! Imports
     use LDT_constantsMod, only: LDT_CONST_PATH_LEN
@@ -507,7 +506,8 @@ contains
     nr = LDT_rc%lnr(1)
 
     ! See if file exists
-    infilename = trim(SNIP_settings%netcdf_prefix_snip)//"_"// &
+    infilename = trim(SNIP_settings%snip_dir) // "/" // &
+         trim(SNIP_settings%netcdf_prefix_snip)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
     if (.not. file_exists) then
@@ -702,7 +702,8 @@ contains
     nr = LDT_rc%lnr(1)
 
     ! See if file exists
-    infilename = trim(SNIP_settings%netcdf_prefix_snip)//"_"// &
+    infilename = trim(SNIP_settings%snip_dir) // "/" // &
+         trim(SNIP_settings%netcdf_prefix_snip)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
     if (.not. file_exists) then
@@ -856,7 +857,8 @@ contains
     nr = LDT_rc%lnr(1)
 
     ! See if file exists
-    infilename = trim(SNIP_settings%netcdf_prefix_usafsi)//"_"// &
+    infilename = trim(SNIP_settings%usafsi_dir) // "/" // &
+         trim(SNIP_settings%netcdf_prefix_usafsi)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
     if (.not. file_exists) then
@@ -1051,7 +1053,8 @@ contains
     nr = LDT_rc%lnr(1)
 
     ! See if file exists
-    infilename = trim(SNIP_settings%netcdf_prefix_usafsi)//"_"// &
+    infilename = trim(SNIP_settings%usafsi_dir) // "/" // &
+         trim(SNIP_settings%netcdf_prefix_usafsi)//"_"// &
          date10//".nc"
     inquire(file=trim(infilename), exist=file_exists)
     if (.not. file_exists) then
