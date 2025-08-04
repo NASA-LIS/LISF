@@ -738,7 +738,9 @@ class S2Srun(DownloadForecasts):
         filedata = filedata.replace('COMMAND', COMMAND)
         with open('lisda_run.j', 'w') as file:
             file.write(filedata)
-
+            
+        shutil.copy('lisda_run.j', 'lisda_run.sh')    
+        utils.remove_sbatch_lines('lisda_run.sh')
         self.create_dict('lisda_run.j', 'lis_darun')
 
         # configure lis.config
