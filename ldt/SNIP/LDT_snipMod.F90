@@ -128,7 +128,7 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get SNIP
-    cfg_entry = "SNIP SNIP netcdf data directory:"
+    cfg_entry = "SNIP netcdf data directory for SNIP:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%snip_dir, &
@@ -136,7 +136,7 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get USAFSI
-    cfg_entry = "SNIP USAFSI netcdf data directory:"
+    cfg_entry = "SNIP netcdf data directory for USAFSI:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%usafsi_dir, &
@@ -144,7 +144,7 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get modif
-    cfg_entry = "SNIP modified SNODEP data directory:"
+    cfg_entry = "SNIP data directory for modified SNODEP:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%snodep_modif, &
@@ -152,7 +152,7 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get unmod
-    cfg_entry = "SNIP unmodified SNODEP data directory:"
+    cfg_entry = "SNIP data directory for unmodified SNODEP:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%snodep_unmod, &
