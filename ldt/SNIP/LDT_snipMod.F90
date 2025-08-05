@@ -176,7 +176,8 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get stmpdir
-    cfg_entry = "SNIP surface temperature data directory:"
+    cfg_entry = &
+         "SNIP degribbed LIS 0.25 deg sfc temperature data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%stmpdir, rc=rc)
