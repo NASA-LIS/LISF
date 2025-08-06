@@ -135,7 +135,7 @@ def write_monthly_files(this_6h1, file_6h, file_mon):
     del this_6h2, this_6h, this_mon
     return
 
-def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, rank):
+def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank):
     regrid_method = {
         '25km': {'PRECTOT':'conservative', 'SLRSF':'bilinear', 'LWS':'bilinear','PS':'bilinear',
                  'Q2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
@@ -154,11 +154,15 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, rank):
     # resample to the S2S grid
     # build regridder
     weightdir = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/'
+    target_land_mask = xr.open_dataset(args["config"]['SETUP']['supplementarydir'] + '/lis_darun/' + \
+                             args["config"]['SETUP']['ldtinputfile'])
+    target_land_mask = target_land_mask.rename({'north_south': 'lat', 'east_west': 'lon'})
+    
     lats, lons = get_domain_info(args["configfile"], coord=True)
     resol = round((lats[1] - lats[0])*100)
     resol = f'{resol}km'
     # read CFSv2 land mask
-    land_mask = xr.open_dataset(weightdir + f'CFSv2_{resol}_landmask.nc4')
+    cfsv2_land_mask = xr.open_dataset(weightdir + f'CFSv2_{resol}_landmask.nc4')
     
     '''
     resol='25km': NY=720, NX=1440; 
@@ -174,29 +178,34 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, rank):
             "lon": (["lon"], lons),
         }
     )
+    cfsv2_masked = cfsv2_in.copy()
+    cfsv2_masked['mask'] = cfsv2_land_mask['LANDMASK']
 
-    weight_file = weightdir + f'CFSv2_{resol}_bilinear.nc'
-    bil_regridder = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True, 
-                                 reuse_weights=True, 
+    weight_file = weightdir + f'CFSv2_{resol}_bilinear_land.nc'
+    bil_regridder = xe.Regridder(cfsv2_masked, ds_out, "bilinear", periodic=True, 
+                                 reuse_weights=True,
+                                 extrap_method='nearest_s2d', 
                                  filename=weight_file)
 
     weight_file = weightdir + f'CFSv2_{resol}_conservative.nc'
-    con_regridder = xe.Regridder(cfsv2, ds_out, "conservative", periodic=True, 
+    con_regridder = xe.Regridder(cfsv2_in, ds_out, "conservative", periodic=True, 
                                  reuse_weights=True, 
                                  filename=weight_file)
     
-    bilinear_vars = [var for var in cfsv2.data_vars if var in method and method[var] == 'bilinear']
-    conservative_vars = [var for var in cfsv2.data_vars if var in method and method[var] == 'conservative']
+    bilinear_vars = [var for var in cfsv2_in.data_vars if var in method and method[var] == 'bilinear']
+    conservative_vars = [var for var in cfsv2_in.data_vars if var in method and method[var] == 'conservative']
 
     if bilinear_vars:
-        cfsv2_bilinear = cfsv2[bilinear_vars]
-        result_bilinear = apply_regridding_with_mask(cfsv2_bilinear, bil_regridder, land_mask)
+        cfsv2_bilinear = cfsv2_masked[bilinear_vars]
+        result_bilinear = apply_regridding_with_mask(cfsv2_bilinear, bil_regridder,
+                                                     cfsv2_land_mask, target_land_mask, 'bilinear')
         for var in bilinear_vars:
             ds_out[var] = result_bilinear[var]
 
     if conservative_vars:
-        cfsv2_conservative = cfsv2[conservative_vars]
-        result_conservative = apply_regridding_with_mask(cfsv2_conservative, con_regridder, land_mask)
+        cfsv2_conservative = cfsv2_in[conservative_vars]
+        result_conservative = apply_regridding_with_mask(cfsv2_conservative, con_regridder,
+                                                         cfsv2_land_mask, None, 'conservative')
         for var in conservative_vars:
             ds_out[var] = result_conservative[var]
             
@@ -225,7 +234,8 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, rank):
         final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
     write_monthly_files(ds_out, file_6h, file_mon)
     ds_out.close()
-    del ds_out 
+    cfsv2_masked.close()
+    del ds_out, cfsv2_masked
     print(f"[INFO] Done processing CFSv2 forecast files rank: {rank}")
     return
 
@@ -245,7 +255,6 @@ def _driver(rank):
     fcst_init = {}
     fcst_init["monthday"] = args['fcst_init_monthday']
     outdirs = {}
-
     year = int(args['syr'])
     ens_num = int(args['ens_num'])
     print(" --- ")

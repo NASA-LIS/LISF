@@ -242,32 +242,45 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons,
     
     return correct_fcst_coarse
 
-def apply_regridding_with_mask(data, regridder, land_mask):
+def apply_regridding_with_mask(data, regridder, source_land_mask, target_land_mask=None, method_type='conservative'):
     """
     Apply land mask and regrid the data.
+    
+    Parameters:
+    -----------
     data : xarray.DataArray or xarray.Dataset
     regridder : xesmf.Regridder
-    land_mask : xarray.Dataset
+    source_land_mask : xarray.Dataset (source grid land mask)
+    target_land_mask : xarray.Dataset optional (target grid land mask)
+    method_type : str ('bilinear' or 'conservative')
+    
     Returns:
     --------
     xarray.DataArray or xarray.Dataset
     """
-    any_land = land_mask.LANDMASK > 0
-    
+    any_land = source_land_mask.LANDMASK > 0
+
     if isinstance(data, xr.DataArray):
         masked_data = data.where(any_land)
         result = regridder(masked_data)
-    
+
     elif isinstance(data, xr.Dataset):
         masked_data = data.copy(deep=True)
         for var_name in masked_data.data_vars:
             masked_data[var_name] = masked_data[var_name].where(any_land)
         result = regridder(masked_data)
-    
+
     else:
         raise TypeError(f"Expected xarray.DataArray or xarray.Dataset, got {type(data)}")
-    
+
+    # Apply target land mask for bilinear interpolation to remove ocean extrapolation
+    if method_type == 'bilinear' and target_land_mask is not None:
+        target_mask = target_land_mask.LANDMASK > 0  
+        
+        if isinstance(result, xr.DataArray):
+            result = result.where(target_mask)
+        elif isinstance(result, xr.Dataset):
+            for var_name in result.data_vars:
+                result[var_name] = result[var_name].where(target_mask)
+
     return result
-
-
-
