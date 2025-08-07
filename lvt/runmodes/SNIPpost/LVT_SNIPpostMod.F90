@@ -477,7 +477,6 @@ contains
           go(c + (r-1)*this%nc) = this%icemask(c,r)
        end do ! c
     end do ! r
-    ! FIXME:  Find parameter number for ice mask
     call write_grib2(ftn, griddesci, this%nc, this%nr, go, &
          dspln=10, cat=2, num=192, typegenproc=12, fcsttime=0)
 
@@ -487,7 +486,6 @@ contains
           go(c + (r-1)*this%nc) = this%iceage(c,r)
        end do ! c
     end do ! r
-    ! FIXME:  Find parameter number for ice age
     call write_grib2(ftn, griddesci, this%nc, this%nr, go, &
          dspln=10, cat=2, num=193, typegenproc=12, fcsttime=0)
 
