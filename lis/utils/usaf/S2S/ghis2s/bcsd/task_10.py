@@ -114,27 +114,15 @@ def driver():
     basemodname_dst = "CFSv2"
 
     init_datetime = datetime(current_year, month_num, 1)
-    src_yyyymm = [(init_datetime + relativedelta(months=0)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=1)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=2)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=3)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=4)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=5)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=6)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=7)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=8)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=8)).strftime("%Y%m")]
+    src_yyyymm = []
+    dst_yyyymm = []
+    
+    for mon in range(config['EXP']['lead_months']):
+        src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+        dst_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
 
-    dst_yyyymm = [(init_datetime + relativedelta(months=0)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=1)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=2)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=3)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=4)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=5)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=6)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=7)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=8)).strftime("%Y%m"),
-                  (init_datetime + relativedelta(months=9)).strftime("%Y%m")]
+    src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+    dst_yyyymm.append((init_datetime + relativedelta(months=mon+1)).strftime("%Y%m"))
 
     ens_num = ensemble_sizes[nmme_model]
     nreps = int(np.ceil(ens_num/nof_raw_ens))
