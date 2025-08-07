@@ -2689,7 +2689,7 @@ USAFSI output grib directory: ./grib
 [[ssec-snippostrunmode]]
 === SNIP post
 
-This runmode is used to postprocess SNIP (snow and ice) analyses, which are originally produced in netCDF format. LVT will optionally convert the fields to GRIB2 format and output on the LDT grid (no interpolations). In addition, three options are provided for GRIB1 output: (1) interpolate to 0.25 deg lat/lon domain; (2) interpolate to Air Force Northern Hemisphere 16th mesh polar stereographic grid; and (3) interpolate to Air Force Southern Hemisphere 16th mesh polar stereographic grid. These GRIB1 products are intended as look-alike replacements for the legacy Air Force SNODEP product. These options are activated for runmode="`SNIP post`"
+This runmode is used to postprocess SNIP (snow and ice) analyses, which are originally produced in netCDF format. LVT will optionally convert the fields to GRIB2 format and output on the LDT grid (no interpolations). In addition, three options are provided for GRIB1 output: (1) interpolate to 0.25 deg lat/lon domain; (2) interpolate to Air Force Northern Hemisphere 16th mesh polar stereographic grid; and (3) interpolate to Air Force Southern Hemisphere 16th mesh polar stereographic grid. These GRIB1 products are intended as look-alike replacements for the legacy Air Force SNODEP product. These options are activated for runmode="`SNIP post`".
 
 When run in this mode, LVT will interpret the starting year, month, etc as the valid date/time to process, and will ignore the ending date and time information. (In other words, only a single date and time will be processed.)
 
