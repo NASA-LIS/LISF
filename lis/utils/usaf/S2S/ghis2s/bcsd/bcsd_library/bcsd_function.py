@@ -144,10 +144,6 @@ def calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, target_fcst_val_arr, targ
                 correct_fcst_coarse[fcst_yr, lead_num, ens_num] = bias_corrected_value
 
     return correct_fcst_coarse
-import numpy as np
-import os
-import multiprocessing as mp
-from functools import partial
 
 def process_land_points_chunk(chunk_indices, ilat_min, ilon_min, 
                              np_obs_clim_array, np_fcst_clim_array, 
