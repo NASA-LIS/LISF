@@ -8,8 +8,6 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-#include "LIS_misc.h"
-
 ! Write the transformed SNIP observations to a file.
 ! TODO: Wrap this in a module
 subroutine write_SNIPobs(n, k, OBS_State)

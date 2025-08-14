@@ -9,7 +9,6 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 #include "LIS_misc.h"
-#include "LIS_NetCDF_inc.h"
 
 ! Read the SNIP observations and process for later use within the
 ! DA algorithm
