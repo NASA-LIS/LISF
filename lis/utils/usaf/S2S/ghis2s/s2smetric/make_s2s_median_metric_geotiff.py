@@ -40,6 +40,7 @@
 import os
 import sys
 import datetime
+from dateutil.relativedelta import relativedelta
 import glob
 import yaml
 
@@ -84,7 +85,7 @@ class _MetricGeoTiff:
                 regex = f"{subdir}/PS.*GP.LIS-S2S-{nmme.upper()}*S2SMETRICS_DD*DF.NC"
             files = glob.glob(regex)
             if len(files) == 0:
-                print(f"[WARN] Cannot find metric file in {subdir}")
+                print(f"[WARN] Cannot find metric file in {subdir} {nmme}")
                 continue
             if len(files) > 1:
                 print(f"[WARN] Too many metric files in {subdir}, skipping...")
@@ -167,6 +168,23 @@ class _MetricGeoTiff:
             self.median_data["median"].append(np.median(var, axis=0))
             del var
 
+    def set_newdate(self, date):
+        """Set a new date one month in the future."""
+        if self.weekly:
+            newdate = date
+            newdate += relativedelta(days=7)
+            return newdate
+        
+        if date.month == 12:
+            newdate = datetime.datetime(year=(date.year + 1),
+                                        month=1,
+                                        day=1)
+        else:
+            newdate = datetime.datetime(year=date.year,
+                                        month=(date.month + 1),
+                                        day=1)
+            return newdate
+
     def set_startdates_enddates_by_month(self):
         """Set the startdates and enddates by month."""
         startdates_by_month = []
@@ -178,11 +196,14 @@ class _MetricGeoTiff:
                 first_startdate = \
                     _get_first_startdate(filename_elements)
                 startdates_by_month.append(first_startdate)
-                newdate2 = _set_newdate(first_startdate)
-                enddates_by_month.append(newdate2)
+                newdate2 = self.set_newdate(first_startdate)
+                if self.weekly:
+                    enddates_by_month.append(newdate2 - relativedelta(days=1))
+                else:
+                    enddates_by_month.append(newdate2)
             else:
-                newdate1 = _set_newdate(startdates_by_month[imonth-1])
-                newdate2 = _set_newdate(enddates_by_month[imonth-1])
+                newdate1 = self.set_newdate(startdates_by_month[imonth-1])
+                newdate2 = self.set_newdate(enddates_by_month[imonth-1])
                 startdates_by_month.append(newdate1)
                 enddates_by_month.append(newdate2)
         self.median_data["startdates_by_month"] = \
@@ -328,18 +349,6 @@ def _get_first_startdate(filename_elements):
     return datetime.datetime(year=int(yyyymmdd[0:4]),
                              month=int(yyyymmdd[4:6]),
                              day=int(yyyymmdd[6:8]))
-
-def _set_newdate(date):
-    """Set a new date one month in the future."""
-    if date.month == 12:
-        newdate = datetime.datetime(year=(date.year + 1),
-                                    month=1,
-                                    day=1)
-    else:
-        newdate = datetime.datetime(year=date.year,
-                                    month=(date.month + 1),
-                                    day=1)
-    return newdate
 
 def _driver():
     """Main driver."""
