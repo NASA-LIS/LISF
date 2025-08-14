@@ -76,11 +76,13 @@ elif DOMAIN_NAME == 'GLOBAL':
     CLIM_INFILE_TEMPLATE1 = \
         '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
 
+# Account for monthly s2spost files only as s2spost weekly files are getting
+#  blended into this listing:
 TARGET_INFILE_TEMPLATE2 = \
-    'PA.ALL_DD.{:04d}{:02d}01_DT.0000_FP.{:04d}{:02d}??-{:04d}{:02d}??_DF.NC'
+    'PA.ALL_DD.{:04d}{:02d}01_DT.0000_FP.{:04d}{:02d}??-{:04d}{:02d}01_DF.NC'
 TARGET_INFILE_TEMPLATE = TARGET_INFILE_TEMPLATE1 + TARGET_INFILE_TEMPLATE2
 
-CLIM_INFILE_TEMPLATE2 = 'PA.ALL_DD.*{:02d}01_DT.0000_FP.*{:02d}??-*{:02d}??_DF.NC'
+CLIM_INFILE_TEMPLATE2 = 'PA.ALL_DD.*{:02d}01_DT.0000_FP.*{:02d}??-*{:02d}01_DF.NC'
 
 CLIM_INFILE_TEMPLATE = CLIM_INFILE_TEMPLATE1 + CLIM_INFILE_TEMPLATE2
 ## String in this format allows the select all the files for the given month
