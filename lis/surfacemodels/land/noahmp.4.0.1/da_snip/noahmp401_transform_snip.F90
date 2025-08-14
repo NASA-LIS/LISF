@@ -12,43 +12,34 @@
 ! \label{noahmp401_transform_snip}
 !
 ! !REVISION HISTORY:
-! 25Jun2006: Sujay Kumar: Initial Specification
-! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 21 Jul 2011: James Geiger; Modified for Noah 3.2
-! 03 Oct 2018; Yeosang Yoon; Modified for NoahMP 3.6
-! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
-! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
-! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-! 18 Jul 2025: Eric Kemp; SNIP version
+! 18 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noahmp401_transform_snip(n,OBS_State)
 
-  ! !USES:
+! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only : LIS_verify
   use noahmp401_lsmMod
-
-  !EOP
 
   ! Defaults
   implicit none
 
   integer, intent(in)      :: n
   type(ESMF_State)         :: OBS_State
-  !
-  ! !DESCRIPTION:
-  !
-  !  This subroutine transforms the SNIP state
-  !  (mm) to the lsm state
-  !
-  !  The arguments are:
-  !  \begin{description}
-  !  \item[n] index of the nest \newline
-  !  \item[OBS\_State] ESMF state container for observations \newline
-  !  \end{description}
-  !EOP
+!
+! !DESCRIPTION:
+!
+!  This subroutine transforms the SNIP state
+!  (mm) to the lsm state
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[OBS\_State] ESMF state container for observations \newline
+!  \end{description}
+!EOP
 
   ! Since SNIP is already in meters, no work is needed here.
 

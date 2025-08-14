@@ -12,11 +12,7 @@
 ! \label{noahmp401_snip_update}
 !
 ! !REVISION HISTORY:
-!  13 Aug 2017: Sujay Kumar; Initial specification
-!  14 Dec 2018: Yeosang Yoon; Modified code for NoahMP 4.0.1 and SNODEP
-!  15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
-!  13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-!  18 Jul 2025: Eric Kemp; SNIP replacement
+!  18 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE
 subroutine noahmp401_snip_update(n, t, dsneqv, dsnowh)
@@ -27,20 +23,20 @@ subroutine noahmp401_snip_update(n, t, dsneqv, dsnowh)
   use NoahMP401_lsmMod
 
   implicit none
-  !
-  ! !DESCRIPTION:
-  !  This subroutine updates relevant snow prognostics based
-  !  on the update to the total SWE (dsneqv) and total
-  !  snow depth (dsnowh). The updated variables include
-  !  number of snow layers, snice, snliq, snow temperature
-  !  and snow thickness.
-  !
-  ! !ARGUMENTS:
+!
+! !DESCRIPTION:
+!  This subroutine updates relevant snow prognostics based
+!  on the update to the total SWE (dsneqv) and total
+!  snow depth (dsnowh). The updated variables include
+!  number of snow layers, snice, snliq, snow temperature
+!  and snow thickness.
+!
+! !ARGUMENTS:
   integer, intent(in)  :: n
   integer, intent(in)  :: t
   real                 :: dsneqv !mm
   real                 :: dsnowh !m
-  !EOP
+!EOP
 
   ! Locals
   real, allocatable, dimension(:) :: zsoil

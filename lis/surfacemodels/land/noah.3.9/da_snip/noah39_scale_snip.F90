@@ -12,38 +12,33 @@
 ! \label{noah39_scale_snip}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-!  09 Apr 2019: Eric Kemp: Modified for Noah 3.9 and LDT-SI
-!  13 Dec 2019: Eric Kemp: Replaced LDTSI with USAFSI
-!  17 Jul 2025: Eric Kemp: SNIP version
+!  17 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noah39_scale_snip(n, LSM_State)
 
-  ! !USES:
+! !USES:
   use ESMF
   use noah39_lsmMod
 
   ! Defaults
   implicit none
 
-  ! !ARGUMENTS:
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
-  !
-  ! !DESCRIPTION:
-  !
-  !  Returns the snow related state prognostic variables for
-  !  data assimilation
-  !
-  !  The arguments are:
-  !  \begin{description}
-  !  \item[n] index of the nest \newline
-  !  \item[LSM\_State] ESMF State container for LSM state variables \newline
-  !  \end{description}
-  !EOP
+!
+! !DESCRIPTION:
+!
+!  Returns the snow related state prognostic variables for
+!  data assimilation
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[LSM\_State] ESMF State container for LSM state variables \newline
+!  \end{description}
+!EOP
 
 end subroutine noah39_scale_snip
 
