@@ -605,7 +605,6 @@ subroutine LIS_DAobs_plugin
    call registerdaobssetup(trim(LIS_usafsiobsId)//char(0),USAFSIobs_setup)
    call registerreaddaobs(trim(LIS_usafsiobsId)//char(0),read_USAFSIobs)
    call registerwritedaobs(trim(LIS_usafsiobsId)//char(0),write_USAFSIobs)
-
 #endif
 
 #if ( defined DA_OBS_SNIP )
@@ -614,7 +613,6 @@ subroutine LIS_DAobs_plugin
    call registerdaobssetup(trim(LIS_snipobsId)//char(0),SNIPobs_setup)
    call registerreaddaobs(trim(LIS_snipobsId)//char(0),read_SNIPobs)
    call registerwritedaobs(trim(LIS_snipobsId)//char(0),write_SNIPobs)
-
 #endif
 
 #if 0
