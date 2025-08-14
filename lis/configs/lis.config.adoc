@@ -2093,7 +2093,7 @@ USAFSI netcdf filename prefix:         usafsi
 SNIP data.
 
 `SNIP netcdf filename prefix:` specifies the prefix of
-the SNIP dataset. If prefix is "`SNIP`", file name will
+the SNIP dataset. If prefix is "`SNIP`", then the file name will
 be "`SNIP_yyyymmddhh.nc.`"
 
 .Example _lis.config_ entry
