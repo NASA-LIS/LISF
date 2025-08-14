@@ -17,8 +17,6 @@
 ! Source code for using SNIP Snow and Ice analysis.
 !--------------------------------------------------------------------------
 
-#include "LIS_misc.h"
-
 module SNIPobs_Mod
 
   ! Defaults
