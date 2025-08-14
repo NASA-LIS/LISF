@@ -19,12 +19,12 @@
 ! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
 ! 31 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-! 18 Jul 2025: Eric Kemp; SNIP version
+! 18 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noahmp401_map_snip(n, k, OBS_State, LSM_Incr_State)
 
-  ! !USES:
+! !USES:
   use ESMF
   use LIS_coreMod, only: LIS_rc
   use LIS_logMod, only: LIS_verify
@@ -34,25 +34,25 @@ subroutine noahmp401_map_snip(n, k, OBS_State, LSM_Incr_State)
   ! Defaults
   implicit none
 
-  ! !ARGUMENTS:
+! !ARGUMENTS:
   integer, intent(in)      :: n
   integer, intent(in)      :: k
   type(ESMF_State)         :: OBS_State
   type(ESMF_State)         :: LSM_Incr_State
 
-  ! !DESCRIPTION:
-  !
-  !  This subroutine directly maps the observation state to the corresponding
-  !  variables in the LSM state for SNIP data assimilation.
-  !
-  !  The arguments are:
-  !  \begin{description}
-  !  \item[n] index of the nest \newline
-  !  \item[OBS\_State] ESMF State for observations \newline
-  !  \item[LSM\_State] ESMF State for LSM state variables \newline
-  !  \end{description}
-  !
-  !EOP
+! !DESCRIPTION:
+!
+!  This subroutine directly maps the observation state to the corresponding
+!  variables in the LSM state for SNIP data assimilation.
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[OBS\_State] ESMF State for observations \newline
+!  \item[LSM\_State] ESMF State for LSM state variables \newline
+!  \end{description}
+!
+!EOP
   type(ESMF_Field)         :: sweIncrField
   type(ESMF_Field)         :: obs_snip_field
   real, pointer            :: sweincr(:)

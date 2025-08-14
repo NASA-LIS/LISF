@@ -12,14 +12,7 @@
 ! \label{noah39_setsnipvars}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-!  21 Jul 2011: James Geiger; Modified for Noah 3.2
-!  09 Apr 2019: Eric Kemp; Modified for Noah 3.9 and LDT-SI
-!  13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-!  16 Nov 2020: Eric Kemp; Added check to LIS_rc%snowsrc(n), and reformatted
-!  17 Jul 2025: Eric Kemp; SNIP version
+!  17 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noah39_setsnipvars(n, LSM_State)

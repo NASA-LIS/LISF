@@ -12,19 +12,12 @@
 ! \label{noahmp401_updatesnipvars}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
-! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
-! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-! 09 Jan 2020: Yeosang Yoon; Updated QC
-! 18 Jul 2025: Eric Kemp; SNIP version
+! 18 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noahmp401_updatesnipvars(n, LSM_State, LSM_Incr_State)
 
-  ! !USES:
+! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_logMod,   only : LIS_verify
@@ -33,24 +26,24 @@ subroutine noahmp401_updatesnipvars(n, LSM_State, LSM_Incr_State)
   ! Defaults
   implicit none
 
-  ! !ARGUMENTS:
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
   type(ESMF_State)       :: LSM_Incr_State
-  !
-  ! !DESCRIPTION:
-  !
-  !  Returns the snow related state prognostic variables for
-  !  data assimilation
-  !
-  !  The arguments are:
-  !  \begin{description}
-  !  \item[n] index of the nest \newline
-  !  \item[LSM\_State] ESMF State container for LSM state variables \newline
-  !  \item[LSM\_Incr\_State] ESMF State container for LSM state increments \newline
-  !  \end{description}
-  !
-  !EOP
+!
+! !DESCRIPTION:
+!
+!  Returns the snow related state prognostic variables for
+!  data assimilation
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[LSM\_State] ESMF State container for LSM state variables \newline
+!  \item[LSM\_Incr\_State] ESMF State container for LSM state increments \newline
+!  \end{description}
+!
+!EOP
 
   type(ESMF_Field)       :: sweField, sweIncrField
   type(ESMF_Field)       :: snodField, snodIncrField

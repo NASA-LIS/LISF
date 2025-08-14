@@ -12,40 +12,34 @@
 ! \label{noah39_transform_snip}
 !
 ! !REVISION HISTORY:
-! 25Jun2006: Sujay Kumar: Initial Specification
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-!  21 Jul 2011: James Geiger; Modified for Noah 3.2
-!  09 Apr 2019: Eric Kemp; Modified for Noah 3.9 and LDT-SI
-!  13 Dec 2019: Eric Kemp; Replaced LDTSI with USAF
-!  17 Jul 2025: Eric Kemp; SNIP version
+!  17 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noah39_transform_snip(n, OBS_State)
 
-  ! !USES:
+! !USES:
   use ESMF
   use LIS_logMod,  only : LIS_verify
   use noah39_lsmMod
-  !EOP
 
   ! Defaults
   implicit none
 
-  ! Arguments
+! Arguments
   integer, intent(in)      :: n
   type(ESMF_State)         :: OBS_State
-  !
-  ! !DESCRIPTION:
-  !
-  !  This subroutine transforms the SNIP state
-  !  (meters) to the lsm state
-  !
-  !  The arguments are:
-  !  \begin{description}
-  !  \item[n] index of the nest \newline
-  !  \item[OBS\_State] ESMF state container for observations \newline
-  !  \end{description}
-  !EOP
+!
+! !DESCRIPTION:
+!
+!  This subroutine transforms the SNIP state
+!  (meters) to the lsm state
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[OBS\_State] ESMF state container for observations \newline
+!  \end{description}
+!EOP
 
   ! Since SNIP is already in meters, no work is needed here.
 

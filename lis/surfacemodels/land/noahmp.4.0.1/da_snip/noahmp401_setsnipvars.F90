@@ -12,23 +12,12 @@
 ! \label{noahmp401_setsnipvars}
 !
 ! !REVISION HISTORY:
-! 15 Aug 2017: Sujay Kumar; Initial Specification
-! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 21 Jul 2011: James Geiger; Modified for Noah 3.2
-! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
-! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
-! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
-! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-! 10 Nov 2020: Eric Kemp; Update LIS_snow_struc
-! 18 Jul 2025: Eric Kemp; SNIP version
+! 18 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noahmp401_setsnipvars(n, LSM_State)
 
-  ! !USES:
+! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc, LIS_surface
   use LIS_logMod, only : LIS_verify, LIS_endrun
@@ -38,18 +27,18 @@ subroutine noahmp401_setsnipvars(n, LSM_State)
   ! Defaults
   implicit none
 
-  ! !ARGUMENTS:
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
-  !
-  ! !DESCRIPTION:
-  !
-  !  This routine assigns the snow progognostic variables to noah's
-  !  model space. The state vector consists of total SWE and snow depth.
-  !  This routine also updates other model prognostics (snice, snliq,
-  !  snow thickness, snow temperature) based on the update.
-  !
-  !EOP
+!
+! !DESCRIPTION:
+!
+!  This routine assigns the snow progognostic variables to noah's
+!  model space. The state vector consists of total SWE and snow depth.
+!  This routine also updates other model prognostics (snice, snliq,
+!  snow thickness, snow temperature) based on the update.
+!
+!EOP
   type(ESMF_Field)       :: sweField
   type(ESMF_Field)       :: snodField
   real, pointer          :: swe(:)

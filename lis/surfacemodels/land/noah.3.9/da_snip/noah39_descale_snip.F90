@@ -12,12 +12,7 @@
 ! \label{noah39_descale_snip}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 09 Apr 2019: Eric Kemp: Modified for Noah 3.9 and LDT-SI data
-! 13 Dec 2019: Eric Kemp: Replaced LDTSI with USAFSI
-! 17 Jul 2025: Eric Kemp: SNIP version
+! 17 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noah39_descale_snip(n, LSM_State, LSM_Incr_State)

@@ -12,18 +12,11 @@
 ! \label{noah39_updatesnip}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-!  21 Jul 2011: James Geiger; Modified for Noah 3.2
-! 01 May 2014: Yuqiong Liu; modified for better QC
-! 09 Apr 2019: Eric Kemp: Modified for Noah 3.9 and LDT-SI
-! 13 Dec 2019: Eric Kemp: Replaced LDTSI with USAFSI
-! 17 Jul 2025: Eric Kemp: SNIP version
+! 17 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noah39_updatesnip(n, LSM_State, LSM_Incr_State)
-  ! !USES:
+! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_logMod,   only : LIS_verify
@@ -32,24 +25,24 @@ subroutine noah39_updatesnip(n, LSM_State, LSM_Incr_State)
   ! Defaults
   implicit none
 
-  ! !ARGUMENTS:
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
   type(ESMF_State)       :: LSM_Incr_State
-  !
-  ! !DESCRIPTION:
-  !
-  !  Updates the related state prognostic variable objects for
-  !  USAF data assimilation
-  !
-  !  The arguments are:
-  !  \begin{description}
-  !  \item[n] index of the nest \newline
-  !  \item[LSM\_State] ESMF State container for LSM state variables \newline
-  !  \item[LSM\_Incr\_State] ESMF State container for LSM state increments \newline
-  !  \end{description}
-  !
-  !EOP
+!
+! !DESCRIPTION:
+!
+!  Updates the related state prognostic variable objects for
+!  USAF data assimilation
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[LSM\_State] ESMF State container for LSM state variables \newline
+!  \item[LSM\_Incr\_State] ESMF State container for LSM state increments \newline
+!  \end{description}
+!
+!EOP
   type(ESMF_Field)       :: sweField, sweIncrField
   type(ESMF_Field)       :: snodField, snodIncrField
 

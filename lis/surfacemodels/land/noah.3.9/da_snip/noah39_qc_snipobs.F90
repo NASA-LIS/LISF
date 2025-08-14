@@ -12,10 +12,7 @@
 ! \label{noah39_qc_snipobs}
 !
 ! !REVISION HISTORY:
-! 25Feb2008: Sujay Kumar: Initial Specification
-! 09Apr2019: Eric Kemp: Updated to Noah 3.9 and LDT-SI
-! 13Dec2019: Eric Kemp: Replaced LDTSI with USAFSI
-! 17Jul2025: Eric Kemp: SNIP version
+! 17 Jul 2025: Eric Kemp; Initial specification (copied from USAFSI version)
 !
 ! !INTERFACE:
 subroutine noah39_qc_snipobs(n, OBS_State)
