@@ -1243,7 +1243,8 @@ Acceptable values are:
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
 |"`SNODEP`"                     | AFWA SNODEP
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
-|"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
+|"`SNIP`"                     | USAF SNow and Ice Product
+|"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth
 |"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
 |"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
@@ -2083,6 +2084,22 @@ be "`usafsi_yyyymmddhh.nc.`"
 ....
 USAFSI data directory:                  ./FORCING/USAFSI
 USAFSI netcdf filename prefix:         usafsi
+....
+
+[[sssec_snipda,SNIP Assimilation]]
+==== SNIP Assimilation
+
+`SNIP data directory:` specifies the directory for the
+SNIP data.
+
+`SNIP netcdf filename prefix:` specifies the prefix of
+the SNIP dataset. If prefix is "`SNIP`", then the file name will
+be "`SNIP_yyyymmddhh.nc.`"
+
+.Example _lis.config_ entry
+....
+SNIP data directory:                  ./FORCING/SNIP
+SNIP netcdf filename prefix:         SNIP
 ....
 
 [[sssec_ansasweda,ANSA SWE Assimilation]]
