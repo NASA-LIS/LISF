@@ -40,6 +40,7 @@ module LDT_smap_e_oplMod
 
     character*100        :: L1Bdir, L1Bresampledir, L1Bresampledir_02, SMoutdir 
     character*100        :: LISdir, LISsnowdir
+    integer              :: snow_source
     character*100        :: TAUdir, OMEGAfile, BDfile, &
                             CLAYfile, Hfile, LCfile
     character*100        :: dailystats_ref, dailystats_lis
@@ -59,7 +60,7 @@ module LDT_smap_e_oplMod
     integer :: ntiles_pergrid ! Number of tiles per grid point
   end type smap_e_opl_dec
 
-  type(smap_e_opl_dec), public :: SMAPeOPL  
+  type(smap_e_opl_dec), public :: SMAPeOPL
 
 contains
 
@@ -157,6 +158,20 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%LISsnowdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
+    cfg_entry = "SMAP_E_OPL snow source:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%snow_source, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (SMAPeOPL%snow_source .ne. 1 .and. &
+         SMAPeOPL%snow_source .ne. 2) then
+       write(LDT_logunit,*)'[ERR] SMAP_E_OPL snow source: Invalid option'
+       write(LDT_logunit,*)'[ERR] Expected 1 (for USAFSI) or 2 (SNIP)'
+       write(LDT_logunit,*)'[ERR] Found ', SMAPeOPL%snow_source
+       write(LDT_logunit,*)'[ERR] LDT will terminate...'
+       call LDT_endrun()
+    end if
+    
     cfg_entry = "SMAP_E_OPL LIS ensemble size:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
@@ -269,7 +284,7 @@ contains
     integer                 :: yr_pre, mo_pre, da_pre, hh_pre
     integer                 :: yr_02, mo_02, da_02, hr_02
     integer                 :: yr_03, mo_03, da_03, hr_03
-    logical                 :: dir_exists, read_L1Bdata
+    logical                 :: read_L1Bdata
     real                    :: teff_01(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_02(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_03(LDT_rc%lnc(n),LDT_rc%lnr(n))
@@ -283,9 +298,18 @@ contains
     type(ESMF_TimeInterval) :: deltatime
     integer :: deltahr
     integer :: rc
-  integer               :: col, row
+
     external :: readUSAFSI
+    external :: readSNIP
     external :: readLIS_Teff_usaf
+    external :: SMAPL1BRESAMPLE_subset
+    external :: get_doy
+    external :: getattributes
+    external :: read_DailyTeffStats
+    external :: scale_teff
+    external :: get_UTC
+    external :: ARFSSMRETRIEVAL
+    external :: system
 
     allocate(LDT_rc%nensem(LDT_rc%nnest))
 
@@ -489,12 +513,18 @@ contains
              endif
              read_L1Bdata = .false.
 
-  ! Get snow information from LIS outputs
-             call readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
-             if (rc .ne. 0) then
-                write(LDT_logunit,*)'[WARN] No USAFSI data available!'
-             endif
-
+             ! Get snow information from LIS outputs
+             if (SMAPeOPL%snow_source .eq. 2) then
+                call readSNIP(n, yyyymmdd, hh, SnowDepth, rc)
+                if (rc .ne. 0) then
+                   write(LDT_logunit,*)'[WARN] No SNIP data available!'
+                endif
+             else if (SMAPeOPL%snow_source .eq. 1) then
+                call readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
+                if (rc .ne. 0) then
+                   write(LDT_logunit,*)'[WARN] No USAFSI data available!'
+                endif
+             end if
   ! Retrieve SMAP soil moisture
              ! get DOY
              call get_doy(mo,da,doy_curr)
@@ -531,6 +561,8 @@ contains
     character*2       :: hh
     character*2       :: tmp
     character*200     :: list_files
+
+    external :: system
 
     yyyymmdd = date_curr(1:8)
     hh       = date_curr(9:10)

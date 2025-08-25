@@ -5075,13 +5075,23 @@ TSSM OSSE mask data resolution (km): 1
 |1 |Apply soil temperature bias correction
 |===
 
-`SMAP_E_OPL reference Teff daily statistics file:` specifies a directory and filename of the reference effective soil temperature (Teff) daily statistics file 
+`SMAP_E_OPL reference Teff daily statistics file:` specifies a directory and filename of the reference effective soil temperature (Teff) daily statistics file
 
 `SMAP_E_OPL LIS Teff daily statistics file:` specifies a directory and filename of the LIS Teff daily statistics file
 
 `SMAP_E_OPL LIS snow directory:` specifies a directory containing LIS snow outputs
 
-`SMAP_E_OPL snow depth threshold:` specifies a snow depth threshold (unit: m). Soil moisture retrievals are not generate for grid cells with snow depth greater than the threshold. 
+`SMAP_E_OPL snow source:` specifies source of snow outputs
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|1 |USAFSI
+|2 |SNIP
+|===
+
+`SMAP_E_OPL snow depth threshold:` specifies a snow depth threshold (unit: m). Soil moisture retrievals are not generate for grid cells with snow depth greater than the threshold.
 
 `SMAP_E_OPL TAU directory:` specifies a directory containing the pre-processed TAU data
 
@@ -5104,10 +5114,11 @@ SMAP_E_OPL L1B data type:                           1
 SMAP_E_OPL write L1B resampled output:              0
 SMAP_E_OPL L1B resampled output directory:          ./ARFS_RESAMPLE
 SMAP_E_OPL LIS soil temperature directory:          ../Noah39_OL
-SMAP_E_OPL apply soil temperature bias correction:  1 
+SMAP_E_OPL apply soil temperature bias correction:  1
 SMAP_E_OPL reference Teff daily statistics file:    ../geos_daily_statistics_15obs.nc
 SMAP_E_OPL LIS Teff daily statistics file:          ../noah39_daily_statistics_15obs.nc
 SMAP_E_OPL LIS snow directory:                      ../Noah39_snow
+SMAP_E_OPL snow source:                             2
 SMAP_E_OPL snow depth threshold:                    0.05
 SMAP_E_OPL TAU directory:                           ../../data/TAU_ARFS_DAILY
 SMAP_E_OPL OMEGA file:                              ../../data/PRMS_RETRIEVAL_ARFS/omega_arfs.dat
