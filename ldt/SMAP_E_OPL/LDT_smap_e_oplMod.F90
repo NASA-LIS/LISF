@@ -284,7 +284,7 @@ contains
     integer                 :: yr_pre, mo_pre, da_pre, hh_pre
     integer                 :: yr_02, mo_02, da_02, hr_02
     integer                 :: yr_03, mo_03, da_03, hr_03
-    logical                 :: dir_exists, read_L1Bdata
+    logical                 :: read_L1Bdata
     real                    :: teff_01(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_02(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_03(LDT_rc%lnc(n),LDT_rc%lnr(n))
@@ -298,10 +298,18 @@ contains
     type(ESMF_TimeInterval) :: deltatime
     integer :: deltahr
     integer :: rc
-    integer               :: col, row
+
     external :: readUSAFSI
     external :: readSNIP
     external :: readLIS_Teff_usaf
+    external :: SMAPL1BRESAMPLE_subset
+    external :: get_doy
+    external :: getattributes
+    external :: read_DailyTeffStats
+    external :: scale_teff
+    external :: get_UTC
+    external :: ARFSSMRETRIEVAL
+    external :: system
 
     allocate(LDT_rc%nensem(LDT_rc%nnest))
 
@@ -553,6 +561,8 @@ contains
     character*2       :: hh
     character*2       :: tmp
     character*200     :: list_files
+
+    external :: system
 
     yyyymmdd = date_curr(1:8)
     hh       = date_curr(9:10)
