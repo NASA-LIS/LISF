@@ -351,7 +351,7 @@ def _merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date
             "units": "hours since " + fcst_date.strftime("%Y-%m-%d") + " 00:00"
         }
     )
-    
+        
     # Create time bounds
     if 'time' in merged_ds.sizes:
         time_size = merged_ds.sizes['time']
@@ -441,7 +441,7 @@ def _merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date
                 del var_attrs[attr]
         
         # Set missing_value for data variables (but let encoding handle _FillValue)
-        if var_name not in ['atime']:
+        if var_name not in ['atime', ]:
             var_attrs['missing_value'] = -9999.0
         
         # Specific attribute modifications for each variable type
@@ -509,23 +509,47 @@ def _merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date
         del merged_ds['time'].attrs['time_increment']
     
     # Define very minimal encoding - only valid netCDF4 backend parameters
+    true_coords = ['time', 'ensemble', 'soil_layer']
+    special_data_vars = ['atime', 'time_bnds', 'soil_layer_thickness']
     encoding = {}
     
+    # Handle true coordinates
+    for var in true_coords:
+        if var in merged_ds:
+            if var == 'time':
+                encoding[var] = {
+                    '_FillValue': None,
+                    'calendar': 'standard'
+                }
+            else:
+                encoding[var] = {
+                    '_FillValue': None
+                }
+
+    # Handle special data variables (no compression but need _FillValue=None)
+    for var in special_data_vars:
+        if var in merged_ds:
+            encoding[var] = {'_FillValue': None}
+            # Remove any existing _FillValue and missing_value from attributes
+            if '_FillValue' in merged_ds[var].attrs:
+                del merged_ds[var].attrs['_FillValue']
+                if 'missing_value' in merged_ds[var].attrs:
+                    del merged_ds[var].attrs['missing_value']
+
+    # Handle normal data variables
     for var in merged_ds.data_vars:
-        if var in ['time', 'lat', 'lon', 'ensemble', 'soil_layer','atime','time_bnds','soil_layer_thickness']:
-            # Skip coordinate variables - let xarray handle them automatically
-            continue      
-        else:
-            # All other data variables - only valid netCDF4 encoding parameters
+        if var not in special_data_vars:
             encoding[var] = {
-                'dtype': 'float32', 
-                'zlib': True, 
-                'complevel': 6, 
+                'dtype': 'float32',
+                'zlib': True,
+                'complevel': 6,
                 'shuffle': True,
                 '_FillValue': -9999.0
             }
-    
-    # Save the merged dataset
+            # Add offset and scale factor attributes
+            merged_ds[var].attrs['add_offset'] = 0.0
+            merged_ds[var].attrs['scale_factor'] = 1.0
+
     try:
         merged_ds.to_netcdf(merge_file, format='NETCDF4', encoding=encoding)
     except Exception as e:
