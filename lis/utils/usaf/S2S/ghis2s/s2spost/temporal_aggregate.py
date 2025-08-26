@@ -164,7 +164,7 @@ def _create_daily_s2s_filename(input_dir, fcstdate, curdate, model_forcing, doma
     _check_filename_size(name)
     return name
 
-def create_monthly_s2s_filename(output_dir, fcstdate, startdate, enddate,
+def create_time_aggregated_s2s_filename(output_dir, fcstdate, startdate, enddate,
                                  model_forcing, domain):
     """Create path to monthly S2S netCDF file."""
     name = f"{output_dir}"
@@ -189,17 +189,29 @@ def create_monthly_s2s_filename(output_dir, fcstdate, startdate, enddate,
     return name
 
 # New xarray-based functions replacing the netCDF4 versions
-def _create_monthly_file_xarray(varlists, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing, config):
-    """Create monthly file using xarray for better performance."""
-    
-    #print(f"[INFO] Creating monthly file using xarray approach")
-    
+def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing, config):
+    """
+    This is good to time aggregate daily files
+    1) For weekly files precise startdate and enddates (included) as arguments 
+    2) For monthly files dates included are Day02 of the month through Day01 of the next month, 
+       while datestamps in filenames show day01 of the month to day01 of the next month except for the first forecast month
+    """
+
+    is_monthly = False
+    curdate = startdate
+    if (enddate - startdate).days > 25:
+        is_monthly = True
+
+    if is_monthly and (startdate.month != fcstdate.month):
+        ''' the 1st day has been counted by the previous month already, so we exclude it'''
+        curdate += datetime.timedelta(days=1)
+        
     # Create list of all daily files
     daily_files = []
-    curdate = startdate
     while curdate <= enddate:
         infile = _create_daily_s2s_filename(input_dir, fcstdate, curdate, model_forcing,
                                           config["EXP"]["DOMAIN"])
+        print(infile)
         if os.path.exists(infile):
             daily_files.append(infile)
         else:
@@ -337,7 +349,7 @@ def _create_monthly_file_xarray(varlists, input_dir, output_dir, fcstdate, start
             encoding[var] = {'zlib': True, 'complevel': 6, 'shuffle': True, '_FillValue': -9999.0}
     
     # Write output file
-    outfile = create_monthly_s2s_filename(output_dir, fcstdate, startdate,
+    outfile = create_time_aggregated_s2s_filename(output_dir, fcstdate, startdate,
                                          enddate, model_forcing, config["EXP"]["DOMAIN"])
     
     try:
@@ -396,7 +408,7 @@ def _driver():
     print(f"[INFO] Domain: {config['EXP']['DOMAIN']}")
     
     # Process all files at once using xarray
-    outfile = _create_monthly_file_xarray(
+    outfile = _create_time_aggregated_file_xarray(
         varlists, input_dir, output_dir, fcstdate, 
         startdate, enddate, model_forcing, config
     )
@@ -405,10 +417,10 @@ def _driver():
     elapsed_time = end_time - start_time
     
     if outfile:
-        print(f"[INFO] Monthly processing complete: {outfile}")
+        print(f"[INFO] Temporal aggregation complete: {outfile}")
         print(f"[INFO] Total processing time: {elapsed_time:.2f} seconds")
     else:
-        print("[ERR] Monthly processing failed")
+        print("[ERR] Temporal aggregation failed")
         sys.exit(1)
 
 # Invoke driver
