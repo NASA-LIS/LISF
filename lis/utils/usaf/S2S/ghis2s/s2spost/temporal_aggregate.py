@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: monthly_s2spost_nc_xarray.py
+# SCRIPT: temporal_aggregate.py
 #
 # PURPOSE: Read daily S2S CF-convention netCDF files, calculate monthly
 # averages and accumulations, and write to new CF-convention netCDF file.
@@ -192,7 +192,7 @@ def create_time_aggregated_s2s_filename(output_dir, fcstdate, startdate, enddate
 def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing, config):
     """
     This is good to time aggregate daily files
-    1) For weekly files precise startdate and enddates (included) as arguments 
+    1) For weekly files precise startdate and enddates (included) are passed as arguments 
     2) For monthly files dates included are Day02 of the month through Day01 of the next month, 
        while datestamps in filenames show day01 of the month to day01 of the next month except for the first forecast month
     """
