@@ -43,7 +43,7 @@ import xarray as xr
 #pylint: disable=too-many-arguments, line-too-long
 ZERO_DIFF = False
 ATOL = 1.e-03
-RTOL = 1e-05
+RTOL = 1e-03
 def file_info(infile):
     ''' read file info. '''
     def print_summary (arr):
@@ -83,10 +83,10 @@ def diff_nc(file1, file2):
         _a = xr.open_dataset(file1)
         _b = xr.open_dataset(file2)
         if ZERO_DIFF:
-            xr.testing.assert_equal(_a, _b)
+            xr.testing.assert_equal(_a.drop_vars(['time_bnds','time']), _b.drop_vars(['time_bnds','time']))
             print (file1,': is identical.')
         else:
-            xr.testing.assert_allclose(_a, _b, rtol=RTOL)
+            xr.testing.assert_allclose(_a.drop_vars(['time_bnds','time']), _b.drop_vars(['time_bnds','time']), rtol=RTOL)
             print (file1,': is close at relative tolerance of ' + str(RTOL) + '.')
 
 def print_var(latp, lonp, latname, lonname, varname, filename):

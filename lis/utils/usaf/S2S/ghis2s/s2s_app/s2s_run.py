@@ -321,7 +321,7 @@ class DownloadForecasts():
         return ret_code
         
 class S2Srun(DownloadForecasts):
-    def __init__(self, year, month, config_file):
+    def __init__(self, year, month, config_file, additional_env_vars=None):
         super(S2Srun, self).__init__(year, month, config_file)
         with open(config_file, 'r', encoding="utf-8") as file:
             self.config = yaml.safe_load(file)
@@ -346,6 +346,7 @@ class S2Srun(DownloadForecasts):
         self.MODELS = self.config["EXP"]["NMME_models"]
         self.CONSTRAINT = self.config['SETUP']['CONSTRAINT']
         self.schedule = {}
+        self.additional_env_vars = additional_env_vars
         
         if not os.path.exists(self.E2ESDIR + 'scratch/'):
             subprocess.run(["setfacl", "-R", "-m", "u::rwx,g::rwx,o::r", self.E2ESDIR], check=True)
@@ -663,12 +664,14 @@ class S2Srun(DownloadForecasts):
             file.write("        [[[job]]]\n")
             file.write("            batch system = slurm\n")
             file.write("        [[[environment]]]\n")
-            file.write("            datetime = $CYLC_TASK_CYCLE_POINT\n")
-            file.write("            config = $CYLC_SUITE_DEF_PATH/config.yml\n")
-            file.write("            inputdata = $CYLC_SUITE_DEF_PATH/inputdata.yml\n")
-            file.write("            INSTALL_PATH = $CYLC_SUITE_DEF_PATH\n")
             file.write("            USE_CYLC_ENV = 1\n") 
             file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
+            
+            # Add additional environment variables if provided
+            if self.additional_env_vars:
+                for key, value in self.additional_env_vars.items():
+                    file.write(f"            {key} = {value}\n")
+                    
             file.write("        [[[events]]]\n")
             file.write("            mail to = USEREMAIL\n")
             file.write("            mail events = failed\n")

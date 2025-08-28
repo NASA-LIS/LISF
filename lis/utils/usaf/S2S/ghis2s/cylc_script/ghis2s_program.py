@@ -25,6 +25,9 @@ ENV_DEFINITION = {
     "PYTHONPATH": (str, None),
 }
 
+# Any  additional env variables that must be added to flow.cylc file can be passed to S2Srun via the below dictionary.
+additional_env_vars = {}
+
 #class Ghis2sProgram(RoseProgram):
 class Ghis2sProgram():
     """Main program class for ghis2s integration""" 
@@ -119,12 +122,20 @@ class Ghis2sProgram():
         
         try:
             # Initialize S2S run
-            s2s = S2Srun(
-                year=self.env["FORECAST_YEAR"],
-                month=self.env["FORECAST_MONTH"],
-                config_file=self.env["CONFIG_FILE"]
-            )
-            
+            if not additional_env_vars:
+                s2s = S2Srun(
+                    year=self.env["FORECAST_YEAR"],
+                    month=self.env["FORECAST_MONTH"],
+                    config_file=self.env["CONFIG_FILE"]
+                )
+            else:
+                s2s = S2Srun(
+                    year=self.env["FORECAST_YEAR"],
+                    month=self.env["FORECAST_MONTH"],
+                    config_file=self.env["CONFIG_FILE"],
+                    additional_env_vars=additional_env_vars
+                )
+                    
             # Execute specified step or full workflow
             step = self.env["S2S_STEP"]
             one_step = self.env["ONE_STEP"]
