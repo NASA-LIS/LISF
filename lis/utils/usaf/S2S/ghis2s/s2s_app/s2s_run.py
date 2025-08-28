@@ -1087,21 +1087,6 @@ class S2Srun(DownloadForecasts):
         shutil.copy(jobname + 'run.j', jobname + 'run.sh')
         utils.remove_sbatch_lines(jobname + 'run.sh')
         #utils.cylc_job_scripts(jobname + 'run.sh', 1, CWD, command_list=slurm_9_10[1:])
-
-        # bcsd11-12
-        #jobname='bcsd11-12_'
-        #tfile = self.sublist_to_file(slurm_11_12, CWD)
-        #try:
-        #    s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-        #                            jobname, 1, str(6), CWD, tfile.name)
-        #    self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=['bcsd09_run.j', 'bcsd10_run.j'])
-        #finally:
-        #    tfile.close()
-        #    os.unlink(tfile.name)
-
-        #shutil.copy(jobname + 'run.j', jobname + 'run.sh')
-        #utils.remove_sbatch_lines(jobname + 'run.sh')
-        #utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_11_12)
         
         os.chdir(self.E2ESDIR)
         return
