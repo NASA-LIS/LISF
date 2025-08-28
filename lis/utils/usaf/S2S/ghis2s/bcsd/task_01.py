@@ -131,10 +131,12 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
                 for ic_date in ic_dates:
                     cmd += f" {ic_date}"
                 cmd_list.append(cmd)
+                slurm_commands.append(cmd)
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            utils.job_script(config_file, jobfile, jobname, len(cmd_list),
-                             hours, cwd, group_jobs=cmd_list)
+            if not py_call:
+                utils.job_script(config_file, jobfile, jobname, len(cmd_list),
+                                 hours, cwd, group_jobs=cmd_list)
 
         else:
             cmd = "python"
