@@ -133,6 +133,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('export PYTHONPATH='+ pythonpath + '\n')
+        _f.write('export SCRIPT_NAME='+ job_name + 'run.j' + '\n')
         if parallel_run is not None:
             _f.write('export NUM_WORKERS='+ parallel_run['CPT'] + '\n')
         _f.write('cd ' + cwd + '\n')
@@ -150,11 +151,10 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
                 _f.write("wait\n")
             if command_list:
                 for cmd in command_list:
-                    _f.write(f"{cmd}\n")
+                    _f.write(f"{cmd} \n")
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
-        _f.write('/usr/bin/touch DONE' + '\n')
         _f.write('exit 0' + '\n')
     _f.close()
 
@@ -234,7 +234,6 @@ fi
 done
         """) 
         f.write(f"echo [INFO] Completed {job_file} ! \n\n")
-        f.write("""/usr/bin/touch DONE
 exit 0
         """)    
 
@@ -392,7 +391,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         if 'mil' in cfg['SETUP']['CONSTRAINT']:
             _f.write('export I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so' + '\n')
             _f.write('export I_MPI_PMI_VALUE_LENGTH_MAX=' + ntasks + '\n')
-            _f.write('cd ' + cwd + '\n')
+            _f.write('cd ' + cwd + '\n')           
             _f.write('srun --mpi=pmi2 --ntasks=$SLURM_NTASKS \\' + '\n')
             _f.write('     --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \\' + '\n')
             _f.write('     --ntasks-per-core=$SLURM_NTASKS_PER_CORE \\' + '\n')
@@ -411,7 +410,6 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
-        _f.write('/usr/bin/touch DONE' + '\n')
         _f.write('exit 0' + '\n')
     _f.close()
     shutil.copy(jobfile, job_name + 'run.sh')

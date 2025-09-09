@@ -1,7 +1,7 @@
 import os
 import sys
 import glob
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 import subprocess
 import re
@@ -13,11 +13,12 @@ import tempfile
 import yaml
 import argparse
 from ghis2s.s2s_app import s2s_api
-from ghis2s.shared import utils
+from ghis2s.shared import utils, logging_utils
 from ghis2s.lis_fcst import generate_lis_config_scriptfiles_fcst
 from ghis2s.s2spost import run_s2spost_9months
 from ghis2s.s2smetric import postprocess_nmme_job
 from ghis2s import bcsd
+from ghis2s.shared.logging_utils import TaskLogger
 
 class DownloadForecasts():
     def __init__(self, year, month, config_file):
@@ -337,6 +338,8 @@ class S2Srun(DownloadForecasts):
             self.E2ESDIR = self.config['SETUP']['E2ESDIR'] + "/hindcast/"
         self.LISFDIR = self.config['SETUP']['LISFDIR']
         self.LISHDIR = self.config['SETUP']['LISFDIR'] + 'lis/utils/usaf/S2S/'
+        self.LISHMOD = self.config['SETUP']['LISFMOD']
+        self.SPCODE = self.config['SETUP']['SPCODE']
         self.METFORC = self.config['SETUP']['METFORC']
         self.E2ESROOT = self.config['SETUP']['E2ESDIR']
         self.DOMAIN = self.config['EXP']['DOMAIN']
@@ -381,10 +384,6 @@ class S2Srun(DownloadForecasts):
                 print(f'Please wait... {spin_chars[idx]}', end='\r', flush=True)
                 idx = (idx + 1) % len(spin_chars)
                 time.sleep(0.1)
-
-        #command = f"bash {self.E2ESDIR}/s2s_app/wget_cfsv2_oper_ts_e2es.sh -y {self.YYYY} -m {self.MM} -c {self.E2ESDIR}/{self.config_file} -d N"
-        #process = subprocess.run(command, shell=True)
-        #ret_code = process.returncode
 
         spinner_thread = threading.Thread(target=spinner)
         spinner_thread.start()
@@ -527,6 +526,24 @@ class S2Srun(DownloadForecasts):
 
     def write_cylc_snippet(self):
         """ writes Cylc runtime snippet """
+        def write_log_monitoring_script():
+            """writes the shell script to run log monitoring"""   
+            log_script_path = f"{self.SCRDIR}ghis2s_log.sh"
+            with open(log_script_path, 'w') as f:
+                f.write("#!/bin/bash\n")
+                f.write("set -eu\n")
+                f.write("export USE_CYLC_ENV=0\n")
+                f.write("source /etc/profile.d/modules.sh\n")
+                f.write("module purge\n")
+                f.write(f"module use -a {self.LISFDIR}env/discover/\n")
+                f.write(f"module --ignore-cache load {self.LISHMOD}\n")
+                f.write("ulimit -s unlimited\n")
+                f.write(f"cd {self.SCRDIR}\n")
+                f.write(f"python {self.LISFDIR}lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py -y {self.year} -m {self.month} -c {self.E2ESDIR}{self.config_file} -l\n")
+    
+            os.chmod(log_script_path, 0o755)
+            return 
+        
         def extract_slurm_info(slurm_file):
             """ reads *.j SLURM file for directives, prescript and env variables"""
             def convert_time_to_minutes(time_str):
@@ -594,25 +611,20 @@ class S2Srun(DownloadForecasts):
                     inherits = ','.join(map(str, inherit_list))
                 else:
                     inherits = str(inherit_list)
-                #file.write(f"        inherit = {inherits}\n")
+
             sh_script = self.SCRDIR + subdir + '/' + jfile + '.sh'
             file.write(f"        script = {sh_script}\n")
-            
-            # Write pre-script
-            #file.write("        pre-script = \n")
-            #for command in pre_script:
-            #    file.write(f"                     {command}\n")
-        
+                    
             # Write directives
             file.write("        [[[directives]]]\n")
             for directive in directives:
                 file.write(f"            {directive}\n")
 
-            #if len(environment) > 0:
-            #    # Write environment variables
-            #    file.write("        [[[environment]]]\n")
-            #    for env in environment:
-            #        file.write(f"            {env}\n")
+            if len(environment) > 0:
+                # Write environment variables
+                file.write("        [[[environment]]]\n")
+                for env in environment:
+                    file.write(f"            {env}\n")
         
         ''' the main function '''
         cylc_file = f"{self.SCRDIR}CYLC_workflow.rc"
@@ -626,7 +638,11 @@ class S2Srun(DownloadForecasts):
                     prev_task = pfile.removesuffix('.j')
                     prev_tasks.append(prev_task)
                     dependency_map[task_name] = prev_tasks
-                     
+
+        # write log monitoring bash script
+        write_log_monitoring_script()
+
+        # write flow.cylc
         with open(cylc_file, 'w') as file:
             # Write header
             file.write("#!jinja2\n")
@@ -636,31 +652,50 @@ class S2Srun(DownloadForecasts):
             file.write("    title = S2S Forecast Workflow\n")
             file.write("    description = S2S Forecast Initialized on YYYY-MM\n")
             file.write("  \n")
-            file.write("[cylc]\n")
+            file.write("[scheduler]\n")
             file.write("    UTC mode = True\n")
-            file.write("    cycle point format = %Y-%m-%dT%H\n")
+            file.write("    cycle point format = %Y%m%dT%H%M\n")
             file.write("  \n")
             
             # Write scheduling section
             file.write("[scheduling]\n")
-            file.write("    initial cycle point = YYYY-MM-01T00\n")
-            file.write("    max active cycle points = 1\n")
+            file.write(f"    initial cycle point = {self.year}{self.month:02d}01T0000\n")
+            file.write("    runahead limit = P0\n")
             file.write("  \n")
-            file.write("    [[dependencies]]\n")
-            file.write("        [[[R1]]] # validity (hours)\n")
-            file.write("            graph = \"\"\"\n")
+
+            # Update scheduling structure
+            file.write("    [[graph]]\n")  # Changed from [[dependencies]]
+            file.write("        R1 = \"\"\"\n")  # Changed structure
             
             # Generate dependency graph from dependency_map
             for task, dependencies in dependency_map.items():
                 if dependencies:
                     dep_str = " & ".join(dependencies)
                     file.write(f"                {dep_str} => {task}\n")        
-            file.write("            \"\"\"\n")
+
+            # Find terminal tasks for final log collection
+            all_tasks = set(dependency_map.keys())
+            dependency_tasks = set()
+            for deps in dependency_map.values():
+                dependency_tasks.update(deps)
+            terminal_tasks = all_tasks - dependency_tasks
+
+            # Add final log collection dependency
+            if terminal_tasks:
+                terminal_str = " & ".join(sorted(terminal_tasks))
+                file.write(f"            {terminal_str} => final_log_collect\n")
+            else:
+                # Fallback - make final log depend on all tasks completing
+                all_tasks_str = " & ".join(sorted(all_tasks))
+                file.write(f"            {all_tasks_str}:finish-all => final_log_collect\n")
+
+            file.write("        \"\"\"\n")
+            file.write("        PT15M = \"log_monitor\"\n")  # Changed structure
+            file.write("  \n")
             
             # Write runtime section
             file.write("[runtime]\n")
             file.write("    [[root]]\n")
-            file.write("        # Default settings for all tasks\n")
             file.write("        [[[job]]]\n")
             file.write("            batch system = slurm\n")
             file.write("        [[[environment]]]\n")
@@ -673,8 +708,45 @@ class S2Srun(DownloadForecasts):
                     file.write(f"            {key} = {value}\n")
                     
             file.write("        [[[events]]]\n")
+            file.write("            mail events = failed\n")            
             file.write("            mail to = USEREMAIL\n")
-            file.write("            mail events = failed\n")
+            file.write("  \n")
+
+            file.write("    [[log_monitor]]\n")
+            file.write(f"        script = {self.SCRDIR}ghis2s_log.sh\n")
+            file.write("        [[[directives]]]\n")
+            file.write(f"            --account={self.SPCODE}\n")
+            file.write("            --time=10\n")
+            file.write("            --mem=1GB\n")
+            file.write("            --nodes=1\n")
+            file.write("            --ntasks-per-node=1\n")
+            if 'discover' in platform.node() or 'borg' in platform.node():
+                file.write(f"            --constraint={self.config['SETUP']['CONSTRAINT']}\n")
+                file.write("            --partition=packable\n")
+            file.write("            --job-name=ghis2s_log_\n")
+            file.write(f"            --output={self.SCRDIR}ghis2s_log_%j.out\n")
+            file.write(f"            --error={self.SCRDIR}ghis2s_log_%j.err\n")           
+            file.write("        [[[environment]]]\n")
+            file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
+            file.write("  \n")
+
+            file.write("    [[final_log_collect]]\n")
+            file.write(f"        script = {self.SCRDIR}ghis2s_log.sh\n")
+            file.write("        [[[directives]]]\n")
+            file.write(f"            --account={self.SPCODE}\n")
+            file.write("            --time=10\n")
+            file.write("            --mem=1GB\n")
+            file.write("            --nodes=1\n")
+            file.write("            --ntasks-per-node=1\n")
+            if 'discover' in platform.node() or 'borg' in platform.node():
+                file.write(f"            --constraint={self.config['SETUP']['CONSTRAINT']}\n")
+                file.write("            --partition=packable\n")
+            file.write("            --job-name=ghis2s_log_\n")
+            file.write(f"            --output={self.SCRDIR}ghis2s_log_%j.out\n")
+            file.write(f"            --error={self.SCRDIR}ghis2s_log_%j.err\n")           
+            
+            file.write("        [[[environment]]]\n")
+            file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
             file.write("  \n")
             
             for jfile in self.schedule.keys():
@@ -757,7 +829,7 @@ class S2Srun(DownloadForecasts):
 
         with open('lis.config', 'r') as file:
             filedata = file.read()
-
+            
         filedata = filedata.replace('DAPERTRSTFILE', DAPERTRSTFILE)
         filedata = filedata.replace('NOAHMP401RSTFILE', NOAHMP401RSTFILE)
         filedata = filedata.replace('HYMAP2RSTFILE', HYMAP2RSTFILE)
@@ -774,6 +846,9 @@ class S2Srun(DownloadForecasts):
             file.write(filedata)
 
         shutil.copy('lis.config', 'output/lis.config_files/lis.config_darun_{}{}'.format(YYYYP, MMP))
+        logger = TaskLogger('lisda_run.j',
+                            os.getcwd(),
+                            f'LISDA log files are at: \n{CWD}/logs_{self.YYYY}{self.MM}/')
         
         os.chdir(self.E2ESDIR)        
         return
@@ -830,6 +905,11 @@ class S2Srun(DownloadForecasts):
         shutil.copy('ldtics_run.j', 'ldtics_run.sh')
         utils.remove_sbatch_lines('ldtics_run.sh')
         #utils.cylc_job_scripts('ldtics_run.sh', 2, CWD, command_list=[COMMAND])
+        mon_abbr = date(int(self.YYYY), int(self.MM), 1).strftime('%b')
+        logger = TaskLogger('ldtics_run.j',
+                            os.getcwd(),
+                            f'LDTICS log files are at: \n{self.E2ESDIR}/ldt_ics/*/ldtlog_noahmp401_{mon_abbr}{self.YYYY}.0000')
+
         os.chdir(self.E2ESDIR)        
         return
 
@@ -1118,7 +1198,9 @@ class S2Srun(DownloadForecasts):
         self.create_symlink(self.E2ESDIR + 'bcsd_fcst', 'bcsd_fcst')
 
         generate_lis_config_scriptfiles_fcst.main(self.E2ESDIR + self.config_file, self.year, self.month, CWD, jobname)
+    
         for model in self.MODELS:
+            lindex = ''
             job_list = sorted(glob.glob(f"{jobname}_{model}*_run.j"))
             nFiles = len(job_list)
             for FileNo, jfile in enumerate(job_list):
@@ -1127,8 +1209,13 @@ class S2Srun(DownloadForecasts):
                         self.create_dict(jfile, 'lis_fcst', prev=prev)
                     else:
                         self.create_dict(jfile, 'lis_fcst', prev=job_list[FileNo-1])
+                        lindex = f'{FileNo:02d}'
                 else:
                     self.create_dict(jfile, 'lis_fcst', prev=prev)
+                logger = TaskLogger(jfile,
+                                    os.getcwd(),
+                                    f'{model} log files are at: \n{self.E2ESDIR}/lis_fcst/{self.YYYY}{self.MM}/{model}/logs/lislog{lindex}.*')
+        
             
         os.chdir(self.E2ESDIR)
         return
@@ -1509,6 +1596,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--one_step', action='store_true', help='Is only one step (default: False)?')
     parser.add_argument('-j', '--submit_job', action='store_true', help='Submit SLURM jobs (default: False)?')
     parser.add_argument('-r', '--report', action='store_true', help='Print report')
+    parser.add_argument('-l', '--logging', action='store_true', help='Write centralized log file')
     args = parser.parse_args()
 
     s2s = S2Srun(year=args.year, month=args.month, config_file=args.config_file)
@@ -1518,7 +1606,12 @@ if __name__ == "__main__":
         command = f"s2s_app/s2s_run.sh -y {args.year} -m {args.month} -c {args.config_file} -r Y"
         process = subprocess.run(command, shell=True)
         sys.exit()
-    
+
+    # Write LOG file
+    if args.logging:
+        logging_utils.write_centralized_logging(s2s.SCRDIR)
+        sys.exit()
+        
     if args.step is not None:
         if args.step == 'LISDA':
             s2s.lis_darun()
@@ -1561,6 +1654,9 @@ if __name__ == "__main__":
 
     else:
         s2s.main()
+
+    # save S2S schedule dictionary
+    logging_utils.save_schedule(s2s.SCRDIR, s2s.schedule)
         
     # Submit SLURM jobs
     # -----------------

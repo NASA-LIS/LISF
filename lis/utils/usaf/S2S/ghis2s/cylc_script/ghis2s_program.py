@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import json
 #from sharpy import RoseProgram
 
 ENV_DEFINITION = {
@@ -108,10 +109,38 @@ class Ghis2sProgram():
             else:
                 logging.error("PYTHONPATH not set. Please set PYTHONPATH environment variable to include ghis2s installation directory")
             sys.exit(1)
+
+    def _import_logging_utils(self):
+        """Import logging_utils module with proper PYTHONPATH setup."""
+        # Update PYTHONPATH if specified in environment
+        if self.env["PYTHONPATH"]:
+            current_pythonpath = os.environ.get("PYTHONPATH", "")
+            if current_pythonpath:
+                os.environ["PYTHONPATH"] = f"{self.env['PYTHONPATH']}:{current_pythonpath}"
+            else:
+                os.environ["PYTHONPATH"] = self.env["PYTHONPATH"]
+                
+            # Add to sys.path for immediate availability
+            import sys
+            for path in self.env["PYTHONPATH"].split(":"):
+                if path and path not in sys.path:
+                    sys.path.insert(0, path)
+    
+        try:
+            from ghis2s.shared import logging_utils
+            return logging_utils
+        except ImportError as err:
+            logging.error("Failed to import logging_utils: %s", err)
+            if self.env["PYTHONPATH"]:
+                logging.error("PYTHONPATH was set to: %s", self.env["PYTHONPATH"])
+            else:
+                logging.error("PYTHONPATH not set. Please set PYTHONPATH environment variable to include ghis2s installation directory")
+            sys.exit(1)
             
     def _run_s2s_workflow(self):
         """Execute the S2S workflow steps."""
         S2Srun = self._import_ghis2s()
+        logging_utils = self._import_logging_utils()
         
         logging.info("Creating working directories and job files for S2S forecast initialized on %s-01", 
                     self.forecast_date)
@@ -144,6 +173,9 @@ class Ghis2sProgram():
                 self._execute_s2s_step(s2s, step, one_step)
             else:
                 s2s.main()
+
+            # save S2S schedule dictionary
+            logging_utils.save_schedule(s2s.SCRDIR, s2s.schedule)
                 
             # Write CYLC workflow runtime snippet
             s2s.write_cylc_snippet()
