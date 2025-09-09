@@ -1,1 +1,1 @@
-from . import run_s2spost_9months
+from . import s2spost_main

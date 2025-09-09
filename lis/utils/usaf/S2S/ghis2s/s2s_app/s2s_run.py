@@ -15,7 +15,7 @@ import argparse
 from ghis2s.s2s_app import s2s_api
 from ghis2s.shared import utils, logging_utils
 from ghis2s.lis_fcst import generate_lis_config_scriptfiles_fcst
-from ghis2s.s2spost import run_s2spost_9months
+from ghis2s.s2spost import s2spost_main
 from ghis2s.s2smetric import postprocess_nmme_job
 from ghis2s import bcsd
 from ghis2s.shared.logging_utils import TaskLogger
@@ -1251,7 +1251,7 @@ class S2Srun(DownloadForecasts):
                 self.create_symlink(self.E2ESDIR + 's2spost/' + self.MM + '/' + self.YYYY + self.MM + '/' + model, model)
             else:
                 self.create_symlink(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, model)
-            var1, var2, var3 = run_s2spost_9months.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
+            var1, var2, var3 = s2spost_main.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
             slurm_commands.extend(var1)
             monthly_commands.extend(var2)
             weekly_commands.extend(var3)
