@@ -39,6 +39,8 @@ import shutil
 import glob
 import yaml
 # pylint: disable=f-string-without-interpolation
+# Local modules
+from ghis2s.shared.logging_utils import TaskLogger
 # Local functions
 def _usage():
     """Print command line usage."""
@@ -121,6 +123,11 @@ def _is_lis_output_missing(curdate, model_forcing):
 def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forcing):
     """Automate daily processing for given month."""
 
+    task_name = os.environ.get('SCRIPT_NAME')
+    logger = TaskLogger(task_name,
+                        os.getcwd(),
+                        f's2spost/run_s2spost_1month.py processing daily {model_forcing} for month {startdate.year:04d}{startdate.month:02d}')
+    
     delta = datetime.timedelta(days=1)
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
 
@@ -155,8 +162,9 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
         cmd += f" {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}00"
 
         cmd += f" {model_forcing}"
-
-        print(cmd)
+        
+        logger.info(f's2spost/daily_s2spost_nc.py processing {curdate.year:04d}{curdate.month:02d}',
+                    subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             print("[ERR] Problem running CF conversion!")
@@ -166,6 +174,11 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
 
 def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model_forcing, period):
     """Create the monthly CF file."""
+
+    task_name = os.environ.get('SCRIPT_NAME')
+    logger = TaskLogger(task_name,
+                        os.getcwd(),
+                        f's2spost/run_s2spost_1month.py processing {model_forcing} {period} {startdate.year:04d}{startdate.month:02d}')
 
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
 
@@ -195,6 +208,8 @@ def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model
     cmd += f" {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}"
     cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
     cmd += f" {model_forcing}"
+    logger.info(f's2spost/temporal_aggregate.py processing {firstdate.year:04d}{firstdate.month:02d}-{enddate.year:04d}{enddate.month:02d}',
+                subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
 
     print(cmd)
     returncode = subprocess.call(cmd, shell=True)

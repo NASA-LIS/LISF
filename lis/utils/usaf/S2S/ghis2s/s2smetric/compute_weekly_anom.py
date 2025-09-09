@@ -11,6 +11,7 @@ from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
                         LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 # pylint: disable=consider-using-f-string
 
@@ -114,11 +115,16 @@ if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR, exist_ok=True)
 
 OUTFILE = merged_metric_filename(OUTDIR, CURRENTDATE, ENDDATE, NMME_MODEL, DOMAIN_NAME, weekly=True)
+task_name = os.environ.get('SCRIPT_NAME')
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'{NMME_MODEL} running s2smetric/compute_weekly_anom.py')
 
-num_vars = len(WEEKLY_VARS)
+num_vars = 2*len(WEEKLY_VARS)
 num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
 
 def process_variable(var_name, ANOM):
+    logger.info(f"Starting processing {var_name} for metric {ANOM}", subtask=var_name)
     if ANOM == "ANOM":
         LONG_NAMES = LONG_NAMES_ANOM
         UNITS = UNITS_ANOM
@@ -131,16 +137,21 @@ def process_variable(var_name, ANOM):
     curdate = CURRENTDATE
     enddate = curdate
     enddate += relativedelta(days=6)
+    logger.info(f"Reading Hindcast statistics", subtask=var_name)
     mean_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "MEAN", NMME_MODEL.upper(),
                                               DOMAIN_NAME, FCST_INIT_MON, CURRENTDATE.month, CURRENTDATE.day,
                                               ENDDATE.month, ENDDATE.day)
     std_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "STD", NMME_MODEL.upper(),
                                              DOMAIN_NAME, FCST_INIT_MON, CURRENTDATE.month, CURRENTDATE.day,
                                              ENDDATE.month, ENDDATE.day)
+    logger.info(f"Reading forecast climatological mean {mean_file}", subtask=var_name)
+    logger.info(f"Reading forecast climatological std {std_file}", subtask=var_name)
     mean_xr = xr.open_dataset(mean_file)
     std_xr = xr.open_dataset(std_file)
      
     for lead in range(LEAD_WEEKS):
+        logger.info(f"Processing var_name: {var_name}, lead: {lead}", subtask=var_name)
+
         fcst_file = TARGET_INFILE_TEMPLATE.format(FORECASTS,  CURRENTDATE.year,CURRENTDATE.month, NMME_MODEL,
                                                   NMME_MODEL.upper(), DOMAIN_NAME, TARGET_YEAR, FCST_INIT_MON,
                                                   curdate.year, curdate.month, curdate.day,
@@ -152,7 +163,7 @@ def process_variable(var_name, ANOM):
         mean_data = sel_var(mean_xr.isel(lead_time=lead), var_name, HYD_MODEL)
         std_data = sel_var(std_xr.isel(lead_time=lead), var_name, HYD_MODEL)
 
-        print(f'[INFO] Week {lead} of var: {var_name}_{ANOM} {fcst_file}')
+        logger.info(f"Reading target {fcst_file}", subtask=var_name)
         
         # Initialize the anomaly array on first lead
         if lead == 0:
@@ -229,29 +240,37 @@ def process_variable(var_name, ANOM):
         'long_name': LONG_NAMES[var_name],
         'units': UNITS[var_name]
     }
-
-    print(f"[INFO] Processed variable: {var_name}")
+    logger.info(f"Processed variable: {var_name} for metric {ANOM}", subtask=var_name)
     return anom_xr
 
+logger.info("Starting parallel processing of variables")
 # ProcessPoolExecutor parallel processing
 with ProcessPoolExecutor(max_workers=num_workers) as executor:
     futures = []
     for var_name in WEEKLY_VARS:
+        logger.info(f"Submitting ANOM processing job for {var_name}", subtask=var_name)
         future = executor.submit(process_variable, var_name, "ANOM")
         futures.append(future)
+
+        logger.info(f"Submitting SANOM processing job for {var_name}", subtask=var_name)
         future = executor.submit(process_variable, var_name, "SANOM")
         futures.append(future)
 
     # Collect all anom_xr data sets
     datasets = []
     for future in futures:
-        result = future.result()
-        datasets.append(result)
+        try:
+            result = future.result()
+            datasets.append(result)
+        except Exception as e:
+            logger.error(f"Failed processing for {var_name}: {str(e)}", subtask=var_name)
+        
 
 # Merge all datasets
 merged_dataset = xr.merge(datasets)
 encoding = {var: comp for var in merged_dataset.data_vars}
 
 # Write the merged dataset to a single file
-print(f"[INFO] Writing merged output to {OUTFILE}")
+logger.info(f"Writing merged output to {OUTFILE}")
 merged_dataset.to_netcdf(OUTFILE, format="NETCDF4", encoding=encoding)
+logger.info(f"Processing {NMME_MODEL} completed successfully")

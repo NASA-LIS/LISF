@@ -24,6 +24,7 @@ import subprocess
 from concurrent.futures import ProcessPoolExecutor
 import yaml
 from ghis2s.shared import utils
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: disable=consider-using-f-string, too-many-locals, import-outside-toplevel
 # Local methods
 def _usage():
@@ -102,6 +103,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.nmme_model is None:
+        task_name = os.environ.get('SCRIPT_NAME')
+        if args.weekly:
+            logger = TaskLogger(task_name,
+                                os.getcwd(),
+                                f's2smetric/postprocess_nmme_job.py-> make_s2s_median_metric_geotiff.py to generate weekly TIF files.')
+        else:
+            logger = TaskLogger(task_name,
+                                os.getcwd(),
+                                f's2smetric/postprocess_nmme_job.py-> make_s2s_median_metric_geotiff.py to generate monthly TIF files.')
+
         def run_tiff_py(cmd):
             if subprocess.call(cmd, shell=True) != 0:
                 print("[ERR] Problem running make_s2s_median_metric_geotiff.py")
@@ -124,23 +135,29 @@ if __name__ == "__main__":
         metrics.extend(["{}{}".format(i, '_SANOM') for i in metrics1])
 
         # ProcessPoolExecutor parallel processing
+        logger.info("Starting parallel processing of variables")
         with ProcessPoolExecutor(max_workers=num_workers) as executor:
             futures = []
             for metric1 in metrics:
                 metric = metric1.replace('-', '_')
+                logger.info(f"Submitting TIF generating job for {metric}", subtask=metric)
                 cmd = "python"
                 cmd += f" {rundir}"
                 cmd += "/make_s2s_median_metric_geotiff.py"
                 cmd += f" {input_dir} {metric} {args.configfile}"
                 if args.weekly:
                     cmd += f" weekly"
-                print(cmd)
                 future = executor.submit(run_tiff_py, cmd)
                 futures.append(future)
 
             for future in futures:
-                result = future.result()
+                try:
+                    result = future.result()
+                except Exception as e:
+                    logger.error(f"Failed writing TIF files: {str(e)}", subtask=metric)
 
+        logger.info(f"Writing TIF files completed successfully")
+                
     else:
         main(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.cwd,
              nmme_model=args.nmme_model, jobname=args.jobname, ntasks=args.ntasks,

@@ -68,9 +68,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
     srcdir2 = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/'
 
-    # Log file output directory
-    logdir = cwd + '/log_files'
-
     # Path of the directory where supplementary files are kept
     supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 

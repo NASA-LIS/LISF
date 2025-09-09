@@ -236,7 +236,6 @@ def _merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date
     ds_hymap2 = xr.open_dataset(hymap2_file)
     ds_ldt = xr.open_dataset(ldtfile)
         
-    # Function to safely rename dimensions
     def safe_rename_dims(dataset, rename_dict):
         existing_dims = {k: v for k, v in rename_dict.items() if k in dataset.sizes}
         if existing_dims:

@@ -98,14 +98,9 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
-    # Log file output directory
-    logdir = cwd + '/log_files'
 
     # Paths for the daily forecast data (input and output paths)
     outdir = f"{projdir}/bcsd_fcst/CFSv2_{resol}/raw"
-
-    if not os.path.exists(logdir):
-        os.makedirs(logdir)
 
     imon = f"{month_abbr}01"
     ic_dates = calc_ic_dates(imon)
