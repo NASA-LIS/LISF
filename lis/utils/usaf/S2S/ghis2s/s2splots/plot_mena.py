@@ -30,9 +30,14 @@ import yaml
 # pylint: disable=import-error
 import plot_utils
 from ghis2s.s2smetric.metricslib import get_anom
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 USAF_COLORS = True
+task_name = os.environ.get('SCRIPT_NAME')
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'Running s2splots/plot_mena.py')
 
 def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
                      carea, boundary, region, google_path, hymap_mask):
@@ -114,6 +119,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in ['RZSM', 'SFCSM', 'Precip', 'AirT']:
+        logger.info(f"Plotting {var_name} {metric}", subtask=region)        
         # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
