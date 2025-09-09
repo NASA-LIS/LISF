@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: run_s2spost_9months.py
+# SCRIPT: s2spost_main.py
 #
 # PURPOSE: Loops through multiple months of a completed LIS S2S forecast, and
 # submits batch jobs (one per month) to generate CF-convention netCDF files.
@@ -80,7 +80,7 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
     total_months = int(config["EXP"]["lead_months"])
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
     
-    # One batch job per month (call to run_s2spost_1month.py):
+    # One batch job per month (call to process_fcst_files.py):
     fcstdate = startdate
     curdate = startdate
     slurm_commands = []
@@ -91,7 +91,7 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
         txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:02d}"
         print(txt)
         cmd = "python"
-        cmd += f" {scriptdir}/run_s2spost_1month.py"
+        cmd += f" {scriptdir}/process_fcst_files.py"
         cmd += f" {configfile} {topdatadir}"
         cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}"
         cmd += f" {curdate.year:04d}{curdate.month:02d} {model_forcing}"
@@ -118,7 +118,7 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
 
     for _ in range(LEAD_WEEKS):
         cmd = "python"
-        cmd += f" {scriptdir}/run_s2spost_1month.py"
+        cmd += f" {scriptdir}/process_fcst_files.py"
         cmd += f" {configfile} {topdatadir}"
         cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}"
         cmd += f" {curdate.year:04d}{curdate.month:02d}{curdate.day:02d} {model_forcing}"

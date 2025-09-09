@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: run_s2spost_cf_1month.py
+# SCRIPT: process_fcst_files.py
 #
 # PURPOSE: Automates generation of daily and monthly CF files from one month
 # of LIS output.
@@ -126,7 +126,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
     task_name = os.environ.get('SCRIPT_NAME')
     logger = TaskLogger(task_name,
                         os.getcwd(),
-                        f's2spost/run_s2spost_1month.py processing daily {model_forcing} for month {startdate.year:04d}{startdate.month:02d}')
+                        f's2spost/process_fcst_files.py processing daily {model_forcing} for month {startdate.year:04d}{startdate.month:02d}')
     
     delta = datetime.timedelta(days=1)
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
@@ -167,7 +167,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
                     subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
-            print("[ERR] Problem running CF conversion!")
+            logger.error(f"Failed {cmd}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
             sys.exit(1)
 
         curdate += delta
@@ -178,7 +178,7 @@ def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model
     task_name = os.environ.get('SCRIPT_NAME')
     logger = TaskLogger(task_name,
                         os.getcwd(),
-                        f's2spost/run_s2spost_1month.py processing {model_forcing} {period} {startdate.year:04d}{startdate.month:02d}')
+                        f's2spost/process_fcst_files.py processing {model_forcing} {period} {startdate.year:04d}{startdate.month:02d}')
 
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
 
@@ -211,10 +211,9 @@ def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model
     logger.info(f's2spost/temporal_aggregate.py processing {firstdate.year:04d}{firstdate.month:02d}-{enddate.year:04d}{enddate.month:02d}',
                 subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
 
-    print(cmd)
     returncode = subprocess.call(cmd, shell=True)
     if returncode != 0:
-        print("[ERR] Problem creating monthly file!")
+        logger.error(f"Failed {cmd}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
         sys.exit(1)
 
 def _driver():
