@@ -28,9 +28,13 @@ from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 import plot_utils
 from ghis2s.s2smetric.metricslib import get_anom
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 USAF_COLORS = True
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'Running s2splots/plot_s2smetrics.py')
 
 def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None):
     '''
@@ -60,6 +64,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in config_["POST"]["metric_vars"]:
+        logger.info(f"Plotting {var_name} {metric}", subtask=region)        
         # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \

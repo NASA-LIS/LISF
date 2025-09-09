@@ -32,6 +32,7 @@ import yaml
 import eccodes
 import plot_utils
 from ghis2s.shared.utils import get_domain_info
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: disable=invalid-name, consider-using-f-string, import-outside-toplevel, redefined-outer-name
 
 USAF_COLORS = True
@@ -250,7 +251,10 @@ if __name__ == "__main__":
     fyear = int(args.fyear)
     lag = int(args.lag_mon)
     cwd = args.cwd
-
+    logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'Running s2splots/plot_anom_verify.py')
+    
     flabel = 'usaf_lis75s2s_gfs2galwem'
     lead = lag - 1
     clim_month = fmonth - lag
@@ -314,6 +318,7 @@ if __name__ == "__main__":
     cbar_axes_vertical = [0.9, 0.37, 0.03, 0.5] # [left, bottom, width, height]
 
     for var in OUT_VARS:
+        logger.info(f"Plotting {var}", subtask=f"Lag {lag}")        
         # read USAF-LIS7.3rc8_25km 30-year climatology
         if var == 'AirT':
             usaf_clim_xr =  xr.open_dataset(cfg["SETUP"]["E2ESDIR"] + \
@@ -341,9 +346,11 @@ if __name__ == "__main__":
         tmp_arr = np.zeros([nafpa_anom.shape[0], nafpa_anom.shape[1]],dtype=float)
         # read NC files
         anoms = []
-        print (s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(year, month, year, month, end_date.strftime("%Y%m%d")))
+        #logger.info(f"Reading:  PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{year:04d}{month:02d}01_FP.{year:04d}{month:02d}01-{end_date.strftime('%Y%m%d')}_DF.NC", subtask=f"Lag {lag}")
+        #print (s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(year, month, year, month, end_date.strftime("%Y%m%d")))
         for model in cfg["EXP"]["NMME_models"]:
             ncfile = s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(model.upper(), year, month, year, month, end_date.strftime("%Y%m%d"))
+            logger.info(f"Reading: {ncfile}", subtask=f"Lag {lag}")
             ncdata = xr.open_dataset(ncfile)
             anoms.append(ncdata[var + '_ANOM'])
             del ncdata

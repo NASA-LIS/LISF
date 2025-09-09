@@ -30,11 +30,15 @@ from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 import plot_utils
 from ghis2s.s2smetric.metricslib import get_anom
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 STANDARDIZED_ANOMALY = 'Y'
 
 DEFCOMS = ['INDOPACOM', 'CENTCOM', 'AFRICOM', 'EUCOM', 'SOUTHCOM']
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'Running s2splots/plot_hybas.py')
 
 def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
                carea, boundary, region, google_path, hybas_mask):
@@ -112,6 +116,7 @@ def process_domain (fcst_year, fcst_mon, cwd, config, plot_domain):
     bas = 0
     google_path = config['SETUP']['supplementarydir'] + '/s2splots/'
     for bid in bmask.BASIN_ID.values:
+        logger.info(f"Plotting Streamflow_tavg SANOM in {bid}", subtask=plot_domain)        
         hybas_mask = bmask.basin_mask.values[bas,:,:]
         tx_ = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lons))
         ty_ = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lats))

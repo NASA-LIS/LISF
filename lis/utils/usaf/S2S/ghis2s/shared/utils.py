@@ -232,8 +232,9 @@ if $ALL_DONE; then
     break
 fi
 done
-        """) 
+        """)
         f.write(f"echo [INFO] Completed {job_file} ! \n\n")
+        f.write("""
 exit 0
         """)    
 
