@@ -145,11 +145,34 @@ contains
    integer, allocatable :: nextx(:,:)
    integer, allocatable :: nexty(:,:)
    integer, allocatable :: mask(:,:)
-   logical       :: hymap_params_selected
    character*50  :: hymap_proj
    real,    allocatable :: hymapparms_gridDesc(:,:)
 
-   hymap_params_selected = .false. 
+   external :: read_HYMAP_river_width
+   external :: read_HYMAP_river_height
+   external :: read_HYMAP_river_length
+   external :: read_HYMAP_river_z
+   external :: read_HYMAP_fld_z
+   external :: read_HYMAP_fld_height
+   external :: read_HYMAP_flow_dir_x
+   external :: read_HYMAP_flow_dir_y
+   external :: read_HYMAP_grid_elev
+   external :: read_HYMAP_grid_dist
+   external :: read_HYMAP_grid_area
+   external :: read_HYMAP_drain_area
+   external :: read_HYMAP_basin
+   external :: read_HYMAP_runoff_delay
+   external :: read_HYMAP_runoff_delaym
+   external :: read_HYMAP_baseflow_delay
+   external :: read_HYMAP_basin_mask
+   external :: read_HYMAP_flow_type
+   external :: read_HYMAP_baseflow_dwi_ratio
+   external :: read_HYMAP_runoff_dwi_ratio
+   external :: read_HYMAP_urban_drain_outlet
+   external :: read_HYMAP_levee_height
+   external :: read_land_grid_area
+   external :: read_HYMAP_node_lon
+   external :: read_HYMAP_node_lat
 
    allocate(hymapparms_gridDesc(LDT_rc%nnest,20))
    allocate(HYMAP_struc(LDT_rc%nnest))
@@ -798,8 +821,6 @@ contains
     integer   :: monthID
     integer   :: tdimID(3)
 
-    logical   :: hymap_params_selected
-    
     tdimID(1) = dimID(1)
     tdimID(2) = dimID(2)
 
@@ -896,8 +917,6 @@ contains
 
     integer   :: n 
     integer   :: ftn
-    logical   :: hymap_params_selected
-    
 
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_river_width)
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_river_height)
