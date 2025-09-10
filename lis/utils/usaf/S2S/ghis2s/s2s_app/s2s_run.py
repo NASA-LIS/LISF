@@ -659,13 +659,17 @@ class S2Srun(DownloadForecasts):
             
             # Write scheduling section
             file.write("[scheduling]\n")
-            file.write(f"    initial cycle point = {self.year}{self.month:02d}01T0000\n")
-            file.write("    runahead limit = P0\n")
+            file.write(f"    initial cycle point = now\n")
+            file.write("    runahead limit = PT1H\n")
             file.write("  \n")
-
+            
+            file.write("    [[xtriggers]]\n")
+            file.write("        log_check = wall_clock(offset=PT0M)\n")
+            file.write("  \n")
+            
             # Update scheduling structure
-            file.write("    [[graph]]\n")  # Changed from [[dependencies]]
-            file.write("        R1 = \"\"\"\n")  # Changed structure
+            file.write("    [[graph]]\n")  
+            file.write("        R1 = \"\"\"\n")  
             
             # Generate dependency graph from dependency_map
             for task, dependencies in dependency_map.items():
@@ -685,12 +689,13 @@ class S2Srun(DownloadForecasts):
                 terminal_str = " & ".join(sorted(terminal_tasks))
                 file.write(f"            {terminal_str} => final_log_collect\n")
             else:
-                # Fallback - make final log depend on all tasks completing
                 all_tasks_str = " & ".join(sorted(all_tasks))
                 file.write(f"            {all_tasks_str}:finish-all => final_log_collect\n")
 
             file.write("        \"\"\"\n")
-            file.write("        PT15M = \"log_monitor\"\n")  # Changed structure
+            file.write("        R//PT15M = \"\"\"\n")
+            file.write("           @log_check => log_monitor\n")
+            file.write("        \"\"\"\n")
             file.write("  \n")
             
             # Write runtime section

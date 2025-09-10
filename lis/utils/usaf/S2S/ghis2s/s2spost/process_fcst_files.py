@@ -163,7 +163,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
 
         cmd += f" {model_forcing}"
         
-        logger.info(f's2spost/daily_s2spost_nc.py processing {curdate.year:04d}{curdate.month:02d}',
+        logger.info(f's2spost/daily_s2spost_nc.py processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}',
                     subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
