@@ -32,6 +32,7 @@ from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 USAF_COLORS = True
+task_name = os.environ.get('SCRIPT_NAME')
 logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'Running s2splots/plot_s2smetrics.py')

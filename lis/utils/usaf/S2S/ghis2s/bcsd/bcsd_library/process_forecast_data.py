@@ -118,7 +118,7 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
         file_sfx = "daily.grb2"
     return subdir, file_pfx, file_sfx
 
-def write_monthly_files(this_6h1, file_6h, file_mon, logger, subtask):
+def write_monthly_files(this_6h1, file_6h, file_mon):
     this_6h2 = this_6h1.rename_vars({"time": "time_step"})
     this_6h = this_6h2.rename_dims({"step": "time"})
 
@@ -235,10 +235,12 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
         final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
 
     write_monthly_files(ds_out, file_6h, file_mon)
+    logger.info(f"Writing: 6h CFSv2 file: {file_6h}", subtask = subtask)
+    logger.info(f"Writing: monthly CFSv2 file: {file_mon}", subtask = subtask)
     ds_out.close()
     cfsv2_masked.close()
     del ds_out, cfsv2_masked
-    logger.info(f"Done processing CFSv2 forecast files rank: {rank}", subtask = subtask)
+    logger.info(f"Done processing CFSv2 forecast files rank", subtask = subtask)
     return
 
 def _print_reftime(fcst_init, ens_num):

@@ -108,7 +108,7 @@ task_name = os.environ.get('SCRIPT_NAME')
 subtask = f'{sys.argv[1]}'
 logger = TaskLogger(task_name,
                     os.getcwd(),
-                    f'bcsd/bcsd_library/temporal_disaggregation_6hourly_module.py processing {sys.argv[1]} for month {sys.argv[4]:02d}')
+                    f'bcsd/bcsd_library/temporal_disaggregation_6hourly_module.py processing {sys.argv[1]} for month {int(sys.argv[4]):02d}')
 
 ## Usage: <Name of variable in observed climatology> <Name of variable in
 ## reforecast climatology (same as the name in target forecast>
@@ -161,7 +161,7 @@ def process_ensemble(MON, ens):
     BC_INFILE = MONTHLY_BC_INFILE_TEMPLATE.format(MONTHLY_BC_FCST_DIR,\
                                                   FCST_VAR, MODEL_NAME, MONTH_NAME, BC_FCST_SYR, BC_FCST_EYR)
     
-    logger.info("Reading bias corrected monthly forecasts {ens} {BC_INFILE}", subtask=task_label)
+    logger.info(f"Reading bias corrected monthly forecasts {ens} {BC_INFILE}", subtask=task_label)
 
     MON_BC_DATAG = xr.open_dataset(BC_INFILE)
 
@@ -203,7 +203,7 @@ def process_ensemble(MON, ens):
             MONTHLY_INFILE = MONTHLY_NMME_INFILE_TEMPLATE.format(\
             MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
             FCST_YEAR, FCST_MONTH)
-        logger.info("Reading raw monthly forecast {MONTHLY_INFILE}", subtask=task_label)
+        logger.info(f"Reading raw monthly forecast {MONTHLY_INFILE}", subtask=task_label)
         MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(MONTHLY_INFILE)
         MONTHLY_INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),
                                                              lat=slice(LAT1,LAT2))
@@ -213,7 +213,7 @@ def process_ensemble(MON, ens):
         SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
         SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
         FCST_YEAR, FCST_MONTH)
-        logger.info("Reading raw sub-daily forecast {SUBDAILY_INFILE}", subtask=task_label)
+        logger.info(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}", subtask=task_label)
         INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
         INPUT_RAW_DATA = INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
 

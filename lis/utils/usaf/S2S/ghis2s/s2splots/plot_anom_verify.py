@@ -251,6 +251,7 @@ if __name__ == "__main__":
     fyear = int(args.fyear)
     lag = int(args.lag_mon)
     cwd = args.cwd
+    task_name = os.environ.get('SCRIPT_NAME')
     logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'Running s2splots/plot_anom_verify.py')
