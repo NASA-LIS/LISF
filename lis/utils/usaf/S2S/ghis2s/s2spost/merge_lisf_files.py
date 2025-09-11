@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: daily_s2spost_nc.py
+# SCRIPT: merge_lisf_files.py
 #
 # PURPOSE:  Merges daily netCDF output from LIS-NoahMP and LIS-HYMAP2 into
 # single, CF-compliant netCDF4 file for distribution.  Rewritten to use
@@ -57,98 +57,7 @@ import yaml
 # pylint: enable=no-name-in-module
 
 # Private methods.
-def _usage():
-    """Print command line usage."""
-    txt = \
-        f"[INFO] Usage: {sys.argv[0]} configfile noahmp_file hymap2_file"
-    txt += " output_dir fcst_date YYYYMMDDHH model_forcing"
-    print(txt)
-    print("[INFO] where:")
-    print("[INFO] configfile: Path to s2spost config file")
-    print("[INFO] noahmp_file: LIS-NoahMP netCDF file (2d ensemble gridspace)")
-    txt = "[INFO] hymap2_file: LIS-HYMAP2 netCDF file (2d ensemble gridspace)"
-    print(txt)
-    print("[INFO] output_dir: Directory to write merged output")
-    print("[INFO] fcst_yyyymmdd: Initial forecast date of daily files")
-    print("[INFO] YYYYMMDDHH: Valid lead year,month,day,hour of data (in UTC)")
-    print("[INFO] model_forcing: ID for atmospheric forcing for LIS")
-
-def _read_cmd_args():
-    """Read command line arguments."""
-
-    # Check if argument count is correct.
-    if len(sys.argv) != 8:
-        print("[ERR] Invalid number of command line arguments!")
-        _usage()
-        sys.exit(1)
-
-    # Check if input files exist.
-    configfile = sys.argv[1]
-    if not os.path.exists(configfile):
-        print(f"[ERR] {configfile} does not exist!")
-        sys.exit(1)
-
-    noahmp_file = sys.argv[2]
-    if not os.path.exists(noahmp_file):
-        print(f"[ERR] {noahmp_file} does not exist!")
-        sys.exit(1)
-
-    hymap2_file = sys.argv[3]
-    if not os.path.exists(hymap2_file):
-        print(f"[ERR] {hymap2_file} does not exist!")
-        sys.exit(1)
-
-    # Create output directory if it doesn't exist.
-    output_dir = sys.argv[4]
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # Get valid initial forecast date.
-    fcst_yyyymmdd = sys.argv[5]
-
-    if len(fcst_yyyymmdd) != 8:
-        print("[ERR] Invalid length for fcst_yyyymmdd, must be 8 characters!")
-        sys.exit(1)
-    fcstyear = int(fcst_yyyymmdd[0:4])
-    fcstmonth = int(fcst_yyyymmdd[4:6])
-    fcstday = int(fcst_yyyymmdd[6:8])
-
-    try:
-        fcst_date = datetime.datetime(fcstyear, fcstmonth, fcstday)
-    except ValueError:
-        print("[ERR] Invalid fcst_yyyymmdd passed to script!")
-        sys.exit(1)
-
-    # Get valid lead date and time of data.
-    yyyymmddhh = sys.argv[6]
-
-    if len(yyyymmddhh) != 10:
-        print("[ERR] Invalid length for YYYYMMDDHH, must be 10 characters!")
-        sys.exit(1)
-    year = int(yyyymmddhh[0:4])
-    month = int(yyyymmddhh[4:6])
-    day = int(yyyymmddhh[6:8])
-    hour = int(yyyymmddhh[8:10])
-
-    try:
-        curdt = datetime.datetime(year, month, day, hour)
-    except ValueError:
-        print("[ERR] Invalid YYYYMMDDHH passed to script!")
-        sys.exit(1)
-
-    # Get ID of model forcing
-    model_forcing = sys.argv[7].upper()
-
-    return configfile, noahmp_file, hymap2_file, output_dir, fcst_date, \
-        curdt, model_forcing
-
-def _read_config(configfile):
-    """Read from s2spost config file."""
-    config = configparser.ConfigParser()
-    config.read(configfile)
-    return config
-
-def _create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
+def create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
     """Create final filename, following 557 convention."""
     name = f"{output_dir}"
     name += "/PS.557WW"
@@ -173,7 +82,7 @@ def _create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
         sys.exit(1)
     return name
 
-def _merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date):
+def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date, logger, subtask):
     """Copy LDT, NoahMP and HYMAP2 fields into same file using xarray."""
     
     # Define dimension mapping
@@ -552,31 +461,12 @@ def _merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date
     try:
         merged_ds.to_netcdf(merge_file, format='NETCDF4', encoding=encoding)
     except Exception as e:
-        print(f"Error saving file: {e}")
-        print("Dataset structure:")
-        print(merged_ds)
+        logger.error(f"Error saving file: {e}", subtask=subtask)
         raise
     finally:
-        # Close datasets
         ds_noahmp.close()
         ds_hymap2.close() 
         ds_ldt.close()
 
-    sys.exit()
+    return
 
-# Test driver
-if __name__ == "__main__":
-
-    # Get the file and directory names
-    _configfile, _noahmp_file, _hymap2_file, _output_dir, _fcst_date, _curdt, _model_forcing \
-        = _read_cmd_args()
-    # load config file
-    with open(_configfile, 'r', encoding="utf-8") as file:
-        _config = yaml.safe_load(file)
-
-    _final_file = _create_final_filename(_output_dir, _fcst_date, _curdt, _model_forcing,
-                                        _config["EXP"]["DOMAIN"])
-
-    _ldtfile = _config['SETUP']['supplementarydir'] + '/lis_darun/' + \
-        _config["SETUP"]["ldtinputfile"]
-    _merge_files_xarray(_ldtfile, _noahmp_file, _hymap2_file, _final_file, _fcst_date)
