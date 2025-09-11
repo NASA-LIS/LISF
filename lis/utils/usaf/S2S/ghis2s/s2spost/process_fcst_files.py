@@ -156,7 +156,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
         noahmp_file = f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
         model = "ROUTING"
         hymap_file = f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
-        print()
+
         if not os.path.exists(noahmp_file):
             logger.error(f"Missing: {noahmp_file}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
             sys.exit()

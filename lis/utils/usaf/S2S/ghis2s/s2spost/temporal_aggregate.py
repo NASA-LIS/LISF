@@ -407,9 +407,9 @@ def agg_driver(argv, logger, subtask):
     )
         
     if outfile:
-        print(f"[INFO] Temporal aggregation complete: {outfile}")
+        logger.info(f'Temporal aggregation complete: {outfile}', subtask=subtask)
     else:
-        print("[ERR] Temporal aggregation failed")
+        logger.error(f"Temporal aggregation failed", subtask=subtask)
         sys.exit(1)
 
 
