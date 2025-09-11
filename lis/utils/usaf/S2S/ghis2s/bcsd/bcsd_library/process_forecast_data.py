@@ -44,6 +44,7 @@ from ghis2s.bcsd.bcsd_library.convert_forecast_data_to_netcdf import read_wgrib
 from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 limits = lim()
 # Internal functions
@@ -117,7 +118,7 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
         file_sfx = "daily.grb2"
     return subdir, file_pfx, file_sfx
 
-def write_monthly_files(this_6h1, file_6h, file_mon):
+def write_monthly_files(this_6h1, file_6h, file_mon, logger, subtask):
     this_6h2 = this_6h1.rename_vars({"time": "time_step"})
     this_6h = this_6h2.rename_dims({"step": "time"})
 
@@ -135,7 +136,7 @@ def write_monthly_files(this_6h1, file_6h, file_mon):
     del this_6h2, this_6h, this_mon
     return
 
-def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank):
+def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, subtask):
     regrid_method = {
         '25km': {'PRECTOT':'conservative', 'SLRSF':'bilinear', 'LWS':'bilinear','PS':'bilinear',
                  'Q2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
@@ -232,11 +233,12 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank):
         final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
     file_mon = outdir_monthly + '/' + \
         final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+
     write_monthly_files(ds_out, file_6h, file_mon)
     ds_out.close()
     cfsv2_masked.close()
     del ds_out, cfsv2_masked
-    print(f"[INFO] Done processing CFSv2 forecast files rank: {rank}")
+    logger.info(f"Done processing CFSv2 forecast files rank: {rank}", subtask = subtask)
     return
 
 def _print_reftime(fcst_init, ens_num):
@@ -247,7 +249,7 @@ def _print_reftime(fcst_init, ens_num):
     txt = f"[INFO] CFSv2 ENS-MEM #{ens_num}: " + \
         f"{fcst_init['year']}-{fcst_init['monthday']}:" + \
         f"{fcst_init['hour']} cycle"
-    print(txt)
+    return txt
 
 def _driver(rank):
     """Main driver."""
@@ -257,8 +259,6 @@ def _driver(rank):
     outdirs = {}
     year = int(args['syr'])
     ens_num = int(args['ens_num'])
-    print(" --- ")
-    print(f"[INFO] Forecast Init Date: {fcst_init['monthday']} {year}")
 
     fcst_init["year"] = year
     if fcst_init['monthday'] == "jan01":
@@ -270,6 +270,12 @@ def _driver(rank):
     dt0 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
     dt1 = dt0 + relativedelta(months=rank)
     dt2 = dt1 + relativedelta(months=1)
+    task_name = os.environ.get('SCRIPT_NAME')
+    subtask = f'{dt1.year:04d}{dt1.month:02d}'
+    logger = TaskLogger(task_name,
+                        os.getcwd(),
+                        f'bcsd/process_forecast_data.py processing CFSv2 forcings for {subtask}')
+
     dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
     dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
@@ -281,8 +287,10 @@ def _driver(rank):
     fcst_init['hour'] = args['all_ensmembers'][ens_num - 1]
     fcst_init['timestring'] = f"{fcst_init['date']}{fcst_init['hour']}"
 
+    logger.info(f"Forecast Init Date: {fcst_init['monthday']} {year}", subtask = subtask)
     # Print Ensemble member and reference date+cycle time:
-    _print_reftime(fcst_init, ens_num)
+    txt_reftime = _print_reftime(fcst_init, ens_num)
+    logger.info(f"Reference time: {txt_reftime}", subtask = subtask)
 
     # 6-hourly output dir:
     outdirs['outdir_6hourly'] = \
@@ -302,7 +310,7 @@ def _driver(rank):
     cfsv2 = []
     for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
                     "q2m", "wnd10m"]:
-        print(f"[INFO] CFSv2 variable: {varname}")
+        logger.info(f"CFSv2 variable: {varname}", subtask = subtask)
         subdir, file_pfx, file_sfx = \
             _set_input_file_info(fcst_init['year_cfsv2'],
                                  fcst_init['month'],
@@ -315,18 +323,18 @@ def _driver(rank):
 
         # Checking CFSv2 member-date subdir presence:
         if not os.path.isdir(indir):
-            print(f"[ERR] CFSV2 directory, {indir}, does NOT exist.")
-            print("[ERR]  Exiting from this one process_forecast_data.py job (others may continue to run in parallel) ...")
+            logger.error(f"CFSV2 directory, {indir}, does NOT exist.", subtask= subtask)
             sys.exit(1)  # Exit with an error code
 
         # Convert GRIB file to netCDF and handle missing/corrupted data
         cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], \
-            file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
+                                 file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir'],
+                                 [logger,subtask]))
 
     cfsv2 = xr.merge (cfsv2, compat='override')
     _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
                                          (cfsv2['valid_time']  < dt2)),
-                                        outdirs, fcst_init, args, rank)
+                                        outdirs, fcst_init, args, rank, logger, subtask)
     cfsv2.close()
     del cfsv2
     gc.collect()

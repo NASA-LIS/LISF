@@ -28,6 +28,7 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
 from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 def write_bc_netcdf(outfile, var, varname, description, source, var_units, \
@@ -123,8 +124,13 @@ resolution_x, resolution_y, time_increment):
 ## Usage: <Name of variable in observed climatology> <Name of variable in
 ## reforecast climatology (same as the name in target forecast> <forecast
 ## model number>
+task_name = os.environ.get('SCRIPT_NAME')
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'bcsd/bcsd_library/combine_sub_daily_downscaled_forcings.py processing {sys.argv[3]} for month {sys.argv[1]:04d}{sys.argv[2]:02d}')
 
 def process_ensemble(MON, ens):
+    subtask = f'ens{ens:02d}'
     INIT_FCST_YEAR = int(sys.argv[1])
     ## initial forecast year for which to downscale the data
     INIT_FCST_MON = int(sys.argv[2])
@@ -153,7 +159,7 @@ def process_ensemble(MON, ens):
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
     ## name is used in the forecasts file name
-    print(f"Forecast Initialization month is {MONTH_NAME}")
+    logger.info(f"Forecast Initialization month is {MONTH_NAME}", subtask=subtask)
     ## Shape of the above dataset time, Lead, Ens, latitude, longitude
     #for ens in range(ENS_NUM):
     INDIR = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
@@ -164,7 +170,7 @@ def process_ensemble(MON, ens):
         pass
     else:
         os.makedirs(OUTDIR, exist_ok=True)
-    print(f"OUTDIR is {OUTDIR}")
+
     for LEAD_NUM in range(0, LEAD_FINAL):
         ## Loop from lead =0 to Final Lead
         FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
@@ -184,7 +190,7 @@ def process_ensemble(MON, ens):
 
         ### Finished reading all files now writing combined output
         OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_YEAR, FCST_MONTH)
-        print(f"Now writing {OUTFILE}")
+        logger.info(f"Writing {OUTFILE}", subtask=subtask)
         SDATE = datetime(FCST_YEAR, FCST_MONTH, 1, 6)
         NUM_DAYS = TEMP.shape[0]
         DATES = [SDATE+relativedelta(hours=n*6) for n in range(NUM_DAYS)]
@@ -193,12 +199,14 @@ def process_ensemble(MON, ens):
                         UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 8, LATS[-1], \
                         LONS[-1], LATS[0], LONS[0], 0.25, 0.25, 21600)
 
+logger.info("Starting parallel processing of ensemmbles")
 for MON in [int(sys.argv[2])]:
     num_workers = int(sys.argv[4])
     # ProcessPoolExecutor parallel processing
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         futures = []
         for ens in range(int(sys.argv[4])):
+            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
             future = executor.submit(process_ensemble, MON, ens)
             futures.append(future)
 

@@ -25,6 +25,7 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: disable=import-error
 from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 limits = lim()
@@ -103,12 +104,18 @@ resolution_x, resolution_y, time_increment):
     times[:] = nc4_date2num(dates, units=times.units, calendar=times.calendar)
     rootgrp.close()
 
+task_name = os.environ.get('SCRIPT_NAME')
+subtask = f'{sys.argv[1]}'
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'bcsd/bcsd_library/temporal_disaggregation_6hourly_module.py processing {sys.argv[1]} for month {sys.argv[4]:02d}')
 
 ## Usage: <Name of variable in observed climatology> <Name of variable in
 ## reforecast climatology (same as the name in target forecast>
 ## <forecast model number>
 
 def process_ensemble(MON, ens):
+    task_label = subtask + f'-ens{ens:02d}'
     # All file formats
     MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
     MONTHLY_RAW_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
@@ -131,7 +138,6 @@ def process_ensemble(MON, ens):
     MONTH_NAME_TEMPLATE = '{}01'
     MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
     
-    print(f"*** LEAD FINAL: {LEAD_FINAL}")
     BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[10]), int(sys.argv[11])
     CONFIG_FILE = str(sys.argv[12])
     LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
@@ -150,12 +156,12 @@ def process_ensemble(MON, ens):
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
     ## name is used in the forecasts file name
     
-    print(f"Forecast Initialization month is {MONTH_NAME}")
+    logger.info(f"Forecast Initialization month is {MONTH_NAME}", subtask=task_label)
     ### First read bias corrected monthly forecast data
     BC_INFILE = MONTHLY_BC_INFILE_TEMPLATE.format(MONTHLY_BC_FCST_DIR,\
                                                   FCST_VAR, MODEL_NAME, MONTH_NAME, BC_FCST_SYR, BC_FCST_EYR)
     
-    print(f"Reading bias corrected monthly forecasts {ens} {BC_INFILE}")
+    logger.info("Reading bias corrected monthly forecasts {ens} {BC_INFILE}", subtask=task_label)
 
     MON_BC_DATAG = xr.open_dataset(BC_INFILE)
 
@@ -174,7 +180,7 @@ def process_ensemble(MON, ens):
         pass
     else:
         os.makedirs(OUTDIR, exist_ok=True)
-    print(f"OUTDIR is {OUTDIR}")
+
     for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
         FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, 6) + \
         relativedelta(months=LEAD_NUM)
@@ -194,12 +200,10 @@ def process_ensemble(MON, ens):
             MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
             FCST_YEAR, FCST_MONTH)
         else:
-            print("Temporarily using nmme unique TEMPLATE. \
-            Recode in future.")
             MONTHLY_INFILE = MONTHLY_NMME_INFILE_TEMPLATE.format(\
             MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
             FCST_YEAR, FCST_MONTH)
-        print(f"Reading raw monthly forecast {MONTHLY_INFILE}")
+        logger.info("Reading raw monthly forecast {MONTHLY_INFILE}", subtask=task_label)
         MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(MONTHLY_INFILE)
         MONTHLY_INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),
                                                              lat=slice(LAT1,LAT2))
@@ -209,7 +213,7 @@ def process_ensemble(MON, ens):
         SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
         SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
         FCST_YEAR, FCST_MONTH)
-        print(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}")
+        logger.info("Reading raw sub-daily forecast {SUBDAILY_INFILE}", subtask=task_label)
         INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
         INPUT_RAW_DATA = INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
 
@@ -255,7 +259,7 @@ def process_ensemble(MON, ens):
         else:
             OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR))
 
-        print(f"Now writing {OUTFILE}")
+        logger.info(f"Writing {OUTFILE}", subtask=task_label)
         OUTPUT_BC_DATA = np.ma.masked_array(OUTPUT_BC_DATA, \
                                             mask=OUTPUT_BC_DATA == -9999.)
         date = [FCST_DATE+relativedelta(hours=n*6) for n in \
@@ -266,16 +270,19 @@ def process_ensemble(MON, ens):
                         OBS_VAR, LONS, LATS, FCST_DATE, date, 8, np.max(LAT_LDT), np.max(LON_LDT), \
                         np.min(LAT_LDT), np.min(LON_LDT), LON_LDT[1] - LON_LDT[0], \
                         LAT_LDT[1] - LAT_LDT[0], 21600)
-
+        
+logger.info("Starting parallel processing of ensemmbles")
 for MON in [int(sys.argv[4])]:
     num_workers = int(os.environ.get('NUM_WORKERS', int(sys.argv[8])))
     # ProcessPoolExecutor parallel processing
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         futures = []
         for ens in range(int(sys.argv[8])):
+            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=subtask + f'-ens{ens:02d}')
             future = executor.submit(process_ensemble, MON, ens)
             futures.append(future)
     
         for future in futures:
             result = future.result()
             
+    logger.info(f"CFSv2 6-hourly disaggregation completed successfully")

@@ -25,6 +25,7 @@ from ghis2s.bcsd.bcsd_library.bcsd_stats_functions import write_4d_netcdf
 from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library import bcsd_function
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 limits = lim()
@@ -49,12 +50,15 @@ BC_VAR = str(sys.argv[3])
 UNIT = str(sys.argv[4])
 INIT_FCST_MON = int(sys.argv[5])
 
+task_name = os.environ.get('SCRIPT_NAME')
+subtask = f'{FCST_VAR}'
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'bcsd/bcsd_library/bias_correction_modulefast.py processing {FCST_VAR} for month {INIT_FCST_MON:02d}')
+
 # Forecast model and ensemble input arguments:
 LEAD_FINAL = int(sys.argv[6])
 ENS_NUM = int(sys.argv[7])
-
-print(LEAD_FINAL)
-print(ENS_NUM)
 
 FCST_SYR = int(sys.argv[8])
 TARGET_FCST_SYR = int(sys.argv[8])
@@ -85,11 +89,10 @@ land_mask = np.array(ldt_xr['LANDMASK'].values)
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'
 OUTDIR = str(sys.argv[15])
-print(OUTDIR)
+
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR, exist_ok=True)
 
-print(f"Ensemble number is {ENS_NUM}")
 NUM_YRS = (CLIM_EYR-CLIM_SYR)+1
 TINY = ((1/(NUM_YRS))/ENS_NUM)/2   # Adjust quantile, if it is out of bounds
              #          This value represents 1/NYRS/NENS/2, so about
@@ -132,7 +135,7 @@ def monthly_calculations(mon):
     #initialzation month
     fcst_clim_infile = FCST_CLIM_FILE_TEMPLATE.format(FCST_INDIR,\
                                                       month_name, FCST_VAR)
-    print(f"Reading forecast climatology {fcst_clim_infile}")
+    logger.info(f"Reading forecast climatology {fcst_clim_infile}", subtask=subtask)
     fcst_clim_array = xr.open_dataset(fcst_clim_infile)
     #First read raw forecasts
     fcst_coarse = np.empty(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1,
@@ -146,13 +149,13 @@ def monthly_calculations(mon):
                 fcst_year, fcst_month = fcst_date.year, fcst_date.month
                 infile = FCST_INFILE_TEMPLATE.format(FCST_INDIR, month_name, \
                 init_fcst_year, ens+1, month_name, fcst_year, fcst_month)
-                print(infile)
+                logger.info(f"Reading forecast file {infile}", subtask=subtask)
                 fcst_coarse[init_fcst_year-TARGET_FCST_SYR, lead_num, ens, ] = \
                 read_nc_files(infile, FCST_VAR)[:]
     # Defining array to store bias-corrected monthly forecasts
     #correct_fcst_coarse = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
     #LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-9999.
-    print("shape of fcst_coarse: ", fcst_coarse.shape)
+    #print("shape of fcst_coarse: ", fcst_coarse.shape)
 
     # Get the lat/lon indexes for the ranges
     ilat_min = get_index(LATS, LAT1)
@@ -168,10 +171,11 @@ def monthly_calculations(mon):
     np_fcst_clim_array = fcst_clim_array.clim.sel(longitude=slice(LON1, LON2), \
                          latitude=slice(LAT1, LAT2)).values
 
-    print("Latitude:  ", nlats, ilat_min, ilat_max)
-    print("Longitude: ", nlons, ilon_min, ilon_max)
-    print("np_obs_clim_array:", np_obs_clim_array.shape, type(np_obs_clim_array))
-    print("np_fcst_clim_array:", np_fcst_clim_array.shape, type(np_fcst_clim_array))
+    #print("Latitude:  ", nlats, ilat_min, ilat_max)
+    #print("Longitude: ", nlons, ilon_min, ilon_max)
+    #print("np_obs_clim_array:", np_obs_clim_array.shape, type(np_obs_clim_array))
+    #print("np_fcst_clim_array:", np_fcst_clim_array.shape, type(np_fcst_clim_array))
+    logger.info(f"Calling bcsd_function.latlon_calculations", subtask=subtask)
     correct_fcst_coarse = \
         bcsd_function.latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max,
                                           nlats, nlons, np_obs_clim_array, np_fcst_clim_array,
@@ -187,7 +191,7 @@ def monthly_calculations(mon):
 
     outfile = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, month_name, \
               TARGET_FCST_SYR, TARGET_FCST_EYR)
-    print(f"Now writing {outfile}")
+    logger.info(f"Writing {outfile}", subtask = subtask)
     sdate = datetime(TARGET_FCST_SYR, mon, 1)
     dates = [sdate+relativedelta(years=n) for n in range(correct_fcst_coarse.shape[0])]
     write_4d_netcdf(outfile, correct_fcst_coarse, FCST_VAR, 'CFSv2', \

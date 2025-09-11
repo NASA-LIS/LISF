@@ -105,7 +105,7 @@ def _check_replace_missing (args):
 
     return ds_
 
-def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
+def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8, logger):
     """Main driver."""
     args = {
         "indir" : argv1,
@@ -132,8 +132,8 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
 
     if ds_ is None:
         # If we reach this point, we assume the file is fine.
-        print("[INFO] " + args['subdaily_file'])
-        print("[INFO] File is normal.")
+        logger[0].info(f"{args['subdaily_file']}", subtask=logger[1])
+        logger[0].info(f"File is normal.", subtask=logger[1])
         ds_ = wgrib2_to_netcdf(args['subdaily_file'])
 
     if args["varname"] == "wnd10m":

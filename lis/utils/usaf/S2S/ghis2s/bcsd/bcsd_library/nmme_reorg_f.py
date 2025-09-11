@@ -41,6 +41,7 @@ from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
 from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 limits = lim()
@@ -99,8 +100,11 @@ MONTH = ['jan01', 'feb01', 'mar01', 'apr01', 'may01', 'jun01', 'jul01', \
           'aug01', 'sep01', 'oct01', 'nov01', 'dec01']
 MONTHN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-print(MODEL[0])
-
+task_name = os.environ.get('SCRIPT_NAME')
+subtask = f'{NMME_MODEL}'
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'bcsd/bcsd_library/nmme_reorg_f.py processing {NMME_MODEL} for {CYR:04d}{CMN:02d} forecast')
 LEADS1 = np.zeros((12, 12), dtype=int)
 LDYR = np.zeros((12, 12), dtype=int)
 
@@ -195,10 +199,10 @@ elif NMME_MODEL == 'GFDL':
     x = read_nc_files(INFILE, 'prec')
     XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
 else:
-    print(f"[ERR] Invalid argument for NMME_MODEL! Received {NMME_MODEL}")
+    logger.error(f"Invalid argument for NMME_MODEL! Received {NMME_MODEL}", subtask = subtask)
     sys.exit(1)
 
-print('Reading:', INFILE)
+logger.info(f"Reading: {INFILE}", subtask = subtask)
 
 ## Convert units to mm/s or kg/m2/s
 XPREC = XPREC/86400
@@ -248,7 +252,6 @@ for m in range(0, ENS_NUM):
         XPRECI[0, :, :] = ds_out["XPREC"].values[l,m,:,:]
         jy = YR+LDYR[MM, l]
         l1 = LEADS1[MM, l]
-        print('Year:', jy, ',leads:', l1)
         OUTDIR = OUTDIR_TEMPLATE.format(NMME_OUTPUT_DIR, MONTH[MM], NMME_MODEL, YR, m+1)
         OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, MONTH[MM], jy, l1)
         if not os.path.exists(OUTDIR):
@@ -261,4 +264,4 @@ for m in range(0, ENS_NUM):
         SDATE = datetime(YR, MM+1, 1)
         write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', f'Downscaled to {resol}', \
         'Raw NMME at 1deg', 'kg m-2 s-1', LONS, LATS, SDATE)
-        print(f"Writing {OUTFILE}")
+        logger.info(f"Writing: {OUTFILE}", subtask = subtask)
