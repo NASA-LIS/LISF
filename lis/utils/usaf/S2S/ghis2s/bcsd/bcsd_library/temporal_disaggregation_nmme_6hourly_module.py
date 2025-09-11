@@ -202,7 +202,7 @@ task_name = os.environ.get('SCRIPT_NAME')
 subtask = f'{sys.argv[7]}'
 logger = TaskLogger(task_name,
                     os.getcwd(),
-                    f'bcsd/bcsd_library/temporal_disaggregation_nmme_6hourly_module.py processing {sys.argv[7]} for month {sys.argv[4]:02d}')
+                    f'bcsd/bcsd_library/temporal_disaggregation_nmme_6hourly_module.py processing {sys.argv[7]} for month {int(sys.argv[4]):02d}')
 
 def process_ensemble(MON, ens):
     task_label = subtask + f'-ens{ens:02d}'
