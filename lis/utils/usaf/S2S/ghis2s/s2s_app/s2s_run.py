@@ -660,7 +660,8 @@ class S2Srun(DownloadForecasts):
             # Write scheduling section
             file.write("[scheduling]\n")
             file.write(f"    initial cycle point = now\n")
-            file.write("    runahead limit = PT1H\n")
+            file.write(f"    final cycle point = +P2D\n")
+            file.write("    runahead limit = P2D\n")
             file.write("  \n")
             
             file.write("    [[xtriggers]]\n")

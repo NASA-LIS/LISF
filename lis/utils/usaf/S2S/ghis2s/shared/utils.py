@@ -86,7 +86,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             if group_jobs:   
-                mpc = min(math.ceil(480 / ntasks), 100)
+                mpc = min(math.ceil(240 / ntasks), 100)
                 if parallel_run is not None:
                     if parallel_run['MP']:
                         _f.write('#SBATCH --mem=' + parallel_run['MEM'] + '\n')

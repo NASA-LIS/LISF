@@ -41,6 +41,9 @@ import yaml
 # pylint: disable=f-string-without-interpolation
 # Local modules
 from ghis2s.shared.logging_utils import TaskLogger
+from merge_lisf_files import create_final_filename, merge_files_xarray
+from temporal_aggregate import agg_driver
+
 # Local functions
 def _usage():
     """Print command line usage."""
@@ -130,6 +133,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
     
     delta = datetime.timedelta(days=1)
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
+    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config["SETUP"]["ldtinputfile"]
 
     # The very first day may be missing. Gracefully handle this
     firstdate = startdate
@@ -147,27 +151,28 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
 
     curdate = firstdate
     while curdate <= enddate:
-        cmd = f"python {scriptdir}/daily_s2spost_nc.py {configfile}"
-        for model in ["SURFACEMODEL", "ROUTING"]:
-            cmd += f" lis_fcst/{model_forcing}/{model}/"
-            cmd += f"{curdate.year:04d}{curdate.month:02d}"
-            cmd += "/LIS_HIST_"
-            cmd += f"{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
-            cmd += "0000.d01.nc"
+        subtask = f'{model_forcing} {startdate.year:04d}{startdate.month:02d}'
+        model = "SURFACEMODEL"
+        noahmp_file = f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
+        model = "ROUTING"
+        hymap_file = f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
+        print()
+        if not os.path.exists(noahmp_file):
+            logger.error(f"Missing: {noahmp_file}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
+            sys.exit()
+        if not os.path.exists(hymap_file):
+            logger.error(f"Missing: {hymap_file}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
+            sys.exit()
 
-        cmd += f" {topdatadir}"
-
-        cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
-
-        cmd += f" {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}00"
-
-        cmd += f" {model_forcing}"
-        
-        logger.info(f's2spost/daily_s2spost_nc.py processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}',
-                    subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
-        returncode = subprocess.call(cmd, shell=True)
-        if returncode != 0:
-            logger.error(f"Failed {cmd}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
+        merge_file = create_final_filename(topdatadir, fcstdate, curdate, model_forcing.upper(), config["EXP"]["DOMAIN"])
+        logger.info(f's2spost/merge_lisf_files.py processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}',
+                    subtask=subtask)
+        try:
+            merge_files_xarray(ldtfile, noahmp_file, hymap_file, merge_file, fcstdate, logger, subtask)
+            logger.info(f'Merged file: {merge_file}', subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
+        except Exception as e:
+            logger.error(f"Failed processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}: {str(e)}", 
+                        subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
             sys.exit(1)
 
         curdate += delta
@@ -200,21 +205,17 @@ def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model
         enddate = firstdate
         enddate += relativedelta(days=6)
 
-    cmd = f"python {scriptdir}/temporal_aggregate.py {configfile} "
-
-    cmd += f" {topdatadir}"
-    cmd += f" {topdatadir}" 
-    cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
-    cmd += f" {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}"
-    cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
-    cmd += f" {model_forcing}"
-    logger.info(f's2spost/temporal_aggregate.py processing {firstdate.year:04d}{firstdate.month:02d}-{enddate.year:04d}{enddate.month:02d}',
-                subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
-
-    returncode = subprocess.call(cmd, shell=True)
-    if returncode != 0:
-        logger.error(f"Failed {cmd}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
-        sys.exit(1)
+    argv = []
+    argv.append(configfile)
+    argv.append(topdatadir)
+    argv.append(topdatadir)
+    argv.append(f"{fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}")
+    argv.append(f"{firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}")
+    argv.append(f"{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}")
+    argv.append(model_forcing)
+    subtask = f'{model_forcing} {startdate.year:04d}{startdate.month:02d}'
+    logger.info(f's2spost/temporal_aggregate.py processing {firstdate.year:04d}{firstdate.month:02d}-{enddate.year:04d}{enddate.month:02d}', subtask=subtask)
+    agg_driver(argv, logger, subtask)
 
 def _driver():
     """Main driver"""

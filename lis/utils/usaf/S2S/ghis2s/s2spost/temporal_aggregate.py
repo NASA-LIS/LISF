@@ -57,47 +57,49 @@ def _usage():
     print("[INFO]  end_yyyymmdd: Ending lead date/time of daily files")
     print("[INFO]  model_forcing: ID for atmospheric forcing for LIS")
 
-def _read_cmd_args():
+def _read_cmd_args(argv, logger, subtask):
     """Read command line arguments."""
 
     # Check if argument count is correct.
-    if len(sys.argv) != 8:
-        print("[ERR] Invalid number of command line arguments!")
+    if len(argv) != 7:
+        logger.error("Invalid number of command line arguments!", subtask=subtask)
         _usage()
         sys.exit(1)
 
     # Check if config file exists.
-    configfile = sys.argv[1]
+    configfile = argv[0]
     if not os.path.exists(configfile):
-        print(f"[ERR] Directory {configfile} does not exist!")
+        logger.error(f"Directory {configfile} does not exist!", subtask=subtask)
+        _usage()
         sys.exit(1)
 
     # Check if input directory exists.
-    input_dir = sys.argv[2]
+    input_dir = argv[1]
     if not os.path.exists(input_dir):
-        print(f"[ERR] Directory {input_dir} does not exist!")
+        logger.error(f"Directory {input_dir} does not exist!", subtask=subtask)
+        _usage()
         sys.exit(1)
 
     # Create output directory if it doesn't exist.
-    output_dir = sys.argv[3]
+    output_dir = argv[2]
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     # Get valid initial forecast date.
-    fcst_yyyymmdd = sys.argv[4]
+    fcst_yyyymmdd = argv[3]
     fcstdate = _proc_date(fcst_yyyymmdd)
 
     # Get valid lead starting and ending dates of data.
-    start_yyyymmdd = sys.argv[5]
+    start_yyyymmdd = argv[4]
     startdate = _proc_date(start_yyyymmdd)
-    end_yyyymmdd = sys.argv[6]
+    end_yyyymmdd = argv[5]
     enddate = _proc_date(end_yyyymmdd)
     if startdate > enddate:
-        print("[ERR] Start date is after end date!")
+        logger.error(f"Start date is after end date!", subtask=subtask)
         sys.exit(1)
 
     # Get ID for model forcing for LIS
-    model_forcing = sys.argv[7].upper()
+    model_forcing = argv[6].upper()
 
     return configfile, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing
 
@@ -189,7 +191,8 @@ def create_time_aggregated_s2s_filename(output_dir, fcstdate, startdate, enddate
     return name
 
 # New xarray-based functions replacing the netCDF4 versions
-def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing, config):
+def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdate, startdate,
+                                        enddate, model_forcing, config, logger, subtask):
     """
     This is good to time aggregate daily files
     1) For weekly files precise startdate and enddates (included) are passed as arguments 
@@ -211,19 +214,17 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     while curdate <= enddate:
         infile = _create_daily_s2s_filename(input_dir, fcstdate, curdate, model_forcing,
                                           config["EXP"]["DOMAIN"])
-        print(infile)
+        logger.info(f'Reading: {infile}', subtask=subtask)
         if os.path.exists(infile):
             daily_files.append(infile)
         else:
-            print(f"[WARNING] Missing file: {infile}")
+            logger.error(f"Missing file: {infile}", subtask=subtask)
         curdate += datetime.timedelta(days=1)
     
     if not daily_files:
-        print("[ERR] No daily files found!")
+        logger.error(f"No daily files found!", subtask=subtask)
         return None
-    
-    #print(f"[INFO] Processing {len(daily_files)} daily files")
-    
+        
     # Separate variables into different categories
     acc_vars = varlists["var_acc_list"]
     tavg_vars = []
@@ -234,7 +235,6 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     const_vars = varlists["const_list"]
         
     # First, open just one file to get the constant variables
-    #print("[INFO] Reading constant variables from first file...")
     ds_first = xr.open_dataset(daily_files[0])
     
     # Create monthly dataset starting with constant variables
@@ -245,7 +245,7 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
         if var in ds_first:
             monthly_ds[var] = ds_first[var]  
         else:
-            print(f"  [WARNING] Constant variable {var} not found")
+            logger.error(f"Constant variable {var} not found", subtask=subtask)
     
     # Copy coordinates from first file (except time)
     for coord in ds_first.coords:
@@ -270,7 +270,7 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
             data_vars=time_varying_vars  # Only load time-varying variables
         )
     except Exception as e:
-        print(f"[ERR] Failed to open multiple files: {e}")
+        logger.error(f"Failed to open multiple files: {e}", subtask=subtask)
         return None
     
     # Process accumulation variables (sum over time)
@@ -278,14 +278,14 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
         if var in ds_all:
             monthly_ds[var] = ds_all[var].sum(dim='time', keepdims=True)
         else:
-            print(f"  [WARNING] Variable {var} not found in files")
+            logger.error(f"Variable {var} not found in files", subtask=subtask)
     
     # Process time-average variables (mean over time)
     for var in tavg_vars:
         if var in ds_all:
             monthly_ds[var] = ds_all[var].mean(dim='time', keepdims=True)
         else:
-            print(f"  [WARNING] Variable {var} not found in files")
+            logger.error(f"Variable {var} not found in files", subtask=subtask)
         
     # Convert date to datetime and then to the right format for netCDF
     end_datetime = datetime.datetime.combine(enddate, datetime.time())
@@ -355,7 +355,7 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     try:
         monthly_ds.to_netcdf(outfile, format='NETCDF4', encoding=encoding)
     except Exception as e:
-        print(f"[ERR] Failed to write output file: {e}")
+        logger.error(f"Failed to write output file: {e}", subtask=subtask)
         return None
     finally:
         # Clean up
@@ -387,42 +387,29 @@ def _update_cell_methods_xarray(ds, varlists):
             ds[var_name].attrs['cell_methods'] = \
                 "time: sum (interval: 1 day comment: daily sums)"
 
-def _driver():
+def agg_driver(argv, logger, subtask):
     """Main driver using xarray approach."""
-    
-    print("[INFO] Starting xarray-based monthly S2S processing")
-    start_time = time.time()
-    
+        
     # Get the directories and dates
-    configfile, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing = _read_cmd_args()
+    configfile, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing = _read_cmd_args(argv, logger, subtask)
     
     # Load config file
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
     
     varlists = _make_varlists(config)
-    
-    print(f"[INFO] Processing period: {startdate} to {enddate}")
-    print(f"[INFO] Forecast date: {fcstdate}")
-    print(f"[INFO] Model forcing: {model_forcing}")
-    print(f"[INFO] Domain: {config['EXP']['DOMAIN']}")
-    
+        
     # Process all files at once using xarray
     outfile = _create_time_aggregated_file_xarray(
         varlists, input_dir, output_dir, fcstdate, 
-        startdate, enddate, model_forcing, config
+        startdate, enddate, model_forcing, config,
+        logger, subtask
     )
-    
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    
+        
     if outfile:
         print(f"[INFO] Temporal aggregation complete: {outfile}")
-        print(f"[INFO] Total processing time: {elapsed_time:.2f} seconds")
     else:
         print("[ERR] Temporal aggregation failed")
         sys.exit(1)
 
-# Invoke driver
-if __name__ == "__main__":
-    _driver()
+
