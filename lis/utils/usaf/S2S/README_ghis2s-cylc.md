@@ -5,7 +5,7 @@ GHI-S2S consists of approximately 150 tasks that follow a predefined schedule. T
 A comprehensive description of GHI-S2S can be found at:  
 *https://github.com/smahanam/LISF-1/blob/support/lisf_557ww_7.7_s2srf/lis/utils/usaf/S2S/README_GHI-S2S_LIS7.7*  
   
-The master script of ghis2s ([*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/support/lisf_557ww_7.7_s2srf/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)) creates run-directories, establishes necessary links, generates bash script files, and sets up the complete S2S forecast experiment each month.
+The master script of ghis2s ([*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/support/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)) creates run-directories, establishes necessary links, generates bash script files, and sets up the complete S2S forecast experiment each month.
 
 We present **ghis2s** as a Python package that can be called either from within an external Python program or run from the command line. The **ghis2s** package provides a Python script, [*ghis2s_program.py*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/cylc_script/ghis2s_program.py) , for importing **ghis2s**, and installing **Cylc** workflow. Optionally, **ghis2s_program.py** can also execute monthly forecast runs in the SLURM system. Users are welcome to copy **[ghis2s_program.py](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/cylc_script/ghis2s_program.py)** from the LISF repository into their working directories and modify it as needed.  
 
