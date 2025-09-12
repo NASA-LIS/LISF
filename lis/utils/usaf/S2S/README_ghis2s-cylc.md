@@ -1,4 +1,4 @@
-# ghis2s Python Package 
+# ghis2s Python Package for Cylc Implementation
  
 This repository contains this README file and a mock-up forecast directory (**"E2ESDIR"**) of the GHI-S2S forecasting system.
 GHI-S2S consists of approximately 150 tasks that follow a predefined schedule. These tasks have been grouped into 50+ job files to optimize computer resources.  
