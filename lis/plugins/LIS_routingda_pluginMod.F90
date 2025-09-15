@@ -123,6 +123,18 @@ subroutine LIS_routingda_plugin
    use HYMAP3_dawL_Mod
 #endif
 
+   external :: registerroutingdainit
+   external :: registerroutingdagetstatespacesize
+   external :: registerroutingdagetstatevar
+   external :: registerroutingdasetstatevar
+   external :: registerroutingdagetobspred
+   external :: registerroutingdaqcstate
+   external :: registerroutingdaqcobsstate
+   external :: registerroutingdascalestatevar
+   external :: registerroutingdadescalestatevar
+   external :: registerroutingdaupdatestate
+   external :: registerroutingdasetpertstates
+
 #if ( defined ROUTE_HYMAP2_ROUTER )
    external HYMAP2_getStateSpaceSize
    external HYMAP2_getWL

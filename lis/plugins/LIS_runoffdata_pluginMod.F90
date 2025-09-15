@@ -49,6 +49,9 @@ subroutine LIS_runoffdata_plugin
 !   use ERAILandrunoffdataMod
 !   use GWBMIPrunoffdataMod
 
+   external :: registerinitrunoffdata
+   external :: registerreadrunoffdata
+
    external readLISrunoffdata
 !   external readGLDAS1runoffdata
 !   external readGLDAS2runoffdata

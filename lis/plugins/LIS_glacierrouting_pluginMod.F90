@@ -42,6 +42,8 @@ subroutine LIS_glacierrouting_plugin
 
    use LIS_pluginIndices
 
+   external :: registerglacierroutinggetrunoff
+
 #if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) ||  ( defined ROUTE_HYMAP3_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) )
 
 #if ( defined SM_GLACIER_TEMPLATE )

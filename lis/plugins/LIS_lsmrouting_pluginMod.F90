@@ -43,7 +43,9 @@ subroutine LIS_lsmrouting_plugin
 !EOP
 
    use LIS_pluginIndices
-   use LIS_routingMod, only : LIS_runoff_state
+
+   external :: registerlsmroutinggetrunoff
+   external :: registerlsmroutinggetsws
 
 #if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) ||  ( defined ROUTE_HYMAP3_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) || ( defined ROUTE_RAPID_ROUTER ))
 
