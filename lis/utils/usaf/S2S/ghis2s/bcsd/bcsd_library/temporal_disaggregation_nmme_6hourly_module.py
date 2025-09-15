@@ -9,6 +9,7 @@
 #Date: August 06, 2015
 """
 import os
+import subprocess
 import sys
 from datetime import datetime
 import calendar
@@ -18,6 +19,7 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 from numpy import ma
 import xarray as xr
+import yaml
 from concurrent.futures import ProcessPoolExecutor
 import concurrent.futures
 # pylint: disable=no-name-in-module
@@ -204,7 +206,7 @@ logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'bcsd/bcsd_library/temporal_disaggregation_nmme_6hourly_module.py processing {sys.argv[7]} for month {int(sys.argv[4]):02d}')
 
-def process_ensemble(MON, ens):
+def process_ensemble(ens):
     task_label = subtask + f'-ens{ens:02d}'
     OBS_VAR = str(sys.argv[1]) ##
     FCST_VAR = str(sys.argv[2]) ##
@@ -219,7 +221,7 @@ def process_ensemble(MON, ens):
     ENS_NUM = int(sys.argv[8])
     LEAD_FINAL = int(sys.argv[9])
     MONTH_NAME_TEMPLATE = '{}01'
-    MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
+    MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON].lower())
     
     BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[10]), int(sys.argv[11])
     CONFIG_FILE = str(sys.argv[12])
@@ -237,7 +239,6 @@ def process_ensemble(MON, ens):
     SUBDAILY_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
     SUBDAILY_OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
-    MONTH_NAME = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[MON]).lower())
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
     ## name is used in the forecasts file name
@@ -344,17 +345,52 @@ def process_ensemble(MON, ens):
                         LAT_LDT[1] - LAT_LDT[0], 21600)
 
 logger.info("Starting parallel processing of ensemmbles")        
-for MON in [int(sys.argv[4])]:
-    num_workers = int(sys.argv[8])
-    # ProcessPoolExecutor parallel processing
-    with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        futures = []
-        for ens in range(int(sys.argv[8])):
-            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=subtask + f'-ens{ens:02d}')
-            future = executor.submit(process_ensemble, MON, ens)
-            futures.append(future)
+num_workers = int(sys.argv[8])
+# ProcessPoolExecutor parallel processing
+with ProcessPoolExecutor(max_workers=num_workers) as executor:
+    futures = []
+    for ens in range(int(sys.argv[8])):
+        logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=subtask + f'-ens{ens:02d}')
+        future = executor.submit(process_ensemble, ens)
+        futures.append(future)
 
-        for future in futures:
-            result = future.result()
-    
+    for future in futures:
+        result = future.result()
+
+# Create a link for lead_months + 1
+OBS_VAR = str(sys.argv[1])
+INIT_FCST_YEAR = int(sys.argv[3])
+INIT_FCST_MON = int(sys.argv[4])
+MODEL_NAME = str(sys.argv[7])
+ENS_NUM = int(sys.argv[8])
+LEAD_FINAL = int(sys.argv[9])
+BASE_OUTDIR = str(sys.argv[15])
+
+OUTDIR_TEMPLATE = '{}/{:04d}/ens{:01d}'
+init_datetime = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1)
+
+src_yyyymm = []
+dst_yyyymm = []
+for mon in range(LEAD_FINAL):
+    src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+    dst_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+
+src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+dst_yyyymm.append((init_datetime + relativedelta(months=mon+1)).strftime("%Y%m"))
+last_yyyymm = len(src_yyyymm) -1
+
+logger.info(f"Creating symbolic links for month {LEAD_FINAL +1}")
+
+for iens, ens_value in enumerate(range(ENS_NUM)):
+    ens_nmme = iens + 1
+    OUTDIR = OUTDIR_TEMPLATE.format(BASE_OUTDIR, INIT_FCST_YEAR, ens_nmme)
+    src_file = f"{OUTDIR}/{OBS_VAR}.{src_yyyymm[last_yyyymm]}.nc4"
+    dst_file = f"{OUTDIR}/{OBS_VAR}.{dst_yyyymm[last_yyyymm]}.nc4"
+    cmd = f"ln -sfn {src_file} {dst_file}"
+    returncode = subprocess.call(cmd, shell=True)
+    if returncode != 0:
+        logger.error(f"Problem calling creating last precip symbolic link to {dst_file}!")
+
+logger.info(f"Ran SUCCESSFULY !")
+
             

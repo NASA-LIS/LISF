@@ -10,9 +10,8 @@
 # In[28]:
 """
 
-
-
 import os
+import subprocess
 import sys
 from datetime import datetime
 import calendar
@@ -127,9 +126,9 @@ resolution_x, resolution_y, time_increment):
 task_name = os.environ.get('SCRIPT_NAME')
 logger = TaskLogger(task_name,
                     os.getcwd(),
-                    f'bcsd/bcsd_library/combine_sub_daily_downscaled_forcings.py processing {sys.argv[3]} for month {sys.argv[1]:04d}{sys.argv[2]:02d}')
+                    f'bcsd/bcsd_library/combine_sub_daily_downscaled_forcings.py processing {sys.argv[3]} for month {int(sys.argv[1]):04d}{int(sys.argv[2]):02d}')
 
-def process_ensemble(MON, ens):
+def process_ensemble(ens):
     subtask = f'ens{ens:02d}'
     INIT_FCST_YEAR = int(sys.argv[1])
     ## initial forecast year for which to downscale the data
@@ -140,7 +139,7 @@ def process_ensemble(MON, ens):
     ENS_NUM = int(sys.argv[4])
     LEAD_FINAL = int(sys.argv[5])
     MONTH_NAME_TEMPLATE = '{}01'
-    MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
+    MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON].lower())
 
     #Directory and file addresses
     BASEDIR = str(sys.argv[6])
@@ -155,7 +154,6 @@ def process_ensemble(MON, ens):
     VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
     UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
 
-    MONTH_NAME = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[MON]).lower())
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
     ## name is used in the forecasts file name
@@ -200,17 +198,58 @@ def process_ensemble(MON, ens):
                         LONS[-1], LATS[0], LONS[0], 0.25, 0.25, 21600)
 
 logger.info("Starting parallel processing of ensemmbles")
-for MON in [int(sys.argv[2])]:
-    num_workers = int(sys.argv[4])
-    # ProcessPoolExecutor parallel processing
-    with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        futures = []
-        for ens in range(int(sys.argv[4])):
-            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
-            future = executor.submit(process_ensemble, MON, ens)
-            futures.append(future)
+num_workers = int(sys.argv[4])
+# ProcessPoolExecutor parallel processing
+with ProcessPoolExecutor(max_workers=num_workers) as executor:
+    futures = []
+    for ens in range(int(sys.argv[4])):
+        logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
+        future = executor.submit(process_ensemble, ens)
+        futures.append(future)
 
-        for future in futures:
-            result = future.result()
-    
-    
+    for future in futures:
+        result = future.result()
+
+# Create ens13, ens14, ens15 links
+OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/'
+INIT_FCST_YEAR = int(sys.argv[1])
+INIT_FCST_MON = int(sys.argv[2])
+MODEL_NAME = str(sys.argv[3])
+ENS_NUM = int(sys.argv[4])
+LEAD_FINAL = int(sys.argv[5])
+BASEDIR = str(sys.argv[6])
+MONTH_NAME_TEMPLATE = '{}01'
+MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])    
+OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)
+
+os.chdir(OUTDIR)
+logger.info(f"Creating ens13, ens14, ens15 links in {OUTDIR}")
+cmd = f"ln -sfn ens1 ens13"
+returncode = subprocess.call(cmd, shell=True)
+cmd = f"ln -sfn ens2 ens14"
+returncode = subprocess.call(cmd, shell=True)
+cmd = f"ln -sfn ens3 ens15"
+returncode = subprocess.call(cmd, shell=True)
+
+logger.info(f"Creating symbolic links for month {LEAD_FINAL +1}")
+init_datetime = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1)
+src_yyyymm = []
+dst_yyyymm = []
+for mon in range(LEAD_FINAL):
+    src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+    dst_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+
+src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+dst_yyyymm.append((init_datetime + relativedelta(months=mon+1)).strftime("%Y%m"))
+last_yyyymm = len(src_yyyymm) -1
+for iens, ens_value in enumerate(range(ENS_NUM)):
+    ens_nmme = iens + 1
+    OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, INIT_FCST_YEAR, ens_nmme)
+    src_file = f"{OUTDIR}/{MODEL_NAME}.{src_yyyymm[last_yyyymm]}.nc4"
+    dst_file = f"{OUTDIR}/{MODEL_NAME}.{dst_yyyymm[last_yyyymm]}.nc4"
+    cmd = f"ln -sfn {src_file} {dst_file}"
+    returncode = subprocess.call(cmd, shell=True)
+    if returncode != 0:
+        logger.error(f"Problem calling creating last precip symbolic link to {dst_file}!")
+
+logger.info(f"Ran SUCCESSFULY !")

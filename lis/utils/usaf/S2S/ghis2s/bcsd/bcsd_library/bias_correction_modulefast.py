@@ -20,9 +20,8 @@ import xarray as xr
 import numpy as np
 import yaml
 # pylint: disable=import-error
-from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
 from ghis2s.bcsd.bcsd_library.bcsd_stats_functions import write_4d_netcdf
-from ghis2s.shared.utils import get_domain_info
+from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.bcsd.bcsd_library import bcsd_function
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
@@ -108,7 +107,7 @@ EPS = 1.0e-5
 
 # First read observed climatology for the given variable
 OBS_CLIM_FILE = OBS_CLIM_FILE_TEMPLATE.format(OBS_INDIR, OBS_VAR)
-OBS_CLIM_ARRAY = xr.open_dataset(OBS_CLIM_FILE)
+OBS_CLIM_ARRAY = load_ncdata(OBS_CLIM_FILE, [logger, subtask])
 
 def get_index(ref_array, my_value):
     """
@@ -136,7 +135,8 @@ def monthly_calculations(mon):
     fcst_clim_infile = FCST_CLIM_FILE_TEMPLATE.format(FCST_INDIR,\
                                                       month_name, FCST_VAR)
     logger.info(f"Reading forecast climatology {fcst_clim_infile}", subtask=subtask)
-    fcst_clim_array = xr.open_dataset(fcst_clim_infile)
+    fcst_clim_array= load_ncdata(fcst_clim_infile, [logger, subtask])
+
     #First read raw forecasts
     fcst_coarse = np.empty(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1,
                             LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))
@@ -151,7 +151,7 @@ def monthly_calculations(mon):
                 init_fcst_year, ens+1, month_name, fcst_year, fcst_month)
                 logger.info(f"Reading forecast file {infile}", subtask=subtask)
                 fcst_coarse[init_fcst_year-TARGET_FCST_SYR, lead_num, ens, ] = \
-                read_nc_files(infile, FCST_VAR)[:]
+                load_ncdata(infile, [logger, subtask], var_name=FCST_VAR)
     # Defining array to store bias-corrected monthly forecasts
     #correct_fcst_coarse = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
     #LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-9999.

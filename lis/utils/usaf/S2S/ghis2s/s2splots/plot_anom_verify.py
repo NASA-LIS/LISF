@@ -31,7 +31,7 @@ import numpy as np
 import yaml
 import eccodes
 import plot_utils
-from ghis2s.shared.utils import get_domain_info
+from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.shared.logging_utils import TaskLogger
 # pylint: disable=invalid-name, consider-using-f-string, import-outside-toplevel, redefined-outer-name
 
@@ -322,11 +322,12 @@ if __name__ == "__main__":
         logger.info(f"Plotting {var}", subtask=f"Lag {lag}")        
         # read USAF-LIS7.3rc8_25km 30-year climatology
         if var == 'AirT':
-            usaf_clim_xr =  xr.open_dataset(cfg["SETUP"]["E2ESDIR"] + \
-                                            '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/T2M_obs_clim.nc')
+            usaf_clim_file = cfg["SETUP"]["E2ESDIR"] + '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/T2M_obs_clim.nc'
+
         if var == 'Precip':
-            usaf_clim_xr =  xr.open_dataset(cfg["SETUP"]["E2ESDIR"] + \
-                                            '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/PRECTOT_obs_clim.nc')
+            usaf_clim_file = cfg["SETUP"]["E2ESDIR"] + '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/PRECTOT_obs_clim.nc'
+
+        usaf_clim_xr = load_ncdata(usaf_clim_file, [logger, f"Lag {lag}"])
         usaf_clim_var = np.mean(usaf_clim_xr['clim'].values[clim_month,:], axis=0)
         usaf_clim_xr.close()
         # var specifics
@@ -336,7 +337,8 @@ if __name__ == "__main__":
         convf = conv_factors.get(var)
         clabel = clabels.get(var)
         figure = plotdir + var + '_verification_F' + fdate.strftime("%Y%m%d") + '_V' + vdate_beg.strftime("%Y%m%d") + '-' + vdate_end.strftime("%Y%m%d") + '.png'
-
+        logger.info(f"Generating: {figure}", subtask=f"Lag {lag}")
+        
         if var == 'AirT':
             nafpa_anom = (np.array(nafpa_mon_xr[usaf_vars.get(var)].values) - usaf_clim_var)*convf # nafpa_clim_xr[usaf_vars.get(var)].values)*convf
         if var == 'Precip':
@@ -352,7 +354,7 @@ if __name__ == "__main__":
         for model in cfg["EXP"]["NMME_models"]:
             ncfile = s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(model.upper(), year, month, year, month, end_date.strftime("%Y%m%d"))
             logger.info(f"Reading: {ncfile}", subtask=f"Lag {lag}")
-            ncdata = xr.open_dataset(ncfile)
+            ncdata = load_ncdata(ncfile, [logger, f"Lag {lag}"])
             anoms.append(ncdata[var + '_ANOM'])
             del ncdata
 

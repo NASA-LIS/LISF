@@ -688,12 +688,13 @@ class S2Srun(DownloadForecasts):
             # Add final log collection dependency
             if terminal_tasks:
                 terminal_str = " & ".join(sorted(terminal_tasks))
-                file.write(f"            {terminal_str} => final_log_collect\n")
+                file.write(f"                {terminal_str} => final_log_collect => stop_log_monitor\n")
             else:
                 all_tasks_str = " & ".join(sorted(all_tasks))
-                file.write(f"            {all_tasks_str}:finish-all => final_log_collect\n")
-
+                file.write(f"            {all_tasks_str}:finish-all => final_log_collect => stop_log_monitor\n")
+            file.write("                stop_log_monitor => !log_monitor\n")
             file.write("        \"\"\"\n")
+            file.write("  \n")
             file.write("        R//PT15M = \"\"\"\n")
             file.write("           @log_check => log_monitor\n")
             file.write("        \"\"\"\n")
@@ -702,8 +703,9 @@ class S2Srun(DownloadForecasts):
             # Write runtime section
             file.write("[runtime]\n")
             file.write("    [[root]]\n")
-            file.write("        [[[job]]]\n")
-            file.write("            batch system = slurm\n")
+            file.write("        platform = slurm-ghi\n")
+            #file.write("        [[[job]]]\n")
+            #file.write("            batch system = slurm\n")
             file.write("        [[[environment]]]\n")
             file.write("            USE_CYLC_ENV = 1\n") 
             file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
@@ -753,6 +755,13 @@ class S2Srun(DownloadForecasts):
             
             file.write("        [[[environment]]]\n")
             file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
+            file.write("  \n")
+
+            file.write("    [[stop_log_monitor]]\n")
+            file.write("        platform = localhost\n")
+            file.write("        script = \"\"\"\n")
+            file.write(f"            cylc stop $CYLC_WORKFLOW_ID --now\n")
+            file.write("        \"\"\"\n")
             file.write("  \n")
             
             for jfile in self.schedule.keys():
@@ -854,7 +863,7 @@ class S2Srun(DownloadForecasts):
         shutil.copy('lis.config', 'output/lis.config_files/lis.config_darun_{}{}'.format(YYYYP, MMP))
         logger = TaskLogger('lisda_run.j',
                             os.getcwd(),
-                            f'LISDA log files are at: \n{CWD}/logs_{self.YYYY}{self.MM}/')
+                            f'LISDA log files are at: \n{CWD}/logs_{YYYYMMP[:6]}/')
         
         os.chdir(self.E2ESDIR)        
         return
@@ -1087,7 +1096,7 @@ class S2Srun(DownloadForecasts):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                        jobname + '{:02d}_'.format(i+1), 1, str(5), CWD, tfile.name, parallel_run=par_info)
+                                        jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
@@ -1120,7 +1129,7 @@ class S2Srun(DownloadForecasts):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                        jobname + '{:02d}_'.format(i+1), 1, str(5), CWD, tfile.name, parallel_run=par_info)
+                                        jobname + '{:02d}_'.format(i+1), 1, str(1), CWD, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
@@ -1149,7 +1158,7 @@ class S2Srun(DownloadForecasts):
         tfile = self.sublist_to_file([slurm_9_10[0]], CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(6), CWD, tfile.name, parallel_run=par_info)
+                                    jobname, 1, str(1), CWD, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
         finally:
             tfile.close()
@@ -1158,21 +1167,6 @@ class S2Srun(DownloadForecasts):
         shutil.copy(jobname + 'run.j', jobname + 'run.sh')
         utils.remove_sbatch_lines(jobname + 'run.sh')
         #utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_9_10[0])
-
-        # bcsd10
-        jobname='bcsd10_'
-        tfile = self.sublist_to_file(slurm_9_10[1:], CWD)
-        try:
-            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(1), CWD, tfile.name)
-            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
-        finally:
-            tfile.close()
-            os.unlink(tfile.name)
-
-        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
-        utils.remove_sbatch_lines(jobname + 'run.sh')
-        #utils.cylc_job_scripts(jobname + 'run.sh', 1, CWD, command_list=slurm_9_10[1:])
         
         os.chdir(self.E2ESDIR)
         return
@@ -1215,7 +1209,7 @@ class S2Srun(DownloadForecasts):
                         self.create_dict(jfile, 'lis_fcst', prev=prev)
                     else:
                         self.create_dict(jfile, 'lis_fcst', prev=job_list[FileNo-1])
-                        lindex = f'{FileNo:02d}'
+                        lindex = f'_{FileNo:02d}'
                 else:
                     self.create_dict(jfile, 'lis_fcst', prev=prev)
                 logger = TaskLogger(jfile,
