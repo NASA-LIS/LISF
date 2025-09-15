@@ -9,8 +9,6 @@
 #Date: August 06, 2015
 """
 
-
-
 import os
 import sys
 import calendar
@@ -23,9 +21,8 @@ import yaml
 import yaml
 from ghis2s.bcsd.bcsd_library import bcsd_function
 from ghis2s.bcsd.bcsd_library.bcsd_stats_functions import write_4d_netcdf
-from ghis2s.shared.utils import get_domain_info
+from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
-from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
 from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
@@ -109,6 +106,7 @@ FCST_INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 CONFIGFILE = str(sys.argv[16])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIGFILE, extent=True)
 LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
+# Read in LDT landmask - impose on precip field prior to BC:
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
 ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
@@ -132,20 +130,14 @@ TINY = ((1/(NUM_YRS))/ENS_NUM)/2
 ## forecasted value happened to be an outlier of the
 ## reforecast climatology
 
-# Read in LDT landmask - impose on precip field prior to BC:
-with open(CONFIGFILE, 'r', encoding="utf-8") as file:
-    config = yaml.safe_load(file)
-ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
-        config['SETUP']['ldtinputfile'])
-mask_2d = np.array(ldt_xr['LANDMASK'].values)
-mask_exp = mask_2d[np.newaxis, np.newaxis, np.newaxis,:,:]
+mask_exp = land_mask[np.newaxis, np.newaxis, np.newaxis,:,:]
 
 ##### Starting bias-correction from here
 
 # First read observed climatology for the given variable
 OBS_CLIM_FILE = OBS_CLIM_FILE_TEMPLATE.format(OBS_CLIM_INDIR, OBS_VAR)
 logger.info(f"Reading observed climatology {OBS_CLIM_FILE}", subtask=subtask)
-OBS_CLIM_ARRAY = xr.open_dataset(OBS_CLIM_FILE)
+OBS_CLIM_ARRAY =  load_ncdata(OBS_CLIM_FILE, [logger, subtask])
 
 # Then for forecast files:
 for MON in [INIT_FCST_MON]:
@@ -159,7 +151,8 @@ for MON in [INIT_FCST_MON]:
     FCST_CLIM_INFILE = FCST_CLIM_FILE_TEMPLATE.format(FCST_CLIM_INDIR, \
     MODEL_NAME, FCST_VAR)
     logger.info(f"Reading forecast climatology {FCST_CLIM_INFILE}", subtask=subtask)
-    FCST_CLIM_ARRAY = xr.open_dataset(FCST_CLIM_INFILE)
+    FCST_CLIM_ARRAY = load_ncdata(FCST_CLIM_INFILE, [logger, subtask])
+    
     #First read raw forecasts
     FCST_COARSE = np.empty(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
     LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))
@@ -175,7 +168,7 @@ for MON in [INIT_FCST_MON]:
                 INIT_FCST_YEAR, ens1, MONTH_NAME, FCST_YEAR, FCST_MONTH)
                 logger.info(f"Reading forecast file {INFILE}", subtask=subtask)
                 FCST_COARSE[INIT_FCST_YEAR-TARGET_FCST_SYR, LEAD_NUM, ens, ] = \
-                read_nc_files(INFILE, FCST_VAR)
+                load_ncdata(INFILE, [logger, subtask], var_name=FCST_VAR)
     LAT_RANGE = [LAT1, LAT2]
     LON_RANGE = [LON1, LON2]
     indexLat, indexLon = slice_latlon(LATS, LONS, LAT_RANGE, LON_RANGE)

@@ -240,7 +240,7 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
     ds_out.close()
     cfsv2_masked.close()
     del ds_out, cfsv2_masked
-    logger.info(f"Done processing CFSv2 forecast files rank", subtask = subtask)
+    logger.info(f"Done processing CFSv2 forecast files for {rank}", subtask = subtask)
     return
 
 def _print_reftime(fcst_init, ens_num):

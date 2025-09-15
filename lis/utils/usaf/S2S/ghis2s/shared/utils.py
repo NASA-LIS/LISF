@@ -33,6 +33,7 @@ import datetime
 import math
 import numpy as np
 import shutil
+import xarray as xr
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
@@ -438,7 +439,6 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
     return None
 
 def tiff_to_da(file):
-    import xarray as xr
     import rasterio
     dataset = rasterio.open(file)
     # Read the data from the GeoTIFF using rasterio
@@ -454,3 +454,18 @@ def tiff_to_da(file):
     da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
     return da
     
+def load_ncdata(infile, logger,  var_name=None, **kwargs):
+    try:
+        if var_name is not None:
+            dataset = xr.open_dataset(infile, **kwargs)
+            data = dataset[var_name].values
+            dataset.close()  
+            del dataset
+            return data
+        elif isinstance(infile, str):
+            return xr.open_dataset(infile, **kwargs)
+        else:
+            return xr.open_mfdataset(infile, **kwargs)
+    except Exception as e:
+        logger[0].error(f"Couldn't open {infile}", subtask=logger[1])
+        sys.exit()

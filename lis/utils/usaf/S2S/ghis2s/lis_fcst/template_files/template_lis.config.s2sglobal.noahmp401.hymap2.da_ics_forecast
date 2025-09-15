@@ -146,7 +146,7 @@ TBOT skin temperature lag days:           0
 
 # Ensemble Forecast (user-generated):
 # NOTE:  Below directories paths are temporary placeholders:
-Generic ensemble forecast directory:  FCSTDIR
+Generic ensemble forecast directory:  bcsd_fcst/CFSv2_25km/final/6-Hourly/
 Generic ensemble forecast initial date: IC_YYYYMMDD
 Generic ensemble forecast number of ensemble members:  NUMENSMEMBERS
 
