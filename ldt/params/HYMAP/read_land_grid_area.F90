@@ -20,7 +20,7 @@
 subroutine read_land_grid_area(n, array)
 ! !USES:
   use ESMF
-  use LDT_coreMod,      only : LDT_rc, LDT_domain
+  use LDT_coreMod,      only : LDT_rc
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
           LDT_releaseUnitNumber, LDT_endrun
   use LDT_fileIOMod,    only : readLISdata 

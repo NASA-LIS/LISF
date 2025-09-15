@@ -20,7 +20,7 @@
 subroutine read_HYMAP_node_lon(n, array)
 ! !USES:
   use ESMF
-  use LDT_coreMod,      only : LDT_rc, LDT_domain
+  use LDT_coreMod,      only : LDT_rc
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
           LDT_releaseUnitNumber, LDT_endrun
   use LDT_fileIOMod,    only : readLISdata 
@@ -33,7 +33,6 @@ subroutine read_HYMAP_node_lon(n, array)
   real,          intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
 
   integer :: ftn
-  integer :: c,r
   logical :: file_exists
 
   ftn = LDT_getNextUnitNumber()
