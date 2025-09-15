@@ -225,11 +225,8 @@ subroutine LIS_create_output_directory(mname)
    character(len=4) :: cdate
    character(len=8) :: cdate1
    character(len=LIS_CONST_PATH_LEN) :: out_dname
-   integer            :: try,ios
-#if (!defined AIX )
-   integer            :: system 
-#endif
-   
+   integer            :: ios
+
    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
    ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir' 
    ! standard POSIX function. This requires defining the C wrapper function,
@@ -378,13 +375,7 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
-   character(len=10)       :: ensString
    character(len=14)       :: cdate1
    character(len=2)        :: fint
    character(len=10)       :: fres
@@ -392,7 +383,6 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
    character(len=10)       :: fres3
    character*1             :: fres1(10)
    character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LIS_CONST_PATH_LEN)       :: dname
    character(len=LIS_CONST_PATH_LEN), save :: out_fname
    character(len=LIS_CONST_PATH_LEN)       :: odir_temp
@@ -999,11 +989,6 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=14)       :: cdate1
    character(len=2)        :: fint
@@ -1012,7 +997,6 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
    character(len=10)       :: fres3
    character*1             :: fres1(10)
    character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=8) :: initdate
    character(len=2) :: inithr
    character(len=3) :: fhr
@@ -1690,23 +1674,10 @@ subroutine create_dapert_filename(n, fname)
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=14)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LIS_CONST_PATH_LEN)       :: dname
    character(len=LIS_CONST_PATH_LEN), save :: out_fname
-   integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
@@ -1837,23 +1808,10 @@ subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=14)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LIS_CONST_PATH_LEN)       :: dname
    character(len=LIS_CONST_PATH_LEN), save :: out_fname
-   integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
@@ -2427,24 +2385,11 @@ subroutine LIS_create_innov_filename(n, k, fname, mname)
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=10)       :: cda
    character(len=14)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LIS_CONST_PATH_LEN)       :: dname
    character(len=LIS_CONST_PATH_LEN), save :: out_fname
-   integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
@@ -2606,24 +2551,11 @@ subroutine LIS_create_incr_filename(n, k, fname, mname)
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=10)       :: cda
    character(len=14)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LIS_CONST_PATH_LEN)       :: dname
    character(len=LIS_CONST_PATH_LEN), save :: out_fname
-   integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
@@ -2785,24 +2717,11 @@ subroutine LIS_create_daspread_filename(n, k, fname, mname)
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=10)       :: cda
    character(len=14)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LIS_CONST_PATH_LEN)       :: dname
    character(len=LIS_CONST_PATH_LEN), save :: out_fname
-   integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
@@ -2985,6 +2904,8 @@ subroutine LIS_create_obs_filename(n, fname, mname)
       integer                       :: istat1
       integer                       :: ftn
 
+      external :: system
+
 !     ------------------------------------------------------------------
 !     executable code starts here ... open file, abort on error
 !     ------------------------------------------------------------------
@@ -3128,6 +3049,8 @@ subroutine LIS_create_obs_filename(n, fname, mname)
       integer                       :: istat
       integer                       :: istat1
       integer                       :: ftn
+
+      external :: system
 
 !     ------------------------------------------------------------------
 !     executable code starts here ... open file, abort on error
@@ -3279,23 +3202,10 @@ subroutine LIS_create_gain_filename(n, fname, mname)
 !    style option as described above
 !  \end{description}
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=14)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LIS_CONST_PATH_LEN)       :: dname
    character(len=LIS_CONST_PATH_LEN), save :: out_fname
-   integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
@@ -3800,9 +3710,8 @@ subroutine LIS_create_gain_filename(n, fname, mname)
   use netcdf
 #endif
   use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
-       LIS_domain, LIS_ews_ind, LIS_ewe_ind,&
-       LIS_nss_ind, LIS_nse_ind, LIS_ews_halo_ind,LIS_ewe_halo_ind, &
-       LIS_nss_halo_ind, LIS_nse_halo_ind
+       LIS_ews_halo_ind, &
+       LIS_nss_halo_ind
   use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
        LIS_releaseUnitNumber, LIS_endrun, LIS_verify
 
@@ -3827,9 +3736,8 @@ subroutine LIS_create_gain_filename(n, fname, mname)
 !
 !EOP      
 
-  integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
-  integer :: nc,nr,c,r
+  integer :: nc,nr
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -3888,9 +3796,8 @@ end subroutine readparam_real_2d
   use netcdf
 #endif
   use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
-       LIS_domain, LIS_ews_ind, LIS_ewe_ind,&
-       LIS_nss_ind, LIS_nse_ind, LIS_ews_halo_ind,LIS_ewe_halo_ind, &
-       LIS_nss_halo_ind, LIS_nse_halo_ind
+       LIS_ews_halo_ind, &
+       LIS_nss_halo_ind
   use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
        LIS_releaseUnitNumber, LIS_endrun, LIS_verify
 
@@ -3916,9 +3823,8 @@ end subroutine readparam_real_2d
 !
 !EOP      
 
-  integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
-  integer :: nc,nr,c,r
+  integer :: nc,nr
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -4004,9 +3910,8 @@ end subroutine readparam_real_2d_rc
 !
 !EOP      
 
-  integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
-  integer :: nc,nr,c,r
+  integer :: nc,nr
   real    :: param(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
@@ -4092,9 +3997,8 @@ end subroutine readgparam_real_2d
 !
 !EOP      
 
-  integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
-  integer :: nc,nr,c,r
+  integer :: nc,nr
   real    :: param(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
@@ -4158,9 +4062,8 @@ end subroutine readgparam_real_2d_rc
   use netcdf
 #endif
   use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
-       LIS_domain, LIS_ews_ind, LIS_ewe_ind,&
-       LIS_nss_ind, LIS_nse_ind, LIS_ews_halo_ind,LIS_ewe_halo_ind, &
-       LIS_nss_halo_ind, LIS_nse_halo_ind
+       LIS_ews_halo_ind, &
+       LIS_nss_halo_ind
   use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
        LIS_releaseUnitNumber, LIS_endrun, LIS_verify
 
@@ -4185,9 +4088,8 @@ end subroutine readgparam_real_2d_rc
 !
 !EOP      
 
-  integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
-  integer :: nc,nr,c,r
+  integer :: nc,nr
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
