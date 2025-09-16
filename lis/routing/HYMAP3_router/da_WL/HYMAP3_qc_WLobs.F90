@@ -50,6 +50,7 @@ subroutine HYMAP3_qc_WLobs(n,k,OBS_State)
   real                      :: wl_obsspace(LIS_rc%obs_ngrid(k))
   integer                   :: status
 
+  external :: HYMAP3_convertRoutingSpaceToObsSpace
 
   call ESMF_StateGet(OBS_State,"Observation01",obs_wl_field,&
        rc=status)
@@ -121,13 +122,16 @@ end subroutine HYMAP3_qc_WLobs
 !  
 !EOP
 
-    integer                      :: c,r,t,i,m,g,gid
+    integer                      :: c,r,i,g,gid
     real                         :: lis_gvar(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     integer                      :: nlis_gvar(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     logical*1                    :: li(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     logical*1                    :: lo(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
     real                         :: obs_gvar(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
     integer                      :: iret
+
+    external :: upscaleByAveraging
+    external :: neighbor_interp
 
     ovar = LIS_rc%udef
     lis_gvar  = 0.0

@@ -41,7 +41,6 @@ subroutine HYMAP3_setWL(n, Routing_State)
   integer                :: t,i,m
   integer                :: status
   real, pointer          :: sfcelv(:)
-  character*100          :: lsm_state_objs(4)
 
   real*8                 :: elevtn
   real*8                 :: fldhgt(HYMAP3_routing_struc(n)%nz)
@@ -56,6 +55,8 @@ subroutine HYMAP3_setWL(n, Routing_State)
 
   logical                :: diffCheck(HYMAP3_routing_struc(n)%nseqall)
   logical                :: ensCheck(HYMAP3_routing_struc(n)%nseqall)
+
+  external :: HYMAP3_reorderEnsForOutliers
 
   call ESMF_StateGet(Routing_State,"Surface elevation",sfcelvField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for sm1 in HYMAP3_getWL')
