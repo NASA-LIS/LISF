@@ -88,7 +88,6 @@ contains
 
     real                   :: vroff, vbflw
     real                   :: qrun, qbas
-    integer                :: i,j,jj
     ! ================================================
     vroff=0.0
     vbflw=0.0
@@ -231,8 +230,6 @@ contains
     real*8                 :: rstoall
     real*8                 :: h1,h2,v1,v2
 
-    real                   :: fldstomax_lev(nz) !maximum floodplain storage with levee [m3]
-    
     ! ================================================
     rstoall=rivsto+fldsto
     
@@ -318,7 +315,7 @@ contains
     real,    intent(out) :: rivout      !outflow from the floodplain reservoir [m3/s]
     real,    intent(out) :: rivvel      !velocity [m/s]
     real,    intent(out) :: sfcelv      !water surface elevation
-    real                 :: rslope,rarea,rvel,rhydrad
+    real                 :: rslope,rarea,rvel
     ! ================================================
     sfcelv=rivelv+rivdph
     if(outlet==0)then
@@ -389,7 +386,7 @@ contains
     real                 :: sfcelv_down     !downstream water surface elevation
     real                 :: sfcelv_pre      !previous step water surface elevation (t-1) [m]
     real                 :: sfcelv_pre_down !previous step downstream water surface elevation (t-1) [m]
-    real                 :: avgslp, darea,dvel, dhydrad
+    real                 :: avgslp, darea
     real                 :: dflw,dout_pre,dflw_pre,dflw_imp
 
     ! ================================================
@@ -545,7 +542,7 @@ real*8,    intent(in)    :: time
     real                   :: avgsfcelv_down     !weighted average downstream water surface elevation
     real                   :: avgsfcelv_pre      !weighted average previous step water surface elevation (t-1) [m]
     real                   :: avgsfcelv_pre_down !weighted average previous step downstream water surface elevation (t-1) [m]
-    real                   :: rivslp,fldslp,avgslp, darea,dvel, dhydrad
+    real                   :: rivslp,fldslp,avgslp, darea
     real                   :: dflw,dout_pre,dflw_pre,dflw_imp
 
     ! ================================================
@@ -747,7 +744,6 @@ real*8,    intent(in)    :: time
     real*8,    intent(out) :: time
     integer, parameter   :: nmday(12) = (/31,28,31,30,31,30,31,31,30,31,30,31/)  
     integer              :: day,nyday
-    real                 :: dt2
     
     day=sum(nmday(1:mo-1))+da-1; if(mod(yr,4)==0.and.mo>2)day=day+1
     nyday=sum(nmday); if(mod(yr,4)==0)nyday=nyday+1
@@ -802,8 +798,6 @@ real*8,    intent(in)    :: time
     integer :: i
     real*8    :: h1,h2,v1,v2
     real*8    :: dph(nz)
-    real*8    :: dphtmp
-    real*8 :: vol1,dh1,dh2,dv,dh
     
     dph(:)=elevtn+fldhgt(:)   
     if(elv>elevtn.and.grarea>rivlen*rivwth)then
@@ -846,7 +840,6 @@ real*8,    intent(in)    :: time
     integer              :: i
     real*8               :: h1,h2,v1,v2
     real*8               :: dph(nz)
-    real*8               :: dphtmp
     
     dph(:)=elevtn+fldhgt(:)
     

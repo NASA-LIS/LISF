@@ -122,7 +122,7 @@ contains
     real                   :: sfcelv_down     !downstream water surface elevation
     real                   :: sfcelv_pre      !previous step water surface elevation (t-1) [m]
     real                   :: sfcelv_pre_down !previous step downstream water surface elevation (t-1) [m]
-    real                   :: dslope, darea,dvel, dhydrad
+    real                   :: dslope, darea
     real                   :: dflw,dout_pre,dflw_pre,dflw_imp
     ! ================================================
     if(bifsto==0)then

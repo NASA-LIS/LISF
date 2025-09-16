@@ -348,8 +348,6 @@ contains
     integer              :: ftn 
     integer              :: status
     integer              :: i,j,k
-    type(ESMF_Grid)      :: global_grid
-    type(ESMF_DistGrid)  :: global_grid_dg
     type(ESMF_ArraySpec) :: realarrspec
     type(ESMF_Field)     :: sf_runoff_field
     type(ESMF_Field)     :: baseflow_field
@@ -358,35 +356,21 @@ contains
     real, pointer        :: baseflow(:)
     real, pointer        :: evapotranspiration(:)
     character*100        :: ctitle
-    integer              :: iseq,ix,iy,jx,jy
     character*10         :: time
     character*20         :: flowtype
     !ag (11Sep2015)
     character*20         :: steptype 
     !ag (31Jan2016)
-    character*20         :: resoptype
-    !ag (8Aaug2020)
-    character*20         :: inserttype
-        
+
     !ag (19Feb2016)
     real,    allocatable :: tmp_real(:,:),tmp_real_nz(:,:,:)
-    integer, allocatable :: nextx(:,:),nexty(:,:),mask(:,:),maskg(:,:)
+    integer, allocatable :: mask(:,:),maskg(:,:)
     real,    allocatable :: elevtn(:,:),uparea(:,:),basin(:,:)
     
     !ag (11Mar2016)
-    character*100  :: temp1
-    integer        :: rc
-    character*1    :: fproc(4)
-    integer        :: ios
-    integer        :: final_dirpos
-    character(100) :: diag_fname
-    character(100) :: diag_dir
     integer, external  :: LIS_create_subdirs
 
     !ag (03Apr2017)
-    character*20 :: evapflag0
-    !character*20 :: pevap_comp_method
-    integer       :: ic, c,r,ic_down
     integer       :: m
     integer       :: gdeltas
 
@@ -398,8 +382,6 @@ contains
     real, pointer        :: fldstotmp(:)
     real, pointer        :: fldfrctmp(:)
 
-    !ag (13May2021)
-    integer       :: count_rows
 
     type(ESMF_DistGrid)  :: patchDG
     type(ESMF_DistGrid)  :: gridDG
@@ -438,15 +420,14 @@ contains
     real*8               :: bifelv1,bifsto1
     integer              :: ibif,ielv,icg,iz
 
-    !ag(23Feb2023)
-    ! === levee local variables/parameters ===
-    real,    allocatable :: levhgt(:,:)
-    real,    allocatable :: levhgt_glb(:,:)
-
     !ag(11Oct2024)
     integer              :: iresop
     real                 :: cadp
 
+    external :: initrunoffdata
+    external :: perturbinit
+    external :: perturbsetup
+    
     allocate(HYMAP3_routing_struc(LIS_rc%nnest))
     
     HYMAP3_logunit=10001
@@ -2544,7 +2525,7 @@ print*,'done'
 ! !ARGUMENTS:
     integer, intent(in)         :: n
 
-    integer :: ios,nid,ncId, nrId,mid
+    integer :: ios,nid,ncId
     logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2606,10 +2587,7 @@ print*,'done'
     real,         intent(inout) :: array(HYMAP3_routing_struc(n)%nseqall,z)
     integer                     :: ftn
     logical                     :: file_exists
-    integer                     :: status
-    integer                     :: l
     integer                     :: varid
-    character*100               :: cfile
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -2652,11 +2630,10 @@ print*,'done'
     character(*), intent(in)  :: infile,yvar
     integer,      intent(in)  :: ntiles,jt,it,nt
     real*8,         intent(out) :: var(ntiles)
-    integer                   :: ncid,varid
+    integer                   :: varid
 
     integer                     :: ftn
     logical                     :: file_exists
-    integer                     :: status
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     inquire(file=trim(infile),exist=file_exists)
@@ -2746,11 +2723,7 @@ print*,'done'
     real,         intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n),z)
     integer                     :: ftn 
     logical                     :: file_exists
-    integer                     :: status
-    integer                     :: l
     integer                     :: varid
-    character*100               :: cfile
-!    real                        :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n),z)
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -2803,9 +2776,7 @@ print*,'done'
     real,         intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n))
     integer                     :: ftn 
     logical                     :: file_exists
-    integer                     :: status
     integer                     :: varid
-    character*100               :: cfile
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -2858,9 +2829,6 @@ print*,'done'
     integer,      intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n),z)
     integer                     :: ftn 
     logical                     :: file_exists
-    integer                     :: status
-    integer                     :: c,r,l
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2913,9 +2881,6 @@ print*,'done'
     integer,      intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n))
     integer                     :: ftn 
     logical                     :: file_exists
-    integer                     :: status
-    integer                     :: c,r
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2969,9 +2934,6 @@ print*,'done'
     integer,      intent(inout) :: array(LIS_rc%gnc(n),LIS_rc%gnr(n))
     integer                     :: ftn 
     logical                     :: file_exists
-    integer                     :: status
-    integer                     :: c,r
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -3014,8 +2976,7 @@ print*,'done'
     real*8,       intent(out) :: tresop(nresop,ntresop)
     real,         intent(out) :: resop(nresop,ntresop),resopoutmin(nresop)
     integer                   :: res
-    integer                   :: xresop(nresop),yresop(nresop)
-    character(50)            :: resopname(nresop)
+    character(50)             :: resopname(nresop)
     character(500)            :: yfile
     
     call HYMAP3_read_header_resop(n,trim(resopheader),nresop,resopname,resoploc,resoploc_dwn,resoploc_glb,resoploc_dwn_glb,resopoutmin,resoptype)
@@ -3450,7 +3411,7 @@ subroutine HYMAP3_map_g2l(n, var_glb,var_local)
   real                :: var_glb(LIS_rc%glbnroutinggrid(n))
   real                :: var_local(LIS_rc%nroutinggrid(n))
 
-  integer             :: i, ix,iy,ix1,iy1,jx,jy
+  integer             :: i, ix,iy,ix1,iy1
 
   do i=1,LIS_rc%nroutinggrid(n)
      ix = HYMAP3_routing_struc(n)%seqx(i)
@@ -3518,7 +3479,7 @@ subroutine HYMAP3_map_l2g_index(n, local_index,glb_index)
   integer             :: local_index
   integer             :: glb_index
 
-  integer             :: i, ix,iy,ix1,iy1,jx,jy
+  integer             :: ix,iy,ix1,iy1
 
   ix = HYMAP3_routing_struc(n)%seqx(local_index)
   iy = HYMAP3_routing_struc(n)%seqy(local_index)

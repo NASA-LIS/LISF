@@ -59,15 +59,9 @@ contains
     real,    intent(inout) :: outflow              !grid cell outflow (river+floodplain) [m3/s]
     real,    intent(inout) :: inflow_down              !downstream grid cell inflow [m3/s]
  
-    integer                :: itime,iresop,ic,ic_down
     real*8                 :: elvobs,elvsim
     real*8                 :: volobs,volsim,volsim0
     real*8                 :: outsim
-
-    integer                :: ielevtn
-    integer                :: ifldhgt(nz)
-    integer                :: irivelv
-    integer                :: iresopalt(ntresop)
 
     !ag(17Apr2024)
     real*8,  parameter     :: man = 0.1          !manning roughness for beaver dam overflow

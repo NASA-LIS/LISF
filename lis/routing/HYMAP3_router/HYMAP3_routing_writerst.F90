@@ -49,7 +49,16 @@ subroutine HYMAP3_routing_writerst(n)
   integer               :: ftn
   integer               :: status
   logical               :: alarmCheck
-  
+
+  external :: HYMAP3_dump_restart
+  external :: HYMAP3_writeGlobalHeader_restart
+  external :: HYMAP3_writeHeader_restart
+  external :: HYMAP3_closeHeader_restart
+  external :: HYMAP3_writevar_restart
+  external :: HYMAP3_writebif_restart
+  external :: HYMAP3_writevar_restart_ens
+  external :: HYMAP3_writebif_restart_ens
+
   alarmCheck = LIS_isAlarmRinging(LIS_rc,&
           "HYMAP3 router restart alarm")
   if(alarmCheck.or.(LIS_rc%endtime ==1)) then 
@@ -94,8 +103,7 @@ end subroutine HYMAP3_routing_writerst
 subroutine HYMAP3_dump_restart(n, ftn)
 
 ! !USES:
-    use LIS_coreMod, only : LIS_rc, LIS_masterproc
-    use LIS_logMod, only  : LIS_logunit
+    use LIS_coreMod, only : LIS_rc
     use LIS_historyMod
     use HYMAP3_routingMod
 
@@ -135,6 +143,15 @@ subroutine HYMAP3_dump_restart(n, ftn)
     !ag(8Sep2022)
     integer :: bifout_pre_ID
     integer :: dimID_bif(1)
+
+    external :: HYMAP3_writeGlobalHeader_restart
+    external :: HYMAP3_writeHeader_restart
+    external :: HYMAP3_closeHeader_restart
+    external :: HYMAP3_writevar_restart
+    external :: HYMAP3_writevar_restart_ens
+    external :: HYMAP3_writebif_restart_ens
+    external :: HYMAP3_writebif_restart
+
     ! write the header of the restart file
     call HYMAP3_writeGlobalHeader_restart(ftn, n, &
          "HYMAP3", &
@@ -312,7 +329,6 @@ subroutine HYMAP3_dump_restart(n, ftn)
     character(len=8)  :: date
     character(len=10) :: time
     character(len=5)  :: zone
-    character*20      :: wout
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)           
     call date_and_time(date,time,zone,values)       
@@ -526,7 +542,6 @@ subroutine HYMAP3_dump_restart(n, ftn)
 !EOP
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    integer :: data_index
     integer :: shuffle, deflate, deflate_level
     integer :: dimID_t(2)
     integer :: fill_value
@@ -671,7 +686,7 @@ subroutine HYMAP3_dump_restart(n, ftn)
 !EOP
     real, allocatable :: gtmp(:)
     real, allocatable :: gtmp1(:)
-    integer           :: l,i,ix,iy,ix1,iy1,m
+    integer           :: l,i,ix,iy,ix1,iy1
     integer :: ierr
 
     if(LIS_masterproc) then 
@@ -753,7 +768,6 @@ subroutine HYMAP3_dump_restart(n, ftn)
 !  \end{description}
 !EOP
     real, allocatable :: gtmp(:)
-    real, allocatable :: gtmp2(:)
     real, allocatable :: gtmp1(:,:)
     integer           :: m
     integer           :: l,i,ix,iy,ix1,iy1
@@ -845,7 +859,6 @@ subroutine HYMAP3_dump_restart(n, ftn)
 !     index of the variable being written
 !  \end{description}
 !EOP
-    integer           :: l,i,ix,iy,ix1,iy1,m
     integer :: ierr
 
     if(LIS_masterproc) then
@@ -896,13 +909,7 @@ subroutine HYMAP3_dump_restart(n, ftn)
 !     index of the variable being written
 !  \end{description}
 !EOP
-    real, allocatable :: gtmp(:)
-    real, allocatable :: gtmp2(:)
-    real, allocatable :: gtmp1(:,:)
-    integer           :: m
-    integer           :: l,i,ix,iy,ix1,iy1
-    integer :: ierr
-    
+
     print*,'HYMAP3_writebif_restart_ens not implemented'
     stop
 
