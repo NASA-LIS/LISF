@@ -376,6 +376,7 @@ module LIS_pluginIndices
 ! Runoff data support
 !-------------------------------------------------------------------------
    character*50, public, parameter :: LIS_LISrunoffdataId   = "LIS runoff output"
+   character*50, public, parameter :: LIS_HYMAP3_LISrunoffdataId   = "LIS HYMAP3 runoff output"
    character*50, public, parameter :: LIS_GLDAS1runoffdataId = "GLDAS1 runoff data"
    character*50, public, parameter :: LIS_GLDAS2runoffdataId = "GLDAS2 runoff data"
    character*50, public, parameter :: LIS_NLDAS2runoffdataId = "NLDAS2 runoff data"

@@ -41,7 +41,13 @@ subroutine LIS_runoffdata_plugin
 
 #if ( ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_HYMAP3_ROUTER ) )
    use LIS_pluginIndices
+#if ( defined ROUTE_HYMAP2_ROUTER )
    use LISrunoffdataMod
+#endif
+#if ( defined ROUTE_HYMAP3_ROUTER )
+   use HYMAP3_LISrunoffdataMod
+#endif
+
 !   use GLDAS1runoffdataMod
 !   use GLDAS2runoffdataMod
 !   use NLDAS2runoffdataMod
@@ -52,7 +58,15 @@ subroutine LIS_runoffdata_plugin
    external :: registerinitrunoffdata
    external :: registerreadrunoffdata
 
+#if ( defined ROUTE_HYMAP2_ROUTER )
    external readLISrunoffdata
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+   external HYMAP3_readLISrunoffdata
+#endif
+
+
 !   external readGLDAS1runoffdata
 !   external readGLDAS2runoffdata
 !   external readNLDAS2runoffdata
@@ -60,10 +74,19 @@ subroutine LIS_runoffdata_plugin
 !   external readERAILandrunoffdata
 !   external readGWBMIPrunoffdata
 
+#if ( defined ROUTE_HYMAP2_ROUTER )
    call registerinitrunoffdata(trim(LIS_LISrunoffdataId)//char(0), &
         LISrunoffdata_init)
    call registerreadrunoffdata(trim(LIS_LISrunoffdataId)//char(0), &
         readLISrunoffdata)
+#endif
+
+#if ( defined ROUTE_HYMAP2_ROUTER )
+   call registerinitrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
+        HYMAP3_LISrunoffdata_init)
+   call registerreadrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
+        HYMAP3_readLISrunoffdata)
+#endif
 
 !   call registerinitrunoffdata(trim(LIS_GLDAS1runoffdataId)//char(0), &
 !        GLDAS1runoffdata_init)

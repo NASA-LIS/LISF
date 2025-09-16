@@ -37,7 +37,6 @@ subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
   real                         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
   real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
   integer                       :: nc,nr
-  integer                       :: c,r,t
   real,   allocatable           :: qs(:,:)
   real,   allocatable           :: qsb(:,:)
   integer                       :: ios
@@ -50,7 +49,9 @@ subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
   real                          :: gmt
   logical                       :: file_exists
 
-
+  external :: create_MERRA2_filename
+  external :: interp_MERRA2runoffdata
+  
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
   da =LIS_rc%da
@@ -239,6 +240,9 @@ end subroutine create_MERRA2_filename
     integer            :: c,r
     logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+
+    external :: neighbor_interp
+    external :: upscaleByAveraging
 
     var_output = LIS_rc%udef
     lb = .false.

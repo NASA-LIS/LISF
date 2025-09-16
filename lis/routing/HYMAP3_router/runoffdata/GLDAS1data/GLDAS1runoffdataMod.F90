@@ -67,6 +67,9 @@ contains
     character*10         :: time
     real                 :: gridDesc(50)
 
+    external :: neighbor_interp_input
+    external :: upscaleByAveraging_input
+
     allocate(GLDAS1runoffdata_struc(LIS_rc%nnest))
        
     call ESMF_ConfigFindLabel(LIS_config,&
