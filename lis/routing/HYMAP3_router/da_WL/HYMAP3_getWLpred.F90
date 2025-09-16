@@ -43,6 +43,7 @@ subroutine HYMAP3_getWLpred(n, k,obs_pred)
   integer                :: i,t,m
   real                   :: wl(HYMAP3_routing_struc(n)%nseqall*LIS_rc%nensem(n))
 
+  external :: HYMAP3_convertPatchSpaceToObsEnsSpace
 
   do i=1,HYMAP3_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
@@ -110,6 +111,9 @@ end subroutine HYMAP3_getWLpred
     logical*1                    :: lo(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
     real                         :: obs_gvar(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
     integer                      :: iret
+
+    external :: upscaleByAveraging
+    external :: neighbor_interp
 
     ovar = LIS_rc%udef
     do m=1,LIS_rc%nensem(n)
