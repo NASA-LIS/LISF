@@ -78,16 +78,13 @@ subroutine HYMAP3_routing_run(n)
   real,   allocatable   :: qnet(:)
   real,   allocatable   :: tmp_tmp(:,:),tmp_q2(:,:)
   real,   allocatable   :: tmp_wind(:,:),tmp_psurf(:,:),tmp_qnet(:,:)
-  real,   allocatable   :: gvar1(:),gvar2(:),gvar3(:),gvar4(:),gvar5(:),gvar6(:),gvar7(:)
   
   real,   allocatable   :: rnfsto_mm(:,:),bsfsto_mm(:,:)
 
   real,   allocatable   :: tmp_nensem(:,:,:)
 
   type(ESMF_Field)      :: evapotranspiration_field
-  type(ESMF_Field)      :: potential_evaporation_field
   real,   pointer       :: evapotranspiration_t(:)
-  real,   pointer       :: potential_evaporation_t(:)
   real,   allocatable   ::  tmpet(:,:)
  
   real,   allocatable   :: rivsto_lvec(:)
@@ -121,18 +118,19 @@ subroutine HYMAP3_routing_run(n)
 
   integer               :: status
   logical               :: alarmCheck
-  integer               :: c,r,t
-  integer               :: ios, nid,qsid,qsbid
+  integer               :: t
 
-  integer            :: tid
   type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
   type(ESMF_Field)   :: psurfField
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:),swd(:),lwd(:)
   real,pointer       :: psurf(:)
-
-  integer            :: i,ix, iy, ix1, iy1
+  integer :: i
 !TBD:SVK - need to redo the code to work with ntiles rather than npatches. 
 !
+  external :: HYMAP3_model
+  external :: HYMAP3_grid2tile
+  external :: readrunoffdata
+
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "HYMAP3 router model alarm")
   if(alarmCheck) then
 
@@ -956,7 +954,7 @@ end subroutine HYMAP3_routing_run
 !  \end{description}
 !
 !EOP
-    integer           :: i,t,c,r
+    integer           :: i,t
 
     do i=1,LIS_rc%nroutinggrid(n)
        t = m + (i-1)*LIS_rc%nensem(n)

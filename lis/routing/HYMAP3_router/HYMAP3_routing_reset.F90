@@ -30,8 +30,7 @@ subroutine HYMAP3_routing_reset()
 !  
 !EOP
   implicit none
-  integer                 :: t,n
-  integer                 :: status
+  integer                 :: n
 
 
   do n=1,LIS_rc%nnest

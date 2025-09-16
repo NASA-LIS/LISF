@@ -114,7 +114,7 @@ contains
     integer, intent(out)  :: seqx(nseqall)   !1D sequence horizontal
     integer, intent(out)  :: seqy(nseqall)   !1D sequence vertical
     integer, intent(out)  :: next(nseqall)   !downstream grid cell
-    integer               :: i,j,ix,iy,jx,jy,iloc(2)
+    integer               :: i,ix,iy,jx,jy
     integer               :: ix1, iy1
     i=0
 
@@ -169,8 +169,8 @@ contains
     integer               :: seqx(nseqall)
     integer               :: seqy(nseqall)
     
-    integer               :: i,j,ix,iy,jx,jy,iloc(2)
-    integer               :: ix1, iy1
+    integer               :: i,ix,iy,jx,jy
+
     i=0
 
     sindex=imis
@@ -212,7 +212,6 @@ contains
     ! at   NASA,GSFC
     ! Adapted for flow routing implementation in LIS 09 Nov 2011
     ! ================================================
-    use LIS_logMod,     only : LIS_logunit
 
     implicit none
     integer, intent(in)   :: nz                   !number of stages in the sub-grid discretization
@@ -235,9 +234,7 @@ contains
     real                 :: stopre
     real                 :: hgtpre
     real                 :: wthinc
-    integer              :: i1,i2,flag
-    real                 :: rivfrc                !fraction of river surface area [-]
-    real                 :: hgtprv(nseqall)
+    integer              :: flag
     real                 :: hfrac,sfrac
     ! ================================================
     fldstomax=0.

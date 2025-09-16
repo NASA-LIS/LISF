@@ -43,13 +43,17 @@ subroutine HYMAP3_routing_readrst
 
   integer       :: n 
   integer       :: ftn
-  integer       :: i,j,k
-  integer       :: ios,status
   character*100 :: filename
   logical       :: read_restart
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time
   real              :: gmt
+  integer :: status
+
+  external :: HYMAP3_readvar_restart
+  external :: HYMAP3_readbif_restart
+  external :: HYMAP3_readvar_restart_ens
+  external :: HYMAP3_readbif_restart_ens
 
   do n=1, LIS_rc%nnest
      
@@ -359,7 +363,6 @@ end subroutine HYMAP3_routing_readrst
 !  \end{description}
 !EOP
     integer           :: varid
-    integer           :: i,ix,iy,ix1,iy1
     integer           :: status
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -407,10 +410,6 @@ end subroutine HYMAP3_routing_readrst
 !     variables being written, dimensioned in the tile space
 !  \end{description}
 !EOP
-    real, allocatable :: gtmp(:)
-    integer           :: varid
-    integer           :: i,m,ix,iy,ix1,iy1
-    integer           :: status
 
     print*,'HYMAP3_readbif_restart_ens not implemented'
     stop

@@ -107,13 +107,7 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   real,    intent(out)   :: fldare(nseqall)       !flooded area [m2]
   real,    intent(out)   :: sfcelv(nseqall)       !water surface elevation [m]  
 
-  real                   :: flddph1(nseqall)
-  real                   :: fldinf(nseqall)
-  real                   :: fldwth(nseqall)
-  real                   :: runoff(nseqall)       !runoff+baseflow after linear reservoirs [m3/s]
-  real                   :: etrans(nseqall)
   real                   :: evpdif(nseqall)
-  real                   :: evpwat(nseqall)
   real                   :: rivout0(nseqall)       !adaptive time step river outflow  [m3/s]
   real                   :: rivvel0(nseqall)       !adaptive time step river flow velocity  [m/s]
   real                   :: fldout0(nseqall)       !adaptive time step floodplain outflow  [m3/s]
@@ -151,15 +145,13 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
 
   !local variables
   real*8                   :: time                !current time
-  integer                :: ic,ic_down,i,iloc(1)
+  integer                :: ic,i,iloc(1)
 
   !ag (29Jan2016)
   integer                :: nt_local
   real                   :: dta_local
-  integer                :: counti, countf, count_rate
   integer                :: maxi
   real                   :: mindt
-  real                   :: tmp
   real*8                 :: dt1
   integer                :: status
 
@@ -182,8 +174,6 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   real,    intent(inout)    :: drsto(nseqall)   !urban drainage water storage [m3]
   real,    intent(inout)    :: drout(nseqall)   !urban drainage outflow [m3/s]
 
-  !ag(03Aug2022)
-  real                      :: tmpdph
 
   !ag(25feb2023) 
   !levee parameters
@@ -191,6 +181,8 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss,&
   real,    intent(in)  :: levstomax(nseqall)
   real,    intent(in)  :: fldonlystomax(nseqall,nz)
   real,    intent(in)  :: fldstoatlev(nseqall)
+
+  external :: HYMAP3_model_core
 
 #if 0 
   call system_clock(counti,count_rate)

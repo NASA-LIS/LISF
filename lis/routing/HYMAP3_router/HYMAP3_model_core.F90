@@ -164,8 +164,6 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
 
   !ag (14Jun2024)
   real, allocatable    :: runoff_glb(:)
-  real, allocatable    :: rivvel_glb(:)
-  real, allocatable    :: fldvel_glb(:)
 
   !ag (2Mar2020)
   real                             :: rivinf(nseqall)   !local river inflow  [m3/s]
@@ -173,13 +171,9 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
   real, allocatable    :: rivinf_glb(:)   !global river inflow  [m3/s]
   real, allocatable    :: fldinf_glb(:)   !global floodplain inflow  [m3/s]
 
-  integer              :: ic1,ic2
   integer              :: iloc(1)
   integer              :: status
-  real                 :: tmp_value
 
-  integer              :: ix,iy,ix1,iy1
-  
   !ag (27Apr2020)
   !urban drainage variables/parameters
   integer, intent(in)  :: flowtype     !urban drainage flag: 4 - compute urban drainage
@@ -198,7 +192,6 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
   real, allocatable    :: drsto_glb(:)  !global urban drainage water storage  [m3]
   real, allocatable    :: drout_glb(:)  !global urban drainage outflow  [m3/s]
   real, allocatable    :: drinf_glb(:)   !global urban drainage inflow  [m3/s]
-  real                       :: drsto_down  !downstream water storage [m3]
 
   !ag (1sep2020)
   !direct insertion
@@ -213,9 +206,6 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
   real                 :: tmpsto,tmpman,tmpdph,tmpwth,tmpsto_down,tmpdph_down
 
   !ag(8Apr2022)
-  real                 :: bifout(HYMAP3_routing_struc(n)%nbif)
-  real                 :: bifout_pre(HYMAP3_routing_struc(n)%nbif)
-  real                 :: bifdph_pre(HYMAP3_routing_struc(n)%nbif)
   integer              :: ibif,ielv
   real                 :: bifsto1,bifsto1_down
   real                 :: bifelv1,sfcelv1,bifout1

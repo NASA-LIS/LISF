@@ -119,7 +119,7 @@ contains
     real,    intent(out) :: drtotwth(nseqall) !sum of gutter width within HyMAP grid cell [m]
     real,    intent(out)  :: drnoutlet(nseqall) ! average number of drainage outlets within a grid cell [-]
     real,    intent(out)  :: drtotlgh(nseqall) ! total urban drainage network length within a grid cell [m]
-    integer               :: i,j
+    integer               :: i
 
   do i=1,nseqall
     if(flowmap(i)==4)then

@@ -25,15 +25,11 @@ subroutine HYMAP3_routing_output(n)
   
   integer, intent(in)   :: n 
   
-  character(len=12)     :: cdate1
-  integer               :: iret
   character*100         :: filename
   character*100         :: name
-  integer               :: ftn
   integer               :: mo, da
   logical               :: open_stats
   logical               :: alarmCheck
-  integer               :: status
 
   alarmCheck = .false. 
   if ( LIS_rc%time >= LIS_histData(n)%time ) then
