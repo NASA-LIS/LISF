@@ -52,7 +52,6 @@ subroutine readERAILandrunoffdata(n,surface_runoff, baseflow)
 !EOP 
 
   integer                       :: nc,nr
-  integer                       :: c,r,t
   real,   allocatable           :: qs(:,:)
   real,   allocatable           :: qsb(:,:)
   integer                       :: ios
@@ -70,6 +69,9 @@ subroutine readERAILandrunoffdata(n,surface_runoff, baseflow)
   integer                       :: hr_elapsed
   real                          :: scale_qs, scale_qsb
   real                          :: offset_qs, offset_qsb
+
+  external :: create_ERAILand_filename
+  external :: interp_ERAILandrunoffdata
 
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
@@ -281,6 +283,9 @@ end subroutine create_ERAILand_filename
     integer            :: c,r,c1
     logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+
+    external :: neighbor_interp
+    external :: upscaleByAveraging
 
     var_output = LIS_rc%udef
     lb = .false.

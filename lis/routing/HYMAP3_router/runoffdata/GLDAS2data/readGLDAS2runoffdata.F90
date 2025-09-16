@@ -38,11 +38,10 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   real                         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
   real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
   integer                       :: nc,nr
-  integer                       :: c,r,t
+  integer                       :: c,r
   !real,   allocatable           :: qs(:,:)
   !real,   allocatable           :: qsb(:,:)
   integer                       :: ios, nid,qsid,qsbid
-  integer                       :: ftn
   character*100                 :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
@@ -50,7 +49,9 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   logical                       :: file_exists
   real                          :: undef
 
-
+  external :: create_GLDAS2_filename
+  external :: interp_GLDAS2runoffdata
+  
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
   da =LIS_rc%da
@@ -151,7 +152,7 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
   use LIS_logMod
   use GLDAS2runoffdataMod
   use LIS_fileIOMod
-  use HYMAP_routingMod
+  use HYMAP3_routingMod
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -162,11 +163,10 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
   real                         :: evap(LIS_rc%gnc(n),LIS_rc%gnr(n))
   real                         :: potevap(LIS_rc%gnc(n),LIS_rc%gnr(n))
   integer                       :: nc,nr
-  integer                       :: c,r,t
+  integer                       :: c,r
   real,   allocatable           :: evp(:,:)
   real,   allocatable           :: potevp(:,:)
   integer                       :: ios, nid,evpid,potevpid
-  integer                       :: ftn
   character*100                 :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
@@ -175,6 +175,8 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
   real                          :: undef
   REAL, PARAMETER:: LIS_CONST_LATVAP = 2.501e6 ! Latent heat for evapo for water in Noah
 
+  external :: create_GLDAS2_filename
+  external :: interp_GLDAS2runoffdata
 
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
@@ -296,11 +298,9 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
 ! 
 !EOP
   
-  integer                 :: ftn
   character*4             :: fyr
   character*3             :: fdoy
   character*2             :: fmo, fhr, fda
-  integer                 :: ierr
   character*100           :: list_name
 
   write(unit=fyr, fmt='(i4.4)') yr
@@ -399,6 +399,9 @@ end subroutine create_GLDAS2_filename
     integer            :: c,r
     logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+
+    external :: neighbor_interp
+    external :: upscaleByAveraging
 
     var_output = LIS_rc%udef
     lb = .false.

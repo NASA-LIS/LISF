@@ -35,7 +35,6 @@ subroutine readGLDAS1runoffdata(n,surface_runoff, baseflow)
   real                         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
   real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
   integer                       :: nc,nr
-  integer                       :: c,r,t
   real,   allocatable           :: qs(:,:)
   real,   allocatable           :: qsb(:,:)
   integer                       :: ios
@@ -49,6 +48,9 @@ subroutine readGLDAS1runoffdata(n,surface_runoff, baseflow)
   real                          :: gmt
   logical                       :: file_exists
 
+  external :: create_GLDAS1_filename
+  external :: retrieve_GLDAS1data
+  external :: interp_GLDAS1runoffdata
 
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
@@ -187,6 +189,8 @@ subroutine create_GLDAS1_filename(odir,model_name, datares,&
   integer                 :: ierr
   character*100           :: list_name
 
+  external :: system
+
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy
   write(unit=fmo, fmt='(i2.2)') mo
@@ -323,6 +327,9 @@ end subroutine create_GLDAS1_filename
     integer            :: c,r
     logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+
+    external :: neighbor_interp
+    external :: upscaleByAveraging
 
     var_output = LIS_rc%udef
     lb = .false.

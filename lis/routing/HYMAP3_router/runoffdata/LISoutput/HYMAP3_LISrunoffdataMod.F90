@@ -9,7 +9,7 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
  
-module LISrunoffdataMod
+module HYMAP3_LISrunoffdataMod
 !BOP
 ! 
 ! !MODULE: LISrunoffdataMod
@@ -30,14 +30,14 @@ module LISrunoffdataMod
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: LISrunoffdata_init
+  public :: HYMAP3_LISrunoffdata_init
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
   
-  public :: LISrunoffdata_struc
+  public :: HYMAP3_LISrunoffdata_struc
   
-  type, public :: LISrunoffdatadec
+  type, public :: HYMAP3_LISrunoffdatadec
      
      real                 :: outInterval 
      character(len=LIS_CONST_PATH_LEN)        :: odir
@@ -51,18 +51,19 @@ module LISrunoffdataMod
      real                :: datares
      real, allocatable   :: qs(:,:),qsb(:,:),evap(:,:)
      
-  end type LISrunoffdatadec
+  end type HYMAP3_LISrunoffdatadec
 
-  type(LISrunoffdatadec), allocatable :: LISrunoffdata_struc(:)
+  type(HYMAP3_LISrunoffdatadec), allocatable :: &
+       HYMAP3_LISrunoffdata_struc(:)
 
 contains
  
 !BOP
 !
-! !ROUTINE: LISrunoffdata_init
-! \label{LISrunoffdata_init}
+! !ROUTINE: HYMAP3_LISrunoffdata_init
+! \label{HYMAP3_LISrunoffdata_init}
 ! 
-  subroutine LISrunoffdata_init
+  subroutine HYMAP3_LISrunoffdata_init
     !USES: 
     use LIS_coreMod
     use LIS_logMod
@@ -83,12 +84,16 @@ contains
     real                 :: dx,dy
     real                 :: gridDesc(50)
 
-    allocate(LISrunoffdata_struc(LIS_rc%nnest))
+    external :: neighbor_interp_input
+    external :: upscaleByAveraging_input
+
+    allocate(HYMAP3_LISrunoffdata_struc(LIS_rc%nnest))
        
     call ESMF_ConfigFindLabel(LIS_config,&
          "LIS runoff output directory:",rc=status)
     do n=1, LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,LISrunoffdata_struc(n)%odir,rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config, &
+            HYMAP3_LISrunoffdata_struc(n)%odir,rc=status)
        call LIS_verify(status,&
             "LIS runoff output directory: not defined")
        
@@ -101,13 +106,15 @@ contains
        call LIS_verify(status,&
             "LIS runoff output interval: not defined")
 
-       call LIS_parseTimeString(time,LISrunoffdata_struc(n)%outInterval)
+       call LIS_parseTimeString(time, &
+            HYMAP3_LISrunoffdata_struc(n)%outInterval)
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,&
          "LIS runoff output domain file:",rc=status)
     do n=1, LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,LISrunoffdata_struc(n)%domfile,rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config, &
+            HYMAP3_LISrunoffdata_struc(n)%domfile,rc=status)
        call LIS_verify(status,&
             "LIS runoff output domain file: not defined")
        
@@ -116,9 +123,9 @@ contains
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
     do n=1,LIS_rc%nnest
-       call LIS_verify(nf90_open(path=LISrunoffdata_struc(n)%domfile,&
+       call LIS_verify(nf90_open(path=HYMAP3_LISrunoffdata_struc(n)%domfile,&
             mode=NF90_NOWRITE,ncid=ftn),&
-            'Error opening file '//trim(LISrunoffdata_struc(n)%domfile))
+            'Error opening file '//trim(HYMAP3_LISrunoffdata_struc(n)%domfile))
        
        call LIS_verify(nf90_get_att(ftn,NF90_GLOBAL,'MAP_PROJECTION',&
             lis_map_proj),&
@@ -132,18 +139,20 @@ contains
           call LIS_verify(nf90_inq_dimid(ftn,'north_south',nrId),&
                'Error in nf90_inq_dimid: north_south')
           
-          call LIS_verify(nf90_inquire_dimension(ftn,ncId,len=LISrunoffdata_struc(n)%nc),&
+          call LIS_verify(nf90_inquire_dimension(ftn,ncId, &
+               len=HYMAP3_LISrunoffdata_struc(n)%nc),&
                'Error in nf90_inquire_dimension: ncId')
           
-          call LIS_verify(nf90_inquire_dimension(ftn,nrId,len=LISrunoffdata_struc(n)%nr),&
+          call LIS_verify(nf90_inquire_dimension(ftn,nrId, &
+               len=HYMAP3_LISrunoffdata_struc(n)%nr),&
                'Error in nf90_inquire_dimension: nrId')
 
-          LISrunoffdata_struc(n)%domainCheck = .true.
+          HYMAP3_LISrunoffdata_struc(n)%domainCheck = .true.
           
-          if(LISrunoffdata_struc(n)%nc.ne.LIS_rc%lnc(n).or.&
-               LISrunoffdata_struc(n)%nr.ne.LIS_rc%lnr(n)) then
+          if(HYMAP3_LISrunoffdata_struc(n)%nc.ne.LIS_rc%lnc(n).or.&
+               HYMAP3_LISrunoffdata_struc(n)%nr.ne.LIS_rc%lnr(n)) then
              
-             LISrunoffdata_struc(n)%domainCheck = .false. 
+             HYMAP3_LISrunoffdata_struc(n)%domainCheck = .false. 
              call LIS_verify(nf90_get_att(ftn,NF90_GLOBAL,'SOUTH_WEST_CORNER_LAT',&
                   lat1),&
                   'Error in nf90_get_att: SOUTH_WEST_CORNER_LAT')
@@ -162,12 +171,12 @@ contains
              
              gridDesc = 0
              
-             lat2 = (LISrunoffdata_struc(n)%nr-1)*dx + lat1
-             lon2 = (LISrunoffdata_struc(n)%nc-1)*dy + lon1
+             lat2 = (HYMAP3_LISrunoffdata_struc(n)%nr-1)*dx + lat1
+             lon2 = (HYMAP3_LISrunoffdata_struc(n)%nc-1)*dy + lon1
              
              gridDesc(1) = 0
-             gridDesc(2) = LISrunoffdata_struc(n)%nc
-             gridDesc(3) = LISrunoffdata_struc(n)%nr
+             gridDesc(2) = HYMAP3_LISrunoffdata_struc(n)%nc
+             gridDesc(3) = HYMAP3_LISrunoffdata_struc(n)%nr
              gridDesc(4) = lat1
              gridDesc(5) = lon1
              gridDesc(7) = lat2
@@ -178,24 +187,25 @@ contains
              gridDesc(20) = 64
 
              
-             LISrunoffdata_struc(n)%datares = min(dx,dy)
+             HYMAP3_LISrunoffdata_struc(n)%datares = min(dx,dy)
 
-             if(LIS_isAtAfinerResolution(n,LISrunoffdata_struc(n)%datares)) then
+             if(LIS_isAtAfinerResolution(n, &
+                  HYMAP3_LISrunoffdata_struc(n)%datares)) then
                 
-                allocate(LISrunoffdata_struc(n)%n11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+                allocate(HYMAP3_LISrunoffdata_struc(n)%n11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
                 call neighbor_interp_input(n,gridDesc,&
-                     LISrunoffdata_struc(n)%n11)
+                     HYMAP3_LISrunoffdata_struc(n)%n11)
              else
 
-                nc = LISrunoffdata_struc(n)%nc
-                nr = LISrunoffdata_struc(n)%nr
+                nc = HYMAP3_LISrunoffdata_struc(n)%nc
+                nr = HYMAP3_LISrunoffdata_struc(n)%nr
                 
-                allocate(LISrunoffdata_struc(n)%n11(nc*nr))
+                allocate(HYMAP3_LISrunoffdata_struc(n)%n11(nc*nr))
                 call upscaleByAveraging_input(gridDesc,&
                      LIS_rc%gridDesc(n,:),&
                      nc*nr,&
                      LIS_rc%lnc(n)*LIS_rc%lnr(n),&
-                     LISrunoffdata_struc(n)%n11)
+                     HYMAP3_LISrunoffdata_struc(n)%n11)
                 
              endif
           endif
@@ -211,14 +221,14 @@ contains
     
     !ag - 17Mar2016
     do n=1, LIS_rc%nnest
-      LISrunoffdata_struc(n)%previous_filename='none'
-      allocate(LISrunoffdata_struc(n)%qs(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-      allocate(LISrunoffdata_struc(n)%qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-      allocate(LISrunoffdata_struc(n)%evap(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-      LISrunoffdata_struc(n)%qs=LIS_rc%udef
-      LISrunoffdata_struc(n)%qsb=LIS_rc%udef
-      LISrunoffdata_struc(n)%evap=LIS_rc%udef
+      HYMAP3_LISrunoffdata_struc(n)%previous_filename='none'
+      allocate(HYMAP3_LISrunoffdata_struc(n)%qs(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+      allocate(HYMAP3_LISrunoffdata_struc(n)%qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+      allocate(HYMAP3_LISrunoffdata_struc(n)%evap(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+      HYMAP3_LISrunoffdata_struc(n)%qs=LIS_rc%udef
+      HYMAP3_LISrunoffdata_struc(n)%qsb=LIS_rc%udef
+      HYMAP3_LISrunoffdata_struc(n)%evap=LIS_rc%udef
     enddo
     
-  end subroutine LISrunoffdata_init
-end module LISrunoffdataMod
+  end subroutine HYMAP3_LISrunoffdata_init
+end module HYMAP3_LISrunoffdataMod

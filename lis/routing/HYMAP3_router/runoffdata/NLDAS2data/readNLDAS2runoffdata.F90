@@ -49,7 +49,6 @@ subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
 
 
   integer                       :: nc,nr
-  integer                       :: c,r,t
   real,   allocatable           :: qs(:,:)
   real,   allocatable           :: qsb(:,:)
   integer                       :: ios
@@ -63,7 +62,10 @@ subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
   real                          :: gmt
   logical                       :: file_exists
 
-
+  external :: create_NLDAS2_filename
+  external :: retrieve_NLDAS2data
+  external :: interp_NLDAS2runoffdata
+  
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
   da =LIS_rc%da
@@ -197,7 +199,9 @@ subroutine create_NLDAS2_filename(odir,model_name, &
   character*3             :: fdoy
   character*2             :: fmo, fda,fhr
 
- 
+  external :: neighbor_interp
+  external :: upscaleByAveraging
+
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
@@ -320,6 +324,9 @@ end subroutine create_NLDAS2_filename
     integer            :: c,r
     logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
     real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+
+    external :: neighbor_interp
+    external :: upscaleByAveraging
 
     var_output = LIS_rc%udef
     lb = .false.
