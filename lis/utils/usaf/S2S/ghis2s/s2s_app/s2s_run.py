@@ -16,7 +16,7 @@ from ghis2s.s2s_app import s2s_api
 from ghis2s.shared import utils, logging_utils
 from ghis2s.lis_fcst import generate_lis_config_scriptfiles_fcst
 from ghis2s.s2spost import s2spost_main
-from ghis2s.s2smetric import postprocess_nmme_job
+from ghis2s.s2smetric import s2smetric_main
 from ghis2s import bcsd
 from ghis2s.shared.logging_utils import TaskLogger
 
@@ -1297,7 +1297,7 @@ class S2Srun(DownloadForecasts):
         # processing monthlies multi tasks per job
         jobname='s2spost_mon_'
         prev = sorted(glob.glob(f"s2spost_0*_run.j"))
-        l_sub = 27
+        l_sub = 9
         slurm_sub = self.split_list(monthly_commands, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
@@ -1356,7 +1356,7 @@ class S2Srun(DownloadForecasts):
             par_info['TPN'] = None
             par_info['MP'] = True
             slurm_commands = []
-            var1 = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+            var1 = s2smetric_main.driver(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(1), nmme_model= 'all_models', py_call=True, weekly=True)
             slurm_commands.extend(var1)
             tfile = self.sublist_to_file(slurm_commands, CWD)
@@ -1382,7 +1382,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         for i, model in enumerate(self.MODELS):
-            slurm_commands = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+            slurm_commands = s2smetric_main.driver(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(1), nmme_model= model, py_call=True)
 
             tfile = self.sublist_to_file(slurm_commands, CWD)
@@ -1411,7 +1411,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         for i, model in enumerate(self.MODELS):
-            slurm_commands = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+            slurm_commands = s2smetric_main.driver(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(4), nmme_model= model, py_call=True, weekly=True)
 
             tfile = self.sublist_to_file(slurm_commands, CWD)
@@ -1437,7 +1437,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
 
-        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/postprocess_nmme_job.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"]
+        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/s2smetric_main.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"]
         tfile = self.sublist_to_file(COMMAND, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_tiff_run.j', 's2smetric_tiff_', 1, str(1), CWD, tfile.name, parallel_run=par_info)
@@ -1460,7 +1460,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
 
-        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/postprocess_nmme_job.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file} -W"]
+        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/s2smetric_main.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file} -W"]
         tfile = self.sublist_to_file(COMMAND, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_weekly_tiff_run.j', 's2smetric_weekly_tiff_', 1, str(1), CWD, tfile.name, parallel_run=par_info)

@@ -200,15 +200,17 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
        while datestamps in filenames show day01 of the month to day01 of the next month except for the first forecast month
     """
 
-    is_monthly = False
+    is_monthly = (enddate - startdate).days > 25
     curdate = startdate
-    if (enddate - startdate).days > 25:
-        is_monthly = True
 
-    if is_monthly and (startdate.month != fcstdate.month):
-        ''' the 1st day has been counted by the previous month already, so we exclude it'''
-        curdate += datetime.timedelta(days=1)
-        
+    if is_monthly:
+        ''' 
+           1) the 1st day has been counted by the previous month already, so we exclude it
+           2) Just to be consistent with the previos version that month 1 starts counting from day 3
+        '''
+        days_to_add = 1 
+        curdate += datetime.timedelta(days=days_to_add)
+
     # Create list of all daily files
     daily_files = []
     while curdate <= enddate:

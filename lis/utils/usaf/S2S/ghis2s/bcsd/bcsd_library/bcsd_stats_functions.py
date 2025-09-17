@@ -124,9 +124,7 @@ def lookup(query, vec1, vec2, dim, par, lu_type, mean, sd_val, skew, tiny):
     elif query > vec1[dim-1]: #/* if query falls above maximum value in vector 1 */
         if lu_type == 'QUAN':
             if par == 'PRCP':
-                ##### HACK
                 if mean == 0:
-## KRA Commented out:                     print ("F HACK invoked")
                     val = tiny
                 else:
                     val=get_f_from_data_evi(mean, sd_val, query, tiny)
@@ -157,8 +155,10 @@ def lookup(query, vec1, vec2, dim, par, lu_type, mean, sd_val, skew, tiny):
                 val = a_val*vec2[ndx]+(1-a_val)*vec2[ndx+1]
                 break
     if par=='PRCP':
-        val = max(val, 0)
-
+        try:
+            val = max(val, 0)
+        except NameError:
+            val = tiny  
     return val
 
 def get_f_from_data_normal(mean, sd_val, x_val, tiny):
