@@ -131,8 +131,9 @@ module LIS_routingMod
       
        call routinginit(trim(LIS_rc%routingmodel)//char(0))
     else if((LIS_rc%routingmodel.eq."HYMAP router") .or. &
-            (LIS_rc%routingmodel.eq."HYMAP2 router") .or. &
-            (LIS_rc%routingmodel.eq."NLDAS router")) then
+         (LIS_rc%routingmodel.eq."HYMAP2 router") .or. &
+         (LIS_rc%routingmodel.eq."HYMAP3 router") .or. &
+         (LIS_rc%routingmodel.eq."NLDAS router")) then
 
        allocate(LIS_routing(LIS_rc%nnest))
 
