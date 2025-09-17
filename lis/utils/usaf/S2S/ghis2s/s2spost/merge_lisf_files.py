@@ -237,13 +237,13 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
     # Create soil layer coordinate if it doesn't exist
     if 'soil_layer' not in merged_ds.coords and 'soil_layer' in merged_ds.sizes:
         merged_ds = merged_ds.assign_coords({
-            'soil_layer': xr.DataArray([1, 2, 3, 4], dims=['soil_layer'])
+            'soil_layer': xr.DataArray(np.array([1, 2, 3, 4], dtype=np.int32), dims=['soil_layer'])
         })
     
     # Add soil layer thickness
     if 'soil_layer' in merged_ds.sizes:
         merged_ds['soil_layer_thickness'] = xr.DataArray(
-            [0.1, 0.3, 0.6, 1.0], 
+            np.array([0.1, 0.3, 0.6, 1.0], dtype=np.float32), 
             dims=['soil_layer'],
             attrs={
                 "long_name": "soil layer thicknesses",
@@ -263,7 +263,7 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
     # Create time bounds
     if 'time' in merged_ds.sizes:
         time_size = merged_ds.sizes['time']
-        time_bnds_data = np.full((time_size, 2), [[-1440., 0.]])
+        time_bnds_data = np.full((time_size, 2), [[-1440., 0.]], dtype=np.float32)
         
         time_bnds = xr.DataArray(
             time_bnds_data,
@@ -299,9 +299,9 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
             coord_attrs.update({
                 "axis": "T",
                 "bounds": "time_bnds",
-                "begin_date": fcst_date.strftime("%Y%m%d"),
+                "begin_date": (fcst_date + datetime.timedelta(days=1)).strftime("%Y%m%d"),
                 "begin_time": "000000",
-                "long_name": "time"
+                "long_name": "time",
             })
                 
         elif coord_name == "lat":
@@ -309,6 +309,7 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
                 "axis": "Y",
                 "standard_name": "latitude",
                 "long_name": "latitude",
+                "units": "degrees_north",
                 "vmin": 0.0,
                 "vmax": 0.0
             })
@@ -318,6 +319,7 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
                 "axis": "X", 
                 "standard_name": "longitude",
                 "long_name": "longitude",
+                "units": "degrees_east",
                 "vmin": 0.0,
                 "vmax": 0.0
             })
@@ -427,7 +429,7 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
             if var == 'time':
                 encoding[var] = {
                     '_FillValue': None,
-                    'calendar': 'standard'
+                    'dtype': 'float32',
                 }
             else:
                 encoding[var] = {
@@ -438,6 +440,10 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
     for var in special_data_vars:
         if var in merged_ds:
             encoding[var] = {'_FillValue': None}
+            #if var == 'soil_layer':
+            #    encoding[var]['dtype'] = 'int32'
+            #elif var in ['soil_layer_thickness', 'time_bnds']:
+            #    encoding[var]['dtype'] = 'float32'
             # Remove any existing _FillValue and missing_value from attributes
             if '_FillValue' in merged_ds[var].attrs:
                 del merged_ds[var].attrs['_FillValue']

@@ -53,6 +53,7 @@ from netCDF4 import Dataset as nc4_dataset
 # pylint: enable=no-name-in-module
 import numpy as np
 from osgeo import gdal, osr
+gdal.UseExceptions()
 
 # Private class
 class _MetricGeoTiff:
@@ -163,9 +164,14 @@ class _MetricGeoTiff:
                     self.set_startdates_enddates_by_month()
                     start_end_set = True
                 rootgrp.close()
-
-            # Calculate the median for the current month
-            self.median_data["median"].append(np.median(var, axis=0))
+            #print(np.nanmax(np.median(var, axis=0)), np.nanmin(np.median(var, axis=0)))
+            # mask out -9999 first
+            masked_var = np.ma.masked_where((var == -9999) | np.isnan(var), var)
+            # Calculate median on masked array
+            median_result = np.ma.median(masked_var, axis=0)
+            # Convert to regular numpy array, replacing masked values with NaN
+            median_result = np.ma.filled(median_result, np.nan)
+            self.median_data["median"].append(median_result)
             del var
 
     def set_newdate(self, date):

@@ -2,7 +2,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: postprocess_nmme_job.py
+# SCRIPT: s2smetric_main.py
 #
 # PURPOSE: Main script for generating metrics for NMME-forced LIS forecasts.
 # Based on Postprocess_NMME_job.sh and job_run_convert_Dyn_FCST_to_postproc.scr
@@ -41,7 +41,7 @@ def _handle_dates(year, month):
     print(f"[INFO] Current year / month: {year:04d} / {month:02d}")
     return currentdate
 
-def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
+def driver(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
          ntasks=None, hours=None, py_call=False, weekly=False):
     """Main driver"""
 
@@ -159,6 +159,6 @@ if __name__ == "__main__":
         logger.info(f"Writing TIF files completed successfully")
                 
     else:
-        main(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.cwd,
+        driver(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.cwd,
              nmme_model=args.nmme_model, jobname=args.jobname, ntasks=args.ntasks,
              hours=args.hours)

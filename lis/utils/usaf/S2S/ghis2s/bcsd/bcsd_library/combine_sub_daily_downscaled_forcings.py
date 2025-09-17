@@ -244,9 +244,9 @@ dst_yyyymm.append((init_datetime + relativedelta(months=mon+1)).strftime("%Y%m")
 last_yyyymm = len(src_yyyymm) -1
 for iens, ens_value in enumerate(range(ENS_NUM)):
     ens_nmme = iens + 1
-    OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, INIT_FCST_YEAR, ens_nmme)
-    src_file = f"{OUTDIR}/{MODEL_NAME}.{src_yyyymm[last_yyyymm]}.nc4"
-    dst_file = f"{OUTDIR}/{MODEL_NAME}.{dst_yyyymm[last_yyyymm]}.nc4"
+    OUTDIR_ENS = OUTDIR + f'ens{ens_nmme}'
+    src_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{src_yyyymm[last_yyyymm]}.nc4"
+    dst_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{dst_yyyymm[last_yyyymm]}.nc4"
     cmd = f"ln -sfn {src_file} {dst_file}"
     returncode = subprocess.call(cmd, shell=True)
     if returncode != 0:
