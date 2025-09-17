@@ -81,7 +81,7 @@ subroutine LIS_runoffdata_plugin
         readLISrunoffdata)
 #endif
 
-#if ( defined ROUTE_HYMAP2_ROUTER )
+#if ( defined ROUTE_HYMAP3_ROUTER )
    call registerinitrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
         HYMAP3_LISrunoffdata_init)
    call registerreadrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &

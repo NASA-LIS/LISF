@@ -61,6 +61,10 @@ subroutine LIS_routing_plugin
     use HYMAP2_routingMod, only : HYMAP2_routingInit
 #endif
 
+#if ( defined ROUTE_HYMAP3_ROUTER )
+    use HYMAP3_routingMod, only : HYMAP3_routingInit
+#endif
+
 #if ( defined ROUTE_RAPID_ROUTER )
     use RAPID_routingMod, only : RAPID_routingInit
 #endif
@@ -86,6 +90,13 @@ subroutine LIS_routing_plugin
    external HYMAP2_routing_run
    external HYMAP2_routing_output
    external HYMAP2_routing_writerst
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+   external HYMAP3_routing_readrst
+   external HYMAP3_routing_run
+   external HYMAP3_routing_output
+   external HYMAP3_routing_writerst
 #endif
 
 #if ( defined ROUTE_RAPID_ROUTER )
@@ -126,6 +137,17 @@ subroutine LIS_routing_plugin
                               HYMAP2_routing_output)
    call registerroutingwriterestart(trim(LIS_HYMAP2routerId)//char(0), &
                                     HYMAP2_routing_writerst)
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+   call registerroutinginit(trim(LIS_HYMAP3routerId)//char(0),HYMAP3_routingInit)
+   call registerroutingreadrestart(trim(LIS_HYMAP3routerId)//char(0), &
+                                   HYMAP3_routing_readrst)
+   call registerroutingrun(trim(LIS_HYMAP3routerId)//char(0),HYMAP3_routing_run)
+   call registerroutingoutput(trim(LIS_HYMAP3routerId)//char(0), &
+                              HYMAP3_routing_output)
+   call registerroutingwriterestart(trim(LIS_HYMAP3routerId)//char(0), &
+                                    HYMAP3_routing_writerst)
 #endif
 
 #if ( defined ROUTE_RAPID_ROUTER )
