@@ -62,6 +62,7 @@ contains
 ! !USES:
     use HYMAP3_routingMod
     use HYMAP3_initMod
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
@@ -82,7 +83,7 @@ contains
     integer                :: ncId, nrId, siteId
     integer                :: nc,nr,drainid,sid
     logical                :: local_upd_flag
-    character*100          :: localWeightMap
+    character(LIS_CONST_PATH_LEN) :: localWeightMap
     logical                :: file_exists
 
     if(.not.allocated(HYMAP3_daWL_struc)) then 

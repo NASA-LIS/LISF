@@ -16,6 +16,7 @@
 ! !USES: 
 subroutine readGLDAS1runoffdata(n,surface_runoff, baseflow)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
@@ -42,7 +43,7 @@ subroutine readGLDAS1runoffdata(n,surface_runoff, baseflow)
   integer                       :: ftn
   integer, allocatable          :: pid(:),tid(:)
   integer                       :: qs_index, qsb_index
-  character*100                 :: filename
+  character(LIS_CONST_PATH_LEN) :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt
@@ -150,6 +151,7 @@ end subroutine readGLDAS1runoffdata
 subroutine create_GLDAS1_filename(odir,model_name, datares,&
      yr,mo,doy,hr,filename)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_logMod
 
 ! 
@@ -187,7 +189,7 @@ subroutine create_GLDAS1_filename(odir,model_name, datares,&
   character*3             :: fdoy
   character*2             :: fmo, fhr
   integer                 :: ierr
-  character*100           :: list_name
+  character(LIS_CONST_PATH_LEN) :: list_name
 
   external :: system
 
