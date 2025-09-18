@@ -53,8 +53,6 @@ subroutine read_HYMAP_levee_height(n, array)
        HYMAP_struc(n)%hymap_gridtransform, &
        HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 indicates 2D layer
 
-print*,maxval(array)
-  
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
         if(array(c,r,1).lt.0) then
@@ -62,8 +60,6 @@ print*,maxval(array)
         endif
      enddo
   enddo
-
-print*,maxval(array)
 
   call LDT_releaseUnitNumber(ftn)
 

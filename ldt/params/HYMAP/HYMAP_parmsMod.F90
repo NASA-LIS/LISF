@@ -25,6 +25,7 @@ module HYMAP_parmsMod
 !   9 Jun 2020: Yeosang Yoon: Support flexible grid setting (dx~=dy)
 !
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -53,32 +54,32 @@ module HYMAP_parmsMod
      integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode,leveehgtcode,landareacode,nodeloncode,nodelatcode
      integer       :: baseflowdelaycode,runoffdelaycode,runoffdelaymcode
 
-     character*100 :: riverwidthfile
-     character*100 :: riverheightfile
-     character*100 :: riverlengthfile
-     character*100 :: riverzfile
-     character*100 :: fldheightfile
-     character*100 :: fldzfile
-     character*100 :: flowdirxfile
-     character*100 :: flowdiryfile
-     character*100 :: gridelevfile
-     character*100 :: griddistfile
-     character*100 :: gridareafile
-     character*100 :: drainareafile
-     character*100 :: basinfile
-     character*100 :: runoffdelayfile
-     character*100 :: runoffdelaymfile
-     character*100 :: baseflowdelayfile
-     character*100 :: refqfile
-     character*100 :: basinmaskfile
-     character*100 :: flowtypefile 
-     character*100 :: baseflowdwiratiofile 
-     character*100 :: runoffdwiratiofile 
-     character*100 :: urbandrainoutletfile
-     character*100 :: leveeheightfile
-     character*100 :: landgridareafile
-     character*100 :: nodelonfile
-     character*100 :: nodelatfile
+     character(LDT_CONST_PATH_LEN) :: riverwidthfile
+     character(LDT_CONST_PATH_LEN) :: riverheightfile
+     character(LDT_CONST_PATH_LEN) :: riverlengthfile
+     character(LDT_CONST_PATH_LEN) :: riverzfile
+     character(LDT_CONST_PATH_LEN) :: fldheightfile
+     character(LDT_CONST_PATH_LEN) :: fldzfile
+     character(LDT_CONST_PATH_LEN) :: flowdirxfile
+     character(LDT_CONST_PATH_LEN) :: flowdiryfile
+     character(LDT_CONST_PATH_LEN) :: gridelevfile
+     character(LDT_CONST_PATH_LEN) :: griddistfile
+     character(LDT_CONST_PATH_LEN) :: gridareafile
+     character(LDT_CONST_PATH_LEN) :: drainareafile
+     character(LDT_CONST_PATH_LEN) :: basinfile
+     character(LDT_CONST_PATH_LEN) :: runoffdelayfile
+     character(LDT_CONST_PATH_LEN) :: runoffdelaymfile
+     character(LDT_CONST_PATH_LEN) :: baseflowdelayfile
+     character(LDT_CONST_PATH_LEN) :: refqfile
+     character(LDT_CONST_PATH_LEN) :: basinmaskfile
+     character(LDT_CONST_PATH_LEN) :: flowtypefile 
+     character(LDT_CONST_PATH_LEN) :: baseflowdwiratiofile 
+     character(LDT_CONST_PATH_LEN) :: runoffdwiratiofile 
+     character(LDT_CONST_PATH_LEN) :: urbandrainoutletfile
+     character(LDT_CONST_PATH_LEN) :: leveeheightfile
+     character(LDT_CONST_PATH_LEN) :: landgridareafile
+     character(LDT_CONST_PATH_LEN) :: nodelonfile
+     character(LDT_CONST_PATH_LEN) :: nodelatfile
 
      type(LDT_paramEntry) :: hymap_river_width
      type(LDT_paramEntry) :: hymap_river_height
@@ -915,6 +916,8 @@ contains
   
   subroutine HYMAPparms_writeData(n,ftn)
 
+    implicit none
+
     integer   :: n 
     integer   :: ftn
 
@@ -1054,7 +1057,7 @@ contains
        i2nexty=ibound
     endwhere
          
-    print*, ''
+
   end subroutine adjust_nextxy
 
 !BOP

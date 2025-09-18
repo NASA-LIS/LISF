@@ -46,19 +46,13 @@ subroutine read_HYMAP_urban_drain_outlet(n, array)
      call LDT_endrun
   endif
 
-print*,trim(HYMAP_struc(n)%urbandrainoutletfile)
-print*,size(array(:,1,1)),size(array(1,:,1))
-print*,LDT_rc%lnc(n),LDT_rc%lnr(n)
-
   open(ftn, file=trim(HYMAP_struc(n)%urbandrainoutletfile), access='direct',&
        status='old', form="unformatted", convert="big_endian", recl=4)
-  
+
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &
        HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 indicates 2D layer
 
-print*,maxval(array)
-  
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
         if(array(c,r,1).lt.0) then
@@ -66,8 +60,6 @@ print*,maxval(array)
         endif
      enddo
   enddo
-
-print*,maxval(array)
 
   call LDT_releaseUnitNumber(ftn)
 
