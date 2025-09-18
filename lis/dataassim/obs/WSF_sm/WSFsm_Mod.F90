@@ -9,7 +9,7 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
-! !MODULE: SMAPEOPLsm_Mod
+! !MODULE: WSFsm_Mod
 ! 
 ! !DESCRIPTION: 
 !   This module contains interfaces and subroutines to
@@ -17,7 +17,7 @@
 ! 
 ! !REVISION HISTORY: 
 !  6 Jun 2022    Yonghwan Kwon; initial specification
-module SMAPEOPLsm_Mod
+module WSFsm_Mod
 ! !USES: 
   use ESMF
   use map_utils
@@ -30,13 +30,13 @@ module SMAPEOPLsm_Mod
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: SMAPEOPLsm_setup
+  public :: WSFsm_setup
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
-  public :: SMAPEOPLsm_struc
+  public :: WSFsm_struc ! make it accessible by other module
 !EOP
-  type, public:: SMAPEOPLsm_dec
+  type, public:: WSFsm_dec
 
      integer                :: useSsdevScal
      logical                :: startMode
@@ -77,19 +77,19 @@ module SMAPEOPLsm_Mod
      character(len=LIS_CONST_PATH_LEN) :: modelcdffile
      character(len=LIS_CONST_PATH_LEN) :: obscdffile
 
-  end type SMAPEOPLsm_dec
+  end type WSFsm_dec
 
-  type(SMAPEOPLsm_dec),allocatable :: SMAPEOPLsm_struc(:)
+  type(WSFsm_dec),allocatable :: WSFsm_struc(:)
 
 contains
 
 !BOP
 ! 
-! !ROUTINE: SMAPEOPLsm_setup
-! \label{SMAPEOPLsm_setup}
+! !ROUTINE: WSFsm_setup
+! \label{WSFsm_setup}
 ! 
 ! !INTERFACE: 
-  subroutine SMAPEOPLsm_setup(k, OBS_State, OBS_Pert_State)
+  subroutine WSFsm_setup(k, OBS_State, OBS_Pert_State)
 ! !USES:
     use LIS_coreMod
     use LIS_timeMgrMod
@@ -141,7 +141,7 @@ contains
     real, allocatable                 ::  ssdev_grid(:,:)
     integer                           ::  ngrid
 
-    allocate(SMAPEOPLsm_struc(LIS_rc%nnest))
+    allocate(WSFsm_struc(LIS_rc%nnest))
 
     call ESMF_ArraySpecSet(intarrspec,rank=1,typekind=ESMF_TYPEKIND_I4,&
          rc=status)
@@ -155,53 +155,53 @@ contains
          rc=status)
     call LIS_verify(status)
 
-    call ESMF_ConfigFindLabel(LIS_config,"SMAP_E_OPL soil moisture data directory:",&
+    call ESMF_ConfigFindLabel(LIS_config,"WSF soil moisture data directory:",&
          rc=status)
     do n=1,LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,smobsdir,&
             rc=status)
-       call LIS_verify(status, 'SMAP_E_OPL soil moisture data directory: is missing')
+       call LIS_verify(status, 'WSF soil moisture data directory: is missing')
 
        call ESMF_AttributeSet(OBS_State(n),"Data Directory",&
             smobsdir, rc=status)
        call LIS_verify(status)
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"SMAP_E_OPL soil moisture use scaled standard deviation model:",&
+    call ESMF_ConfigFindLabel(LIS_config,"WSF soil moisture use scaled standard deviation model:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,SMAPEOPLsm_struc(n)%useSsdevScal,&
+       call ESMF_ConfigGetAttribute(LIS_config,WSFsm_struc(n)%useSsdevScal,&
             rc=status)
-       call LIS_verify(status, 'SMAP_E_OPL soil moisture use scaled standard deviation model: is missing')
+       call LIS_verify(status, 'WSF soil moisture use scaled standard deviation model: is missing')
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"SMAP_E_OPL model CDF file:",&
+    call ESMF_ConfigFindLabel(LIS_config,"WSF model CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,SMAPEOPLsm_struc(n)%modelcdffile,rc=status)
-       call LIS_verify(status, 'SMAP_E_OPL model CDF file: not defined')
+       call ESMF_ConfigGetAttribute(LIS_config,WSFsm_struc(n)%modelcdffile,rc=status)
+       call LIS_verify(status, 'WSF model CDF file: not defined')
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"SMAP_E_OPL observation CDF file:",&
+    call ESMF_ConfigFindLabel(LIS_config,"WSF observation CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,SMAPEOPLsm_struc(n)%obscdffile,rc=status)
-       call LIS_verify(status, 'SMAP_E_OPL observation CDF file: not defined')
+       call ESMF_ConfigGetAttribute(LIS_config,WSFsm_struc(n)%obscdffile,rc=status)
+       call LIS_verify(status, 'WSF observation CDF file: not defined')
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config, "SMAP_E_OPL soil moisture number of bins in the CDF:", rc=status)
+    call ESMF_ConfigFindLabel(LIS_config, "WSF soil moisture number of bins in the CDF:", rc=status)
     do n=1, LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,SMAPEOPLsm_struc(n)%nbins, rc=status)
-       call LIS_verify(status, "SMAP_E_OPL soil moisture number of bins in the CDF: not defined")
+       call ESMF_ConfigGetAttribute(LIS_config,WSFsm_struc(n)%nbins, rc=status)
+       call LIS_verify(status, "WSF soil moisture number of bins in the CDF: not defined")
     enddo
 
    do n=1, LIS_rc%nnest
-      SMAPEOPLsm_struc(n)%cdf_read_mon = .false.
+      WSFsm_struc(n)%cdf_read_mon = .false.
 
-      call ESMF_ConfigFindLabel(LIS_config, "SMAP_E_OPL CDF read option:", rc=status)    ! 0: read CDF for all months/year 
+      call ESMF_ConfigFindLabel(LIS_config, "WSF CDF read option:", rc=status)    ! 0: read CDF for all months/year 
                                                                                          ! 1: read CDF for current month
-      call ESMF_ConfigGetAttribute(LIS_config, SMAPEOPLsm_struc(n)%cdf_read_opt, rc=status)
-      call LIS_verify(status, "SMAP_E_OPL CDF read option: not defined")
+      call ESMF_ConfigGetAttribute(LIS_config, WSFsm_struc(n)%cdf_read_opt, rc=status)
+      call LIS_verify(status, "WSF CDF read option: not defined")
    enddo
 
    do n=1,LIS_rc%nnest
@@ -224,11 +224,11 @@ contains
     enddo
 
     write(LIS_logunit,*)&
-         '[INFO] read SMAP_E_OPL soil moisture data specifications'
+         '[INFO] read WSF soil moisture data specifications'
 
 !----------------------------------------------------------------------------
 !   Create the array containers that will contain the observations and
-!   the perturbations. SMAP_E_OPL
+!   the perturbations. WSF
 !   observations are in the grid space. Since there is only one layer
 !   being assimilated, the array size is LIS_rc%obs_ngrid(k). 
 !   
@@ -282,7 +282,7 @@ contains
 
 ! Set obs err to be uniform (will be rescaled later for each grid point). 
           ssdev = obs_pert%ssdev(1)
-          SMAPEOPLsm_struc(n)%ssdev_inp = obs_pert%ssdev(1)
+          WSFsm_struc(n)%ssdev_inp = obs_pert%ssdev(1)
 
           pertField(n) = ESMF_FieldCreate(arrayspec=pertArrSpec,&
                grid=LIS_obsensOnGrid(n,k),name="Observation"//vid(1)//vid(2),&
@@ -337,25 +337,25 @@ contains
          '[INFO] Created the States to hold the SMAP_E_OPL observations data'
 
     do n=1,LIS_rc%nnest
-       SMAPEOPLsm_struc(n)%nc = 2560
-       SMAPEOPLsm_struc(n)%nr = 1920
+       WSFsm_struc(n)%nc = 2560
+       WSFsm_struc(n)%nr = 1920
 
-       SMAPEOPLsm_struc(n)%gridDesci(1) = 0
-       SMAPEOPLsm_struc(n)%gridDesci(2) = SMAPEOPLsm_struc(n)%nc
-       SMAPEOPLsm_struc(n)%gridDesci(3) = SMAPEOPLsm_struc(n)%nr
-       SMAPEOPLsm_struc(n)%gridDesci(4) = -89.9531250
-       SMAPEOPLsm_struc(n)%gridDesci(5) = -179.9296875
-       SMAPEOPLsm_struc(n)%gridDesci(6) = 128
-       SMAPEOPLsm_struc(n)%gridDesci(7) = 89.9531250
-       SMAPEOPLsm_struc(n)%gridDesci(8) = 179.9296875
-       SMAPEOPLsm_struc(n)%gridDesci(9) = 0.1406250  !dlon
-       SMAPEOPLsm_struc(n)%gridDesci(10) = 0.0937500 !dlat
-       SMAPEOPLsm_struc(n)%gridDesci(20) = 64
+       WSFsm_struc(n)%gridDesci(1) = 0
+       WSFsm_struc(n)%gridDesci(2) = WSFsm_struc(n)%nc
+       WSFsm_struc(n)%gridDesci(3) = WSFsm_struc(n)%nr
+       WSFsm_struc(n)%gridDesci(4) = -89.953125
+       WSFsm_struc(n)%gridDesci(5) = -179.929688
+       WSFsm_struc(n)%gridDesci(6) = 128
+       WSFsm_struc(n)%gridDesci(7) = 89.953125
+       WSFsm_struc(n)%gridDesci(8) = 179.929688
+       WSFsm_struc(n)%gridDesci(9) = 0.140570  !dlon
+       WSFsm_struc(n)%gridDesci(10) = 0.093701 !dlat
+       WSFsm_struc(n)%gridDesci(20) = 64
 
-       allocate(SMAPEOPLsm_struc(n)%smobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
-       allocate(SMAPEOPLsm_struc(n)%smtime(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
+       allocate(WSFsm_struc(n)%smobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
+       allocate(WSFsm_struc(n)%smtime(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
 
-       SMAPEOPLsm_struc(n)%smtime = -1
+       WSFsm_struc(n)%smtime = -1
 
     enddo
 
@@ -367,101 +367,101 @@ contains
                LIS_rc%dascaloption(k).eq."Linear scaling" .or. &
                LIS_rc%dascaloption(k).eq."Anomaly scaling") then
 
-          call LIS_getCDFattributes(k,SMAPEOPLsm_struc(n)%modelcdffile,&
-               SMAPEOPLsm_struc(n)%ntimes,ngrid)
+          call LIS_getCDFattributes(k,WSFsm_struc(n)%modelcdffile,&
+               WSFsm_struc(n)%ntimes,ngrid)
 
-          if (SMAPEOPLsm_struc(n)%cdf_read_opt.eq.0) then
-             allocate(SMAPEOPLsm_struc(n)%model_xrange(&
-                  LIS_rc%obs_ngrid(k), SMAPEOPLsm_struc(n)%ntimes, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%obs_xrange(&
-                  LIS_rc%obs_ngrid(k), SMAPEOPLsm_struc(n)%ntimes, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%model_cdf(&
-                  LIS_rc%obs_ngrid(k), SMAPEOPLsm_struc(n)%ntimes, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%obs_cdf(&
-                  LIS_rc%obs_ngrid(k), SMAPEOPLsm_struc(n)%ntimes, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
-                  SMAPEOPLsm_struc(n)%ntimes))
-             allocate(SMAPEOPLsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
-                  SMAPEOPLsm_struc(n)%ntimes))
-             allocate(SMAPEOPLsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
-                  SMAPEOPLsm_struc(n)%ntimes))
-             allocate(SMAPEOPLsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
-                  SMAPEOPLsm_struc(n)%ntimes))
+          if (WSFsm_struc(n)%cdf_read_opt.eq.0) then
+             allocate(WSFsm_struc(n)%model_xrange(&
+                  LIS_rc%obs_ngrid(k), WSFsm_struc(n)%ntimes, &
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%obs_xrange(&
+                  LIS_rc%obs_ngrid(k), WSFsm_struc(n)%ntimes, &
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%model_cdf(&
+                  LIS_rc%obs_ngrid(k), WSFsm_struc(n)%ntimes, &
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%obs_cdf(&
+                  LIS_rc%obs_ngrid(k), WSFsm_struc(n)%ntimes, &
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),&
+                  WSFsm_struc(n)%ntimes))
+             allocate(WSFsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),&
+                  WSFsm_struc(n)%ntimes))
+             allocate(WSFsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),&
+                  WSFsm_struc(n)%ntimes))
+             allocate(WSFsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),&
+                  WSFsm_struc(n)%ntimes))
           else
-             allocate(SMAPEOPLsm_struc(n)%model_xrange(&
+             allocate(WSFsm_struc(n)%model_xrange(&
                   LIS_rc%obs_ngrid(k), 1, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%obs_xrange(&
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%obs_xrange(&
                   LIS_rc%obs_ngrid(k), 1, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%model_cdf(&
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%model_cdf(&
                   LIS_rc%obs_ngrid(k), 1, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%obs_cdf(&
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%obs_cdf(&
                   LIS_rc%obs_ngrid(k), 1, &
-                  SMAPEOPLsm_struc(n)%nbins))
-             allocate(SMAPEOPLsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),1))
-             allocate(SMAPEOPLsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),1))
-             allocate(SMAPEOPLsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),1))
-             allocate(SMAPEOPLsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),1))
+                  WSFsm_struc(n)%nbins))
+             allocate(WSFsm_struc(n)%model_mu(LIS_rc%obs_ngrid(k),1))
+             allocate(WSFsm_struc(n)%model_sigma(LIS_rc%obs_ngrid(k),1))
+             allocate(WSFsm_struc(n)%obs_mu(LIS_rc%obs_ngrid(k),1))
+             allocate(WSFsm_struc(n)%obs_sigma(LIS_rc%obs_ngrid(k),1))
           endif
 !----------------------------------------------------------------------------
 ! Read the model and observation CDF data
 !----------------------------------------------------------------------------
-         if (SMAPEOPLsm_struc(n)%cdf_read_opt.eq.0) then
+         if (WSFsm_struc(n)%cdf_read_opt.eq.0) then
           call LIS_readMeanSigmaData(n,k,&
-               SMAPEOPLsm_struc(n)%ntimes,&
+               WSFsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               SMAPEOPLsm_struc(n)%modelcdffile, &
+               WSFsm_struc(n)%modelcdffile, &
                "SoilMoist",&
-               SMAPEOPLsm_struc(n)%model_mu,&
-               SMAPEOPLsm_struc(n)%model_sigma)
+               WSFsm_struc(n)%model_mu,&
+               WSFsm_struc(n)%model_sigma)
 
           call LIS_readMeanSigmaData(n,k,&
-               SMAPEOPLsm_struc(n)%ntimes,&
+               WSFsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               SMAPEOPLsm_struc(n)%obscdffile, &
+               WSFsm_struc(n)%obscdffile, &
                "SoilMoist",&
-               SMAPEOPLsm_struc(n)%obs_mu,&
-               SMAPEOPLsm_struc(n)%obs_sigma)
+               WSFsm_struc(n)%obs_mu,&
+               WSFsm_struc(n)%obs_sigma)
 
           call LIS_readCDFdata(n,k,&
-               SMAPEOPLsm_struc(n)%nbins,&
-               SMAPEOPLsm_struc(n)%ntimes,&
+               WSFsm_struc(n)%nbins,&
+               WSFsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               SMAPEOPLsm_struc(n)%modelcdffile, &
+               WSFsm_struc(n)%modelcdffile, &
                "SoilMoist",&
-               SMAPEOPLsm_struc(n)%model_xrange,&
-               SMAPEOPLsm_struc(n)%model_cdf)
+               WSFsm_struc(n)%model_xrange,&
+               WSFsm_struc(n)%model_cdf)
 
           call LIS_readCDFdata(n,k,&
-               SMAPEOPLsm_struc(n)%nbins,&
-               SMAPEOPLsm_struc(n)%ntimes,&
+               WSFsm_struc(n)%nbins,&
+               WSFsm_struc(n)%ntimes,&
                LIS_rc%obs_ngrid(k), &
-               SMAPEOPLsm_struc(n)%obscdffile, &
+               WSFsm_struc(n)%obscdffile, &
                "SoilMoist",&
-               SMAPEOPLsm_struc(n)%obs_xrange,&
-               SMAPEOPLsm_struc(n)%obs_cdf)
+               WSFsm_struc(n)%obs_xrange,&
+               WSFsm_struc(n)%obs_cdf)
 
-          if(SMAPEOPLsm_struc(n)%useSsdevScal.eq.1) then
-             if(SMAPEOPLsm_struc(n)%ntimes.eq.1) then
+          if(WSFsm_struc(n)%useSsdevScal.eq.1) then
+             if(WSFsm_struc(n)%ntimes.eq.1) then
                 jj = 1
              else
                 jj = LIS_rc%mo
              endif
              do t=1,LIS_rc%obs_ngrid(k)
-                if(SMAPEOPLsm_struc(n)%obs_sigma(t,jj).gt.0) then
+                if(WSFsm_struc(n)%obs_sigma(t,jj).gt.0) then
 
-                   print*, ssdev(t), SMAPEOPLsm_struc(n)%model_sigma(t,jj),&
-                        SMAPEOPLsm_struc(n)%obs_sigma(t,jj)
+                   print*, ssdev(t), WSFsm_struc(n)%model_sigma(t,jj),&
+                        WSFsm_struc(n)%obs_sigma(t,jj)
 
 
-                   ssdev(t) = ssdev(t)*SMAPEOPLsm_struc(n)%model_sigma(t,jj)/&
-                        SMAPEOPLsm_struc(n)%obs_sigma(t,jj)
+                   ssdev(t) = ssdev(t)*WSFsm_struc(n)%model_sigma(t,jj)/&
+                        WSFsm_struc(n)%obs_sigma(t,jj)
                    !                c = LIS_domain(n)%grid(t)%col
                    !                r = LIS_domain(n)%grid(t)%row
                    !                ssdev_grid(c,r) = ssdev(t) 
@@ -488,41 +488,41 @@ contains
 
        if(LIS_rc%obs_gridDesc(k,10).le.0.0937500) then
 
-          allocate(SMAPEOPLsm_struc(n)%rlat(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%rlon(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%n11(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%n12(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%n21(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%n22(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%w11(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%w12(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%w21(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
-          allocate(SMAPEOPLsm_struc(n)%w22(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%rlat(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%rlon(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%n11(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%n12(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%n21(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%n22(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%w11(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%w12(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%w21(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
+          allocate(WSFsm_struc(n)%w22(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
 
-          call bilinear_interp_input_withgrid(SMAPEOPLsm_struc(n)%gridDesci(:), &
+          call bilinear_interp_input_withgrid(WSFsm_struc(n)%gridDesci(:), &
                LIS_rc%obs_gridDesc(k,:),&
                LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
-               SMAPEOPLsm_struc(n)%rlat, SMAPEOPLsm_struc(n)%rlon,&
-               SMAPEOPLsm_struc(n)%n11, SMAPEOPLsm_struc(n)%n12, &
-               SMAPEOPLsm_struc(n)%n21, SMAPEOPLsm_struc(n)%n22, &
-               SMAPEOPLsm_struc(n)%w11, SMAPEOPLsm_struc(n)%w12, &
-               SMAPEOPLsm_struc(n)%w21, SMAPEOPLsm_struc(n)%w22)
+               WSFsm_struc(n)%rlat, WSFsm_struc(n)%rlon,&
+               WSFsm_struc(n)%n11, WSFsm_struc(n)%n12, &
+               WSFsm_struc(n)%n21, WSFsm_struc(n)%n22, &
+               WSFsm_struc(n)%w11, WSFsm_struc(n)%w12, &
+               WSFsm_struc(n)%w21, WSFsm_struc(n)%w22)
 
        else
 
-          allocate(SMAPEOPLsm_struc(n)%n11(&
-               SMAPEOPLsm_struc(n)%nc*SMAPEOPLsm_struc(n)%nr))
+          allocate(WSFsm_struc(n)%n11(&
+               WSFsm_struc(n)%nc*WSFsm_struc(n)%nr))
 
-          call upscaleByAveraging_input(SMAPEOPLsm_struc(n)%gridDesci(:),&
+          call upscaleByAveraging_input(WSFsm_struc(n)%gridDesci(:),&
                LIS_rc%obs_gridDesc(k,:),&
-               SMAPEOPLsm_struc(n)%nc*SMAPEOPLsm_struc(n)%nr, &
-               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), SMAPEOPLsm_struc(n)%n11)
+               WSFsm_struc(n)%nc*WSFsm_struc(n)%nr, &
+               LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), WSFsm_struc(n)%n11)
        endif
 
        call LIS_registerAlarm("SMAP_E_OPL read alarm",&
             3600.0, 3600.0)
 
-       SMAPEOPLsm_struc(n)%startMode = .true.
+       WSFsm_struc(n)%startMode = .true.
 
        call ESMF_StateAdd(OBS_State(n),(/obsField(n)/),rc=status)
        call LIS_verify(status)
@@ -531,5 +531,5 @@ contains
        call LIS_verify(status)
 
     enddo
-  end subroutine SMAPEOPLsm_setup
-end module SMAPEOPLsm_Mod
+  end subroutine WSFsm_setup
+end module WSFsm_Mod
