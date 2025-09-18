@@ -32,6 +32,7 @@ subroutine HYMAP3_routing_writerst(n)
 !EOP
 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_logMod
   use LIS_fileIOMod
@@ -45,7 +46,7 @@ subroutine HYMAP3_routing_writerst(n)
   
   integer, intent(in)   :: n 
   
-  character*100         :: filename
+  character(LIS_CONST_PATH_LEN)   :: filename
   integer               :: ftn
   integer               :: status
   logical               :: alarmCheck
@@ -910,8 +911,9 @@ subroutine HYMAP3_dump_restart(n, ftn)
 !  \end{description}
 !EOP
 
-    print*,'HYMAP3_writebif_restart_ens not implemented'
-    stop
+    write(LIS_logunit,*) &
+         '[ERR] HYMAP3_writebif_restart_ens not implemented'
+    call LIS_endrun
 
   end subroutine HYMAP3_writebif_restart_ens
 

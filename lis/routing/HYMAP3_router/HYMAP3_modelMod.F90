@@ -251,7 +251,7 @@ contains
         h1=0.;v1=rivstomax
         h2=fldhgt(1);v2=fldstomax(1)
       else
-        print*,'[ERR] Please check [HYMAP3_calc_fldstg] '
+        write(LIS_logunit,*) '[ERR] Please check [HYMAP3_calc_fldstg] '
         call LIS_endrun()
       endif        
       flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)
@@ -478,8 +478,8 @@ contains
     ! 19 Apr 2024
     ! ================================================
     implicit none
-integer,  intent(in)  :: ic
-real*8,    intent(in)    :: time
+    integer,  intent(in)  :: ic
+    real*8,    intent(in)    :: time
 
     integer, intent(in)    :: outlet          !outlet flag: 0 - river; 1 - ocean
     real,    intent(in)    :: dt              !time step length [sec]
@@ -1004,7 +1004,7 @@ real*8,    intent(in)    :: time
             h1=0.;v1=0.
             h2=fldhgt(1);v2=fldonlystomax(1)
           else
-            print*,'[ERR] Please check [HYMAP3_calc_fldstg_lev] '
+            write(LIS_logunit,*) '[ERR] Please check [HYMAP3_calc_fldstg_lev] '
             call LIS_endrun()
           endif
           flddph=h1+(h2-h1)*(fldsto-v1)/(v2-v1)
@@ -1033,7 +1033,7 @@ real*8,    intent(in)    :: time
           h1=0.;v1=rivstomax
           h2=fldhgt(1);v2=fldstomax(1)
         else
-          print*,'[ERR] Please check [HYMAP3_calc_fldstg] '
+          write(LIS_logunit,*) '[ERR] Please check [HYMAP3_calc_fldstg] '
           call LIS_endrun()
         endif
         flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)
@@ -1073,7 +1073,7 @@ real*8,    intent(in)    :: time
           h1=0.;v1=rivstomax
           h2=fldhgt(1);v2=fldstomax(1)
         else
-          print*,'[ERR] Please check [HYMAP3_calc_fldstg] '
+          write(LIS_logunit,*) '[ERR] Please check [HYMAP3_calc_fldstg] '
           call LIS_endrun()
         endif
         flddph=h1+(h2-h1)*(rstoall-v1)/(v2-v1)

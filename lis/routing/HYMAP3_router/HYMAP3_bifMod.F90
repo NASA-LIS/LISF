@@ -30,13 +30,16 @@ contains
     character(*), intent(in)    :: yfile
     integer,      intent(out)   :: isize,isize1
     logical                     :: file_exists
+    integer :: ftn
 
     inquire(file=trim(yfile),exist=file_exists)
     if(file_exists) then
+       ftn = LIS_getNextUnitNumber()
       write(LIS_logunit,*)'read header size '//trim(yfile)
-      open(2,file=trim(yfile), status='old')
-      read(2,*,end=10)isize,isize1
-      close(2)
+      open(ftn,file=trim(yfile), status='old')
+      read(ftn,*,end=10)isize,isize1
+      close(ftn)
+      call LIS_getNextUnitNumber(ftn)
     else
       write(LIS_logunit,*) 'header '//trim(yfile)
       write(LIS_logunit,*) 'failed in opening file in HYMAP3_routingMod'
@@ -61,20 +64,23 @@ contains
     real,         intent(out) :: bifdelv(nbifdelv),bifman(nbifdelv),bifelv(nbif),biflen(nbif),bifwth(nbif,nbifdelv)
     integer                   :: ii,ix,iy,jx,jy
     logical                   :: file_exists
+    integer :: ftn
 
     inquire(file=trim(biffile),exist=file_exists)
     if(file_exists) then
-      write(LIS_logunit,*)'get bifurcation topology '//trim(biffile)
-      open(2,file=trim(biffile), status='old')
-      read(2,*)ii
-      read(2,*)bifdelv(:)
-      read(2,*)bifman(:)
+       ftn = LIS_getNextUnitNumber()
+       write(LIS_logunit,*)'get bifurcation topology '//trim(biffile)
+      open(ftn,file=trim(biffile), status='old')
+      read(ftn,*)ii
+      read(ftn,*)bifdelv(:)
+      read(ftn,*)bifman(:)
       do ii=1,nbif
-        read(2,*,end=10)ix,iy,jx,jy,bifelv(ii),biflen(ii),bifwth(ii,:)
+        read(ftn,*,end=10)ix,iy,jx,jy,bifelv(ii),biflen(ii),bifwth(ii,:)
         bifloc(ii,1)=sindex(ix,iy)
         bifloc(ii,2)=sindex(jx,jy)
       enddo
-      close(2)
+      close(ftn)
+      call LIS_releaseUnitNumber(ftn)
     else
       write(LIS_logunit,*) 'file '//trim(biffile)
       write(LIS_logunit,*) 'failed in opening file in HYMAP3_bifMod'

@@ -106,7 +106,7 @@ print*,sfcelv**2
                  nupdis_mo(imon),uppdis_mo(imon),Rx,dble(dt),outsim)
 
     if(outsim*dt>volsim)outsim=volsim/dt
-print*,int(time),volsim,volres,sfcelv,outsim
+write(LIS_logunit,*) int(time),volsim,volres,sfcelv,outsim
 !stop
     !update HyMAP variables
     inflow_down=inflow_down-outflow+outsim

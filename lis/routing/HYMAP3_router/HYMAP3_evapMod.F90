@@ -51,7 +51,7 @@ contains
   !=======================================================================
   subroutine HYMAP3_evap_main(evaptype,n,nseqall,mis,outlet,pres,tair,qair,wind,qnet,evap,ewat,edif)
 
-    use LIS_logMod,     only : LIS_logunit   
+    use LIS_logMod,     only : LIS_logunit, LIS_endrun
      
     implicit none
     
@@ -80,8 +80,8 @@ contains
       if(evaptype==1)then
         call HYMAP3_penman_monteith(pres(ic),tair(ic),wind(ic),qair(ic),qnet(ic),ewat(ic))
       else
-         write(LIS_logunit,*)"HYMAP routing model evaporation flag: unknown value"
-         stop
+         write(LIS_logunit,*)"[ERR] HYMAP routing model evaporation flag: unknown value"
+         call LIS_endrun
       endif
       edif(ic)=max(0.,ewat(ic)-evap(ic))
     enddo

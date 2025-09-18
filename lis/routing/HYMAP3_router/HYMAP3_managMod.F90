@@ -78,20 +78,23 @@ contains
     real,         intent(out) :: managcoef(nmanag,nmanagcoef),managqmax(nmanag)
     integer                   :: ii,ix,iy,jx,jy
     logical                   :: file_exists
+    integer :: ftn
 
     inquire(file=managheader,exist=file_exists)
     if(file_exists) then
-      write(LIS_logunit,*)'get management rules '//trim(managheader)
-      open(2,file=trim(managheader), status='old')
-      read(2,*)ii
+       ftn = LIS_getNextUnitNumber()
+       write(LIS_logunit,*)'get management rules '//trim(managheader)
+      open(ftn,file=trim(managheader), status='old')
+      read(ftn,*)ii
       do ii=1,nmanag
-        read(2,*,end=10)ix,iy,jx,jy,managtype(ii),managcoef(ii,:)
+        read(ftn,*,end=10)ix,iy,jx,jy,managtype(ii),managcoef(ii,:)
         managloc(ii,1)=sindex(ix,iy)
         managloc(ii,2)=sindex(jx,jy)
         managact(ii)=0
         managqmax(ii)=0.
       enddo
-      close(2)
+      close(ftn)
+      call LIS_releaseUnitNumber(ftn)
     else
       write(LIS_logunit,*) 'file '//trim(managheader)
       write(LIS_logunit,*) 'failed in opening file in HYMAP3_routingMod'

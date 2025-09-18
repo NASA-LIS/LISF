@@ -24,6 +24,7 @@
 subroutine HYMAP3_routing_readrst
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_fileIOMod
   use LIS_coreMod
   use LIS_logMod
@@ -43,7 +44,7 @@ subroutine HYMAP3_routing_readrst
 
   integer       :: n 
   integer       :: ftn
-  character*100 :: filename
+  character(LIS_CONST_PATH_LEN) :: filename
   logical       :: read_restart
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time
@@ -411,8 +412,9 @@ end subroutine HYMAP3_routing_readrst
 !  \end{description}
 !EOP
 
-    print*,'HYMAP3_readbif_restart_ens not implemented'
-    stop
+    write(LIS_logunit,*) &
+         '[ERR] HYMAP3_readbif_restart_ens not implemented'
+    call LIS_endrun
 
   end subroutine HYMAP3_readbif_restart_ens
 

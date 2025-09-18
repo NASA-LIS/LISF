@@ -39,6 +39,7 @@ module HYMAP3_routingMod
 ! 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_topoMod
   
   implicit none
@@ -125,7 +126,7 @@ module HYMAP3_routingMod
 ! === Linear reservoir components ================
   real,    allocatable :: rnfsto(:,:)    !runoff   reservoir storage [m3]
   real,    allocatable :: bsfsto(:,:)    !baseflow reservoir storage [m3]
-  character*200        :: rstfile
+  character(LIS_CONST_PATH_LEN) :: rstfile
   integer              :: numout
   integer              :: fileopen
   real                 :: outInterval 
@@ -148,7 +149,7 @@ module HYMAP3_routingMod
      !ag (11Sep2015)
   integer              :: steptype     !time step type flag
 
-  character*100         :: LISdir     !if LIS output is being read
+  character(LIS_CONST_PATH_LEN) :: LISdir     !if LIS output is being read
      
 ! === Local inertia variables =====================
   real,    allocatable  :: rivout_pre(:,:)
@@ -176,11 +177,11 @@ module HYMAP3_routingMod
   integer              :: nresop        !number of reservoirs
   integer              :: ntresop       !time series length (number of time steps in the input files)
   integer              :: resopflag
-  character*100         :: resopdir
-  character*100         :: resopheader
+  character(LIS_CONST_PATH_LEN) :: resopdir
+  character(LIS_CONST_PATH_LEN) :: resopheader
   !ag (29Jun2016)
   integer              :: floodflag
-  character*100        :: HYMAP_dfile      
+  character(LIS_CONST_PATH_LEN) :: HYMAP_dfile      
   !ag(17Apr2024)
   integer, allocatable :: resoptype(:)
   !ag(11Oct2024)
@@ -209,7 +210,7 @@ module HYMAP3_routingMod
   real,   allocatable  :: drtotwth(:)     !sum of gutter width within HyMAP grid cell [m]
   real,   allocatable  :: drnoutlet(:)    ! average number of drainage outlets within a grid cell [-]
   real,   allocatable  :: drtotlgh(:)     ! total urban drainage network length within a grid cell [m]
-  character*50         :: drfile          !urban drainage parametere file name
+  character(LIS_CONST_PATH_LEN) :: drfile          !urban drainage parametere file name
   !gutter parameters
   real                        :: drwth     ! gutter width [m]
   real                        :: drhgt      ! gutter height [m]
@@ -230,8 +231,8 @@ module HYMAP3_routingMod
   integer              :: ninsert        !number of gauges
   integer              :: ntinsert       !time series length (number of time steps in the input files)
   integer              :: insertflag
-  character*100         :: insertdir
-  character*100         :: insertheader
+  character(LIS_CONST_PATH_LEN) :: insertdir
+  character(LIS_CONST_PATH_LEN) :: insertheader
 
 !ag(30Mar2021)
 ! === sea level variables/parameters ===
@@ -243,9 +244,9 @@ module HYMAP3_routingMod
   integer               :: ntsealevel       !time series length (number of time steps in the input files)
   integer               :: noutlet          !number of outlets
   integer               :: sealevelflag     !flag accounting for varying sea level
-  character*100         :: sealeveldir      !directory containing files with sea level time series 
-  character*100         :: sealevelheader   !file containing list of sea level time series
-  character*100         :: outletlist       !file containing list of outlet under varying sea level effect
+  character(LIS_CONST_PATH_LEN) :: sealeveldir      !directory containing files with sea level time series 
+  character(LIS_CONST_PATH_LEN) :: sealevelheader   !file containing list of sea level time series
+  character(LIS_CONST_PATH_LEN) :: outletlist       !file containing list of outlet under varying sea level effect
 !ag
 ! === water management variables/parameters ===
   integer, allocatable  :: managact(:)
@@ -256,11 +257,11 @@ module HYMAP3_routingMod
   integer               :: nmanagcoef        !number of management coefficients
   integer               :: nmanag            !number of locations with water management
   integer               :: managflag
-  character*100         :: managheader
+  character(LIS_CONST_PATH_LEN) :: managheader
 !ag(30Mar2022)
 ! === bifurcation variables/parameters ===
   integer               :: bifflag          !bifurcation flag
-  character*100         :: biffile          !bifurcation pathway input file
+  character(LIS_CONST_PATH_LEN) :: biffile          !bifurcation pathway input file
   integer               :: nbif             !number of bifurcations within the domain
   integer               :: nbifelv          !number of pathways in one bifurcation (defined by elevations)
   real,    allocatable  :: bifout(:)        !bifurcation streamflow [m3/s]
@@ -289,7 +290,7 @@ module HYMAP3_routingMod
 
 !ag(4Apr2025)
 ! === Yassin's reservoir operation scheme ===
-  character*200         :: resopncfile
+  character(LIS_CONST_PATH_LEN) :: resopncfile
   integer,  allocatable :: ncloc_resop(:)
   real*8,   allocatable :: maxsto_resop(:)
   real*8,   allocatable :: inidis_resop(:)
@@ -310,7 +311,7 @@ module HYMAP3_routingMod
 
 !ag(14Apr2025)
 ! === vector-based HyMAP implementation ===
-  character*200         :: vecfile  !vector input file
+  character(LIS_CONST_PATH_LEN) :: vecfile  !vector input file
   integer               :: vecflag          !vector input flag
 
 
@@ -430,7 +431,8 @@ contains
     
     allocate(HYMAP3_routing_struc(LIS_rc%nnest))
     
-    HYMAP3_logunit=10001
+    !HYMAP3_logunit=10001
+    HYMAP3_logunit = LIS_getNextUnitNumber()
     
     do n=1, LIS_rc%nnest
        HYMAP3_routing_struc(n)%rslpmin  = 1e-5  !minimum slope
@@ -1497,7 +1499,7 @@ contains
             call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%rivwth(:,m))
           enddo
         endif
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivwth)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivwth)
 
         ctitle = 'HYMAP_river_height'
         if(HYMAP3_routing_struc(n)%useens.eq.0) then
@@ -1507,7 +1509,7 @@ print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivwth)
             call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%rivhgt(:,m))
           enddo
         endif
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivhgt)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivhgt)
 
         ctitle = 'HYMAP_river_roughness'
         if(HYMAP3_routing_struc(n)%useens.eq.0) then
@@ -1517,32 +1519,32 @@ print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivhgt)
             call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%rivman(:,m))
           enddo
         endif
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivman)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivman)
 
         ctitle = 'HYMAP_river_length'
         call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%rivlen)
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivlen)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%rivlen)
 
         ctitle = 'HYMAP_floodplain_height'
         call HYMAP3_vector_read_param(ctitle,n,HYMAP3_routing_struc(n)%nz,&
              HYMAP3_routing_struc(n)%fldhgt)
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%fldhgt)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%fldhgt)
 
         ctitle = 'HYMAP_floodplain_roughness'
         call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%fldman)
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%fldman)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%fldman)
 
         ctitle = 'HYMAP_grid_elevation'
         call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%elevtn)
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%elevtn)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%elevtn)
 
         ctitle = 'HYMAP_grid_distance'
         call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%nxtdst)
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%nxtdst)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%nxtdst)
 
         ctitle = 'HYMAP_grid_area'
         call HYMAP3_vector_read_param(ctitle,n,1,HYMAP3_routing_struc(n)%grarea)
-print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%grarea)
+write(LIS_logunit,*) trim(ctitle),maxval(HYMAP3_routing_struc(n)%grarea)
 
         if(HYMAP3_routing_struc(n)%linresflag==1)then
           ctitle = 'HYMAP_runoff_time_delay'
@@ -1591,7 +1593,7 @@ print*,trim(ctitle),maxval(HYMAP3_routing_struc(n)%grarea)
         else
           HYMAP3_routing_struc(n)%levhgt=0.
         endif
-print*,'done'
+write(LIS_logunit,*) 'done'
       endif
     enddo
 
@@ -3183,18 +3185,18 @@ print*,'done'
     real,         intent(inout) :: outmin(inst)   
     logical                     :: file_exists
     integer                     :: ist,ix,iy,ix_down,iy_down
-
+    integer :: ftn
     inquire(file=yheader,exist=file_exists)
-    
-    if(file_exists) then 
+    if(file_exists) then
+       ftn = LIS_getNextUnitNumber()
       !get name of station files
       write(LIS_logunit,*)'[read_header] get stations info: name and coordinates'
       write(LIS_logunit,*)'[read_header] ',yheader,inst
-      open(2,file=trim(yheader), status='old')
+      open(ftn,file=trim(yheader), status='old')
       !ag(27Jul2025)
-      read(2,*)
+      read(ftn,*)
       do ist=1,inst
-        read(2,*,end=10)yqname(ist),ix,iy,outmin(ist),resoptype(ist)
+        read(ftn,*,end=10)yqname(ist),ix,iy,outmin(ist),resoptype(ist)
         call HYMAP3_map_gxy2l_index(n,ix,iy,local_index(ist))
         glb_index(ist) = HYMAP3_routing_struc(n)%sindex(ix,iy)
         down_glb_index(ist)=HYMAP3_routing_struc(n)%next_glb(glb_index(ist))
@@ -3203,7 +3205,8 @@ print*,'done'
         call HYMAP3_map_gxy2l_index(n,ix_down,iy_down,down_local_index(ist))
         write(LIS_logunit,'(a,i5,a,4i5,f10.2,5i8)')'[read_header] ',ist,trim(yqname(ist)),ix,iy,ix_down,iy_down,outmin(ist),resoptype(ist),local_index(ist),down_local_index(ist),glb_index(ist),down_glb_index(ist)
       enddo
-      close(2)
+      close(ftn)
+      call LIS_releaseUnitNumber(ftn)
     else
       write(LIS_logunit,*) 'header file '//trim(yheader)
       write(LIS_logunit,*) 'failed in read_header in HYMAP3_routingMod'
@@ -3229,19 +3232,21 @@ print*,'done'
     integer,      intent(inout) :: ix(inst),iy(inst)
     logical                     :: file_exists
     integer                     :: ist
-
-    inquire(file=yheader,exist=file_exists)
+    integer :: ftn
     
-    if(file_exists) then 
+    inquire(file=yheader,exist=file_exists)
+    if(file_exists) then
+       ftn = LIS_getNextUnitNumber()
       !get name of station files
       write(LIS_logunit,*)'[read_header] get stations info: name and coordinates'
       write(LIS_logunit,*)'[read_header] ',yheader,inst
-      open(2,file=trim(yheader), status='old')
+      open(ftn,file=trim(yheader), status='old')
       do ist=1,inst
-        read(2,*,end=10)yqname(ist),ix(ist),iy(ist)
+        read(ftn,*,end=10)yqname(ist),ix(ist),iy(ist)
         write(LIS_logunit,*)'[read_header] ',ist,trim(yqname(ist)),ix(ist),iy(ist)
       enddo
-      close(2)
+      close(ftn)
+      call LIS_releaseUnitNumber(ftn)
     else
       write(LIS_logunit,*) 'header file '//trim(yheader)
       write(LIS_logunit,*) 'failed in read_header in HYMAP3_routingMod'
@@ -3267,16 +3272,18 @@ print*,'done'
     real,         intent(inout) :: zhalt(itmax)
     logical                     :: file_exists
     integer :: it
-  
+    integer :: ftn
     inquire(file=yfile,exist=file_exists)
     
-    if(file_exists)then 
-      open(1,file=trim(yfile),status='old')
+    if(file_exists)then
+       ftn = LIS_getNextUnitNumber()
+      open(ftn,file=trim(yfile),status='old')
       do it=1,itmax
-        read(1,*,end=10)ztalt(it),zhalt(it)
+        read(ftn,*,end=10)ztalt(it),zhalt(it)
       enddo
 10    continue
-      close(1)
+      close(ftn)
+      call LIS_releaseUnitNumber(ftn)
     else
       write(LIS_logunit,*) 'time series file '//trim(yfile)
       write(LIS_logunit,*) 'failed in read_time_series in HYMAP3_routing_init'
