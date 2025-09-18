@@ -23,7 +23,8 @@ module GLDAS1runoffdataMod
 ! 
 ! !USES: 
   use ESMF
-  
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -40,7 +41,7 @@ module GLDAS1runoffdataMod
   type, public :: GLDAS1runoffdatadec
      
      real                    :: outInterval 
-     character*50            :: odir 
+     character(LIS_CONST_PATH_LEN) :: odir 
      character*20            :: model_name
      real                    :: datares
      integer                 :: nc, nr

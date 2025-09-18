@@ -23,6 +23,7 @@
 !EOP 
 subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
@@ -42,7 +43,7 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   !real,   allocatable           :: qs(:,:)
   !real,   allocatable           :: qsb(:,:)
   integer                       :: ios, nid,qsid,qsbid
-  character*100                 :: filename
+  character(LIS_CONST_PATH_LEN) :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt
@@ -147,6 +148,7 @@ end subroutine readGLDAS2runoffdata
 
 subroutine readGLDAS2evapdata(n,evap, potevap)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
@@ -167,7 +169,7 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
   real,   allocatable           :: evp(:,:)
   real,   allocatable           :: potevp(:,:)
   integer                       :: ios, nid,evpid,potevpid
-  character*100                 :: filename
+  character(LIS_CONST_PATH_LEN) :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt
@@ -243,7 +245,7 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
      end do
     end do
   else
-     write(LIS_logunit,*) 'Failed to find '//trim(filename)
+     write(LIS_logunit,*) '[ERR] Failed to find '//trim(filename)
      call LIS_endrun()
   endif
 #endif
@@ -265,6 +267,7 @@ end subroutine readGLDAS2evapdata
 subroutine create_GLDAS2_filename(odir,model_name, datares,&
      yr,mo,da, doy,hr,filename)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_logMod
 
 ! 
@@ -301,7 +304,7 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
   character*4             :: fyr
   character*3             :: fdoy
   character*2             :: fmo, fhr, fda
-  character*100           :: list_name
+  character(LIS_CONST_PATH_LEN) :: list_name
 
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy

@@ -17,6 +17,7 @@
 subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
@@ -44,7 +45,7 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
   integer                       :: ftn
   integer                       :: qsid, qsbid
   integer                       :: tindex
-  character*100                 :: filename
+  character(LIS_CONST_PATH_LEN) :: filename
   type(ESMF_Time)               :: currTime, startTime
   type(ESMF_TimeInterval)       :: deltaT
   integer                       :: da_elapsed, hr_elapsed

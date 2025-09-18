@@ -23,7 +23,8 @@ module MERRA2runoffdataMod
 ! 
 ! !USES: 
   use ESMF
-  
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -40,7 +41,7 @@ module MERRA2runoffdataMod
   type, public :: MERRA2runoffdatadec
      
      real                    :: outInterval 
-     character*50            :: odir 
+     character(LIS_CONST_PATH_LEN) :: odir 
      integer                 :: nc, nr
      integer, allocatable    :: n11(:)
   end type MERRA2runoffdatadec

@@ -55,10 +55,10 @@ subroutine HYMAP3_qc_WLobs(n,k,OBS_State)
   call ESMF_StateGet(OBS_State,"Observation01",obs_wl_field,&
        rc=status)
   call LIS_verify(status,&
-       "ESMF_StateGet failed in noahmp36_qc_soilmobs")
+       "ESMF_StateGet failed in HYMAP3_qc_WLobs")
   call ESMF_FieldGet(obs_wl_field,localDE=0,farrayPtr=wlobs,rc=status)
   call LIS_verify(status,& 
-       "ESMF_FieldGet failed in noahmp36_qc_soilmobs")
+       "ESMF_FieldGet failed in HYMAP3_qc_WLobs")
   
   do i=1,HYMAP3_routing_struc(n)%nseqall
      wl(i) = HYMAP3_routing_struc(n)%rivelv(i)

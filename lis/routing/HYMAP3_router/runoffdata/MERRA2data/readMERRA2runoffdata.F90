@@ -16,6 +16,7 @@
 ! !USES: 
 subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
@@ -43,7 +44,7 @@ subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
   integer                       :: ftn
   integer                       :: qsid, qsbid
   integer                       :: tindex
-  character*100                 :: filename
+  character(LIS_CONST_PATH_LEN) :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt
