@@ -9,15 +9,14 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
-! !ROUTINE: read_SMAPEOPLsm
-! \label{read_SMAPEOPLsm}
+! !ROUTINE: read_WSFsm
+! \label{read_WSFsm}
 !
 ! !REVISION HISTORY:
-!  6 Jun 2022: Yonghwan Kwon; Updated for use with SMAP_E_OPL soil moisture
 !  23 Feb 2023: Eric Kemp; Updated to read netCDF file.
 !
 ! !INTERFACE:
-subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
+subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
 ! !USES:
    use ESMF
    use LIS_mpiMod
@@ -29,7 +28,7 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
    use map_utils
    use LIS_pluginIndices
    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
-   use SMAPEOPLsm_Mod, only: SMAPEOPLsm_struc
+   use WSFsm_Mod, only: WSFsm_struc
 
    implicit none
 ! !ARGUMENTS:
@@ -40,7 +39,7 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
 !
 ! !DESCRIPTION:
 !
-!  reads the SMAP_E_OPL soil moisture observations.
+!  reads the WSF soil moisture observations.
 !  The data is then rescaled to the land surface model's 
 !  climatology using rescaling algorithms.
 !  
@@ -53,7 +52,7 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
 !EOP
    real, parameter        ::  minssdev = 0.05
    real, parameter        ::  maxssdev = 0.11
-   real, parameter       :: MAX_SM_VALUE = 0.45, MIN_SM_VALUE = 0.0001
+   real, parameter        :: MAX_SM_VALUE = 0.45, MIN_SM_VALUE = 0.0001
    integer                :: status
    integer                :: grid_index
    character(len=LIS_CONST_PATH_LEN) :: smobsdir
@@ -105,7 +104,7 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
    data_upd = .false.
    obs_unsc = LIS_rc%udef
 
-   alarmCheck = LIS_isAlarmRinging(LIS_rc, "SMAP_E_OPL read alarm")
+   alarmCheck = LIS_isAlarmRinging(LIS_rc, "WSF read alarm")
 
    smobs_A = LIS_rc%udef
    smobs_D = LIS_rc%udef
@@ -135,10 +134,10 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
 
    call LIS_tick(time3,doy,gmt,nyr,nmo,nda,nhr,nmn,nss,LIS_rc%ts)
 
-   if (alarmCheck .or. SMAPEOPLsm_struc(n)%startMode) then
-      SMAPEOPLsm_struc(n)%startMode = .false.
-      SMAPEOPLsm_struc(n)%smobs = LIS_rc%udef
-      SMAPEOPLsm_struc(n)%smtime = -1.0
+   if (alarmCheck .or. WSFsm_struc(n)%startMode) then
+      WSFsm_struc(n)%startMode = .false.
+      WSFsm_struc(n)%smobs = LIS_rc%udef
+      WSFsm_struc(n)%smtime = -1.0
 
       write(yyyymmdd,'(i4.4,2i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       write(hh,'(i2.2)') LIS_rc%hr
@@ -152,10 +151,10 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
          write(LIS_logunit,*) &
                '[INFO] Searching for ',trim(list_files)
          rc = create_filelist(trim(list_files)//char(0), &
-              "SMAP_filelist.sm.dat"//char(0))
+              "WSF_filelist.sm.dat"//char(0))
          if (rc .ne. 0) then
             write(LIS_logunit,*) &
-                 '[WARN] Problem encountered when searching for SMAP files'
+                 '[WARN] Problem encountered when searching for WSF files'
             write(LIS_logunit,*) &
                  'Was searching for ',trim(list_files)
             write(LIS_logunit,*) &
@@ -167,7 +166,7 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
 #endif
 
       ftn = LIS_getNextUnitNumber()
-      open(ftn,file="./SMAP_filelist.sm.dat",status='old',iostat=ierr)
+      open(ftn,file="./WSF_filelist.sm.dat",status='old',iostat=ierr)
 
       do while(ierr.eq.0)
          read(ftn,'(a)',iostat=ierr) fname
@@ -183,8 +182,8 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
 
          write(LIS_logunit,*) '[INFO] reading ',trim(fname)
 
-         call read_SMAPEOPLsm_data(n,k,fname,&
-              SMAPEOPLsm_struc(n)%smobs,timenow)
+         call read_WSFsm_data(n,k,fname,&
+              WSFsm_struc(n)%smobs,timenow)
       enddo
       call LIS_releaseUnitNumber(ftn)
 
@@ -207,10 +206,10 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
       do c=1,LIS_rc%obs_lnc(k)
          if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then
             grid_index = c+(r-1)*LIS_rc%obs_lnc(k)
-            dt = (SMAPEOPLsm_struc(n)%smtime(c,r)-time1)
+            dt = (WSFsm_struc(n)%smtime(c,r)-time1)
             if(dt.ge.0.and.dt.lt.(time3-time1)) then
                sm_current(c,r) = &
-                    SMAPEOPLsm_struc(n)%smobs(c,r)
+                    WSFsm_struc(n)%smobs(c,r)
 
                if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then
                   obs_unsc(LIS_obs_domain(n,k)%gindex(c,r)) = &
@@ -229,94 +228,94 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
 !-------------------------------------------------------------------------
 
    ! Read monthly CDF (only for the current month)
-   if (SMAPEOPLsm_struc(n)%ntimes .gt. 1 .and. SMAPEOPLsm_struc(n)%cdf_read_opt .eq. 1) then
-      if (.not. SMAPEOPLsm_struc(n)%cdf_read_mon .or. LIS_rc%da .eq. 1 .and. LIS_rc%hr .eq. 0 .and. &
+   if (WSFsm_struc(n)%ntimes .gt. 1 .and. WSFsm_struc(n)%cdf_read_opt .eq. 1) then
+      if (.not. WSFsm_struc(n)%cdf_read_mon .or. LIS_rc%da .eq. 1 .and. LIS_rc%hr .eq. 0 .and. &
           LIS_rc%mn .eq. 0 .and. LIS_rc%ss .eq. 0) then
          call LIS_readMeanSigmaData(n, k, &
-                                    SMAPEOPLsm_struc(n)%ntimes, &
+                                    WSFsm_struc(n)%ntimes, &
                                     LIS_rc%obs_ngrid(k), &
-                                    SMAPEOPLsm_struc(n)%modelcdffile, &
+                                    WSFsm_struc(n)%modelcdffile, &
                                     "SoilMoist", &
-                                    SMAPEOPLsm_struc(n)%model_mu, &
-                                    SMAPEOPLsm_struc(n)%model_sigma, &
+                                    WSFsm_struc(n)%model_mu, &
+                                    WSFsm_struc(n)%model_sigma, &
                                     LIS_rc%mo)
 
          call LIS_readMeanSigmaData(n, k, &
-                                    SMAPEOPLsm_struc(n)%ntimes, &
+                                    WSFsm_struc(n)%ntimes, &
                                     LIS_rc%obs_ngrid(k), &
-                                    SMAPEOPLsm_struc(n)%obscdffile, &
+                                    WSFsm_struc(n)%obscdffile, &
                                     "SoilMoist", &
-                                    SMAPEOPLsm_struc(n)%obs_mu, &
-                                    SMAPEOPLsm_struc(n)%obs_sigma, &
+                                    WSFsm_struc(n)%obs_mu, &
+                                    WSFsm_struc(n)%obs_sigma, &
                                     LIS_rc%mo)
 
          call LIS_readCDFdata(n, k, &
-                              SMAPEOPLsm_struc(n)%nbins, &
-                              SMAPEOPLsm_struc(n)%ntimes, &
+                              WSFsm_struc(n)%nbins, &
+                              WSFsm_struc(n)%ntimes, &
                               LIS_rc%obs_ngrid(k), &
-                              SMAPEOPLsm_struc(n)%modelcdffile, &
+                              WSFsm_struc(n)%modelcdffile, &
                               "SoilMoist", &
-                              SMAPEOPLsm_struc(n)%model_xrange, &
-                              SMAPEOPLsm_struc(n)%model_cdf, &
+                              WSFsm_struc(n)%model_xrange, &
+                              WSFsm_struc(n)%model_cdf, &
                               LIS_rc%mo)
 
          call LIS_readCDFdata(n, k, &
-                              SMAPEOPLsm_struc(n)%nbins, &
-                              SMAPEOPLsm_struc(n)%ntimes, &
+                              WSFsm_struc(n)%nbins, &
+                              WSFsm_struc(n)%ntimes, &
                               LIS_rc%obs_ngrid(k), &
-                              SMAPEOPLsm_struc(n)%obscdffile, &
+                              WSFsm_struc(n)%obscdffile, &
                               "SoilMoist", &
-                              SMAPEOPLsm_struc(n)%obs_xrange, &
-                              SMAPEOPLsm_struc(n)%obs_cdf, &
+                              WSFsm_struc(n)%obs_xrange, &
+                              WSFsm_struc(n)%obs_cdf, &
                               LIS_rc%mo)
 
-         SMAPEOPLsm_struc(n)%cdf_read_mon = .true.
+         WSFsm_struc(n)%cdf_read_mon = .true.
       endif
    endif
 
    if (LIS_rc%dascaloption(k) .eq. "CDF matching" .and. fnd .ne. 0) then
-      if (SMAPEOPLsm_struc(n)%ntimes .gt. 1 .and. SMAPEOPLsm_struc(n)%cdf_read_opt .eq. 1) then
+      if (WSFsm_struc(n)%ntimes .gt. 1 .and. WSFsm_struc(n)%cdf_read_opt .eq. 1) then
          call LIS_rescale_with_CDF_matching( &
             n, k, &
-            SMAPEOPLsm_struc(n)%nbins, &
+            WSFsm_struc(n)%nbins, &
             1, &
             MAX_SM_VALUE, &
             MIN_SM_VALUE, &
-            SMAPEOPLsm_struc(n)%model_xrange, &
-            SMAPEOPLsm_struc(n)%obs_xrange, &
-            SMAPEOPLsm_struc(n)%model_cdf, &
-            SMAPEOPLsm_struc(n)%obs_cdf, &
+            WSFsm_struc(n)%model_xrange, &
+            WSFsm_struc(n)%obs_xrange, &
+            WSFsm_struc(n)%model_cdf, &
+            WSFsm_struc(n)%obs_cdf, &
             sm_current)
       else
          call LIS_rescale_with_CDF_matching( &
             n, k, &
-            SMAPEOPLsm_struc(n)%nbins, &
-            SMAPEOPLsm_struc(n)%ntimes, &
+            WSFsm_struc(n)%nbins, &
+            WSFsm_struc(n)%ntimes, &
             MAX_SM_VALUE, &
             MIN_SM_VALUE, &
-            SMAPEOPLsm_struc(n)%model_xrange, &
-            SMAPEOPLsm_struc(n)%obs_xrange, &
-            SMAPEOPLsm_struc(n)%model_cdf, &
-            SMAPEOPLsm_struc(n)%obs_cdf, &
+            WSFsm_struc(n)%model_xrange, &
+            WSFsm_struc(n)%obs_xrange, &
+            WSFsm_struc(n)%model_cdf, &
+            WSFsm_struc(n)%obs_cdf, &
             sm_current)
       endif
    elseif(LIS_rc%dascaloption(k).eq."Linear scaling".and.fnd.ne.0) then
         call LIS_rescale_with_linear_scaling(    &
              n,                                   &
              k,                                   &
-             SMAPEOPLsm_struc(n)%nbins,         &
-             SMAPEOPLsm_struc(n)%ntimes,        &
-             SMAPEOPLsm_struc(n)%obs_xrange,    &
-             SMAPEOPLsm_struc(n)%obs_cdf,       &
+             WSFsm_struc(n)%nbins,         &
+             WSFsm_struc(n)%ntimes,        &
+             WSFsm_struc(n)%obs_xrange,    &
+             WSFsm_struc(n)%obs_cdf,       &
              sm_current)
    elseif(LIS_rc%dascaloption(k).eq."Anomaly scaling".and.fnd.ne.0) then
         call LIS_rescale_with_anomaly(    &
              n,                                   &
              k,                                   &
-             SMAPEOPLsm_struc(n)%nbins,         &
-             SMAPEOPLsm_struc(n)%ntimes,        &
-             SMAPEOPLsm_struc(n)%obs_mu,    &
-             SMAPEOPLsm_struc(n)%model_mu,       &
+             WSFsm_struc(n)%nbins,         &
+             WSFsm_struc(n)%ntimes,        &
+             WSFsm_struc(n)%obs_mu,    &
+             WSFsm_struc(n)%model_mu,       &
              sm_current)
    endif
 
@@ -332,7 +331,7 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
    !  Apply LSM based QC and screening of observations
    !-------------------------------------------------------------------------
    call lsmdaqcobsstate(trim(LIS_rc%lsm)//"+" &
-                        //trim(LIS_SMAPEOPLsmobsId)//char(0), n, k, OBS_state)
+                        //trim(LIS_WSFsmobsId)//char(0), n, k, OBS_state)
 
    call LIS_checkForValidObs(n, k, obsl, fnd, sm_current)
 
@@ -382,23 +381,23 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
       endif
 
       if (LIS_rc%dascaloption(k) .eq. "CDF matching") then
-         if (SMAPEOPLsm_struc(n)%useSsdevScal .eq. 1) then
+         if (WSFsm_struc(n)%useSsdevScal .eq. 1) then
             call ESMF_StateGet(OBS_Pert_State, "Observation01", pertfield, &
                                rc=status)
             call LIS_verify(status, 'Error: StateGet Observation01')
 
             allocate (ssdev(LIS_rc%obs_ngrid(k)))
-            ssdev = SMAPEOPLsm_struc(n)%ssdev_inp
+            ssdev = WSFsm_struc(n)%ssdev_inp
 
-            if (SMAPEOPLsm_struc(n)%ntimes .eq. 1) then
+            if (WSFsm_struc(n)%ntimes .eq. 1) then
                jj = 1
             else
                jj = LIS_rc%mo
             endif
             do t = 1, LIS_rc%obs_ngrid(k)
-               if (SMAPEOPLsm_struc(n)%obs_sigma(t, jj) .gt. 0) then
-                  ssdev(t) = ssdev(t)*SMAPEOPLsm_struc(n)%model_sigma(t, jj)/ &
-                             SMAPEOPLsm_struc(n)%obs_sigma(t, jj)
+               if (WSFsm_struc(n)%obs_sigma(t, jj) .gt. 0) then
+                  ssdev(t) = ssdev(t)*WSFsm_struc(n)%model_sigma(t, jj)/ &
+                             WSFsm_struc(n)%obs_sigma(t, jj)
                   if (ssdev(t) .lt. minssdev) then
                      ssdev(t) = minssdev
                   endif
@@ -419,15 +418,15 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
       call LIS_verify(status)
    endif
 
-end subroutine read_SMAPEOPLsm
+end subroutine read_WSFsm
 
 !BOP
 ! 
-! !ROUTINE: read_SMAPEOPLsm_data
-! \label{read_SMAPEOPLsm_data}
+! !ROUTINE: read_WSFsm_data
+! \label{read_WSFsm_data}
 !
 ! !INTERFACE:
-subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
+subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
 ! 
 ! !USES: 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -436,7 +435,7 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
-  use SMAPEOPLsm_Mod, only : SMAPEOPLsm_struc
+  use WSFsm_Mod, only : WSFsm_struc
 
   implicit none
 !
@@ -449,10 +448,10 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
   real*8                   :: time
 !EOP
   integer,  parameter     :: nc=2560, nr=1920
-  real*4                  :: sm_raw(SMAPEOPLsm_struc(n)%nc,SMAPEOPLsm_struc(n)%nr)
-  real                    :: sm_in(SMAPEOPLsm_struc(n)%nc*SMAPEOPLsm_struc(n)%nr)
+  real*4                  :: sm_raw(WSFsm_struc(n)%nc,WSFsm_struc(n)%nr)
+  real                    :: sm_in(WSFsm_struc(n)%nc*WSFsm_struc(n)%nr)
   real                    :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
-  logical*1               :: sm_data_b(SMAPEOPLsm_struc(n)%nc*SMAPEOPLsm_struc(n)%nr)
+  logical*1               :: sm_data_b(WSFsm_struc(n)%nc*WSFsm_struc(n)%nr)
   logical*1               :: smobs_b_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
   integer                 :: smid
   integer                 :: ios, nid
@@ -476,16 +475,16 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
 
   ! sm_data_b = .false.
 
-  ! do r=1,SMAPEOPLsm_struc(n)%nr
-  !    do c=1,SMAPEOPLsm_struc(n)%nc
+  ! do r=1,WSFsm_struc(n)%nr
+  !    do c=1,WSFsm_struc(n)%nc
   !       if (sm_raw(c,r)>=0.and.&
   !          sm_raw(c,r)<=100) then
 
-  !          sm_in(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = sm_raw(c,r)
-  !          sm_data_b(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = .true.
+  !          sm_in(c+(r-1)*WSFsm_struc(n)%nc) = sm_raw(c,r)
+  !          sm_data_b(c+(r-1)*WSFsm_struc(n)%nc) = .true.
   !       else
-  !          sm_in(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = LIS_rc%udef
-  !          sm_data_b(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = .false.
+  !          sm_in(c+(r-1)*WSFsm_struc(n)%nc) = LIS_rc%udef
+  !          sm_data_b(c+(r-1)*WSFsm_struc(n)%nc) = .false.
   !       endif
   !    enddo
   ! enddo
@@ -529,7 +528,7 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
   ! TODO:  Support other map projections
   if (trim(map_projection) .ne. 'EQUIDISTANT CYLINDRICAL') then
      write(LIS_logunit,*) &
-          '[ERR] Unrecognized map projection found in SMAP file!'
+          '[ERR] Unrecognized map projection found in WSF file!'
      write(LIS_logunit,*) '[ERR] Expected EQUIDISTANT CYLINDRICAL'
      write(LIS_logunit,*) '[ERR] Found ',trim(map_projection)
      write(LIS_logunit,*) '[ERR] LIS will skip file ', trim(fname)
@@ -603,17 +602,17 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
      rc = nf90_close(ncid)
      return
   end if
-  if (nlat .ne. SMAPEOPLsm_struc(n)%nr) then
+  if (nlat .ne. WSFsm_struc(n)%nr) then
      write(LIS_logunit,*)'[ERR] Expected lat dimension to be ', &
-          SMAPEOPLsm_struc(n)%nr
+          WSFsm_struc(n)%nr
      write(LIS_logunit,*)'[ERR] Found ', nlat, ' from ', trim(fname)
      write(LIS_logunit,*)'[ERR] LIS will continue...'
      rc = nf90_close(ncid)
      return
   end if
-  if (nlon .ne. SMAPEOPLsm_struc(n)%nc) then
+  if (nlon .ne. WSFsm_struc(n)%nc) then
      write(LIS_logunit,*)'[ERR] Expected lon dimension to be ', &
-          SMAPEOPLsm_struc(n)%nc
+          WSFsm_struc(n)%nc
      write(LIS_logunit,*)'[ERR] Found ', nlon, ' from ', trim(fname)
      write(LIS_logunit,*)'[ERR] LIS will continue...'
      rc = nf90_close(ncid)
@@ -664,17 +663,17 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
   if(LIS_rc%obs_gridDesc(k,10).le.0.0937500) then
      call bilinear_interp(LIS_rc%obs_gridDesc(k,:),&
           sm_data_b, sm_in, smobs_b_ip, smobs_ip, &
-          SMAPEOPLsm_struc(n)%nc*SMAPEOPLsm_struc(n)%nr, &
+          WSFsm_struc(n)%nc*WSFsm_struc(n)%nr, &
           LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), &
-          SMAPEOPLsm_struc(n)%rlat,SMAPEOPLsm_struc(n)%rlon,&
-          SMAPEOPLsm_struc(n)%w11,SMAPEOPLsm_struc(n)%w12,&
-          SMAPEOPLsm_struc(n)%w21,SMAPEOPLsm_struc(n)%w22,&
-          SMAPEOPLsm_struc(n)%n11,SMAPEOPLsm_struc(n)%n12,&
-          SMAPEOPLsm_struc(n)%n21,SMAPEOPLsm_struc(n)%n22,LIS_rc%udef,ios)
+          WSFsm_struc(n)%rlat,WSFsm_struc(n)%rlon,&
+          WSFsm_struc(n)%w11,WSFsm_struc(n)%w12,&
+          WSFsm_struc(n)%w21,WSFsm_struc(n)%w22,&
+          WSFsm_struc(n)%n11,WSFsm_struc(n)%n12,&
+          WSFsm_struc(n)%n21,WSFsm_struc(n)%n22,LIS_rc%udef,ios)
   else
-     call upscaleByAveraging(SMAPEOPLsm_struc(n)%nc*SMAPEOPLsm_struc(n)%nr,&
+     call upscaleByAveraging(WSFsm_struc(n)%nc*WSFsm_struc(n)%nr,&
           LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), &
-          LIS_rc%udef, SMAPEOPLsm_struc(n)%n11,&
+          LIS_rc%udef, WSFsm_struc(n)%n11,&
           sm_data_b,sm_in, smobs_b_ip, smobs_ip)
   endif
 
@@ -685,10 +684,10 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
            smobs_inp(c,r) = &
                 smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k))
 
-           SMAPEOPLsm_struc(n)%smtime(c,r) = &
+           WSFsm_struc(n)%smtime(c,r) = &
                 time
         endif
      enddo
   enddo
 
-end subroutine read_SMAPEOPLsm_data
+end subroutine read_WSFsm_data
