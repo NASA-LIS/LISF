@@ -18,6 +18,7 @@ subroutine HYMAP3_routing_output(n)
   use LIS_histDataMod
   use LIS_historyMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use HYMAP3_routingMod
 
   use LIS_mpiMod
@@ -25,8 +26,8 @@ subroutine HYMAP3_routing_output(n)
   
   integer, intent(in)   :: n 
   
-  character*100         :: filename
-  character*100         :: name
+  character(LIS_CONST_PATH_LEN) :: filename
+  character(LIS_CONST_PATH_LEN) :: name
   integer               :: mo, da
   logical               :: open_stats
   logical               :: alarmCheck
