@@ -20,22 +20,23 @@
 subroutine read_land_grid_area(n, array)
 ! !USES:
   use ESMF
+  use HYMAP_parmsMod
   use LDT_coreMod,      only : LDT_rc
+  use LDT_fileIOMod,    only : readLISdata
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
           LDT_releaseUnitNumber, LDT_endrun
-  use LDT_fileIOMod,    only : readLISdata 
-  use HYMAP_parmsMod
 
   implicit none
-! !ARGUMENTS: 
+
+! !ARGUMENTS:
 
   integer,          intent(in) :: n
   real,          intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
 
 ! !DESCRIPTION:
-!  This subroutine retrieves the bottom temperature climatology for the 
+!  This subroutine retrieves the bottom temperature climatology for the
 !  specified month and returns the values in the latlon projection
-!  
+!
 !  The arguments are:
 !  \begin{description}
 !  \item[n]
@@ -46,7 +47,7 @@ subroutine read_land_grid_area(n, array)
 !   output field with the retrieved greenness fraction
 !  \end{description}
 !
-!EOP      
+!EOP
   integer :: ftn
   integer :: c,r
   logical :: file_exists
@@ -54,7 +55,7 @@ subroutine read_land_grid_area(n, array)
   ftn = LDT_getNextUnitNumber()
 
   inquire(file=trim(HYMAP_struc(n)%landgridareafile), exist=file_exists)
-  if(.not.file_exists) then 
+  if(.not.file_exists) then
      write(LDT_logunit,*) '[ERR] Land grid area map, ',&
            trim(HYMAP_struc(n)%landgridareafile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
@@ -63,11 +64,10 @@ subroutine read_land_grid_area(n, array)
 
   open(ftn, file=trim(HYMAP_struc(n)%landgridareafile), access='direct',&
        status='old', form="unformatted", convert="big_endian", recl=4)
-  
+
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &
        HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 indicates 2D layer
-  
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
         if(array(c,r,1).lt.0) then
