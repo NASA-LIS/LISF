@@ -1,0 +1,32 @@
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Python cache (if you mix Python tools)
+__pycache__/
+*.pyc
+
+# Virtual environments
+.env/
+.venv/
+
+# Fortran build artifacts
+*.o
+*.mod
+*.MOD
+*.smod
+*.a
+*.so
+*.dll
+*.exe
+*.out
+
+# Compiler/IDE temporary files
+*.log
+*.lst
+*.tmp
+
+# Common build directories
+build/
+bin/
+lib/
+
