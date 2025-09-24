@@ -18,6 +18,7 @@
 !
 ! !INTERFACE:
 subroutine read_land_grid_area(n, array)
+
 ! !USES:
   use ESMF
   use HYMAP_parmsMod
@@ -29,7 +30,6 @@ subroutine read_land_grid_area(n, array)
   implicit none
 
 ! !ARGUMENTS:
-
   integer,          intent(in) :: n
   real,          intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
 
@@ -58,7 +58,7 @@ subroutine read_land_grid_area(n, array)
   if(.not.file_exists) then
      write(LDT_logunit,*) '[ERR] Land grid area map, ',&
            trim(HYMAP_struc(n)%landgridareafile),', not found.'
-     write(LDT_logunit,*) 'Program stopping ...'
+     write(LDT_logunit,*) '[ERR] Program stopping ...'
      call LDT_endrun
   endif
 
