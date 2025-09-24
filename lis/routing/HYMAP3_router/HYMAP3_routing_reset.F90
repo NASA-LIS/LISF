@@ -21,22 +21,20 @@ subroutine HYMAP3_routing_reset()
   use LIS_logMod,     only : LIS_logunit
 
 !
-! !DESCRIPTION: 
-! 
+! !DESCRIPTION:
+!
 !  This routine is the entry point to set up the parameters
 !  required for Noah-MP.4.0.1 LSM.  These include the soils, greenness,
 !  albedo, bottom temperature and the initialization of state
 !  variables in Noah-MP.4.0.1.
-!  
+!
 !EOP
-  implicit none
-  integer                 :: n
 
+  implicit none
+
+  integer                 :: n
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) "HYMAP3 resetting"
-
-     
-     
   enddo ! do n=1,LIS_rc%nnest
 end subroutine HYMAP3_routing_reset

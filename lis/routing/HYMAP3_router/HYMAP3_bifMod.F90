@@ -10,50 +10,20 @@
 #include "LIS_misc.h"
 module HYMAP3_bifMod
 !BOP
-! 
+!
 ! !MODULE: HYMAP3_routingMod
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This module contains routines for HyMAP's river bifurcation module
 !
 ! !REVISION HISTORY: 
 ! 1 May 2022: Augusto Getirana, Initial implementation
-!                                
+!
 contains
 
-!ag(27Jul2025)
-#if 0
-  !=============================================  
-  subroutine HYMAP3_read_header_bifurcation(yfile,isize,isize1)
-    use LIS_logMod
-    implicit none
-    character(*), intent(in)    :: yfile
-    integer,      intent(out)   :: isize,isize1
-    logical                     :: file_exists
-    integer :: ftn
-
-    inquire(file=trim(yfile),exist=file_exists)
-    if(file_exists) then
-       ftn = LIS_getNextUnitNumber()
-      write(LIS_logunit,*)'read header size '//trim(yfile)
-      open(ftn,file=trim(yfile), status='old')
-      read(ftn,*,end=10)isize,isize1
-      close(ftn)
-      call LIS_getNextUnitNumber(ftn)
-    else
-      write(LIS_logunit,*) 'header '//trim(yfile)
-      write(LIS_logunit,*) 'failed in opening file in HYMAP3_routingMod'
-      call LIS_endrun()
-    endif
-    return
-10  continue
-    write(LIS_logunit,*) 'check header size in file '//trim(yfile)
-    call LIS_endrun()
-
-  end subroutine HYMAP3_read_header_bifurcation
-#endif
-  !=============================================  
-  subroutine HYMAP3_get_bifurcation_pathways(biffile,nx,ny,sindex,nbif,nbifdelv,bifloc,bifdelv,bifman,bifelv,biflen,bifwth)
+  !=============================================
+  subroutine HYMAP3_get_bifurcation_pathways(biffile,nx,ny,sindex,nbif, &
+       nbifdelv,bifloc,bifdelv,bifman,bifelv,biflen,bifwth)
     use LIS_logMod
     implicit none
     character(*), intent(in)  :: biffile
@@ -61,7 +31,8 @@ contains
     integer,      intent(in)  :: sindex(nx,ny)
     integer,      intent(in)  :: nbif,nbifdelv
     integer,      intent(out) :: bifloc(nbif,2)
-    real,         intent(out) :: bifdelv(nbifdelv),bifman(nbifdelv),bifelv(nbif),biflen(nbif),bifwth(nbif,nbifdelv)
+    real,         intent(out) :: bifdelv(nbifdelv),bifman(nbifdelv), &
+         bifelv(nbif),biflen(nbif),bifwth(nbif,nbifdelv)
     integer                   :: ii,ix,iy,jx,jy
     logical                   :: file_exists
     integer :: ftn
@@ -70,21 +41,21 @@ contains
     if(file_exists) then
        ftn = LIS_getNextUnitNumber()
        write(LIS_logunit,*)'get bifurcation topology '//trim(biffile)
-      open(ftn,file=trim(biffile), status='old')
-      read(ftn,*)ii
-      read(ftn,*)bifdelv(:)
-      read(ftn,*)bifman(:)
-      do ii=1,nbif
-        read(ftn,*,end=10)ix,iy,jx,jy,bifelv(ii),biflen(ii),bifwth(ii,:)
-        bifloc(ii,1)=sindex(ix,iy)
-        bifloc(ii,2)=sindex(jx,jy)
-      enddo
-      close(ftn)
-      call LIS_releaseUnitNumber(ftn)
+       open(ftn,file=trim(biffile), status='old')
+       read(ftn,*)ii
+       read(ftn,*)bifdelv(:)
+       read(ftn,*)bifman(:)
+       do ii=1,nbif
+          read(ftn,*,end=10)ix,iy,jx,jy,bifelv(ii),biflen(ii),bifwth(ii,:)
+          bifloc(ii,1)=sindex(ix,iy)
+          bifloc(ii,2)=sindex(jx,jy)
+       enddo
+       close(ftn)
+       call LIS_releaseUnitNumber(ftn)
     else
-      write(LIS_logunit,*) 'file '//trim(biffile)
-      write(LIS_logunit,*) 'failed in opening file in HYMAP3_bifMod'
-      call LIS_endrun()
+       write(LIS_logunit,*) 'file '//trim(biffile)
+       write(LIS_logunit,*) 'failed in opening file in HYMAP3_bifMod'
+       call LIS_endrun()
     endif
     return
 10  continue
@@ -93,13 +64,14 @@ contains
     call LIS_endrun()
 
   end subroutine HYMAP3_get_bifurcation_pathways
-  ! ================================================      
-  subroutine HYMAP3_calc_bifout_iner(dt,rivelv,rivelv_down,bifelv,biflen,bifwth,&
-                              bifsto,bifsto_down,rivdph,rivdph_down,manval,grv,&
-                              bifout,bifout_pre,rivdph_pre,rivdph_pre_down)
+  ! ================================================
+  subroutine HYMAP3_calc_bifout_iner(dt,rivelv,rivelv_down,bifelv,biflen, &
+       bifwth, &
+       bifsto,bifsto_down,rivdph,rivdph_down,manval,grv, &
+       bifout,bifout_pre,rivdph_pre,rivdph_pre_down)
     use LIS_logMod
     ! ================================================
-    ! Calculate discharge, local inertia 
+    ! Calculate discharge, local inertia
     ! Augusto Getirana
     ! 16 Apr 2014
     ! Adapted for flow routing implementation in LIS on 5 Aug 2015
@@ -132,8 +104,8 @@ contains
     real                   :: dflw,dout_pre,dflw_pre,dflw_imp
     ! ================================================
     if(bifsto==0)then
-      bifout=0.
-      goto 1
+       bifout=0.
+       goto 1
     endif
 
     sfcelv=rivelv+rivdph
@@ -144,12 +116,12 @@ contains
     dslope=(sfcelv-sfcelv_down)/biflen
     dflw=max(sfcelv,sfcelv_down)-bifelv
 
-    !this imposes unidirectional flow; no negative flow 
+    !this imposes unidirectional flow; no negative flow
     if(dflw<=0.or.dslope<=0)then
-      bifout=0.
-      goto 1
+       bifout=0.
+       goto 1
     else!(dslope>0)then
-      dflw=min(dflw,rivdph)
+       dflw=min(dflw,rivdph)
     endif
 
     darea=bifwth*dflw
@@ -158,16 +130,16 @@ contains
     if(dflw_imp==0.)dflw_imp=dflw
 
     if(dflw_imp>0..and.darea>0.)then
-      dout_pre=bifout_pre/bifwth
-      bifout=bifwth*(dout_pre+grv*dt*dflw_imp*dslope)/&
-           (1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))
-      if(bifout>=0.)then
-        bifout=min(bifout,bifsto/dt)
-      else
-        bifout=-min(abs(bifout),bifsto_down/dt)
-      endif
+       dout_pre=bifout_pre/bifwth
+       bifout=bifwth*(dout_pre+grv*dt*dflw_imp*dslope)/&
+            (1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))
+       if(bifout>=0.)then
+          bifout=min(bifout,bifsto/dt)
+       else
+          bifout=-min(abs(bifout),bifsto_down/dt)
+       endif
     else
-      bifout=0.
+       bifout=0.
     endif
 1   continue
     bifout_pre=bifout
