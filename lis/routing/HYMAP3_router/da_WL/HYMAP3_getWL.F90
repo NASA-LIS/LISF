@@ -17,13 +17,14 @@ subroutine HYMAP3_getWL(n, Routing_State)
 
 ! !USES:
   use ESMF
+  use HYMAP3_modelMod
+  use HYMAP3_routingMod
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only  : LIS_verify
-  use HYMAP3_routingMod
-  use HYMAP3_modelMod
 
   implicit none
-! !ARGUMENTS: 
+
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
 !
@@ -31,8 +32,8 @@ subroutine HYMAP3_getWL(n, Routing_State)
 !
 !  Returns the water level DA related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
@@ -53,11 +54,13 @@ subroutine HYMAP3_getWL(n, Routing_State)
   real*8                 :: rivelv
   real*8                 :: vol
 
-  call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField,rc=status)
+  call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField, &
+       rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for sm1 in HYMAP3_getWL')
 
   call ESMF_FieldGet(sfcelevField,localDE=0,farrayPtr=sfcelev,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sfcelev in HYMAP3_getWL')
+  call LIS_verify(status, &
+       'ESMF_FieldGet failed for sfcelev in HYMAP3_getWL')
 
   do i=1,HYMAP3_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
@@ -88,7 +91,7 @@ subroutine HYMAP3_getWL(n, Routing_State)
              vol)
         sfcelev(t) = real(elv) - HYMAP3_routing_struc(n)%rivelv(i)
      enddo
-     
+
   enddo
 
 end subroutine HYMAP3_getWL
