@@ -9,45 +9,43 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
-! 
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 ! 7 Jan 2016: Sujay Kumar, Initial implementation
-! 
-! !USES: 
+!
 subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
-! !USES: 
-  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
-  use LIS_coreMod
-  use LIS_timeMgrMod
-  use LIS_logMod
-  use NLDAS2runoffdataMod
-  use LIS_fileIOMod
+
+! !USES:
 #if ( defined USE_GRIBAPI)
   use grib_api
 #endif
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+  use LIS_coreMod
+  use LIS_fileIOMod
+  use LIS_logMod
+  use LIS_timeMgrMod
+  use NLDAS2runoffdataMod
 
   implicit none
 
-  integer,          intent(in) :: n
-  real                         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  integer,       intent(in) :: n
+  real                      :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real                      :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
 !
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
-!  This subroutine reads the runoff fields from the NLDAS2 data, 
+!  This subroutine reads the runoff fields from the NLDAS2 data,
 !  subsets to the current model time and conducts the geospatial transform
-!  to the LIS grid. 
-!  
-!  The arguments are: 
+!  to the LIS grid.
+!
+!  The arguments are:
 !  \begin{description}
 !   \item[n]               index of the nest
 !   \item[surface_runoff]  surface runoff field generated from the NLDAS2 data
 !   \item[baseflow]        baseflow field generated from the NLDAS2 data
 !  \end{description}
-!EOP 
-
-
+!EOP
 
   integer                       :: nc,nr
   real,   allocatable           :: qs(:,:)
@@ -66,7 +64,7 @@ subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
   external :: create_NLDAS2_filename
   external :: retrieve_NLDAS2data
   external :: interp_NLDAS2runoffdata
-  
+
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
   da =LIS_rc%da
@@ -84,7 +82,7 @@ subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
 
   qs_index   = 235
   qsb_index  = 234
-  
+
   surface_runoff = 0.0
   baseflow       = 0.0
 
@@ -93,81 +91,81 @@ subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
 
   allocate(qs(nc,nr))
   allocate(qsb(nc,nr))
-  
+
   qs = LIS_rc%udef
   qsb = LIS_rc%udef
 
 #if ( defined USE_GRIBAPI)
   inquire(file=filename, exist=file_exists)
-  if(file_exists) then 
+  if(file_exists) then
      write(LIS_logunit,*) 'Reading '//trim(filename)
-        
+
      call grib_open_file(ftn,trim(filename),'r',ios)
-     if(ios.ne.0) then 
+     if(ios.ne.0) then
         write(LIS_logunit,*) &
              '[ERR] file not opened ',trim(filename)
         call LIS_endrun()
      endif
-    
+
      call grib_count_in_file(ftn,nvars)
-     
+
      allocate(pid(nvars))
      allocate(tid(nvars))
-     
+
      do index=1,nvars
         call grib_new_from_file(ftn,igrib,ios)
         call LIS_verify(ios, &
              'grib_new_from_file failed in readNLDAS2runoffdata')
-        
+
         call grib_get(igrib,"indicatorOfParameter",pid(index),ios)
         call LIS_verify(ios,&
              'grib_get failed for indicatorOfParameter in readNLDAS2runoffdata')
-        
+
         call grib_get(igrib, "timeRangeIndicator",tid(index), ios)
         call LIS_verify(ios, &
              'grib_get failed for timeRangeIndicator in readNLDAS2runoffdata')
 
-        if(pid(index).eq.qs_index) then 
+        if(pid(index).eq.qs_index) then
            call retrieve_NLDAS2data(igrib, nc,nr,nvars,index,qs)
         endif
 
-        if(pid(index).eq.qsb_index) then 
+        if(pid(index).eq.qsb_index) then
            call retrieve_NLDAS2data(igrib, nc,nr,nvars,index,qsb)
         endif
      enddo
-     
+
      call grib_close_file(ftn,ios)
 
      deallocate(pid)
      deallocate(tid)
 
   endif
-  
+
   call interp_NLDAS2runoffdata(n,nc,nr,qs,surface_runoff)
   call interp_NLDAS2runoffdata(n,nc,nr,qsb,baseflow)
 
   deallocate(qs)
   deallocate(qsb)
 
-
 #endif
 
 end subroutine readNLDAS2runoffdata
 
 !BOP
-! 
+!
 ! !ROUTINE: create_NLDAS2_filename
 ! \label{create_NLDAS2_filename}
 !
-! !INTERFACE: 
+! !INTERFACE:
 subroutine create_NLDAS2_filename(odir,model_name, &
      yr,mo,da,doy,hr,filename)
-! !USES:   
+
+! !USES:
   use LIS_logMod
 
   implicit none
 !
-! !ARGUMENTS: 
+! !ARGUMENTS:
   character(len=*)             :: odir
   character(len=*)             :: model_name
   integer                      :: yr
@@ -178,11 +176,11 @@ subroutine create_NLDAS2_filename(odir,model_name, &
   character(len=*)             :: filename
 !
 ! !DESCRIPTION:
-! 
-! This routine creates a timestamped filename for the NLDAS2 data
-! based on the given date. 
 !
-!  The arguments are: 
+! This routine creates a timestamped filename for the NLDAS2 data
+! based on the given date.
+!
+!  The arguments are:
 !  \begin{description}
 !   \item[odir]            NLDAS2 base directory
 !   \item[model\_name]     name of the model used in the NLDAS2 run
@@ -193,9 +191,9 @@ subroutine create_NLDAS2_filename(odir,model_name, &
 !   \item[hr]              hour of data
 !   \item[filename]        Name of the NLDAS2 file
 !  \end{description}
-! 
+!
 !EOP
-  
+
   character*4             :: fyr
   character*3             :: fdoy
   character*2             :: fmo, fda,fhr
@@ -208,7 +206,7 @@ subroutine create_NLDAS2_filename(odir,model_name, &
   write(unit=fda, fmt='(i2.2)') da
   write(unit=fhr, fmt='(i2.2)') hr
   write(unit=fdoy,fmt='(i3.3)') doy
-  
+
   if ((model_name.eq."NOAH").or.&
        (model_name.eq."MOS").or.&
        (model_name.eq."VIC")) then
@@ -223,7 +221,7 @@ subroutine create_NLDAS2_filename(odir,model_name, &
      filename = trim(odir)//'/SM/'//trim(fyr)//'/'//trim(fyr)//    &
           trim(fmo)//trim(fda)//trim(fhr)//'.SAC.gdat'
   endif
-    
+
 end subroutine create_NLDAS2_filename
 
 
@@ -233,12 +231,16 @@ end subroutine create_NLDAS2_filename
 ! \label{retrieve_NLDAS2data}
 !
 ! !INTERFACE:
-  subroutine retrieve_NLDAS2data(igrib,nc,nr,nvars,index,nldas_var)
+subroutine retrieve_NLDAS2data(igrib,nc,nr,nvars,index,nldas_var)
+
 ! !USES:
-    use grib_api
-    use LIS_logMod, only : LIS_verify
-    
-    implicit none
+#if ( defined USE_GRIBAPI)
+  use grib_api
+#endif
+  use LIS_logMod, only : LIS_verify
+
+  implicit none
+
 ! !INPUT PARAMETERS:
 !
 ! !OUTPUT PARAMETERS:
@@ -252,27 +254,26 @@ end subroutine create_NLDAS2_filename
 !BOP
 !
 ! !ARGUMENTS:
-    integer              :: c,r,ios
-    integer, intent(in)  :: igrib,nc,nr
-    integer, intent(in)  :: nvars,index
-    real                 :: var(nvars,nc*nr)
-    real,    intent(out) :: nldas_var(nc*nr)
+  integer, intent(in)  :: igrib,nc,nr
+  integer, intent(in)  :: nvars,index
+  real,    intent(out) :: nldas_var(nc*nr)
 
-    call grib_get(igrib,"values",var(index,:),ios)
-    call LIS_verify(ios,                                            &
-         'grib_get failed for values in readNLDAS2data')
+  integer              :: c,r,ios
+  real                 :: var(nvars,nc*nr)
 
-    do r = 1,nr
-       do c = 1,nc
-          if (var(index,c+(r-1)*nc).ne.9999.0) then
-             nldas_var(c+(r-1)*nc) = var(index,c+(r-1)*nc)
-          endif
-       enddo
-    enddo
+  call grib_get(igrib,"values",var(index,:),ios)
+  call LIS_verify(ios,                                            &
+       'grib_get failed for values in readNLDAS2data')
 
-  end subroutine retrieve_NLDAS2data
+  do r = 1,nr
+     do c = 1,nc
+        if (var(index,c+(r-1)*nc).ne.9999.0) then
+           nldas_var(c+(r-1)*nc) = var(index,c+(r-1)*nc)
+        endif
+     enddo
+  enddo
 
-
+end subroutine retrieve_NLDAS2data
 
 !BOP
 !
@@ -280,13 +281,13 @@ end subroutine create_NLDAS2_filename
 !  \label{interp_NLDAS2runoffdata}
 !
 ! !INTERFACE:
-  subroutine interp_NLDAS2runoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_NLDAS2runoffdata(n, nc,nr,var_input,var_output)
 !
 ! !USES:
-    use LIS_coreMod
-    use NLDAS2runoffdataMod
-      
-    implicit none
+  use LIS_coreMod
+  use NLDAS2runoffdataMod
+
+  implicit none
 !
 ! !INPUT PARAMETERS:
 !
@@ -314,55 +315,56 @@ end subroutine create_NLDAS2_filename
 !BOP
 !
 ! !ARGUMENTS:
-    integer            :: n
-    integer            :: nc
-    integer            :: nr
-    real               :: var_input(nc*nr)
-    logical*1          :: lb(nc*nr)
-    real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
-    !EOP
-    integer            :: ios
-    integer            :: c,r
-    logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
-    real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  integer            :: n
+  integer            :: nc
+  integer            :: nr
+  real               :: var_input(nc*nr)
+  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  !EOP
 
-    external :: neighbor_interp
-    external :: upscaleByAveraging
+  logical*1          :: lb(nc*nr)
+  integer            :: ios
+  integer            :: c,r
+  logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
 
-    var_output = LIS_rc%udef
-    lb = .false.
-    do r = 1,nr
-       do c = 1,nc
-          if (var_input(c+(r-1)*nc).ne.LIS_rc%udef) then
-             lb(c+(r-1)*nc) = .true.
-          endif
-       enddo
-    enddo
+  external :: neighbor_interp
+  external :: upscaleByAveraging
 
-    if(LIS_isAtAfinerResolution(n,0.125)) then
-       call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
-            lo,go,nc*nr,LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
-            LIS_domain(n)%lat, LIS_domain(n)%lon,  & 
-            NLDAS2runoffdata_struc(n)%n11,                         & 
-            LIS_rc%udef,ios)
-    else
-       call upscaleByAveraging(&
-            nc*nr, &
-            LIS_rc%lnc(n)*LIS_rc%lnr(n), &
-            LIS_rc%udef, &
-            NLDAS2runoffdata_struc(n)%n11, lb, &
-            var_input, lo, go)
-    endif
-    do r = 1,LIS_rc%lnr(n)
-       do c = 1,LIS_rc%lnc(n)
-          if(go(c+(r-1)*LIS_rc%lnc(n)).ne.LIS_rc%udef) then 
-             var_output(c,r) = go(c+(r-1)*LIS_rc%lnc(n))/3600.0
-          else
-             var_output(c,r) = LIS_rc%udef
-          endif
-       enddo
-    enddo
+  var_output = LIS_rc%udef
+  lb = .false.
+  do r = 1,nr
+     do c = 1,nc
+        if (var_input(c+(r-1)*nc).ne.LIS_rc%udef) then
+           lb(c+(r-1)*nc) = .true.
+        endif
+     enddo
+  enddo
 
-  end subroutine interp_NLDAS2runoffdata
+  if(LIS_isAtAfinerResolution(n,0.125)) then
+     call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
+          lo,go,nc*nr,LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
+          LIS_domain(n)%lat, LIS_domain(n)%lon,  &
+          NLDAS2runoffdata_struc(n)%n11,                         &
+          LIS_rc%udef,ios)
+  else
+     call upscaleByAveraging(&
+          nc*nr, &
+          LIS_rc%lnc(n)*LIS_rc%lnr(n), &
+          LIS_rc%udef, &
+          NLDAS2runoffdata_struc(n)%n11, lb, &
+          var_input, lo, go)
+  endif
+  do r = 1,LIS_rc%lnr(n)
+     do c = 1,LIS_rc%lnc(n)
+        if(go(c+(r-1)*LIS_rc%lnc(n)).ne.LIS_rc%udef) then
+           var_output(c,r) = go(c+(r-1)*LIS_rc%lnc(n))/3600.0
+        else
+           var_output(c,r) = LIS_rc%udef
+        endif
+     enddo
+  enddo
+
+end subroutine interp_NLDAS2runoffdata
 
 

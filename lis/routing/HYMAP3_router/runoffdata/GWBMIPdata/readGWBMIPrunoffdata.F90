@@ -9,35 +9,37 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
-! 
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 ! 7 Jan 2016: Sujay Kumar, Initial implementation
-! 
-! !USES: 
+!
+
 subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
 
+! !USES:
   use ESMF
+  use GWBMIPrunoffdataMod
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
-  use LIS_timeMgrMod
-  use LIS_logMod
-  use GWBMIPrunoffdataMod
   use LIS_fileIOMod
+  use LIS_logMod
+  use LIS_timeMgrMod
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
 
-
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
-!EOP 
+!EOP
 
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real                         :: &
+       surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
   real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+
   integer                       :: nc,nr
   real,   allocatable           :: qs(:,:)
   real,   allocatable           :: qsb(:,:)
@@ -56,7 +58,7 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
 
   external :: create_GWBMIP_filename
   external :: interp_GWBMIPrunoffdata
-  
+
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
   da =LIS_rc%da
@@ -85,7 +87,7 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
        calendar = LIS_calendar, &
        rc=ios)
   call LIS_verify(ios, 'Error in ESMF_TimeSet: GWBMIPrunoffdata_init')
-  
+
   call ESMF_TimeSet(currTime,yy=yr, &
        mm = mo, &
        dd = da, &
@@ -102,12 +104,12 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
   tindex = da_elapsed + 1
   allocate(qs(nc,nr))
   allocate(qsb(nc,nr))
-  
+
   qs = LIS_rc%udef
   qsb = LIS_rc%udef
-  
+
   inquire(file=filename, exist=file_exists)
-  if(file_exists) then 
+  if(file_exists) then
      write(LIS_logunit,*) 'Reading '//trim(filename)
      ios = nf90_open(path=trim(filename),mode=NF90_NOWRITE, &
           ncid = ftn)
@@ -116,58 +118,57 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
              'failed'
         call LIS_endrun()
      endif
+
      call LIS_verify(nf90_inq_varid(ftn,'Qs',qsid),&
           'nf90_inq_varid failed for Qs')
      call LIS_verify(nf90_inq_varid(ftn,'Qsb',qsbid),&
           'nf90_inq_varid failed for Qsb')
-     
-     
+
      call LIS_verify(nf90_get_var(ftn,qsid,qs,&
           start=(/1,1,tindex/),count=(/nc,nr,1/)),&
           'Error in nf90_get_var Qs')
      call LIS_verify(nf90_get_var(ftn,qsid,qsb,&
           start=(/1,1,tindex/),count=(/nc,nr,1/)),&
           'Error in nf90_get_var Qsb')
-     
-     call LIS_verify(nf90_close(ftn))
 
+     call LIS_verify(nf90_close(ftn))
   endif
-  
+
   call interp_GWBMIPrunoffdata(n,nc,nr,qs,surface_runoff)
   call interp_GWBMIPrunoffdata(n,nc,nr,qsb,baseflow)
 
   deallocate(qs)
   deallocate(qsb)
 
-    
 end subroutine readGWBMIPrunoffdata
 
 !BOP
-! 
+!
 ! !ROUTINE: create_GWBMIP_filename
 ! \label{create_GWBMIP_filename}
 !
-! !INTERFACE: 
+! !INTERFACE:
 subroutine create_GWBMIP_filename(odir, model_prefix, yr,filename)
 
+!
+! !USES:
   use LIS_logMod
 
-! 
-! !USES:   
   implicit none
+
 !
-! !ARGUMENTS: 
+! !ARGUMENTS:
   character(len=*)             :: odir
   character(len=*)             :: model_prefix
   integer                      :: yr
   character(len=*)             :: filename
 !
 ! !DESCRIPTION:
-! 
+!
 ! This routine creates a timestamped filename for the GWBMIP data
 ! based on the given date (year, model name, month)
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !   \item[odir]            GWBMIP base directory
 !   \item[model\_name]     name of the model used in the NLDAS run
@@ -175,9 +176,9 @@ subroutine create_GWBMIP_filename(odir, model_prefix, yr,filename)
 !   \item[mo]              month of data
 !   \item[filename]        Name of the GWBMIP file
 !  \end{description}
-! 
+!
 !EOP
-  
+
   character*4             :: fyr
 
   write(unit=fyr, fmt='(i4.4)') yr
@@ -186,22 +187,19 @@ subroutine create_GWBMIP_filename(odir, model_prefix, yr,filename)
 
 end subroutine create_GWBMIP_filename
 
-
-
-
 !BOP
 !
 ! !ROUTINE: interp_GWBMIPrunoffdata
 !  \label{interp_GWBMIPrunoffdata}
 !
 ! !INTERFACE:
-  subroutine interp_GWBMIPrunoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_GWBMIPrunoffdata(n, nc,nr,var_input,var_output)
 !
 ! !USES:
-    use LIS_coreMod
-    use GWBMIPrunoffdataMod
-      
-    implicit none
+  use GWBMIPrunoffdataMod
+  use LIS_coreMod
+
+  implicit none
 !
 ! !INPUT PARAMETERS:
 !
@@ -229,51 +227,51 @@ end subroutine create_GWBMIP_filename
 !BOP
 !
 ! !ARGUMENTS:
-    integer            :: n
-    integer            :: nc
-    integer            :: nr
-    real               :: var_input(nc*nr)
-    logical*1          :: lb(nc*nr)
-    real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
-    !EOP
-    integer            :: ios
-    integer            :: c,r
-    logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
-    real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  integer            :: n
+  integer            :: nc
+  integer            :: nr
+  real               :: var_input(nc*nr)
+  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  !EOP
 
-    external :: neighbor_interp
-    external :: upscaleByAveraging
+  logical*1          :: lb(nc*nr)
+  integer            :: ios
+  integer            :: c,r
+  logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
 
-    var_output = LIS_rc%udef
-    lb = .false.
-    do r = 1,nr
-       do c = 1,nc
-          if (var_input(c+(r-1)*nc).ne.1e+20) then
-             lb(c+(r-1)*nc) = .true.
-          endif
-       enddo
-    enddo
+  external :: neighbor_interp
+  external :: upscaleByAveraging
 
-    if(LIS_isAtAfinerResolution(n,1.0)) then
-       call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
-            lo,go,nc*nr,LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
-            LIS_domain(n)%lat, LIS_domain(n)%lon,  & 
-            GWBMIPrunoffdata_struc(n)%n11,                         & 
-            LIS_rc%udef,ios)
-    else
-       call upscaleByAveraging(&
-            nc*nr, &
-            LIS_rc%lnc(n)*LIS_rc%lnr(n), &
-            LIS_rc%udef, &
-            GWBMIPrunoffdata_struc(n)%n11, lb, &
-            var_input, lo, go)
-    endif
-    do r = 1,LIS_rc%lnr(n)
-       do c = 1,LIS_rc%lnc(n)
-          var_output(c,r) = go(c+(r-1)*LIS_rc%lnc(n))
-       enddo
-    enddo
+  var_output = LIS_rc%udef
+  lb = .false.
+  do r = 1,nr
+     do c = 1,nc
+        if (var_input(c+(r-1)*nc).ne.1e+20) then
+           lb(c+(r-1)*nc) = .true.
+        endif
+     enddo
+  enddo
 
-  end subroutine interp_GWBMIPrunoffdata
+  if(LIS_isAtAfinerResolution(n,1.0)) then
+     call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
+          lo,go,nc*nr,LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
+          LIS_domain(n)%lat, LIS_domain(n)%lon,  &
+          GWBMIPrunoffdata_struc(n)%n11,                         &
+          LIS_rc%udef,ios)
+  else
+     call upscaleByAveraging(&
+          nc*nr, &
+          LIS_rc%lnc(n)*LIS_rc%lnr(n), &
+          LIS_rc%udef, &
+          GWBMIPrunoffdata_struc(n)%n11, lb, &
+          var_input, lo, go)
+  endif
+  do r = 1,LIS_rc%lnr(n)
+     do c = 1,LIS_rc%lnc(n)
+        var_output(c,r) = go(c+(r-1)*LIS_rc%lnc(n))
+     enddo
+  enddo
 
+end subroutine interp_GWBMIPrunoffdata
 
