@@ -18,6 +18,7 @@
 !
 ! !INTERFACE:
 subroutine read_HYMAP_node_lon(n, array)
+
 ! !USES:
   use ESMF
   use HYMAP_parmsMod

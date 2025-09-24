@@ -21,7 +21,8 @@ module HYMAP_parmsMod
 !
 !  29 Mar 2013: Sujay Kumar; Initial implementation
 !   2 Dec 2015: Augusto Getirana: Included drainage area and basin maps
-!   1 Nov 2017: Augusto Getirana: Included flow type maps, baseflow and surface runoff dwi maps
+!   1 Nov 2017: Augusto Getirana: Included flow type maps, baseflow and
+!               surface runoff dwi maps
 !   9 Jun 2020: Yeosang Yoon: Support flexible grid setting (dx~=dy)
 !
   use ESMF
@@ -34,6 +35,7 @@ module HYMAP_parmsMod
   implicit none
 
   PRIVATE
+
 !------------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !------------------------------------------------------------------------------
@@ -50,10 +52,9 @@ module HYMAP_parmsMod
      real          :: hymapparms_gridDesc(20)
      character*50  :: hymap_proj
      character*50  :: hymap_gridtransform
-
-     integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode,leveehgtcode,landareacode,nodeloncode,nodelatcode
+     integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode, &
+          leveehgtcode,landareacode,nodeloncode,nodelatcode
      integer       :: baseflowdelaycode,runoffdelaycode,runoffdelaymcode
-
      character(LDT_CONST_PATH_LEN) :: riverwidthfile
      character(LDT_CONST_PATH_LEN) :: riverheightfile
      character(LDT_CONST_PATH_LEN) :: riverlengthfile
@@ -80,7 +81,6 @@ module HYMAP_parmsMod
      character(LDT_CONST_PATH_LEN) :: landgridareafile
      character(LDT_CONST_PATH_LEN) :: nodelonfile
      character(LDT_CONST_PATH_LEN) :: nodelatfile
-
      type(LDT_paramEntry) :: hymap_river_width
      type(LDT_paramEntry) :: hymap_river_height
      type(LDT_paramEntry) :: hymap_river_length
@@ -106,7 +106,6 @@ module HYMAP_parmsMod
      type(LDT_paramEntry) :: land_grid_area
      type(LDT_paramEntry) :: hymap_node_lon
      type(LDT_paramEntry) :: hymap_node_lat
-
   end type hymap_type_dec
 
   type(hymap_type_dec), allocatable :: HYMAP_struc(:)
@@ -120,6 +119,7 @@ contains
 !
 ! !INTERFACE:
   subroutine HYMAPparms_init
+
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
@@ -138,11 +138,13 @@ contains
 !  \end{description}
 !
 !EOP
+
     implicit none
 
     integer       :: n
     integer       :: rc
-    integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode,leveehgtcode,landareacode,nodeloncode,nodelatcode
+    integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode, &
+         leveehgtcode,landareacode,nodeloncode,nodelatcode
     integer       :: baseflowdelaycode,runoffdelaycode,runoffdelaymcode
     integer, allocatable :: nextx(:,:)
     integer, allocatable :: nexty(:,:)
@@ -231,7 +233,6 @@ contains
             "HYMAP_node_lon")
        call set_param_attribs(HYMAP_struc(n)%hymap_node_lat,&
             "HYMAP_node_lat")
-
     end do
 
     call ESMF_ConfigFindLabel(LDT_config, &
@@ -266,6 +267,7 @@ contains
 
        HYMAP_struc(n)%hymap_fld_height%vlevels = &
             HYMAP_struc(n)%hymap_fld_height%num_bins
+
        allocate(HYMAP_struc(n)%hymap_fld_height%value( &
             LDT_rc%lnc(n),LDT_rc%lnr(n), &
             HYMAP_struc(n)%hymap_fld_height%vlevels))
@@ -458,7 +460,6 @@ contains
        HYMAP_struc(n)%runoffdelaymcode = runoffdelaymcode
     enddo
 
-
     call ESMF_ConfigFindLabel(LDT_config, &
          "HYMAP baseflow time delay map:",rc=baseflowdelaycode)
     do n=1,LDT_rc%nnest
@@ -566,7 +567,8 @@ contains
        HYMAP_struc(n)%nodelatcode = nodelatcode
     enddo
 
-    write(LDT_logunit,*)" - - - - - - - - HYMAP Router Parameters - - - - - - - - - -"
+    write(LDT_logunit,*) &
+         " - - - - - - - - HYMAP Router Parameters - - - - - - - - - -"
 
     call ESMF_ConfigGetAttribute(LDT_config,hymap_proj,&
          label="HYMAP params map projection:",rc=rc)
@@ -719,7 +721,6 @@ contains
                hymapparms_gridDesc(n,9) )
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%runoffdelayfile)
-
           call read_HYMAP_runoff_delay(n,&
                HYMAP_struc(n)%hymap_runoff_delay%value(:,:,1))
           write(LDT_logunit,*) &
@@ -732,7 +733,6 @@ contains
                hymapparms_gridDesc(n,9) )
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%runoffdelaymfile)
-
           call read_HYMAP_runoff_delaym(n, &
                HYMAP_struc(n)%hymap_runoff_delay_m%value(:,:,1))
           write(LDT_logunit,*) &
@@ -745,7 +745,6 @@ contains
                hymapparms_gridDesc(n,9) )
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%baseflowdelayfile)
-
           call read_HYMAP_baseflow_delay( &
                n,HYMAP_struc(n)%hymap_baseflow_delay%value(:,:,1))
           write(LDT_logunit,*) &
@@ -766,7 +765,6 @@ contains
           call LDT_gridOptChecks( n, "HYMAP river flow type map", &
                HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
                hymapparms_gridDesc(n,9) )
-
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%flowtypefile)
           call read_HYMAP_flow_type(&
@@ -779,7 +777,6 @@ contains
           call LDT_gridOptChecks( n, "HYMAP baseflow DWI ratio map", &
                HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
                hymapparms_gridDesc(n,9) )
-
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%baseflowdwiratiofile)
           call read_HYMAP_baseflow_dwi_ratio(&
@@ -792,7 +789,6 @@ contains
           call LDT_gridOptChecks( n, "HYMAP runoff DWI ratio map", &
                HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
                hymapparms_gridDesc(n,9) )
-
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%runoffdwiratiofile)
           call read_HYMAP_runoff_dwi_ratio( &
@@ -805,7 +801,6 @@ contains
           call LDT_gridOptChecks( n, "HYMAP urban drainage outlet map", &
                HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
                hymapparms_gridDesc(n,9) )
-
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%urbandrainoutletfile)
           call read_HYMAP_urban_drain_outlet(&
@@ -818,7 +813,6 @@ contains
           call LDT_gridOptChecks( n, "HYMAP levee height map", &
                HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
                hymapparms_gridDesc(n,9) )
-
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%leveeheightfile)
           call read_HYMAP_levee_height( &
@@ -875,7 +869,6 @@ contains
           call LDT_gridOptChecks( n, "HYMAP node lon", &
                HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
                hymapparms_gridDesc(n,9) )
-
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%nodelonfile)
           call read_HYMAP_node_lon(&
@@ -888,7 +881,6 @@ contains
           call LDT_gridOptChecks( n, "HYMAP node lat", &
                HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
                hymapparms_gridDesc(n,9) )
-
           write(LDT_logunit,*) &
                'reading '//trim(HYMAP_struc(n)%nodelatfile)
           call read_HYMAP_node_lat( &
@@ -906,6 +898,8 @@ contains
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
+
+    implicit none
 
     integer   :: n
     integer   :: ftn
@@ -1073,7 +1067,8 @@ contains
 
   end subroutine HYMAPparms_writeData
 
-  subroutine adjust_nextxy(nx,ny,imis,i2nextx,i2nexty,i2mask,zgx,zgy,zpx,zpy,xres,yres)
+  subroutine adjust_nextxy(nx,ny,imis,i2nextx,i2nexty,i2mask,zgx,zgy, &
+       zpx,zpy,xres,yres)
     ! ================================================
     ! to adjust flow direction matrixes for smaller domain
     ! by Augusto GETIRANA
@@ -1104,8 +1099,8 @@ contains
     where(i2nextx>0)i2nextx=i2nextx-idx
     where(i2nexty>0)i2nexty=i2nexty-idy
 
-!Hiroko: do not insert boundary if global domain
-!        this fix only works on single processor run
+    !Hiroko: do not insert boundary if global domain
+    !        this fix only works on single processor run
     !if ( idx.eq.0 .and. idy.eq.0 ) then
     if ( idx.eq.0 ) then
        write(LDT_logunit,*) '[INFO] HYMAP parameter global'
@@ -1162,7 +1157,8 @@ contains
 !   This routine reads over the parameter attribute entries
 !   in the param_attribs.txt file.
 !
-! !USES:
+    implicit none
+
     type(LDT_paramEntry),intent(inout) :: paramEntry
     character(len=*),    intent(in)    :: short_name
 

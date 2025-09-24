@@ -18,6 +18,7 @@
 !
 ! !INTERFACE:
 subroutine read_HYMAP_urban_drain_outlet(n, array)
+
 ! !USES:
   use ESMF
   use HYMAP_parmsMod
@@ -27,6 +28,7 @@ subroutine read_HYMAP_urban_drain_outlet(n, array)
           LDT_releaseUnitNumber, LDT_endrun
 
   implicit none
+
 ! !ARGUMENTS:
 
   integer,          intent(in) :: n
@@ -38,11 +40,12 @@ subroutine read_HYMAP_urban_drain_outlet(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%urbandrainoutletfile), exist=file_exists)
+  inquire(file=trim(HYMAP_struc(n)%urbandrainoutletfile), &
+       exist=file_exists)
   if (.not.file_exists) then
      write(LDT_logunit,*) '[ERR] HYMAP urban drainage outlet map, ',&
            trim(HYMAP_struc(n)%urbandrainoutletfile),', not found.'
-     write(LDT_logunit,*) 'Program stopping ...'
+     write(LDT_logunit,*) '[ERR] Program stopping ...'
      call LDT_endrun
   endif
 
