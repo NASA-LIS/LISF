@@ -10,24 +10,25 @@
 #include "LIS_misc.h"
 module MERRA2runoffdataMod
 !BOP
-! 
+!
 ! !MODULE: MERRA2runoffdataMod
-! 
-! !DESCRIPTION: 
-!  This module contains the data structures and routines to handle 
+!
+! !DESCRIPTION:
+!  This module contains the data structures and routines to handle
 !  runoff data from GLDAS 1.0. This implementation handles both
 !  1 degree and 0.25 degree products from different LSMs.
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 ! 8 Jan 2016: Sujay Kumar, initial implementation
-! 
-! !USES: 
+!
+! !USES:
   use ESMF
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
-  
+
   PRIVATE
+
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
@@ -35,13 +36,12 @@ module MERRA2runoffdataMod
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
-  
+
   public :: MERRA2runoffdata_struc
-  
+
   type, public :: MERRA2runoffdatadec
-     
-     real                    :: outInterval 
-     character(LIS_CONST_PATH_LEN) :: odir 
+     real                    :: outInterval
+     character(LIS_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      integer, allocatable    :: n11(:)
   end type MERRA2runoffdatadec
@@ -49,19 +49,22 @@ module MERRA2runoffdataMod
   type(MERRA2runoffdatadec), allocatable :: MERRA2runoffdata_struc(:)
 
 contains
- 
+
 !BOP
 !
 ! !ROUTINE: MERRA2runoffdata_init
 ! \label{MERRA2runoffdata_init}
-! 
+!
   subroutine MERRA2runoffdata_init
-    !USES: 
+
+    !USES:
     use LIS_coreMod
     use LIS_logMod
     use LIS_timeMgrMod
 
-    integer              :: n 
+    implicit none
+
+    integer              :: n
     integer              :: status
     character*10         :: time
     real                 :: gridDesc(50)
@@ -70,14 +73,14 @@ contains
     external :: upscaleByAveraging_input
 
     allocate(MERRA2runoffdata_struc(LIS_rc%nnest))
-       
-    call ESMF_ConfigFindLabel(LIS_config,&
+
+    call ESMF_ConfigFindLabel(LIS_config, &
          "MERRA2 runoff data output directory:",rc=status)
     do n=1, LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,MERRA2runoffdata_struc(n)%odir,rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config, &
+            MERRA2runoffdata_struc(n)%odir,rc=status)
        call LIS_verify(status,&
             "MERRA2 runoff data output directory: not defined")
-       
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,&
@@ -87,15 +90,15 @@ contains
        call LIS_verify(status,&
             "MERRA2 runoff data output interval: not defined")
 
-       call LIS_parseTimeString(time,MERRA2runoffdata_struc(n)%outInterval)
-    
+       call LIS_parseTimeString(time, &
+            MERRA2runoffdata_struc(n)%outInterval)
+
        gridDesc = 0.0
 
-       
        MERRA2runoffdata_struc(n)%nc = 576
        MERRA2runoffdata_struc(n)%nr = 361
-       
-       gridDesc(1) = 0  
+
+       gridDesc(1) = 0
        gridDesc(2) = MERRA2runoffdata_struc(n)%nc
        gridDesc(3) = MERRA2runoffdata_struc(n)%nr
        gridDesc(4) = -90.000
@@ -106,11 +109,12 @@ contains
        gridDesc(9) = 0.625
        gridDesc(10) = 0.5
        gridDesc(20) = 0
-       
+
        if(LIS_isAtAfinerResolution(n,0.5)) then
-          
-          allocate(MERRA2runoffdata_struc(n)%n11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          
+
+          allocate(MERRA2runoffdata_struc(n)%n11( &
+               LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+
           call neighbor_interp_input(n,gridDesc, &
                MERRA2runoffdata_struc(n)%n11)
        else
@@ -122,6 +126,6 @@ contains
                LIS_rc%lnc(n)*LIS_rc%lnr(n),MERRA2runoffdata_struc(n)%n11)
        endif
     enddo
-    
+
   end subroutine MERRA2runoffdata_init
 end module MERRA2runoffdataMod
