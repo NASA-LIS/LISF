@@ -21,7 +21,8 @@ subroutine HYMAP3_write_WL(ftn,n, Routing_State)
   use LIS_historyMod, only : LIS_writevar_restart
 
   implicit none
-! !ARGUMENTS: 
+
+! !ARGUMENTS:
   integer, intent(in)    :: ftn
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
@@ -29,9 +30,9 @@ subroutine HYMAP3_write_WL(ftn,n, Routing_State)
 ! !DESCRIPTION:
 !
 !  Writes the water level prognostic variables to an external file
-!  (currently empty). 
-! 
-!  The arguments are: 
+!  (currently empty).
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
