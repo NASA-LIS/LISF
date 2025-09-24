@@ -8,47 +8,46 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 subroutine HYMAP3_routing_output(n)
-  
+
   ! Augusto Getirana - 11/15/2011
-  
   use ESMF
+  use HYMAP3_routingMod
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
-  use LIS_logMod
-  use LIS_timeMgrMod
+  use LIS_fileIOMod
   use LIS_histDataMod
   use LIS_historyMod
-  use LIS_fileIOMod
-  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
-  use HYMAP3_routingMod
-
+  use LIS_logMod
   use LIS_mpiMod
+  use LIS_timeMgrMod
+
   implicit none
-  
-  integer, intent(in)   :: n 
-  
+
+  integer, intent(in)   :: n
+
   character(LIS_CONST_PATH_LEN) :: filename
   character(LIS_CONST_PATH_LEN) :: name
   integer               :: mo, da
   logical               :: open_stats
   logical               :: alarmCheck
 
-  alarmCheck = .false. 
+  alarmCheck = .false.
   if ( LIS_rc%time >= LIS_histData(n)%time ) then
 !------------------------------------------------------------------
-! Number of variables to be outputted from Noah LSM 
+! Number of variables to be outputted from Noah LSM
 !------------------------------------------------------------------
-  if ( LIS_rc%wsingle .ne. 1 ) then 
+  if ( LIS_rc%wsingle .ne. 1 ) then
 !------------------------------------------------------------------
 ! Writes bundled output
 !------------------------------------------------------------------
      if(trim(LIS_rc%wopt).ne."none") then
-        if(LIS_rc%output_at_specifictime.eq.1) then 
-           if(LIS_histData(n)%month.eq.-1) then 
+        if(LIS_rc%output_at_specifictime.eq.1) then
+           if(LIS_histData(n)%month.eq.-1) then
               mo = LIS_rc%mo
            else
               mo = LIS_histData(n)%month
            endif
-           if(LIS_histData(n)%day.eq.-1) then 
+           if(LIS_histData(n)%day.eq.-1) then
               da = LIS_rc%da
            else
               da = LIS_histData(n)%day
@@ -58,25 +57,27 @@ subroutine HYMAP3_routing_output(n)
                 LIS_rc%da.eq.da.and.&
                 LIS_rc%hr.eq.LIS_histData(n)%hour.and.&
                 LIS_rc%mn.eq.LIS_histData(n)%min.and.&
-                LIS_rc%ss.eq.LIS_histData(n)%sec) then 
-              alarmCheck = .true. 
+                LIS_rc%ss.eq.LIS_histData(n)%sec) then
+              alarmCheck = .true.
            endif
         else
            alarmCheck = LIS_isAlarmRinging(LIS_rc,&
                 "HYMAP3 router output alarm")
         endif
-        if(alarmCheck) then 
+        if(alarmCheck) then
 
            open_stats = .false.
-           if(LIS_masterproc) then 
-              HYMAP3_routing_struc(n)%numout=HYMAP3_routing_struc(n)%numout+1    
+           if(LIS_masterproc) then
+              HYMAP3_routing_struc(n)%numout = &
+                   HYMAP3_routing_struc(n)%numout+1
               call LIS_create_output_directory('ROUTING')
 
 !-----------------------------------------------------------------------
 ! Open statistical output file
 !-----------------------------------------------------------------------
               if(HYMAP3_routing_struc(n)%fileopen.eq.0)then
-                 call LIS_create_stats_filename(n, name,'HYMAP3_routerstats')
+                 call LIS_create_stats_filename(n, name, &
+                      'HYMAP3_routerstats')
                  HYMAP3_routing_struc(n)%fileopen=1
                  open_stats = .true.
               endif
@@ -87,12 +88,13 @@ subroutine HYMAP3_routing_output(n)
                 writeint=HYMAP3_routing_struc(n)%outInterval)
 
 !-----------------------------------------------------------------------
-! Write Output 
+! Write Output
 !-----------------------------------------------------------------------
            ! Grib expects soil layers to be in cm.
            ! lyrthk = (/100.0,300.0,600.0,1000.0/) mm.
-           call LIS_writeRoutingModelOutput(n,filename, name, open_stats,  &
-                outInterval=HYMAP3_routing_struc(n)%outInterval,     &
+           call LIS_writeRoutingModelOutput(n, filename, name, &
+                open_stats,  &
+                outInterval=HYMAP3_routing_struc(n)%outInterval, &
                 nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
                 group=2)
         endif
