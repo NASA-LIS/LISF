@@ -177,6 +177,10 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss, &
 
   external :: HYMAP3_model_core
 
+#if (defined SPMD)
+  external :: mpi_allreduce
+#endif
+
   !ag(03Jun2020)
   if(HYMAP3_routing_struc(n)%enable2waycpl==1)then
      do ic=1,nseqall

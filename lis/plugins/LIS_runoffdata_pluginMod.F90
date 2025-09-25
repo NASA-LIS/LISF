@@ -36,16 +36,16 @@ contains
 !
 !
 ! !INTERFACE:
-subroutine LIS_runoffdata_plugin
+  subroutine LIS_runoffdata_plugin
 !EOP
 
 #if ( ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_HYMAP3_ROUTER ) )
-   use LIS_pluginIndices
+    use LIS_pluginIndices
 #if ( defined ROUTE_HYMAP2_ROUTER )
-   use LISrunoffdataMod
+    use LISrunoffdataMod
 #endif
 #if ( defined ROUTE_HYMAP3_ROUTER )
-   use HYMAP3_LISrunoffdataMod
+    use HYMAP3_LISrunoffdataMod
 #endif
 
 !   use GLDAS1runoffdataMod
@@ -55,15 +55,17 @@ subroutine LIS_runoffdata_plugin
 !   use ERAILandrunoffdataMod
 !   use GWBMIPrunoffdataMod
 
-   external :: registerinitrunoffdata
-   external :: registerreadrunoffdata
+    implicit none
+
+    external :: registerinitrunoffdata
+    external :: registerreadrunoffdata
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
-   external readLISrunoffdata
+    external readLISrunoffdata
 #endif
 
 #if ( defined ROUTE_HYMAP3_ROUTER )
-   external HYMAP3_readLISrunoffdata
+    external HYMAP3_readLISrunoffdata
 #endif
 
 
@@ -75,17 +77,19 @@ subroutine LIS_runoffdata_plugin
 !   external readGWBMIPrunoffdata
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
-   call registerinitrunoffdata(trim(LIS_LISrunoffdataId)//char(0), &
+    call registerinitrunoffdata(trim(LIS_LISrunoffdataId)//char(0), &
         LISrunoffdata_init)
-   call registerreadrunoffdata(trim(LIS_LISrunoffdataId)//char(0), &
-        readLISrunoffdata)
+    call registerreadrunoffdata(trim(LIS_LISrunoffdataId)//char(0), &
+         readLISrunoffdata)
 #endif
 
 #if ( defined ROUTE_HYMAP3_ROUTER )
-   call registerinitrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
-        HYMAP3_LISrunoffdata_init)
-   call registerreadrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
-        HYMAP3_readLISrunoffdata)
+    call registerinitrunoffdata( &
+         trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
+         HYMAP3_LISrunoffdata_init)
+    call registerreadrunoffdata( &
+         trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
+         HYMAP3_readLISrunoffdata)
 #endif
 
 !   call registerinitrunoffdata(trim(LIS_GLDAS1runoffdataId)//char(0), &
@@ -118,6 +122,6 @@ subroutine LIS_runoffdata_plugin
 !   call registerreadrunoffdata(trim(LIS_GWBMIPrunoffdataId)//char(0), &
 !        readGWBMIPrunoffdata)
 #endif
-end subroutine LIS_runoffdata_plugin
+  end subroutine LIS_runoffdata_plugin
 
 end module LIS_runoffdata_pluginMod

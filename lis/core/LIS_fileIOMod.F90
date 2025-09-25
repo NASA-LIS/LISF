@@ -21,8 +21,10 @@ module LIS_fileIOMod
 !
 ! !REVISION HISTORY:
 !  08 Apr 2004    James Geiger Initial Specification
-!  11 Oct 2018    Nargess Memarsadeghi, cleaned up and corrected LIS_create_output_directory
-!  18 Oct 2019    David Mocko, corrected creation of sub-directories for "WMO convention"
+!  11 Oct 2018    Nargess Memarsadeghi, cleaned up and corrected
+!                 LIS_create_output_directory
+!  18 Oct 2019    David Mocko, corrected creation of sub-directories for
+!                 "WMO convention"
 !  26 Apr 2023    Eric Kemp, added new output naming style for 557 WW for
 !                 streamflow output.
 !  22 May 2023    Eric Kemp, added new output naming style for 557 WW for
@@ -227,10 +229,11 @@ contains
     character(len=LIS_CONST_PATH_LEN) :: out_dname
     integer            :: ios
 
-    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-    ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir'
-    ! standard POSIX function. This requires defining the C wrapper function,
-    ! and specifying new variables to pass to said C function.
+    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI
+    ! implementation on Pleiades. We replace with a C wrapper function
+    ! that calls the 'mkdir' standard POSIX function. This requires
+    ! defining the C wrapper function, and specifying new variables to
+    ! pass to said C function.
     integer, external :: LIS_create_subdirs
     character(len=LIS_CONST_PATH_LEN+1) :: c_string
 
@@ -239,7 +242,8 @@ contains
        out_dname = trim(out_dname)//trim(mname)//'/'
        write(unit=cdate, fmt='(i4.4)') LIS_rc%yr
        out_dname = trim(out_dname)//trim(cdate)//'/'
-       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
+       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
+            LIS_rc%yr, LIS_rc%mo, LIS_rc%da
        out_dname = trim(out_dname)//trim(cdate1)
     elseif(LIS_rc%wstyle.eq."3 level hierarchy") then
        out_dname = trim(LIS_rc%odir)//'/'
@@ -266,7 +270,7 @@ contains
           out_dname = trim(out_dname)//trim(cdate1)
        endif
     elseif(LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
-         LIS_rc%wstyle .eq. "557WW medium range forecast convention") then ! EMK
+         LIS_rc%wstyle .eq. "557WW medium range forecast convention") then
        out_dname = trim(LIS_rc%odir)
        if (trim(mname).eq."SURFACEMODEL") then
           continue
@@ -286,9 +290,9 @@ contains
 #if ( defined AIX )
     call system('mkdir -p '//trim(out_dname))
 #else
-    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI implementation
-    ! on Pleiades. We replace with a C wrapper function that calls the 'mkdir'
-    ! standard POSIX function.
+    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI
+    ! implementation on Pleiades. We replace with a C wrapper function
+    ! that calls the 'mkdir' standard POSIX function.
     !         ios = system('mkdir -p '//trim(out_dname))
     c_string = trim(out_dname)
     ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
@@ -322,10 +326,10 @@ contains
     real, intent(in), optional             :: writeint ! output writing interval
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both the
+!  GSWP style of output filenames and the standard LIS style. The
+!  convention used in LIS creates a filename in a hierarchical style
+! (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -412,7 +416,8 @@ contains
        write(unit=cdate, fmt='(i4.4)') LIS_rc%yr
        dname = trim(dname)//trim(cdate)//'/'
 
-       write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
+       write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') &
+            LIS_rc%yr, LIS_rc%mo, LIS_rc%da
        dname = trim(dname)//trim(cdate)
 
        out_fname = trim(dname)//'/LIS_HIST_'//trim(cdate1)
@@ -626,7 +631,7 @@ contains
           out_fname = trim(dname)//'.GR2'
        case default
        end select
-    elseif(LIS_rc%wstyle.eq."557WW streamflow convention") then ! EMK
+    elseif(LIS_rc%wstyle.eq."557WW streamflow convention") then
        write(unit=fint,fmt='(i2.2)') nint(writeint)/3600
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, LIS_rc%da
@@ -735,13 +740,13 @@ contains
        case ("grib1")
           out_fname = trim(dname)//'.GR1'
        case ("netcdf")
-          out_fname = trim(dname)//'.NC' ! EMK
+          out_fname = trim(dname)//'.NC'
        case ("grib2")
           out_fname = trim(dname)//'.GR2'
        case default
        end select
 
-    elseif(LIS_rc%wstyle.eq."557WW medium range forecast convention") then ! EMK
+    elseif(LIS_rc%wstyle.eq."557WW medium range forecast convention") then
        write(unit=fint,fmt='(i2.2)') nint(writeint)/3600
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, LIS_rc%da
@@ -892,8 +897,9 @@ contains
 ! \label{create_output_filename_expected}
 !
 ! !INTERFACE:
-  subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odir,&
-       writeint)
+  subroutine create_output_filename_expected(n, fname, wout, flag, &
+       model_name, odir, writeint)
+
 ! !USES:
     use LIS_coreMod
     use LIS_logMod
@@ -901,6 +907,7 @@ contains
     use LIS_timeMgrMod
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in) :: n
     character(len=*), intent(out)          :: fname
@@ -911,10 +918,10 @@ contains
     real, intent(in), optional             :: writeint ! output writing interval
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both the
+!  GSWP style of output filenames and the standard LIS style. The
+!  convention used in LIS creates a filename in a hierarchical style
+!  (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -985,17 +992,18 @@ contains
     type(ESMF_Time)          :: currTime, outTime
     type(ESMF_TimeInterval)  :: outTS
     integer                  :: status
-    
+
     if ( present(odir) ) then
        odir_temp = odir
     else
        odir_temp = LIS_rc%odir
     endif
 
-    call ESMF_TimeIntervalSet(outTS, s=nint(LIS_sfmodel_struc(n)%outInterval), &
+    call ESMF_TimeIntervalSet(outTS, &
+         s=nint(LIS_sfmodel_struc(n)%outInterval), &
          rc=status)
-    ! Find the next output time (only supported upto 1 day intervals)
 
+    ! Find the next output time (only supported upto 1 day intervals)
     if(LIS_sfmodel_struc(n)%outInterval.eq.86400) then
 
        call ESMF_TimeSet(currTime, yy = LIS_rc%yr, &
@@ -1006,7 +1014,8 @@ contains
             s  = 0, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
        outTime = currTime + outTS
        call ESMF_TimeGet(outTime, yy = yr, &
             mm = mo, &
@@ -1016,7 +1025,8 @@ contains
             s  = ss, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
     elseif(LIS_sfmodel_struc(n)%outInterval.eq.10800) then
 
        call ESMF_TimeSet(currTime, yy = LIS_rc%yr, &
@@ -1027,7 +1037,8 @@ contains
             s  = 0, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
        outTime = currTime + outTS
        call ESMF_TimeGet(outTime, yy = yr, &
             mm = mo, &
@@ -1037,7 +1048,8 @@ contains
             s  = ss, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
     elseif(LIS_sfmodel_struc(n)%outInterval.eq.3600) then
 
        call ESMF_TimeSet(currTime, yy = LIS_rc%yr, &
@@ -1048,7 +1060,8 @@ contains
             s  = 0, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
        outTime = currTime + outTS
        call ESMF_TimeGet(outTime, yy = yr, &
             mm = mo, &
@@ -1058,7 +1071,8 @@ contains
             s  = ss, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
     elseif(LIS_sfmodel_struc(n)%outInterval.eq.1800) then
 
        call ESMF_TimeSet(currTime, yy = LIS_rc%yr, &
@@ -1069,7 +1083,8 @@ contains
             s  = 0, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
        outTime = currTime + outTS
        call ESMF_TimeGet(outTime, yy = yr, &
             mm = mo, &
@@ -1079,10 +1094,13 @@ contains
             s  = ss, &
             calendar = LIS_calendar, &
             rc = status)
-       call LIS_verify(status,'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
+       call LIS_verify(status, &
+            'error in ESMF_TimeSet:currTime in LIS_fileIOMod')
     else
-       write(LIS_logunit,*) '[ERR] This output interval is not supported for '
-       write(LIS_logunit,*) '[ERR] for computing expected output locations'
+       write(LIS_logunit,*) &
+            '[ERR] This output interval is not supported for '
+       write(LIS_logunit,*) &
+            '[ERR] for computing expected output locations'
        call LIS_endrun
     endif
 
@@ -1286,7 +1304,8 @@ contains
             '/PS.AFWA_SC.'//trim(LIS_rc%security_class)//&
             '_DI.'//trim(LIS_rc%distribution_class)//&
             '_DC.'//trim(LIS_rc%data_category)//'_GP.LIS_GR.'//&
-            trim(fproj)//trim(fres2)//'_AR.'//trim(LIS_rc%area_of_data)//&
+            trim(fproj)//trim(fres2)//'_AR.'// &
+            trim(LIS_rc%area_of_data)// &
             '_PA.'//trim(fint)//'-HR-SUM_DD.'//&
             trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
        select case (wout)
@@ -1307,7 +1326,7 @@ contains
        case default
        end select
 
-    elseif(LIS_rc%wstyle.eq."557WW streamflow convention") then ! EMK
+    elseif(LIS_rc%wstyle.eq."557WW streamflow convention") then
        write(unit=fint,fmt='(i2.2)') nint(writeint)/3600
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
             yr, mo, da
@@ -1423,7 +1442,7 @@ contains
        end select
 
     elseif(LIS_rc%wstyle.eq. &
-         "557WW medium range forecast convention") then ! EMK
+         "557WW medium range forecast convention") then
        write(unit=fint,fmt='(i2.2)') nint(writeint)/3600
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
             yr, mo, da
@@ -1568,7 +1587,6 @@ contains
     fname = out_fname
   end subroutine create_output_filename_expected
 
-
 !BOP
 !
 ! !ROUTINE: create_dapert_filename
@@ -1588,10 +1606,10 @@ contains
 
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both
+!  the GSWP style of output filenames and the standard LIS style.
+!  The convention used in LIS creates a filename in a hierarchical
+!  style (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -1656,7 +1674,8 @@ contains
        write(unit=cdate, fmt='(i4.4)') LIS_rc%yr
        dname = trim(dname)//trim(cdate)//'/'
 
-       write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
+       write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') &
+            LIS_rc%yr, LIS_rc%mo, LIS_rc%da
        dname = trim(dname)//trim(cdate)
 
        out_fname = trim(dname)//'/LIS_DAPERT_'//trim(cdate1)
@@ -1709,7 +1728,9 @@ contains
 ! \label{create_dapert_filename_withtime}
 !
 ! !INTERFACE:
-  subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
+  subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, &
+       hr, mn, ss)
+
 ! !USES:
     use LIS_coreMod,  only : LIS_rc
     use LIS_logMod,   only : LIS_log_msg, LIS_endrun
@@ -1723,10 +1744,10 @@ contains
 
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both the
+!  GSWP style of output filenames and the standard LIS style. The
+!  convention used in LIS creates a filename in a hierarchical style
+!  (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -1844,11 +1865,14 @@ contains
 ! \label{create_restart_filename}
 !
 ! !INTERFACE:
-  subroutine create_restart_filename(n, fname,dir_name,model_name,wformat)
+  subroutine create_restart_filename(n, fname,dir_name,model_name, &
+       wformat)
+
 ! !USES:
     use LIS_coreMod,    only : LIS_rc
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)           :: n
     character(len=*), intent(out) :: fname
@@ -2015,12 +2039,14 @@ contains
 ! \label{create_restart_filename_withtime}
 !
 ! !INTERFACE:
-  subroutine create_restart_filename_withtime(n, fname,dir_name,model_name,&
-      yr,mo,da,hr,mn,ss,wformat)
+  subroutine create_restart_filename_withtime(n, fname,dir_name, &
+       model_name, yr,mo,da,hr,mn,ss,wformat)
+
 ! !USES:
     use LIS_coreMod,    only : LIS_rc
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)           :: n
     character(len=*), intent(out) :: fname
@@ -2181,10 +2207,12 @@ contains
 !
 ! !INTERFACE:
   subroutine LIS_create_stats_filename(n, fname, mname)
+
 ! !USES:
     use LIS_coreMod,  only : LIS_rc
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)           :: n
     character(len=*), intent(out) :: fname
@@ -2224,7 +2252,6 @@ contains
 
   end subroutine LIS_create_stats_filename
 
-
 !BOP
 !
 ! !ROUTINE: LIS_create_innov_filename
@@ -2244,10 +2271,10 @@ contains
     character(len=*), intent(in)   :: mname
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both
+!  the GSWP style of output filenames and the standard LIS style.
+!  The convention used in LIS creates a filename in a hierarchical
+!  style (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -2317,7 +2344,8 @@ contains
             LIS_rc%yr, LIS_rc%mo, LIS_rc%da
        dname = trim(dname)//trim(cdate)
 
-       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_innov'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2338,7 +2366,8 @@ contains
        write(unit=cdate, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
        dname = trim(dname)//trim(cdate)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_innov'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2356,7 +2385,8 @@ contains
        dname = trim(LIS_rc%odir)//'/'
        dname = trim(dname)//trim(mname)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_innov'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2376,7 +2406,8 @@ contains
        dname = trim(LIS_rc%odir)//'/'
        dname = trim(dname)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_innov'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2398,10 +2429,12 @@ contains
 !
 ! !INTERFACE:
   subroutine LIS_create_incr_filename(n, k, fname, mname)
+
     use LIS_coreMod,  only : LIS_rc
     use LIS_logMod,   only : LIS_log_msg, LIS_endrun
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)            :: n
     integer, intent(in)            :: k
@@ -2409,10 +2442,10 @@ contains
     character(len=*), intent(in)   :: mname
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both
+!  the GSWP style of output filenames and the standard LIS style.
+!  The convention used in LIS creates a filename in a hierarchical
+!  style (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -2482,7 +2515,8 @@ contains
             LIS_rc%yr, LIS_rc%mo, LIS_rc%da
        dname = trim(dname)//trim(cdate)
 
-       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_incr'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2503,7 +2537,8 @@ contains
        write(unit=cdate, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
        dname = trim(dname)//trim(cdate)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_incr'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2521,7 +2556,8 @@ contains
        dname = trim(LIS_rc%odir)//'/'
        dname = trim(dname)//trim(mname)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_incr'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2541,7 +2577,8 @@ contains
        dname = trim(LIS_rc%odir)//'/'
        dname = trim(dname)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_incr'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2554,7 +2591,6 @@ contains
     endif
     fname = out_fname
 
-
   end subroutine LIS_create_incr_filename
 
 !BOP
@@ -2564,10 +2600,12 @@ contains
 !
 ! !INTERFACE:
   subroutine LIS_create_daspread_filename(n, k, fname, mname)
+
     use LIS_coreMod,  only : LIS_rc
     use LIS_logMod,   only : LIS_log_msg, LIS_endrun
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in) :: n
     integer, intent(in) :: k
@@ -2575,10 +2613,10 @@ contains
     character(len=*), intent(in)  :: mname
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both
+!  the GSWP style of output filenames and the standard LIS style.
+!  The convention used in LIS creates a filename in a hierarchical
+!  style (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -2627,6 +2665,7 @@ contains
 !    style option as described above
 !  \end{description}
 !EOP
+
     character(len=10)       :: cdate
     character(len=10)       :: cda
     character(len=14)       :: cdate1
@@ -2648,7 +2687,8 @@ contains
             LIS_rc%yr, LIS_rc%mo, LIS_rc%da
        dname = trim(dname)//trim(cdate)
 
-       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_spread'
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
        out_fname = trim(out_fname)//trim(cda)
@@ -2668,7 +2708,8 @@ contains
        write(unit=cdate, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
        dname = trim(dname)//trim(cdate)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_spread'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2689,7 +2730,8 @@ contains
        dname = trim(LIS_rc%odir)//'/'
        dname = trim(dname)//trim(mname)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_spread'
 
        write(unit=cda, fmt='(a2,i2.2)') '.a',k
@@ -2702,9 +2744,7 @@ contains
     endif
     fname = out_fname
 
-
   end subroutine LIS_create_daspread_filename
-
 
 !BOP
 ! !ROUTINE: LIS_create_obs_filename
@@ -2745,7 +2785,8 @@ contains
     character*100      :: cdate
     character(len=12)       :: cdate1
 
-    write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2,i2.2)') LIS_rc%yr, LIS_rc%mo, &
+    write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2,i2.2)')  &
+         LIS_rc%yr, LIS_rc%mo, &
          LIS_rc%da, LIS_rc%hr,LIS_rc%mn
 
     write(unit=cdate, fmt='(a2,i2.2)') '.d',n
@@ -2765,6 +2806,7 @@ contains
 ! !Private name: call using putget()
   subroutine putget_int ( buffer, iofunc, file_name, &
        routine_name, imax, jmax )
+
    ! !USES:
     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod,    only : LIS_abort, LIS_endrun, &
@@ -2816,9 +2858,9 @@ contains
 
     external :: system
 
-    !     ------------------------------------------------------------------
+    !------------------------------------------------------------------
     !     executable code starts here ... open file, abort on error
-    !     ------------------------------------------------------------------
+    !------------------------------------------------------------------
 
     rec_length = imax * jmax * 4
 
@@ -2831,9 +2873,9 @@ contains
          access='direct', recl=rec_length, iostat=istat )
     if( istat .eq. 0 ) then
 
-       !     ------------------------------------------------------------------
+       !-----------------------------------------------------------------
        !     read from file, abort on error
-       !     ------------------------------------------------------------------
+       !-----------------------------------------------------------------
 
        if( iofunc .eq. 'r' )then
           read( ftn, rec=1, iostat=istat ) buffer
@@ -2849,9 +2891,9 @@ contains
              call LIS_abort( message )
              call LIS_endrun
           endif
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
           !     write to file, abort on error
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
 
        elseif( iofunc .eq. 'w' )then
           write( ftn, rec=1, iostat=istat ) buffer
@@ -2868,9 +2910,9 @@ contains
              call LIS_endrun
           endif
 
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
           !     else abort due to invalid iofunc value
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
 
        else
           call LIS_releaseUnitNumber(ftn)
@@ -2885,9 +2927,9 @@ contains
 
        return
 
-       !     ------------------------------------------------------------------
+       !-----------------------------------------------------------------
        !     error handling
-       !     ------------------------------------------------------------------
+       !-----------------------------------------------------------------
     else
        call LIS_releaseUnitNumber(ftn)
        write(cstat,'(i9)',iostat=istat1) istat
@@ -2911,10 +2953,12 @@ contains
 ! !Private name: call using putget()
   subroutine putget_real ( buffer, iofunc, file_name, &
        routine_name, imax, jmax )
+
    ! !USES:
     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod,    only : LIS_abort, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
+
     implicit none
 
     integer,       intent(in)     :: imax
@@ -2961,9 +3005,9 @@ contains
 
     external :: system
 
-    !     ------------------------------------------------------------------
+    !------------------------------------------------------------------
     !     executable code starts here ... open file, abort on error
-    !     ------------------------------------------------------------------
+    !------------------------------------------------------------------
     !YDT 9/27/07, create dir for write in case it does not exit
     if( iofunc .eq. 'w' ) &
          call system('mkdir -p `dirname '//trim(file_name)//'`')
@@ -2975,9 +3019,9 @@ contains
          access='direct', recl=rec_length, iostat=istat )
     if( istat .eq. 0 ) then
 
-       !     ------------------------------------------------------------------
+       !-----------------------------------------------------------------
        !     read from file, abort on error
-       !     ------------------------------------------------------------------
+       !-----------------------------------------------------------------
 
        if( iofunc .eq. 'r' )then
           read( ftn, rec=1, iostat=istat ) buffer
@@ -2993,9 +3037,9 @@ contains
              call LIS_abort( message )
           endif
 
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
           !     write to file, abort on error
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
 
        elseif( iofunc .eq. 'w' )then
           write( ftn, rec=1, iostat=istat ) buffer
@@ -3011,9 +3055,9 @@ contains
              call LIS_abort( message )
           endif
 
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
           !     else abort due to invalid iofunc value
-          !     ------------------------------------------------------------------
+          !--------------------------------------------------------------
 
        else
           call LIS_releaseUnitNumber(ftn)
@@ -3047,20 +3091,22 @@ contains
 !
 ! !INTERFACE:
   subroutine LIS_create_gain_filename(n, fname, mname)
+
     use LIS_coreMod,  only : LIS_rc
     use LIS_logMod,   only : LIS_log_msg, LIS_endrun
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in) :: n
     character(len=*), intent(out)          :: fname
     character(len=*), intent(in)  :: mname
 !
 ! !DESCRIPTION:
-!  Create the file name for the output data files. It creates both the GSWP
-!  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in a hierarchical style (output directory,
-!  model name, date, file extention)
+!  Create the file name for the output data files. It creates both
+!  the GSWP style of output filenames and the standard LIS style.
+!  The convention used in LIS creates a filename in a hierarchical
+!  style (output directory, model name, date, file extention)
 !
 !  2 level hierarchy
 !  \begin{verbatim}
@@ -3109,6 +3155,7 @@ contains
 !    style option as described above
 !  \end{description}
 !EOP
+
     character(len=10)       :: cdate
     character(len=14)       :: cdate1
     character(len=LIS_CONST_PATH_LEN)       :: dname
@@ -3129,7 +3176,8 @@ contains
             LIS_rc%yr, LIS_rc%mo, LIS_rc%da
        dname = trim(dname)//trim(cdate)
 
-       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'/LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_gain'
 
        write(unit=cdate, fmt='(a2,i2.2)') '.d',n
@@ -3147,7 +3195,8 @@ contains
        write(unit=cdate, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
        dname = trim(dname)//trim(cdate)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_gain'
 
        write(unit=cdate, fmt='(a2,i2.2)') '.d',n
@@ -3165,7 +3214,8 @@ contains
        dname = trim(LIS_rc%odir)//'/'
        dname = trim(dname)//trim(mname)//'/'
 
-       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'//trim(cdate1)//&
+       out_fname = trim(dname)//'LIS_DA_'//trim(mname)//'_'// &
+            trim(cdate1)//&
             '_gain'
 
        write(unit=cdate, fmt='(a2,i2.2)') '.d',n
@@ -3175,7 +3225,6 @@ contains
     endif
     fname = out_fname
 
-
   end subroutine LIS_create_gain_filename
 
 !BOP
@@ -3184,11 +3233,13 @@ contains
 !
 ! !INTERFACE:
   subroutine read2Ddata(n, ftn, gridDesc, array)
+
 ! !USES:
     use LIS_coreMod
     use LIS_logMod
 
     implicit none
+
 ! !ARGUMENTS:
     integer,  INTENT(IN)           :: n
     integer,  INTENT(IN)           :: ftn
@@ -3307,12 +3358,11 @@ contains
     else
        write(LIS_logunit,*) &
             '[ERR] This parameter projection is not supported...'
-       write(LIS_logunit,*) 'Program stopping ....'
+       write(LIS_logunit,*) '[ERR] Program stopping ....'
        call LIS_endrun
     endif
 #endif
   end subroutine read2Ddata
-
 
 !BOP
 ! !ROUTINE: LIS_readDomainConfigSpecs
@@ -3320,9 +3370,11 @@ contains
 !
 ! !INTERFACE:
   subroutine LIS_readDomainConfigSpecs(segment_name, domain_info)
+
 ! !USES:
     use LIS_coreMod,  only : LIS_rc, LIS_config
     use LIS_logMod,   only : LIS_verify, LIS_logunit, LIS_endrun
+
 ! !ARGUMENTS:
     character(len=*),  intent(in)    :: segment_name
     real,              intent(inout) :: domain_info(:,:)
@@ -3336,210 +3388,278 @@ contains
     integer                         :: i, rc
 
     if(LIS_rc%param_proj.eq."latlon") then
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" lower left lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " lower left lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,1),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' lower left lat:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' lower left lat:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" lower left lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " lower left lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,2),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' lower left lon:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' lower left lon:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" upper right lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " upper right lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,3),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' upper right lat:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' upper right lat:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" upper right lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " upper right lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,4),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' upper right lon:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' upper right lon:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" resolution (dx):",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " resolution (dx):",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,5),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' resolution (dx):')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' resolution (dx):')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" resolution (dy):",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " resolution (dy):",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,6),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' resolution (dy):')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' resolution (dy):')
        enddo
 
     elseif(LIS_rc%param_proj.eq."gaussian") then !gaussian
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" first grid point lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " first grid point lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,1),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' first grid point lat:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' first grid point lat:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" first grid point lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " first grid point lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,2),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' first grid point lon:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' first grid point lon:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" last grid point lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " last grid point lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,3),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' last grid point lat:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' last grid point lat:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" last grid point lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " last grid point lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,4),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' last grid point lon:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' last grid point lon:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" resolution dlon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " resolution dlon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,5),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' resolution dlon:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' resolution dlon:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" number of lat circles:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " number of lat circles:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,6),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' number of lat circles:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' number of lat circles:')
        enddo
     elseif(LIS_rc%param_proj.eq."polar") then !polar
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" lower left lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " lower left lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,1),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' lower left lat:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' lower left lat:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" lower left lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " lower left lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,2),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' lower left lon:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' lower left lon:')
        enddo
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" true lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " true lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,3),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' true lat:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' true lat:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" standard lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " standard lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,4),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' standard lon:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' standard lon:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" orientation:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " orientation:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,5),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' orientation:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' orientation:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" resolution:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " resolution:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,6),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' resolution:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' resolution:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" x-dimension size:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " x-dimension size:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,7),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' x-dimension size:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' x-dimension size:')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" y-dimension size:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " y-dimension size:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,8),rc=rc)
-          call LIS_verify(rc,'please specify '//trim(segment_name)//' y-dimension size:')
+          call LIS_verify(rc,'please specify '//trim(segment_name)// &
+               ' y-dimension size:')
        enddo
-    elseif(LIS_rc%param_proj.eq."UTM") then !UTM
+    elseif(LIS_rc%param_proj.eq."UTM") then
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" UTM zone:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " UTM zone:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,1),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' UTM zone: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' UTM zone: not defined')
        enddo
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" northing of SW corner:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " northing of SW corner:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,2),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' northing of SW corner: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' northing of SW corner: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" easting of SW corner:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " easting of SW corner:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,3),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' easting of SW corner: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' easting of SW corner: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" x-dimension size:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " x-dimension size:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,4),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' x-dimension size: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' x-dimension size: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" y-dimension size:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " y-dimension size:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,5),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' y-dimension size: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' y-dimension size: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" resolution:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " resolution:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,6),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' resolution: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' resolution: not defined')
        enddo
 
     elseif(LIS_rc%param_proj.eq."hrap") then !HRAP
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" lower left lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " lower left lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,1),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' lower left lat: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' lower left lat: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" lower left lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " lower left lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,2),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' lower left lon: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' lower left lon: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" true lat:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " true lat:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,3),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' true lat: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' true lat: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" standard lon:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " standard lon:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,4),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' standard lon: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' standard lon: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" orientation:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " orientation:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,5),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' orientation: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' orientation: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" resolution:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " resolution:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,6),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' resolution: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' resolution: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" x-dimension size:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " x-dimension size:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,7),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' x-dimension size: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' x-dimension size: not defined')
        enddo
 
-       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)//" y-dimension size:",rc=rc)
+       call ESMF_ConfigFindLabel(LIS_config,trim(segment_name)// &
+            " y-dimension size:",rc=rc)
        do i=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,domain_info(i,8),rc=rc)
-          call LIS_verify(rc,trim(segment_name)//' y-dimension size: not defined')
+          call LIS_verify(rc,trim(segment_name)// &
+               ' y-dimension size: not defined')
        enddo
 
     else
@@ -3558,10 +3678,14 @@ contains
 !
 ! !INTERFACE:
   subroutine LIS_checkDomainExtents(n, data_gridDesc)
+
 ! !USES:
     use LIS_coreMod,  only : LIS_rc, LIS_domain
     use LIS_logMod,   only : LIS_logunit, LIS_endrun
     use map_utils,    only : ij_to_latlon
+
+    implicit none
+
 ! !ARGUMENTS:
     integer              :: n
     real                 :: data_gridDesc(6)
@@ -3597,9 +3721,12 @@ contains
          (max_lat.gt.data_gridDesc(3)).or.&
          (max_lon.gt.data_gridDesc(4))) then
 
-       write(LIS_logunit,*) '[ERR]  The STATSGO data is specified only for the CONUS..'
-       write(LIS_logunit,*) '[ERR] The running domain is outside the STATSGO boundaries..'
-       write(LIS_logunit,*) '[ERR] Stopping program....'
+       write(LIS_logunit,*) &
+            '[ERR]  The STATSGO data is specified only for the CONUS..'
+       write(LIS_logunit,*) &
+            '[ERR] The running domain is outside the STATSGO boundaries..'
+       write(LIS_logunit,*) &
+            '[ERR] Stopping program....'
        call LIS_endrun
     endif
 
@@ -3613,17 +3740,19 @@ contains
 !
 ! !INTERFACE:
   subroutine readparam_real_2d(n,pname,array)
+
 ! !USES:
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    use netcdf
-#endif
     use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
          LIS_ews_halo_ind, &
          LIS_nss_halo_ind
     use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber, LIS_endrun, LIS_verify
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)    :: n
     character(len=*)       :: pname
@@ -3663,13 +3792,16 @@ contains
        call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
 
        ios = nf90_inquire_dimension(nid,ncId, len=nc)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d')
 
        ios = nf90_inquire_dimension(nid,nrId, len=nr)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d')
 
        ios = nf90_inq_varid(nid,trim(pname),paramid)
-       call LIS_verify(ios,trim(pname)//' field not found in the LIS param file')
+       call LIS_verify(ios,trim(pname)// &
+            ' field not found in the LIS param file')
 
        ios = nf90_get_var(nid,paramid,array,&
             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
@@ -3691,7 +3823,6 @@ contains
 
   end subroutine readparam_real_2d
 
-
 !BOP
 !
 ! !ROUTINE: readparam_real_2d_rc
@@ -3699,17 +3830,19 @@ contains
 !
 ! !INTERFACE:
   subroutine readparam_real_2d_rc(n,pname,array,rc)
+
 ! !USES:
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    use netcdf
-#endif
     use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
          LIS_ews_halo_ind, &
          LIS_nss_halo_ind
     use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber, LIS_endrun, LIS_verify
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)    :: n
     character(len=*)       :: pname
@@ -3750,10 +3883,12 @@ contains
        call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
 
        ios = nf90_inquire_dimension(nid,ncId, len=nc)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d')
 
        ios = nf90_inquire_dimension(nid,nrId, len=nr)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d')
 
        ios = nf90_inq_varid(nid,trim(pname),paramid)
        if(ios.ne.0) then
@@ -3763,7 +3898,8 @@ contains
                start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
                LIS_nss_halo_ind(n,LIS_localPet+1)/),&
                count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
-          call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
+          call LIS_verify(ios, &
+               'Error in nf90_get_var in readparam_real_2d')
 
           ios = nf90_close(nid)
           call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
@@ -3789,15 +3925,17 @@ contains
 !
 ! !INTERFACE:
   subroutine readgparam_real_2d(n,pname,array)
+
 ! !USES:
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    use netcdf
-#endif
     use LIS_coreMod,        only : LIS_rc
     use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber, LIS_endrun, LIS_verify
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)    :: n
     character(len=*)       :: pname
@@ -3838,13 +3976,16 @@ contains
        call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d')
 
        ios = nf90_inquire_dimension(nid,ncId, len=nc)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d')
 
        ios = nf90_inquire_dimension(nid,nrId, len=nr)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d')
 
        ios = nf90_inq_varid(nid,trim(pname),paramid)
-       call LIS_verify(ios,trim(pname)//' field not found in the LIS param file')
+       call LIS_verify(ios,trim(pname)// &
+            ' field not found in the LIS param file')
 
        ios = nf90_get_var(nid,paramid,param)
        call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
@@ -3865,7 +4006,6 @@ contains
 
   end subroutine readgparam_real_2d
 
-
 !BOP
 !
 ! !ROUTINE: readgparam_real_2d_rc
@@ -3873,15 +4013,17 @@ contains
 !
 ! !INTERFACE:
   subroutine readgparam_real_2d_rc(n,pname,array,rc)
+
 ! !USES:
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    use netcdf
-#endif
     use LIS_coreMod,        only : LIS_rc
     use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber, LIS_endrun, LIS_verify
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)    :: n
     character(len=*)       :: pname
@@ -3926,17 +4068,20 @@ contains
        call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_real_2d_rc')
 
        ios = nf90_inquire_dimension(nid,ncId, len=nc)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
        ios = nf90_inquire_dimension(nid,nrId, len=nr)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_real_2d_rc')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_real_2d_rc')
 
        ios = nf90_inq_varid(nid,trim(pname),paramid)
        if(ios.ne.0) then
           rc = 1
        else
           ios = nf90_get_var(nid,paramid,param)
-          call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d_rc')
+          call LIS_verify(ios, &
+               'Error in nf90_get_var in readparam_real_2d_rc')
 
           ios = nf90_close(nid)
           call LIS_verify(ios,'Error in nf90_close in readparam_real_2d_rc')
@@ -3956,7 +4101,6 @@ contains
 
   end subroutine readgparam_real_2d_rc
 
-
 !BOP
 !
 ! !ROUTINE: readparam_int_2d
@@ -3964,17 +4108,19 @@ contains
 !
 ! !INTERFACE:
   subroutine readparam_int_2d(n,pname,array)
+
 ! !USES:
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    use netcdf
-#endif
     use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
          LIS_ews_halo_ind, &
          LIS_nss_halo_ind
     use LIS_logMod,         only : LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber, LIS_endrun, LIS_verify
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
 
     implicit none
+
 ! !ARGUMENTS:
     integer, intent(in)    :: n
     character(len=*)       :: pname
@@ -4015,13 +4161,16 @@ contains
        call LIS_verify(ios,'Error in nf90_inq_dimid in readparam_int_2d')
 
        ios = nf90_inquire_dimension(nid,ncId, len=nc)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_int_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_int_2d')
 
        ios = nf90_inquire_dimension(nid,nrId, len=nr)
-       call LIS_verify(ios,'Error in nf90_inquire_dimension in readparam_int_2d')
+       call LIS_verify(ios, &
+            'Error in nf90_inquire_dimension in readparam_int_2d')
 
        ios = nf90_inq_varid(nid,trim(pname),paramid)
-       call LIS_verify(ios,trim(pname)//' field not found in the LIS param file')
+       call LIS_verify(ios,trim(pname)// &
+            ' field not found in the LIS param file')
 
        ios = nf90_get_var(nid,paramid,array,&
             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&

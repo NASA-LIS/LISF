@@ -215,8 +215,13 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
   !ag (5Apr2025)
   real, allocatable    :: sfcelv_glb(:)
 
-! ================================================
-  !convert units [kg m-2 sec-1] to [m3 sec-1] and aggregate surface runoff and baseflow
+#if (defined SPMD)
+  external :: MPI_BCAST
+#endif
+
+  ! ================================================
+  !convert units [kg m-2 sec-1] to [m3 sec-1] and aggregate surface
+  !runoff and baseflow
   do ic=1,nseqall
      if(runoff0(ic)/=mis.and.basflw0(ic)/=mis.and.grarea(ic)/=mis)then
         runoff(ic)=(runoff0(ic)+basflw0(ic))*grarea(ic)/1e3
