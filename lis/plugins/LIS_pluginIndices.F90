@@ -11,33 +11,37 @@ module LIS_pluginIndices
 !BOP
 !
 !  !MODULE: LIS_pluginIndices
-! 
-!  !DESCRIPTION: 
-!   The code in this file provides values of indices used to 
+!
+!  !DESCRIPTION:
+!   The code in this file provides values of indices used to
 !   to register functions in the plugin modules
-!  
+!
 !  The index definitions are simply a convention
-!  The user may change these options, and the lis.config 
+!  The user may change these options, and the lis.config
 !  should be changed appropriately to ensure that the correct function
 !  is called at run time
-! 
-!  !REVISION HISTORY: 
+!
+!  !REVISION HISTORY:
 !  23 Oct 2006: Sujay Kumar  Initial Specification
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
-!  08 Feb 2011: Yudong Tian, added cmem3 rtm. 
+!  08 Feb 2011: Yudong Tian, added cmem3 rtm.
 !  01 Jun 2012: Sujay Kumar, changed Ids to character strings
-!  22 May 2013: Shugong Wang, added FLAKE.1.0  
+!  22 May 2013: Shugong Wang, added FLAKE.1.0
 !  27 Jan 2014: Shugong Wang, added HRAP projection
-!   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF for Noah
-!  16 Aug 2016: Mahdi Navari, added PILDAS  
+!   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF
+!               for Noah
+!  16 Aug 2016: Mahdi Navari, added PILDAS
 !
 !EOP
+
+  implicit none
+
   PRIVATE
-   
+
 !BOC
 !-------------------------------------------------------------------------
 ! Run modes
-!------------------------------------------------------------------------- 
+!-------------------------------------------------------------------------
    character*50, public,  parameter :: LIS_retroId     = "retrospective"
    character*50, public,  parameter :: LIS_RTMforwardId  = "RTM forward"
    character*50, public,  parameter :: LIS_agrmetrunId = "AGRMET ops"
@@ -45,8 +49,10 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_nuopccplId  = "NUOPC coupling"
    character*50, public,  parameter :: LIS_gcecplId    = "GCE coupling"
    character*50, public,  parameter :: LIS_gfscplId    = "GFS coupling"
-   character*50, public,  parameter :: LIS_paramEstimRunId = "parameter estimation"
-   character*50, public,  parameter :: LIS_smootherDAId    = "ensemble smoother"
+   character*50, public,  parameter :: LIS_paramEstimRunId = &
+        "parameter estimation"
+   character*50, public,  parameter :: LIS_smootherDAId    = &
+        "ensemble smoother"
    character*50, public,  parameter :: LIS_forecastrunId   = "forecast"
 !-------------------------------------------------------------------------
 ! Domains
@@ -94,7 +100,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_geowrsi2Id   = "GeoWRSI.2"
    character*50, public,  parameter :: LIS_rdhm356lsmId = "RDHM.3.5.6"
    character*50, public,  parameter :: LIS_summa1Id     = "SUMMA.1.0"
-   character*50, public,  parameter :: LIS_Crocus81Id   = "Crocus8.1"  
+   character*50, public,  parameter :: LIS_Crocus81Id   = "Crocus8.1"
    character*50, public,  parameter :: LIS_snowmodelId  = "SnowModel"
 
 !-------------------------------------------------------------------------
@@ -105,34 +111,46 @@ module LIS_pluginIndices
 !-------------------------------------------------------------------------
 ! Glacier models
 !-------------------------------------------------------------------------
-   character*50, public,  parameter :: LIS_templateGLId = "template glacier"
-   character*50, public,  parameter :: LIS_noahmpglacier3911Id  = "NoahMP-GL.3.9.1.1"
+   character*50, public,  parameter :: LIS_templateGLId = &
+        "template glacier"
+   character*50, public,  parameter :: LIS_noahmpglacier3911Id  = &
+        "NoahMP-GL.3.9.1.1"
 
 !-------------------------------------------------------------------------
 ! Open water models
 !-------------------------------------------------------------------------
-   character*50, public,  parameter :: LIS_templateOpenWaterId  = "template open water"
+   character*50, public,  parameter :: LIS_templateOpenWaterId  = &
+        "template open water"
 
 !-------------------------------------------------------------------------
-! Met forcings 
+! Met forcings
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LIS_metForcTemplateId = "none"
-   character*50, public,  parameter :: LIS_generatedForcId   = "LDT-generated"
-   character*50, public,  parameter :: LIS_climstdId         = "CLIM-Standard"
-   character*50, public,  parameter :: LIS_genensfcstId      = "GenEnsFcst"
-   character*50, public,  parameter :: LIS_pptensfcstId      = "PPTEnsFcst"
+   character*50, public,  parameter :: LIS_generatedForcId   = &
+        "LDT-generated"
+   character*50, public,  parameter :: LIS_climstdId         = &
+        "CLIM-Standard"
+   character*50, public,  parameter :: LIS_genensfcstId      = &
+        "GenEnsFcst"
+   character*50, public,  parameter :: LIS_pptensfcstId      = &
+        "PPTEnsFcst"
 
    character*50, public,  parameter :: LIS_gdasId            = "GDAS"
-   character*50, public,  parameter :: LIS_gdasT1534Id       = "GDAS T1534"
-   character*50, public,  parameter :: LIS_geos5fcstId       = "GEOS5 forecast"
-   character*50, public,  parameter :: LIS_gefsId            = "GEFS forecast"
+   character*50, public,  parameter :: LIS_gdasT1534Id       = &
+        "GDAS T1534"
+   character*50, public,  parameter :: LIS_geos5fcstId       = &
+        "GEOS5 forecast"
+   character*50, public,  parameter :: LIS_gefsId            = &
+        "GEFS forecast"
    character*50, public,  parameter :: LIS_ecmwfId           = "ECMWF"
    character*50, public,  parameter :: LIS_gswp1Id           = "GSWP1"
    character*50, public,  parameter :: LIS_gswp2Id           = "GSWP2"
    character*50, public,  parameter :: LIS_agrmetId          = "AGRMET"
    character*50, public,  parameter :: LIS_princetonId       = "PRINCETON"
-   character*50, public,  parameter :: LIS_nldas2Id          = "NLDAS2 grib"
-   character*50, public,  parameter :: LIS_nldas20Id         = "NLDAS2 netcdf"
+   character*50, public,  parameter :: LIS_nldas2Id          = &
+        "NLDAS2 grib"
+   character*50, public,  parameter :: LIS_nldas20Id         = &
+        "NLDAS2 netcdf"
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
    character*50, public,  parameter :: LIS_merra2Id          = "MERRA2"
@@ -141,28 +159,40 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_cmapId            = "CMAP"
    character*50, public,  parameter :: LIS_chirps2Id         = "CHIRPS2"
 
-   character*50, public,  parameter :: LIS_TRMM3B42RTId      = "TRMM 3B42RT"
-   character*50, public,  parameter :: LIS_TRMM3B42RTV7Id    = "TRMM 3B42RTV7"
-   character*50, public,  parameter :: LIS_TRMM3B42V6Id      = "TRMM 3B42V6"
-   character*50, public,  parameter :: LIS_TRMM3B42V7Id      = "TRMM 3B42V7" ! SY
-   character*50, public,  parameter :: LIS_cmorphId          = "CPC CMORPH"
+   character*50, public,  parameter :: LIS_TRMM3B42RTId      = &
+        "TRMM 3B42RT"
+   character*50, public,  parameter :: LIS_TRMM3B42RTV7Id    = &
+        "TRMM 3B42RTV7"
+   character*50, public,  parameter :: LIS_TRMM3B42V6Id      = &
+        "TRMM 3B42V6"
+   character*50, public,  parameter :: LIS_TRMM3B42V7Id      = &
+        "TRMM 3B42V7" ! SY
+   character*50, public,  parameter :: LIS_cmorphId          = &
+        "CPC CMORPH"
    character*50, public,  parameter :: LIS_imergId           = "GPM IMERG"
-   character*50, public,  parameter :: LIS_stg2Id            = "CPC STAGEII"
-   character*50, public,  parameter :: LIS_stg4Id            = "CPC STAGEIV"
-
+   character*50, public,  parameter :: LIS_stg2Id            = &
+        "CPC STAGEII"
+   character*50, public,  parameter :: LIS_stg4Id            = &
+        "CPC STAGEIV"
    character*50, public,  parameter :: LIS_narrId            = "NARR"
-   character*50, public,  parameter :: LIS_RFE2DailyId       = "RFE2(daily)"
+   character*50, public,  parameter :: LIS_RFE2DailyId       = &
+        "RFE2(daily)"
    character*50, public,  parameter :: LIS_scanId            = "SCAN"
    !character*50, public,  parameter :: LIS_d2pcpcarId        = "D2PCPCAR"
    !character*50, public,  parameter :: LIS_d2pcpoklId        = "D2PCPOKL"
-   character*50, public,  parameter :: LIS_agrradpsId        = "AGRMET radiation (polar stereographic)"
+   character*50, public,  parameter :: LIS_agrradpsId        = &
+        "AGRMET radiation (polar stereographic)"
    character*50, public,  parameter :: LIS_BondvilleId       = "Bondville"
    character*50, public,  parameter :: LIS_LoobosId          = "Loobos"
-   character*50, public,  parameter :: LIS_TRIGRSseattleId   = "TRIGRS test"
+   character*50, public,  parameter :: LIS_TRIGRSseattleId   = &
+        "TRIGRS test"
    character*50, public,  parameter :: LIS_snotelId          = "SNOTEL"
-   character*50, public,  parameter :: LIS_RFE2gdasId        = "RFE2(GDAS bias-corrected)"
-   character*50, public,  parameter :: LIS_vicforcingId      = "VIC processed forcing"
-   character*50, public,  parameter :: LIS_PALSmetforcId     = "PALS station forcing"
+   character*50, public,  parameter :: LIS_RFE2gdasId        = &
+        "RFE2(GDAS bias-corrected)"
+   character*50, public,  parameter :: LIS_vicforcingId      = &
+        "VIC processed forcing"
+   character*50, public,  parameter :: LIS_PALSmetforcId     = &
+        "PALS station forcing"
    character*50, public,  parameter :: LIS_USGSPETforcId     = "PET USGS"
    character*50, public,  parameter :: LIS_nam242Id          = "NAM242"
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
@@ -171,14 +201,18 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_WRFakId           = "WRF AK"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
    character*50, public,  parameter :: LIS_HiMATGMUforcId    = "HiMAT GMU"
-   character*50, public,  parameter :: LIS_AWRALforcId       = "AWRAL processed forcing"
+   character*50, public,  parameter :: LIS_AWRALforcId       = &
+        "AWRAL processed forcing"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
    character*50, public,  parameter :: LIS_gddpId            = "GDDP"
-   character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast"
-   character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
-   character*50, public,  parameter :: LIS_mogrepsgId        = "MOGREPS-G forecast"
+   character*50, public,  parameter :: LIS_galwemId          = &
+        "GALWEM forecast"
+   character*50, public,  parameter :: LIS_galwemgeId        = &
+        "GALWEM-GE forecast"
+   character*50, public,  parameter :: LIS_mogrepsgId        = &
+        "MOGREPS-G forecast"
 
 !-------------------------------------------------------------------------
 ! land surface parameters
@@ -186,7 +220,8 @@ module LIS_pluginIndices
 !-------------------------------------------------------------------------
 ! LAI/SAI sources
 !-------------------------------------------------------------------------
-   character*50, public,  parameter :: LIS_modis_RT_laiId  = "MODIS real-time"
+   character*50, public,  parameter :: LIS_modis_RT_laiId  = &
+        "MODIS real-time"
    character*50, public,  parameter :: LIS_ALMIPIIlaiId    = "ALMIPII"
 !-------------------------------------------------------------------------
 ! greenness data sources
@@ -210,7 +245,8 @@ module LIS_pluginIndices
 !-------------------------------------------------------------------------
 ! data assimilation algorithms
 !-------------------------------------------------------------------------
-   character*50, public,  parameter :: LIS_diId         = "Direct insertion"
+   character*50, public,  parameter :: LIS_diId         = &
+        "Direct insertion"
    character*50, public,  parameter :: LIS_ekfId        = "EKF"
    character*50, public,  parameter :: LIS_enkfId       = "EnKF"
    character*50, public,  parameter :: LIS_ensrfId      = "EnSRF"
@@ -226,46 +262,73 @@ module LIS_pluginIndices
 ! DA variable being updated with observations
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LIS_noobsId             = "none"
-   character*50, public,  parameter :: LIS_synsmId             = "Synthetic SM"
-   character*50, public,  parameter :: LIS_synsweId            = "Synthetic SWE"
-   character*50, public,  parameter :: LIS_synlstId            = "Synthetic LST"
-   character*50, public,  parameter :: LIS_synsndId            = "Synthetic SND"
-   character*50, public,  parameter :: LIS_synSnowTbID         = "Synthetic Snow TB"              
-
-   character*50, public,  parameter :: LIS_multisynsmobsId     = "Synthetic(Multilayer) sm"
-   character*50, public,  parameter :: LIS_isccpTskinId        = "ISCCP LST"
-   character*50, public,  parameter :: LIS_NASA_AMSREsmobsId   = "AMSR-E(NASA) soil moisture"
-   character*50, public,  parameter :: LIS_LPRM_AMSREsmobsId   = "AMSR-E(LPRM) soil moisture"
-   character*50, public,  parameter :: LIS_ESACCIsmobsId       = "ESA CCI soil moisture"
+   character*50, public,  parameter :: LIS_synsmId             = &
+        "Synthetic SM"
+   character*50, public,  parameter :: LIS_synsweId            = &
+        "Synthetic SWE"
+   character*50, public,  parameter :: LIS_synlstId            = &
+        "Synthetic LST"
+   character*50, public,  parameter :: LIS_synsndId            = &
+        "Synthetic SND"
+   character*50, public,  parameter :: LIS_synSnowTbID         = &
+        "Synthetic Snow TB"
+   character*50, public,  parameter :: LIS_multisynsmobsId     = &
+        "Synthetic(Multilayer) sm"
+   character*50, public,  parameter :: LIS_isccpTskinId        = &
+        "ISCCP LST"
+   character*50, public,  parameter :: LIS_NASA_AMSREsmobsId   = &
+        "AMSR-E(NASA) soil moisture"
+   character*50, public,  parameter :: LIS_LPRM_AMSREsmobsId   = &
+        "AMSR-E(LPRM) soil moisture"
+   character*50, public,  parameter :: LIS_ESACCIsmobsId       = &
+        "ESA CCI soil moisture"
    character*50, public,  parameter :: LIS_WindSatsmobsId      = "Windsat"
-   character*50, public,  parameter :: LIS_WindSatCsmobsId     = "Windsat C-band"
+   character*50, public,  parameter :: LIS_WindSatCsmobsId     = &
+        "Windsat C-band"
    character*50, public,  parameter :: LIS_snodepobsId         = "SNODEP"
    character*50, public,  parameter :: LIS_usafsiobsId         = "USAFSI"
-   character*50, public,  parameter :: LIS_ANSASWEsnowobsId    = "ANSA SWE"
-   character*50, public,  parameter :: LIS_ANSASCFsnowobsId    = "ANSA SCF"
-   character*50, public,  parameter :: LIS_ANSASNWDsnowobsId   = "ANSA snow depth"
-   character*50, public,  parameter :: LIS_SMMRSNWDsnowobsId   = "SMMR snow depth"
-   character*50, public,  parameter :: LIS_SSMISNWDsnowobsId   = "SSMI snow depth"
-   character*50, public,  parameter :: LIS_AMSREsweobsId       = "AMSR-E SWE"
+   character*50, public,  parameter :: LIS_ANSASWEsnowobsId    = &
+        "ANSA SWE"
+   character*50, public,  parameter :: LIS_ANSASCFsnowobsId    = &
+        "ANSA SCF"
+   character*50, public,  parameter :: LIS_ANSASNWDsnowobsId   = &
+        "ANSA snow depth"
+   character*50, public,  parameter :: LIS_SMMRSNWDsnowobsId   = &
+        "SMMR snow depth"
+   character*50, public,  parameter :: LIS_SSMISNWDsnowobsId   = &
+        "SSMI snow depth"
+   character*50, public,  parameter :: LIS_AMSREsweobsId       = &
+        "AMSR-E SWE"
 !   character*50, public,  parameter :: LIS_AMSREsnowobsId      = "AMSR-E snow" !yliu
-   character*50, public,  parameter :: LIS_PMWsnowobsId        = "PMW snow" !yliu
-   character*50, public,  parameter :: LIS_modisscfId          = "MODIS SCF"
-   character*50, public,  parameter :: LIS_GRACEtwsobsId       = "GRACE TWS"
-   character*50, public,  parameter :: LIS_simGRACEJPLobsId    = "Simulated GRACE (JPL)"
-   character*50, public,  parameter :: LIS_synLbandTbobsId     = "Synthetic L-band Tb"
-   character*50, public,  parameter :: LIS_SMOPSsmobsId        = "SMOPS soil moisture"
-   character*50, public,  parameter :: LIS_SMOPS_ASCATsmobsId  = "SMOPS-ASCAT soil moisture" ! MN
-   character*50, public,  parameter :: LIS_SMOPS_SMOSsmobsId   = "SMOPS-SMOS soil moisture"  ! MN
-   character*50, public,  parameter :: LIS_SMOPS_AMSR2smobsId  = "SMOPS-AMSR2 soil moisture" ! MN
-   character*50, public,  parameter :: LIS_SMOPS_SMAPsmobsId   = "SMOPS-SMAP soil moisture"  ! MN
-   character*50, public,  parameter :: LIS_ASCAT_TUWsmobsId    = "ASCAT (TUW) soil moisture"
-   character*50, public,  parameter :: LIS_IMSscaobsId         = "IMS snow cover"
+   character*50, public,  parameter :: LIS_PMWsnowobsId        = &
+        "PMW snow" !yliu
+   character*50, public,  parameter :: LIS_modisscfId          = &
+        "MODIS SCF"
+   character*50, public,  parameter :: LIS_GRACEtwsobsId       = &
+        "GRACE TWS"
+   character*50, public,  parameter :: LIS_simGRACEJPLobsId    = &
+        "Simulated GRACE (JPL)"
+   character*50, public,  parameter :: LIS_synLbandTbobsId     = &
+        "Synthetic L-band Tb"
+   character*50, public,  parameter :: LIS_SMOPSsmobsId        = &
+        "SMOPS soil moisture"
+   character*50, public,  parameter :: LIS_SMOPS_ASCATsmobsId  = &
+        "SMOPS-ASCAT soil moisture" ! MN
+   character*50, public,  parameter :: LIS_SMOPS_SMOSsmobsId   = &
+        "SMOPS-SMOS soil moisture"  ! MN
+   character*50, public,  parameter :: LIS_SMOPS_AMSR2smobsId  = &
+        "SMOPS-AMSR2 soil moisture" ! MN
+   character*50, public,  parameter :: LIS_SMOPS_SMAPsmobsId   = &
+        "SMOPS-SMAP soil moisture"  ! MN
+   character*50, public,  parameter :: LIS_ASCAT_TUWsmobsId    = &
+        "ASCAT (TUW) soil moisture"
+   character*50, public,  parameter :: LIS_IMSscaobsId         = &
+        "IMS snow cover"
    character*50, public,  parameter :: LIS_GCOMW_AMSR2L3smobsId = &
         "GCOMW AMSR2 L3 soil moisture"
    character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = &
         "GCOMW AMSR2 L3 snow depth"
-   character*50, public,  parameter :: LIS_SNODASobsId = &
-        "SNODAS"
+   character*50, public,  parameter :: LIS_SNODASobsId = "SNODAS"
    character*50, public,  parameter :: LIS_SMOSL2smobsId         = &
         "SMOS L2 soil moisture"
    character*50, public,  parameter :: LIS_pildassmobsId         = &
@@ -275,7 +338,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_NASASMAPsmobsId       = &
         "SMAP(NASA) soil moisture"
    character*50, public,  parameter :: LIS_CDFTRANSFERNASASMAPsmobsId = &
-        "SMAP(NASA) soil moisture with CDF Transfer"                 !MN 
+        "SMAP(NASA) soil moisture with CDF Transfer"                 !MN
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
         "SMOS NRT NN soil moisture"                                  !YK
    character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
@@ -310,18 +373,24 @@ module LIS_pluginIndices
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
 !-------------------------------------------------------------------------
-   character*50, public,  parameter :: LIS_gmaobiasId = "Adaptive bias correction"
+   character*50, public,  parameter :: LIS_gmaobiasId = &
+        "Adaptive bias correction"
 !-------------------------------------------------------------------------
 ! Optimization / Uncertainty estimation Algorithms
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LIS_ESOptId ="Enumerated search"
    character*50, public,  parameter :: LIS_LMOptId ="Levenberg marquardt"
    character*50, public,  parameter :: LIS_GAOptId = "Genetic algorithm"
-   character*50, public,  parameter :: LIS_SCEUAOptId = "Shuffled complex evolution"
-   character*50, public,  parameter :: LIS_MCSIMId = "Monte carlo sampling"
-   character*50, public,  parameter :: LIS_RWMCMCId = "Random walk markov chain monte carlo"
-   character*50, public,  parameter :: LIS_DEMCId = "Differential evolution markov chain"
-   character*50, public,  parameter :: LIS_DEMCzId = "Differential evolution markov chain z"
+   character*50, public,  parameter :: LIS_SCEUAOptId = &
+        "Shuffled complex evolution"
+   character*50, public,  parameter :: LIS_MCSIMId = &
+        "Monte carlo sampling"
+   character*50, public,  parameter :: LIS_RWMCMCId = &
+        "Random walk markov chain monte carlo"
+   character*50, public,  parameter :: LIS_DEMCId = &
+        "Differential evolution markov chain"
+   character*50, public,  parameter :: LIS_DEMCzId = &
+        "Differential evolution markov chain z"
 !-------------------------------------------------------------------------
 ! Optimization Set (parameter estimation calibration dataset) definitions
 !-------------------------------------------------------------------------
@@ -330,18 +399,24 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_wgPBMRsmId = "WG PBMR sm"
    character*50, public,  parameter :: LIS_pesynsm1Id = "Synthetic sm1"
    character*50, public,  parameter :: LIS_pesynsm2Id = "Synthetic sm2"
-   character*50, public,  parameter :: LIS_AmerifluxObsId = "Ameriflux obs"
+   character*50, public,  parameter :: LIS_AmerifluxObsId = &
+        "Ameriflux obs"
    character*50, public,  parameter :: LIS_ARMObsId = "ARM obs"
-   character*50, public,  parameter :: LIS_maconlandslideObsId = "Macon landslide obs"
-   character*50, public,  parameter :: LIS_globallandslideObsId = "Global landslide obs"
+   character*50, public,  parameter :: LIS_maconlandslideObsId = &
+        "Macon landslide obs"
+   character*50, public,  parameter :: LIS_globallandslideObsId = &
+        "Global landslide obs"
    character*50, public,  parameter :: LIS_CNRSObsId = "CNRS"
    character*50, public,  parameter :: LIS_CNRS_MPDIObsId = "CNRS MPDI"
    character*50, public,  parameter :: LIS_AMSRE_SRObsId = "AMSRE SR"
-   character*50, public,  parameter :: LIS_LPRM_AMSREsmpeObsId = "AMSR-E(LPRM) pe soil moisture"
-   character*50, public,  parameter :: LIS_FLUXNETpeObsId = "Gridded FLUXNET"
-   character*50, public,  parameter :: LIS_USDA_ARSsmpeObsId = "USDA ARSsm"
+   character*50, public,  parameter :: LIS_LPRM_AMSREsmpeObsId = &
+        "AMSR-E(LPRM) pe soil moisture"
+   character*50, public,  parameter :: LIS_FLUXNETpeObsId = &
+        "Gridded FLUXNET"
+   character*50, public,  parameter :: LIS_USDA_ARSsmpeObsId = &
+        "USDA ARSsm"
    character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
-   character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm" 
+   character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm"
    character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
    character*50, public,  parameter :: LIS_UAsnowobsId = "UA snow"
 !-------------------------------------------------------------------------
@@ -375,18 +450,27 @@ module LIS_pluginIndices
 !-------------------------------------------------------------------------
 ! Runoff data support
 !-------------------------------------------------------------------------
-   character*50, public, parameter :: LIS_LISrunoffdataId   = "LIS runoff output"
-   character*50, public, parameter :: LIS_HYMAP3_LISrunoffdataId   = "LIS HYMAP3 runoff output"
-   character*50, public, parameter :: LIS_GLDAS1runoffdataId = "GLDAS1 runoff data"
-   character*50, public, parameter :: LIS_GLDAS2runoffdataId = "GLDAS2 runoff data"
-   character*50, public, parameter :: LIS_NLDAS2runoffdataId = "NLDAS2 runoff data"
-   character*50, public, parameter :: LIS_MERRA2runoffdataId = "MERRA2 runoff data"
-   character*50, public, parameter :: LIS_ERAIlandrunoffdataId = "ERA interim land runoff data"
-   character*50, public, parameter :: LIS_GWBMIPrunoffdataId = "GWB MIP runoff data"
+   character*50, public, parameter :: LIS_LISrunoffdataId   = &
+        "LIS runoff output"
+   character*50, public, parameter :: LIS_HYMAP3_LISrunoffdataId   = &
+        "LIS HYMAP3 runoff output"
+   character*50, public, parameter :: LIS_GLDAS1runoffdataId = &
+        "GLDAS1 runoff data"
+   character*50, public, parameter :: LIS_GLDAS2runoffdataId = &
+        "GLDAS2 runoff data"
+   character*50, public, parameter :: LIS_NLDAS2runoffdataId = &
+        "NLDAS2 runoff data"
+   character*50, public, parameter :: LIS_MERRA2runoffdataId = &
+        "MERRA2 runoff data"
+   character*50, public, parameter :: LIS_ERAIlandrunoffdataId = &
+        "ERA interim land runoff data"
+   character*50, public, parameter :: LIS_GWBMIPrunoffdataId = &
+        "GWB MIP runoff data"
 !-------------------------------------------------------------------------
 !  Irrigation models
 !-------------------------------------------------------------------------
-   character*50, public, parameter :: LIS_sprinklerIrrigationId = "Sprinkler"
+   character*50, public, parameter :: LIS_sprinklerIrrigationId = &
+        "Sprinkler"
    character*50, public, parameter :: LIS_floodIrrigationId = "Flood"
    character*50, public, parameter :: LIS_dripIrrigationId  = "Drip"
 !-------------------------------------------------------------------------

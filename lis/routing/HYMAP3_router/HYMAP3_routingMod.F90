@@ -427,6 +427,13 @@ contains
     external :: perturbinit
     external :: perturbsetup
 
+#if (defined SPMD)
+    external :: MPI_ALLREDUCE
+    external :: MPI_ALLGATHER
+    external :: MPI_BCAST
+    external :: MPI_ALLGATHERV
+#endif
+
     allocate(HYMAP3_routing_struc(LIS_rc%nnest))
 
     HYMAP3_logunit = LIS_getNextUnitNumber()
@@ -486,7 +493,6 @@ contains
           write(LIS_logunit,*) '[INFO] HYMAP3 2-way coupling: off'
        endif
     enddo
-
 
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 routing model time step:",rc=status)
@@ -3866,6 +3872,10 @@ contains
     integer        :: status
 
 #if (defined SPMD)
+    external :: MPI_ALLGATHERV
+#endif
+
+#if (defined SPMD)
     call MPI_ALLGATHERV(var,&
          LIS_rc%nroutinggrid(n),&
          MPI_REAL,tmpvar,&
@@ -3915,6 +3925,10 @@ contains
     real           :: tmpvar(LIS_rc%glbnroutinggrid(n))
     integer        :: i,l,ix,iy,ix1,iy1
     integer        :: status
+
+#if (defined SPMD)
+    external :: MPI_ALLGATHERV
+#endif
 
 #if (defined SPMD)
     call MPI_ALLGATHERV(var,&
