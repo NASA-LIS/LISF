@@ -1,4 +1,63 @@
 # ghis2s Python Package for Cylc Implementation
+
+# ACRONYMS
+
+**E2ESDIR**: The GHI-S2S forecast directory where S2S forecasts reside  
+**GHIS2S**: GHI-S2S software system developed by the LIS team  
+**GHIREPOS**: Operational software developed by 16WS  
+**LISFDIR**: The path to LISF installation  
+
+# The ghis2s Python Package
+
+The `ghis2s` Python package is designed for efficient coupling with the GHIREPOS operational software at 16WS. The core component is the `s2s_run.py` Python module, which contains the master script and `S2Srun` class.
+
+## Configuration
+
+The `S2Srun` class requires only one input file: a YAML configuration file containing system and experiment-related parameters/paths for the forecast. This configuration file must be placed in the E2ESDIR directory.
+
+## Key Capabilities
+
+The `S2Srun` class provides the following functionality:
+
+1. **Experiment Setup**: Creates S2S experiments for specific months, including:
+   - Run directories
+   - Symbolic links
+   - Job scripts for forecast-related tasks
+
+2. **Workflow Generation**: Writes the `flow.cylc` file for Cylc workflow management based on:
+   - Selected NMME models
+   - Requirements specified in the forecast configuration file
+
+## Methods
+
+- **Main method**: Sets up end-to-end S2S forecasts for a particular month
+- **Individual methods**: Allows calling specific forecast process steps:
+  - `lisda_run`
+  - `ldt_ics`
+  - `bcsd`
+  - `lis_fcst`
+  - `post`
+  - `s2smetrics`
+  - `s2splots`
+
+These methods correspond to the 7 main steps of the end-to-end forecast process.
+
+## Integration
+
+The `ghis2s` Python package includes a supplementary program designed to couple GHIS2S with operational GHIREPOS systems.
+
+## Command Line Usage
+
+The `s2s_run.py` script offers two useful command-line features:
+
+### 1. Standard execution (setting up the experiment):
+```
+s2s_run.py -y YYYY -m M -c CONFIG_FILE
+```
+### 2. SLURM job submission
+```
+s2s_run.py -y YYYY -m M -c CONFIG_FILE -j
+```
  
 This repository contains this README file and a mock-up forecast directory (**"E2ESDIR"**) of the GHI-S2S forecasting system.
 GHI-S2S consists of approximately 150 tasks that follow a predefined schedule. These tasks have been grouped into 50+ job files to optimize computer resources.  
