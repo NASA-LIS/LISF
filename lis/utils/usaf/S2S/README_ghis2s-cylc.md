@@ -9,7 +9,7 @@
 
 # The ghis2s Python Package
 
-We present `ghis2s` as a Python package that can be efficiently coupled to with the GHIREPOS operational software at 16WS. The core component is the `s2s_run.py` Python module -- the master script containing `S2Srun` class.
+We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at 16WS. The core component is the `s2s_run.py` Python module -- the master script containing `S2Srun` class.
 
 ## Configuration
 
