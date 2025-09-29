@@ -1,0 +1,22 @@
+[scheduler]
+  UTC mode = True
+  process pool timeout = PT10M
+  process pool size = 10
+  [[events]]
+    stall timeout = PT15M
+
+[platforms]
+  [[slurm-ghi]]
+    job runner = slurm
+    install target = localhost
+    hosts = localhost
+    submission polling intervals = PT1H
+    execution polling intervals = PT1H
+
+  [[localhost]]  
+    job runner = background
+    install target = localhost
+    hosts = localhost
+ 
+
+
