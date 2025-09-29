@@ -19,7 +19,7 @@ The `S2Srun` class requires only one input file: a YAML configuration file conta
 
 The `S2Srun` class provides the following functionality:
 
-1. **Experiment Setup**: Creates S2S experiments for specific months, including:
+1. **Experiment Setup**: Creates S2S experiments for the specific month, including:
    - Run directories
    - Symbolic links
    - Job scripts for forecast-related tasks
@@ -44,11 +44,11 @@ These methods correspond to the 7 main steps of the end-to-end forecast process.
 
 ## Integration
 
-The `ghis2s` Python package includes a supplementary program designed to couple GHIS2S with operational GHIREPOS systems.
+The `ghis2s` Python package includes a supplementary program, `ghis2s_program.py` designed to couple GHI-S2S with operational GHIREPOS systems.
 
 ## Command Line Usage
 
-The `s2s_run.py` script offers two useful command-line features:
+In addition, the `s2s_run.py` script offers two useful command-line features:
 
 ### 1. Standard execution (setting up the experiment):
 ```
