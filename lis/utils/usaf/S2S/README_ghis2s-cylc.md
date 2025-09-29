@@ -9,7 +9,7 @@
 
 # The ghis2s Python Package
 
-The `ghis2s` Python package is designed for efficient coupling with the GHIREPOS operational software at 16WS. The core component is the `s2s_run.py` Python module -- the master script containing `S2Srun` class.
+We present `ghis2s` as a Python package that can be efficiently coupled to with the GHIREPOS operational software at 16WS. The core component is the `s2s_run.py` Python module -- the master script containing `S2Srun` class.
 
 ## Configuration
 
@@ -59,6 +59,7 @@ s2s_run.py -y YYYY -m M -c CONFIG_FILE
 s2s_run.py -y YYYY -m M -c CONFIG_FILE -j
 ```
 # ghis2s_program.py GHIREPOS-GHIS2S coupler
+
 
 This repository contains this README file and a mock-up forecast directory (**"E2ESDIR"**) of the GHI-S2S forecasting system.
 GHI-S2S consists of approximately 150 tasks that follow a predefined schedule. These tasks have been grouped into 50+ job files to optimize computer resources.  
