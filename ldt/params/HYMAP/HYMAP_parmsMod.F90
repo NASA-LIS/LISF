@@ -901,10 +901,11 @@ contains
 
     implicit none
 
-    integer   :: n
-    integer   :: ftn
-    integer   :: dimID(3)
-    integer   :: monthID
+    integer, intent(in)   :: n
+    integer, intent(in)   :: ftn
+    integer, intent(in)   :: dimID(3)
+    integer, intent(in)   :: monthID
+
     integer   :: tdimID(3)
 
     tdimID(1) = dimID(1)
@@ -1001,8 +1002,8 @@ contains
 
     implicit none
 
-    integer   :: n
-    integer   :: ftn
+    integer, intent(in)   :: n
+    integer, intent(in)   :: ftn
 
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_river_width)
     call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_river_height)
