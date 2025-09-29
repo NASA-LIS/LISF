@@ -529,8 +529,8 @@ contains
 
     integer, intent(IN) :: n
     integer, intent(IN) :: k
-    type(ESMF_State)    :: LIS_Routing_State
-    type(ESMF_State)    :: LIS_Routing_Pert_State
+    type(ESMF_State), intent(in) :: LIS_Routing_State
+    type(ESMF_State), intent(in) :: LIS_Routing_Pert_State
 !
 ! !DESCRIPTION:
 !
@@ -752,13 +752,13 @@ contains
 
  end subroutine applyRoutingPert
 
- subroutine LIS_routing_DAGetObsPred(n,k,Obs_Pred)
+ subroutine LIS_routing_DAGetObsPred(n, k, Obs_Pred)
 
    implicit none
 
-    integer                :: n
-    integer                :: k
-    real                   :: obs_pred(LIS_rc%obs_ngrid(k), &
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
+    real, intent(inout)    :: obs_pred(LIS_rc%obs_ngrid(k), &
          LIS_rc%nensem(n))
 
     external :: routingdagetobspred
@@ -778,13 +778,13 @@ contains
 ! \label{LIS_routing_DAGetStateVar}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAGetStateVar(n,k)
+  subroutine LIS_routing_DAGetStateVar(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
 
     external :: routingdagetstatevar
 !
@@ -815,13 +815,13 @@ contains
 ! \label{LIS_routing_DASetStateVar}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DASetStateVar(n,k)
+  subroutine LIS_routing_DASetStateVar(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
 
     external :: routingdasetstatevar
 
@@ -853,13 +853,13 @@ contains
 ! \label{LIS_routing_DAScaleStateVar}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAScaleStateVar(n,k)
+  subroutine LIS_routing_DAScaleStateVar(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
 
     external :: routingdascalestatevar
 !
@@ -890,13 +890,13 @@ contains
 ! \label{LIS_routing_DAScaleStateVar}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DADescaleStateVar(n,k)
+  subroutine LIS_routing_DADescaleStateVar(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
 
     external :: routingdadescalestatevar
 !
@@ -929,13 +929,13 @@ contains
 ! \label{LIS_routing_DAUpdateState}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAUpdateState(n,k)
+  subroutine LIS_routing_DAUpdateState(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
 
     external :: routingdaupdatestate
 
@@ -970,13 +970,13 @@ contains
 ! \label{LIS_routing_DAQCState}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAQCState(n,k)
+  subroutine LIS_routing_DAQCState(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
 
     external :: routingdaqcstate
 !
@@ -1007,15 +1007,15 @@ contains
 ! \label{LIS_routing_DAextractStateVector}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAextractStateVector(n,k,state_size,stvar)
+  subroutine LIS_routing_DAextractStateVector(n, k, state_size, stvar)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
-    integer                :: state_size
-    real                   :: stvar(LIS_rc%nstvars(k),state_size)
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
+    integer, intent(in)    :: state_size
+    real, intent(inout)    :: stvar(LIS_rc%nstvars(k),state_size)
 !
 ! !DESCRIPTION:
 !
@@ -1073,14 +1073,14 @@ contains
 ! \label{LIS_routing_DAgetFreshIncrementsStatus}
 !
 ! !INTERFACE:
-  subroutine  LIS_routing_DAgetFreshIncrementsStatus(n,k,setStatus)
+  subroutine  LIS_routing_DAgetFreshIncrementsStatus(n, k, setStatus)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
-    logical                :: setStatus
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
+    logical, intent(inout) :: setStatus
 !
 ! !DESCRIPTION:
 !
@@ -1114,14 +1114,14 @@ contains
 ! \label{LIS_routing_DAsetFreshIncrementsStatus}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAsetFreshIncrementsStatus(n,k,setStatus)
+  subroutine LIS_routing_DAsetFreshIncrementsStatus(n, k, setStatus)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
-    logical                :: setStatus
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
+    logical, intent(in)    :: setStatus
 !
 ! !DESCRIPTION:
 !
@@ -1154,16 +1154,17 @@ contains
 ! \label{LIS_routing_DAsetAnlysisUpdates}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAsetAnlysisUpdates(n,k,state_size,stvar,stincr)
+  subroutine LIS_routing_DAsetAnlysisUpdates(n, k, state_size, stvar, &
+       stincr)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
-    integer                :: state_size
-    real                   :: stvar(LIS_rc%nstvars(k),state_size)
-    real                   :: stincr(LIS_rc%nstvars(k),state_size)
+    integer, intent(in)    :: n
+    integer, intent(in)    :: k
+    integer, intent(in)    :: state_size
+    real, intent(in)       :: stvar(LIS_rc%nstvars(k),state_size)
+    real, intent(in)       :: stincr(LIS_rc%nstvars(k),state_size)
 
 !
 ! !DESCRIPTION:
@@ -1242,7 +1243,8 @@ contains
 ! \label{LIS_routing_DAmapTileSpaceToObsSpace}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAmapTileSpaceToObsSpace(n,k,tileid,st_id,en_id)
+  subroutine LIS_routing_DAmapTileSpaceToObsSpace(n, k, tileid, st_id, &
+       en_id)
 
 ! !DESCRIPTION:
 ! This routine derives the observation space location that maps to the
@@ -1265,11 +1267,11 @@ contains
 
     implicit none
 
-    integer                         :: n
-    integer                         :: k
-    integer                         :: tileid
-    integer                         :: st_id
-    integer                         :: en_id
+    integer, intent(in)             :: n
+    integer, intent(in)             :: k
+    integer, intent(in)             :: tileid
+    integer, intent(out)            :: st_id
+    integer, intent(out)            :: en_id
 
     real                            :: lat, lon
     integer                         :: gid,c,r
@@ -1303,14 +1305,14 @@ contains
 ! \label{LIS_routing_DAgetStateVarNames}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAgetStateVarNames(n,k,stateNames)
+  subroutine LIS_routing_DAgetStateVarNames(n, k, stateNames)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer            :: n
-    integer            :: k
-    character(len=*)   :: stateNames(LIS_rc%nstVars(k))
+    integer, intent(in)           :: n
+    integer, intent(in)           :: k
+    character(len=*), intent(out) :: stateNames(LIS_rc%nstVars(k))
 !
 ! !DESCRIPTION:
 !
@@ -1342,16 +1344,16 @@ contains
 ! \label{LIS_routing_getlatlons}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_getlatlons(n,k,state_size,lats,lons)
+  subroutine LIS_routing_getlatlons(n, k, state_size, lats, lons)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer             :: n
-    integer             :: k
-    integer             :: state_size
-    real                :: lats(state_size)
-    real                :: lons(state_size)
+    integer, intent(in)             :: n
+    integer, intent(in)             :: k
+    integer, intent(in)             :: state_size
+    real, intent(out)               :: lats(state_size)
+    real, intent(out)               :: lons(state_size)
 !
 ! !DESCRIPTION:
 !
@@ -1385,13 +1387,13 @@ contains
 
   end subroutine LIS_routing_getlatlons
 
-  subroutine LIS_routing_DAobsTransform(n,k)
+  subroutine LIS_routing_DAobsTransform(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)                :: n
+    integer, intent(in)                :: k
 
     external :: routingdaobstransform
 
@@ -1404,13 +1406,13 @@ contains
     endif
   end subroutine LIS_routing_DAobsTransform
 
-  subroutine LIS_routing_DAmapObsToRouting(n,k)
+  subroutine LIS_routing_DAmapObsToRouting(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)                :: n
+    integer, intent(in)                :: k
 
     external :: routingdamapobstorouting
 
@@ -1424,13 +1426,13 @@ contains
     endif
   end subroutine LIS_routing_DAmapObsToRouting
 
-  subroutine LIS_routing_DAqcObsState(n,k)
+  subroutine LIS_routing_DAqcObsState(n, k)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
+    integer, intent(in)                :: n
+    integer, intent(in)                :: k
 
     external :: routingdaqcobsstate
 
@@ -1451,14 +1453,14 @@ contains
 ! \label{LIS_routing_DAgetStateSpaceSize}
 !
 ! !INTERFACE:
-  subroutine LIS_routing_DAgetStateSpaceSize(n,k,size)
+  subroutine LIS_routing_DAgetStateSpaceSize(n, k, size)
 
     implicit none
 
 ! !ARGUMENTS:
-    integer                :: n
-    integer                :: k
-    integer                :: size
+    integer, intent(in)                :: n
+    integer, intent(in)                :: k
+    integer, intent(out)               :: size
 
     external :: routingdagetstatespacesize
 
