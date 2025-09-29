@@ -52,7 +52,7 @@ subroutine read_HYMAP_levee_height(n, array)
 
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &
-       HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 indicates 2D layer
+       HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 = 2D layer
 
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
