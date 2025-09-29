@@ -52,7 +52,7 @@ subroutine read_HYMAP_node_lat(n, array)
 
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &
-       HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 indicates 2D layer
+       HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 = 2D layer
 
   call LDT_releaseUnitNumber(ftn)
 
