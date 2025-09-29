@@ -193,7 +193,7 @@ contains
     use LIS_logMod,  only : LIS_log_msg, LIS_logunit
     implicit none
 ! !ARGUMENTS:
-    character(len=*)  :: mname
+    character(len=*), intent(in)  :: mname
 
 !
 ! !DESCRIPTION:
@@ -1740,7 +1740,7 @@ contains
 ! !ARGUMENTS:
     integer, intent(in) :: n
     character(len=*), intent(out)          :: fname
-    integer                                :: yr, mo, da, hr, mn, ss
+    integer, intent(in)                    :: yr, mo, da, hr, mn, ss
 
 !
 ! !DESCRIPTION:
@@ -1865,7 +1865,7 @@ contains
 ! \label{create_restart_filename}
 !
 ! !INTERFACE:
-  subroutine create_restart_filename(n, fname,dir_name,model_name, &
+  subroutine create_restart_filename(n, fname, dir_name, model_name, &
        wformat)
 
 ! !USES:
@@ -1878,7 +1878,7 @@ contains
     character(len=*), intent(out) :: fname
     character(len=*), intent(in)  :: dir_name
     character(len=*), intent(in)  :: model_name
-    character(len=*), optional    :: wformat
+    character(len=*), intent(in), optional :: wformat
 
 ! !DESCRIPTION:
 !  Create the file name for the restart data files.  The convention used
@@ -2039,8 +2039,8 @@ contains
 ! \label{create_restart_filename_withtime}
 !
 ! !INTERFACE:
-  subroutine create_restart_filename_withtime(n, fname,dir_name, &
-       model_name, yr,mo,da,hr,mn,ss,wformat)
+  subroutine create_restart_filename_withtime(n, fname, dir_name, &
+       model_name, yr, mo, da, hr, mn, ss, wformat)
 
 ! !USES:
     use LIS_coreMod,    only : LIS_rc
@@ -2053,7 +2053,7 @@ contains
     character(len=*), intent(in)  :: dir_name
     character(len=*), intent(in)  :: model_name
     integer         , intent(in)  :: yr, mo, da, hr, mn, ss
-    character(len=*), optional    :: wformat
+    character(len=*), intent(in), optional    :: wformat
 
 ! !DESCRIPTION:
 !  Create the file name for the restart data files.  The convention used
@@ -3687,8 +3687,8 @@ contains
     implicit none
 
 ! !ARGUMENTS:
-    integer              :: n
-    real                 :: data_gridDesc(6)
+    integer, intent(in)  :: n
+    real, intent(in)     :: data_gridDesc(6)
 !
 ! !DESCRIPTION:
 !   This subroutine checks to see if the domain extents of the data is
@@ -3739,7 +3739,7 @@ contains
 ! \label{readparam_real_2d}
 !
 ! !INTERFACE:
-  subroutine readparam_real_2d(n,pname,array)
+  subroutine readparam_real_2d(n, pname, array)
 
 ! !USES:
     use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
@@ -3755,7 +3755,7 @@ contains
 
 ! !ARGUMENTS:
     integer, intent(in)    :: n
-    character(len=*)       :: pname
+    character(len=*), intent(in) :: pname
     real,    intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n))
 !
 ! !DESCRIPTION:
@@ -3829,7 +3829,7 @@ contains
 ! \label{readparam_real_2d_rc}
 !
 ! !INTERFACE:
-  subroutine readparam_real_2d_rc(n,pname,array,rc)
+  subroutine readparam_real_2d_rc(n, pname, array, rc)
 
 ! !USES:
     use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
@@ -3845,7 +3845,7 @@ contains
 
 ! !ARGUMENTS:
     integer, intent(in)    :: n
-    character(len=*)       :: pname
+    character(len=*), intent(in) :: pname
     real,    intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n))
     integer                :: rc
 !
@@ -3924,7 +3924,7 @@ contains
 ! \label{readgparam_real_2d}
 !
 ! !INTERFACE:
-  subroutine readgparam_real_2d(n,pname,array)
+  subroutine readgparam_real_2d(n, pname, array)
 
 ! !USES:
     use LIS_coreMod,        only : LIS_rc
@@ -3938,7 +3938,7 @@ contains
 
 ! !ARGUMENTS:
     integer, intent(in)    :: n
-    character(len=*)       :: pname
+    character(len=*), intent(in) :: pname
     real,    intent(inout) :: array(LIS_rc%gnc(n),LIS_rc%gnr(n))
 !
 ! !DESCRIPTION:
@@ -4012,7 +4012,7 @@ contains
 ! \label{readgparam_real_2d_rc}
 !
 ! !INTERFACE:
-  subroutine readgparam_real_2d_rc(n,pname,array,rc)
+  subroutine readgparam_real_2d_rc(n, pname, array, rc)
 
 ! !USES:
     use LIS_coreMod,        only : LIS_rc
@@ -4026,7 +4026,7 @@ contains
 
 ! !ARGUMENTS:
     integer, intent(in)    :: n
-    character(len=*)       :: pname
+    character(len=*), intent(in) :: pname
     real,    intent(inout) :: array(LIS_rc%gnc(n),LIS_rc%gnr(n))
     integer                :: rc
 !
@@ -4107,7 +4107,7 @@ contains
 ! \label{readparam_int_2d}
 !
 ! !INTERFACE:
-  subroutine readparam_int_2d(n,pname,array)
+  subroutine readparam_int_2d(n, pname, array)
 
 ! !USES:
     use LIS_coreMod,        only : LIS_rc, LIS_localPet,&
@@ -4123,7 +4123,7 @@ contains
 
 ! !ARGUMENTS:
     integer, intent(in)    :: n
-    character(len=*)       :: pname
+    character(len=*), intent(in) :: pname
     integer,    intent(inout) :: array(LIS_rc%lnc(n),LIS_rc%lnr(n))
 !
 ! !DESCRIPTION:
