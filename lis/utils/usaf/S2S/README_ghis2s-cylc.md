@@ -8,6 +8,7 @@
 **LISFDIR**: The path to LISF installation  
 
 ![GHI-S2S Workflow Diagram](https://github.com/smahanam/FileSharing/blob/main/workflow.png)
+**Figure Caption**: This figure depicts the information flow in GHIREPOS/ghis2s_program.py coupled with GHI-S2S, along with the output E2ES directory tree. The embedded Cylc-generated workflow graph illustrates the complexity of the end-to-end GHI-S2S forecast system, which involves 7 main steps (LISDA, LDT-ICS, BCSD, FCST, S2SPOST, S2SMETRICS, and S2SPLOTS) executed on a predefined schedule. To maintain organization, each month's forecast-related scripts and links are created under the scratch/YYYYMM/ directory, keeping the main E2ESDIR clean and tidy.
 
 # (1) The ghis2s Python Package
 We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at 16WS. The core component is the [*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py) Python module -- the master script containing `S2Srun` class.
