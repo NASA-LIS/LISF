@@ -25,8 +25,9 @@ The `S2Srun` class provides the following functionality:
    - Job scripts for forecast-related tasks
 
 2. **Workflow Generation**: Writes the `flow.cylc` file for Cylc workflow management based on ([for example](https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202401/CYLC-202401/flow.cylc)):
-   - Selected NMME models
-   - Requirements specified in the forecast configuration file
+   - Selected NMME models 
+   - Requirements specified in the forecast configuration file 
+   **Note:** The flow.cylc file uses [this global.cylc](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/cylc_script/global.cylc) configuration file
 
 ## Methods
 
