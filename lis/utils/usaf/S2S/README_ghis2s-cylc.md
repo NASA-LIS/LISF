@@ -91,8 +91,8 @@ The `additional_env_vars = {}` dictionary in `ghis2s_program.py` allows the user
 
 ## Installing Cylc Workflow
 ```bash
-WORKFLOW_NAME="CYLC-$${FORECAST_YEAR}$${MM}" 
-LOGDIR="$${E2ESDIR}/scratch/$${FORECAST_YEAR}$${MM}/$${WORKFLOW_NAME}" 
+WORKFLOW_NAME="CYLC-${FORECAST_YEAR}${MM} 
+LOGDIR=${E2ESDIR}/scratch/${FORECAST_YEAR}${MM}/${WORKFLOW_NAME} 
 cylc install --symlink-dirs=run=$LOGDIR
 ```
 This redirects the Cylc workflow logs to the E2ESDIR scratch directory rather than the default /home/$USER/cylc-run location.
