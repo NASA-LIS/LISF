@@ -98,7 +98,7 @@ WORKFLOW_NAME="CYLC-${FORECAST_YEAR}${MM}
 LOGDIR=${E2ESDIR}/scratch/${FORECAST_YEAR}${MM}/${WORKFLOW_NAME} 
 cylc install --symlink-dirs=run=$LOGDIR
 ```
-This redirects the Cylc workflow logs to the E2ESDIR scratch directory rather than the default /home/$USER/cylc-run location. 
+This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/CYLC-YYYYMM/** directory rather than the default /home/$USER/cylc-run location. 
 
 # (4) Centralized Logging
 
