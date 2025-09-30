@@ -134,11 +134,11 @@ While the shell scripts (*.sh) avoid hardcoded SLURM directives, certain tasks b
 This approach has been more effective than using Cylc’s native mechanisms in such cases.  
 That said, ghis2s includes a feature to generate fully system-agnostic shell scripts (i.e., no **srun**), although this feature is currently disabled for performance reasons.
 An example of a **SLURM's srun-free** shell script can be found here:   
-*https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202502/s2splots/s2splots_01_run.sh*  
+*https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202401/s2spost/s2spost_01_run.sh*  
 
 **e) How does ghis2s differ from other GHI subsystems (GHI-NRT, GHI-MR)?**  
   
-Although the GHI-S2S workflow includes over 150 tasks and is more complex than other subsystems, **the master script of the ghis2s software tool, [*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/support/lisf_557ww_7.7_s2srf/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)**, simplifies execution by consolidating all tasks into a single command driven by a unified configuration file.  
+Although the GHI-S2S workflow includes over 150 tasks and is more complex than other subsystems, **the master script of the ghis2s software tool, [*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)**, simplifies execution by consolidating all tasks into a single command driven by a unified configuration file.  
 The script automates the execution of all tasks based on their dependencies, effectively eliminating the need for manual intervention.
   
 
