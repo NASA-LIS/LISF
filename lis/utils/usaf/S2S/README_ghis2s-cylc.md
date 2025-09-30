@@ -48,7 +48,7 @@ These methods correspond to the 7 main steps of the end-to-end forecast process.
 
 ## Integration
 
-The `ghis2s` Python package includes a supplementary program, `ghis2s_program.py` designed to couple GHI-S2S with operational GHIREPOS systems.
+The `ghis2s` Python package includes a supplementary program, [**ghis2s_program.py**](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/cylc_script/ghis2s_program.py), designed to couple GHI-S2S with operational GHIREPOS systems. This program is provided by the LIS team as a foundation for GHIREPOS integration, with 16WS personnel free to edit, update, and customize it according to their operational requirements.
 
 ## Command Line Usage
 
