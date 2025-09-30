@@ -105,7 +105,7 @@ This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/CYLC-YYYYM
 
 As shown in the figure above, the end-to-end S2S forecast involves more than 150 tasks, each generating multiple log files in a disorganized manner as multiple processors write concurrent output within loops. Additionally, Cylc's native log files do not contain meaningful information about the underlying tasks being performed. 
 
-To address this challenge, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file at **SCRATCH/YYYYMM/ghis2s_main.log**. This centralized log file can be easily integrated with monitoring dashboards like **SPLUNK** to track forecast progression in real-time.
+To address this challenge, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file at **SCRATCH/YYYYMM/ghis2s_main.log** [see for example](https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202401/ghis2s_main.log). This centralized log file can be easily integrated with monitoring dashboards like **SPLUNK** to track forecast progression in real-time.
 
 ## Log Monitoring Workflow
 
