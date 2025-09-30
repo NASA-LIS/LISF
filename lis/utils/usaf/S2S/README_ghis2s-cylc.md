@@ -102,6 +102,20 @@ This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/CYLC-YYYYM
 
 # (4) Centralized Logging
 
+As shown in the figure above, the end-to-end S2S forecast involves more than 150 tasks, each generating multiple log files in a disorganized manner as multiple processors write concurrent output within loops. Additionally, Cylc's native log files do not contain meaningful information about the underlying tasks being performed. 
+
+To address this challenge, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file at **SCRATCH/YYYYMM/ghis2s_main.log**. This centralized log file can be easily integrated with monitoring dashboards like **SPLUNK** to track forecast progression in real-time.
+
+## Log Monitoring Workflow
+
+The log monitoring system is implemented through a specialized Cylc workflow configuration that includes:
+
+- **Periodic Monitoring**: A `log_monitor` task runs every 15 minutes using wall clock triggers
+- **Final Collection**: A `final_log_collect` task runs once at the end of the workflow to ensure complete log aggregation
+- **Automatic Termination**: A `stop_log_monitor` task gracefully stops the monitoring process when the main workflow completes
+
+This approach ensures comprehensive logging throughout the forecast process while maintaining system organization and enabling effective monitoring capabilities.
+
 # (5) Operational Notes and Cylc Design Rationale  
 
 **a) Why should ghis2s’s ghis2s_program.py be executed every month?**  
