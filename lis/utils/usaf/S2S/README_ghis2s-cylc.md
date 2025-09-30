@@ -9,11 +9,11 @@
 
 # (1) The ghis2s Python Package
 
-We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at 16WS. The core component is the `s2s_run.py` Python module -- the master script containing `S2Srun` class.
+We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at 16WS. The core component is the [*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py) Python module -- the master script containing `S2Srun` class.
 
 ## Configuration
 
-The `S2Srun` class requires only one input file: a YAML configuration file containing system and experiment-related parameters/paths for the forecast. This configuration file must be placed in the E2ESDIR directory.
+The `S2Srun` class requires only one input file: a YAML [*configuration file*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_config_global_fcast) containing system and experiment-related parameters/paths for the forecast. This configuration file must be placed in the E2ESDIR directory.
 
 ## Key Capabilities
 
