@@ -7,8 +7,9 @@
 **GHIREPOS**: Operational software developed by 16WS  
 **LISFDIR**: The path to LISF installation  
 
-# (1) The ghis2s Python Package
+![GHI-S2S Workflow Diagram](https://github.com/smahanam/FileSharing/blob/main/workflow.png)
 
+# (1) The ghis2s Python Package
 We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at 16WS. The core component is the [*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py) Python module -- the master script containing `S2Srun` class.
 
 ## Configuration
