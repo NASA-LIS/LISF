@@ -21,8 +21,6 @@ ENV_DEFINITION = {
     "ONE_STEP": (bool, False),
     "SUBMIT_JOB": (bool, False),
     "E2ESDIR": (str, "/discover/nobackup/projects/ghilis/smahanam/ghi-coupling/"),
-    "MODEL": (str, "S2S"),
-    "VARIANT": (str, ""),
     "PYTHONPATH": (str, None),
 }
 
@@ -67,12 +65,7 @@ class Ghis2sProgram():
         self._e2es_dir = Path(self.env["E2ESDIR"])
         self._cylc_home = self._e2es_dir / "scratch" / f"{self.env['FORECAST_YEAR']:04d}{self.env['FORECAST_MONTH']:02d}"
         self._log_dir = self._e2es_dir / "scratch" / f"{self.env['FORECAST_YEAR']:04d}{self.env['FORECAST_MONTH']:02d}"
-        
-    @property
-    def model_variant(self):
-        """Convenience property for joining the model and variant name."""
-        return "_".join(filter(None, [self.env["MODEL"], self.env["VARIANT"]]))
-        
+                
     @property
     def forecast_date(self):
         """The forecast date in YYYY-MM format."""
