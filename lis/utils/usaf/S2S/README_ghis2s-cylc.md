@@ -90,9 +90,9 @@ The default setting of the below two environment variables are `False`:
 The `additional_env_vars = {}` dictionary in `ghis2s_program.py` allows the user to pass any additional environment variables as key-value pairs to the flow.cylc file. The `s2s_run.py` script will write those variables in flow.cylc.
 
 ## Installing Cylc Workflow
-`WORKFLOW_NAME="CYLC-${FORECAST_YEAR}${MM}"`
-`LOGDIR="${E2ESDIR}/scratch/${FORECAST_YEAR}${MM}/${WORKFLOW_NAME}"`
-cylc install --symlink-dirs=run=$LOGDIR
+`WORKFLOW_NAME="CYLC-${FORECAST_YEAR}${MM}"` 
+`LOGDIR="${E2ESDIR}/scratch/${FORECAST_YEAR}${MM}/${WORKFLOW_NAME}"` 
+cylc install --symlink-dirs=run=$LOGDIR 
 
 
 
