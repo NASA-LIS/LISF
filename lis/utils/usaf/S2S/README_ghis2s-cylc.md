@@ -58,7 +58,34 @@ s2s_run.py -y YYYY -m M -c CONFIG_FILE
 ```
 s2s_run.py -y YYYY -m M -c CONFIG_FILE -j
 ```
-# ghis2s_program.py GHIREPOS-GHIS2S coupler
+# GHIREPOS-GHIS2S coupler: ghis2s_program.py 
+
+## Program input environment variables
+
+- **"PYTHONPATH"**: (str, LISFDIR/lis/utils/usaf/S2S/)
+- **"E2ESDIR"**: (str, E2ESDIR)
+- **"CONFIG_FILE"**: (str, Config file name – must be located in E2ESDIR)
+- **"FORECAST_YEAR"**: (int, year)
+- **"FORECAST_MONTH"**: (int, month)
+- **"USER_EMAIL"**: (str, email_address)
+- **"S2S_STEP"**: (str, "E2E")
+
+### Acceptable keys for S2S_STEP:
+- `E2E`: end-to-end S2S forecast
+- `LISDA`
+- `LDTICS` 
+- `BCSD`
+- `FCST`
+- `POST`
+- `METRICS`
+- `PLOTS`
+
+### Optional environment variables:
+The default setting of the below two environment variables are `False`:
+
+- **"ONE_STEP"**: `True` allows to run only the above specified S2S_STEP (bool, False)
+- **"SUBMIT_JOB"**: `True` submits the job to the SLURM job management system instead of Cylc (bool, False)
+
 
 
 This repository contains this README file and a mock-up forecast directory (**"E2ESDIR"**) of the GHI-S2S forecasting system.
