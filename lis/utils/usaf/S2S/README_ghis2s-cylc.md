@@ -86,6 +86,9 @@ The default setting of the below two environment variables are `False`:
 - **"ONE_STEP"**: `True` allows to run only the above specified S2S_STEP (bool, False)
 - **"SUBMIT_JOB"**: `True` submits the job to the SLURM job management system instead of Cylc (bool, False)
 
+## Passing additional environment variables to flow.cylc file
+The `additional_env_vars = {}` dictionary in `ghis2s_program.py` allows the user to pass any additional environment variables as key-value pairs to the flow.cylc file. The `s2s_run.py` script will write those variables in flow.cylc.
+
 
 
 This repository contains this README file and a mock-up forecast directory (**"E2ESDIR"**) of the GHI-S2S forecasting system.
