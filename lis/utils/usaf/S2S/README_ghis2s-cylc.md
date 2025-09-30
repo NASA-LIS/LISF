@@ -98,7 +98,7 @@ cylc install --symlink-dirs=run=$LOGDIR
 ```
 This redirects the Cylc workflow logs to the E2ESDIR scratch directory rather than the default /home/$USER/cylc-run location. 
 
-# (4) Centralized logging
+# (4) Centralized Logging
 
 # (5) Operational Notes and Cylc Design Rationale  
 
