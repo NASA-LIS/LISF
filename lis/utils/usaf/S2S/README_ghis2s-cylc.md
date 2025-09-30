@@ -24,7 +24,7 @@ The `S2Srun` class provides the following functionality:
    - Symbolic links
    - Job scripts for forecast-related tasks
 
-2. **Workflow Generation**: Writes the `flow.cylc` file for Cylc workflow management based on:
+2. **Workflow Generation**: Writes the `flow.cylc` file for Cylc workflow management based on ([for example](https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202401/CYLC-202401/flow.cylc)):
    - Selected NMME models
    - Requirements specified in the forecast configuration file
 
