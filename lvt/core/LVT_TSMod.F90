@@ -704,7 +704,7 @@ contains
              if(maxv.eq.max_param) maxv = LVT_rc%udef
              if(minv.eq.min_param) minv = LVT_rc%udef
 
-             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts)) then 
+             if(nsum_v.ge.(LVT_TSobj(i)%ts_min_pts*LVT_TSobj(i)%npts).and. nsum_v>0) then 
                 mean_v = sum_v/nsum_v
              else
                 mean_v = LVT_rc%udef
