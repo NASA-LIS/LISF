@@ -7,6 +7,11 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+! !SUBROUTINE: HYMAP3_model_core
+!
+! !DESCRIPTION:
+!
 ! !REVISION HISTORY:
 ! 19 Jan 2016: Augusto Getirana, Inclusion of the local inertia formulation
 !                                and adaptive time step.
@@ -19,25 +24,25 @@
 !  8 Apr 2022: Augusto Getirana,  Added support for bifurcation
 !
 #include "LIS_misc.h"
-subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
-     flowmap,linres,evapflag,resopflag,floodflag,dwiflag,  &
-     rivout_pre,rivdph_pre,grv,                            &
-     fldout_pre,flddph_pre,fldelv1,                        &
-     outlet,next,elevtn,nxtdst,grarea,                     &
-     fldgrd,fldman,fldhgt,fldstomax,                       &
-     rivman,rivelv,rivstomax,                              &
-     rivlen,rivwth,rivhgt,rivare,slpmin,                   &
-     trnoff,tbsflw,cntime,                                 &
-     runoff0,basflw0,evpdif,rnfdwi_ratio,bsfdwi_ratio,     &
-     rivsto,rivdph,rivvel,rivout,evpout,                   &
-     fldout,fldsto,flddph,fldvel,fldfrc,                   &
-     fldare,sfcelv,roffsto,basfsto,rnfdwi,bsfdwi,surfws,   &
+subroutine HYMAP3_model_core(n, it, mis, nseqall, nz, time, dt,  &
+     flowmap, linres, evapflag, resopflag, floodflag, dwiflag,   &
+     rivout_pre, rivdph_pre, grv,                                &
+     fldout_pre, flddph_pre, fldelv1,                            &
+     outlet, next, elevtn, nxtdst, grarea,                       &
+     fldgrd, fldman, fldhgt, fldstomax,                          &
+     rivman, rivelv, rivstomax,                                  &
+     rivlen, rivwth, rivhgt, rivare, slpmin,                     &
+     trnoff, tbsflw, cntime,                                     &
+     runoff0, basflw0, evpdif, rnfdwi_ratio, bsfdwi_ratio,       &
+     rivsto, rivdph, rivvel, rivout,evpout,                      &
+     fldout, fldsto, flddph, fldvel, fldfrc,                     &
+     fldare, sfcelv, roffsto, basfsto, rnfdwi, bsfdwi, surfws,   &
      !ag (27Apr2020)
      !urban drainage variables/parameters
-     flowtype,drvel,drtotwth,drrad,drman,drslp,drtotlgh,   &
-     drnoutlet,drstomax,drout,drsto,                       &
+     flowtype, drvel, drtotwth, drrad, drman, drslp, drtotlgh,   &
+     drnoutlet, drstomax, drout, drsto,                          &
      !ag(25feb2023)
-     levhgt,levstomax,fldonlystomax,fldstoatlev)
+     levhgt, levstomax, fldonlystomax, fldstoatlev)
   ! ================================================
   !HYMAP3 core
   !Augusto Getirana
@@ -123,6 +128,25 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
   real,    intent(out) :: fldelv1(nseqall)      !floodplain elevation [m]
   real,    intent(out) :: bsfdwi(nseqall)      !deep water infiltration from baseflow [mm.idt-1]
   real,    intent(out) :: rnfdwi(nseqall)      !deep water infiltration from surface runoff [mm.idt-1]
+  !ag (27Apr2020)
+  !urban drainage variables/parameters
+  integer, intent(in)  :: flowtype     !urban drainage flag: 4 - compute urban drainage
+  real,    intent(in)  :: drvel
+  real,    intent(in)  :: drtotwth(nseqall)
+  real,    intent(in)  :: drrad
+  real,    intent(in)  :: drman
+  real,    intent(in)  :: drslp
+  real,    intent(in)  :: drtotlgh(nseqall)
+  real,    intent(in)  :: drnoutlet(nseqall)
+  real,    intent(in)  :: drstomax(nseqall)    !maximum urban drainage water storage capacity [m3]
+  real,    intent(inout)    :: drsto(nseqall)   !urban drainage water storage [m3]
+  real,    intent(inout)    :: drout(nseqall)   !urban drainage outflow [m3/s]
+  !ag(25feb2023)
+  !levee parameters
+  real,    intent(in)  :: levhgt(nseqall)
+  real,    intent(in)  :: levstomax(nseqall)
+  real,    intent(in)  :: fldonlystomax(nseqall,nz)
+  real,    intent(in)  :: fldstoatlev(nseqall)
 
   real                 :: flddph1(nseqall)
   real                 :: fldwth(nseqall)
@@ -160,19 +184,6 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
   integer              :: iloc(1)
   integer              :: status
 
-  !ag (27Apr2020)
-  !urban drainage variables/parameters
-  integer, intent(in)  :: flowtype     !urban drainage flag: 4 - compute urban drainage
-  real,    intent(in)  :: drvel
-  real,    intent(in)  :: drtotwth(nseqall)
-  real,    intent(in)  :: drrad
-  real,    intent(in)  :: drman
-  real,    intent(in)  :: drslp
-  real,    intent(in)  :: drtotlgh(nseqall)
-  real,    intent(in)  :: drnoutlet(nseqall)
-  real,    intent(in)  :: drstomax(nseqall)    !maximum urban drainage water storage capacity [m3]
-  real,    intent(inout)    :: drsto(nseqall)   !urban drainage water storage [m3]
-  real,    intent(inout)    :: drout(nseqall)   !urban drainage outflow [m3/s]
   real                      :: drinf(nseqall)   !urban drainage inflow  [m3/s]
   real, allocatable    :: drsto_glb(:)  !global urban drainage water storage  [m3]
   real, allocatable    :: drout_glb(:)  !global urban drainage outflow  [m3/s]
@@ -194,13 +205,6 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
   integer              :: ibif,ielv
   real                 :: bifsto1,bifsto1_down
   real                 :: bifelv1,sfcelv1,bifout1
-
-  !ag(25feb2023)
-  !levee parameters
-  real,    intent(in)  :: levhgt(nseqall)
-  real,    intent(in)  :: levstomax(nseqall)
-  real,    intent(in)  :: fldonlystomax(nseqall,nz)
-  real,    intent(in)  :: fldstoatlev(nseqall)
 
   !ag(10Oct2024)
   !resop parallel
@@ -478,7 +482,7 @@ subroutine HYMAP3_model_core(n,it,mis,nseqall,nz,time,dt,  &
              fldsto(ic),flddph1(ic),fldout(ic),fldvel(ic))
      else
         write(LIS_logunit,*) &
-             "HYMAP3 routing method: unknown value",ic,flowmap(ic)
+             "HYMAP3 routing method: unknown value", ic, flowmap(ic)
         call LIS_endrun()
      endif
   enddo

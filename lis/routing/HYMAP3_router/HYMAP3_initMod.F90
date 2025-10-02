@@ -13,11 +13,14 @@ module HYMAP3_initMod
   implicit none
 
 contains
+
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_grid2vector(nx,ny,nz,nseqall,imis,seqx,seqy,grid, &
-       vector)
+  subroutine HYMAP3_grid2vector(nx, ny, nz, nseqall, imis, seqx, seqy, &
+       grid, vector)
+
     implicit none
+
     integer, intent(in)  :: nx             !number of grids in horizontal
     integer, intent(in)  :: ny             !number of grids in vertical
     integer, intent(in)  :: nz             !number of array layers
@@ -39,9 +42,11 @@ contains
   end subroutine HYMAP3_grid2vector
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_vector2grid(nx,ny,nz,nseqall,imis,seqx,seqy,grid, &
-       vector)
+  subroutine HYMAP3_vector2grid(nx, ny, nz, nseqall, imis, seqx, seqy, &
+       grid, vector)
+
     implicit none
+
     integer, intent(in)  :: nx             !number of grids in horizontal
     integer, intent(in)  :: ny             !number of grids in vertical
     integer, intent(in)  :: nz             !number of array layers
@@ -64,9 +69,11 @@ contains
   end subroutine HYMAP3_vector2grid
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_get_vector_size(nx,ny,nxg,nyg,offx,offy,imis,nextx, &
-       mask,nseqall)
+  subroutine HYMAP3_get_vector_size(nx, ny, nxg, nyg, offx, offy, imis, &
+       nextx, mask, nseqall)
+
     implicit none
+
     integer, intent(in)  ::  nx                !number of grids in horizontal
     integer, intent(in)  ::  ny                !number of grids in vertical
     integer, intent(in)  ::  nxg
@@ -91,17 +98,21 @@ contains
           endif
        enddo
     enddo
-    write(LIS_logunit,*)'[get_vector_size] number of cells',nseqall
+    write(LIS_logunit,*) &
+         '[INFO] HYMAP3_get_vector_size:  number of cells', nseqall
     return
 
   end subroutine HYMAP3_get_vector_size
   ! ================================================
 !#if 0
   ! ================================================
-  subroutine HYMAP3_get_seq(nx,ny,nxg,nyg,offx,offy,nseqall,&
-       imis,nextx,nexty,mask,sindex,outlet,seqx,seqy,next)
+  subroutine HYMAP3_get_seq(nx, ny, nxg, nyg, offx, offy, nseqall, &
+       imis, nextx, nexty, mask, sindex, outlet, seqx, seqy, next)
+
     use LIS_coreMod
+
     implicit none
+
     integer, intent(in)   :: nx             !number of grids in horizontal
     integer, intent(in)   :: ny             !number of grids in vertical
     integer, intent(in)   :: nxg
@@ -112,7 +123,6 @@ contains
     integer, intent(in)   :: imis           !integer undefined value
     integer, intent(in)   :: nextx(nxg,nyg)   !point downstream horizontal
     integer, intent(in)   :: nexty(nxg,nyg)   !point downstream vertical
-
     integer, intent(in)   :: mask(nxg,nyg)    !mask limiting modeled region (0: out; >=1: in)
     integer, intent(in)  :: sindex(nxg,nyg)    !2-D sequence index
     integer, intent(out)  :: outlet(nseqall) !outlet flag: 0 - river; 1 - ocean
@@ -157,10 +167,13 @@ contains
     enddo
   end subroutine HYMAP3_get_seq
   ! ================================================
-  subroutine HYMAP3_get_sindex(nxg,nyg,nseqall,imis,nextx,nexty,mask, &
-       sindex,outlet,next)
+  subroutine HYMAP3_get_sindex(nxg, nyg, nseqall, imis, nextx, nexty, &
+       mask, sindex, outlet, next)
+
     use LIS_coreMod
+
     implicit none
+
     integer, intent(in)   :: nxg
     integer, intent(in)   :: nyg
     integer, intent(in)   :: nseqall
@@ -168,7 +181,6 @@ contains
     integer, intent(in)   :: nextx(nxg,nyg)   !point downstream horizontal
     integer, intent(in)   :: nexty(nxg,nyg)   !point downstream vertical
     integer, intent(in)   :: mask(nxg,nyg)    !mask limiting modeled region (0: out; >=1: in)
-
     integer, intent(out)  :: sindex(nxg,nyg)    !2-D sequence index
     integer, intent(out)  :: outlet(nseqall) !outlet flag: 0 - river; 1 - ocean
     integer, intent(out)  :: next(nseqall)   !downstream grid cell
@@ -208,9 +220,9 @@ contains
   end subroutine HYMAP3_get_sindex
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_set_fldstg(nz,nseqall,fldhgt,areamat,rivlen, &
-       rivwth,rivstomax,levhgt,fldstomax, &
-       fldgrd,rivare,fldonlystomax,fldstoatlev)
+  subroutine HYMAP3_set_fldstg(nz, nseqall, fldhgt, areamat, rivlen, &
+       rivwth, rivstomax, levhgt, fldstomax, &
+       fldgrd, rivare, fldonlystomax, fldstoatlev)
     ! ================================================
     ! to   set floodplain staging
     ! by   Augusto Getirana after Dai YAMAZAKI
@@ -229,7 +241,6 @@ contains
     real,    intent(in)  :: fldhgt(nseqall,nz)    !floodplain height
     real,    intent(in)  :: rivstomax(nseqall)    !maximum river storage [m3]
     real,    intent(in)  :: levhgt(nseqall)       !levee height [m]
-
     real,    intent(out) :: fldstomax(nseqall,nz) !maximum floodplain storage [m3]
     real,    intent(out) :: fldgrd(nseqall,nz)    !floodplain gradient [-]
     real,    intent(out) :: rivare(nseqall)

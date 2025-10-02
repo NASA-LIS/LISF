@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,7 +15,7 @@
 !  07 Nov 2019: Sujay Kumar; Initial Specification
 !
 ! !INTERFACE:
-subroutine HYMAP3_qc_WLobs(n,k,OBS_State)
+subroutine HYMAP3_qc_WLobs(n, k, OBS_State)
 
 ! !USES:
   use ESMF
@@ -28,7 +30,7 @@ subroutine HYMAP3_qc_WLobs(n,k,OBS_State)
 ! !ARGUMENTS:
   integer, intent(in)      :: n
   integer, intent(in)      :: k
-  type(ESMF_State)         :: OBS_State
+  type(ESMF_State), intent(in) :: OBS_State
 !
 ! !DESCRIPTION:
 !
@@ -83,9 +85,9 @@ end subroutine HYMAP3_qc_WLobs
 ! \label{HYMAP3_convertRoutingSpaceToObsSpace}
 !
 ! !INTERFACE:
-subroutine HYMAP3_convertRoutingSpaceToObsSpace(&
-     n,&
-     k,&
+subroutine HYMAP3_convertRoutingSpaceToObsSpace( &
+     n,    &
+     k,    &
      mvar, &
      ovar)
 
@@ -97,10 +99,10 @@ subroutine HYMAP3_convertRoutingSpaceToObsSpace(&
   implicit none
 
 ! !ARGUMENTS:
-  integer,          intent(in) :: n
-  integer,          intent(in) :: k
-  real                         :: mvar(HYMAP3_routing_struc(n)%nseqall)
-  real                         :: ovar(LIS_rc%obs_ngrid(k))
+  integer,          intent(in)  :: n
+  integer,          intent(in)  :: k
+  real,             intent(in)  :: mvar(HYMAP3_routing_struc(n)%nseqall)
+  real,             intent(out) :: ovar(LIS_rc%obs_ngrid(k))
 !
 ! !DESCRIPTION:
 !

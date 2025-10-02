@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -14,7 +14,7 @@
 ! 7 Jan 2016: Sujay Kumar, Initial implementation
 !
 
-subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
+subroutine readGWBMIPrunoffdata(n, surface_runoff,  baseflow)
 
 ! !USES:
   use ESMF
@@ -36,9 +36,9 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: &
+  real, intent(out)            :: &
        surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
 
   integer                       :: nc,nr
   real,   allocatable           :: qs(:,:)
@@ -148,7 +148,7 @@ end subroutine readGWBMIPrunoffdata
 ! \label{create_GWBMIP_filename}
 !
 ! !INTERFACE:
-subroutine create_GWBMIP_filename(odir, model_prefix, yr,filename)
+subroutine create_GWBMIP_filename(odir, model_prefix, yr, filename)
 
 !
 ! !USES:
@@ -158,10 +158,10 @@ subroutine create_GWBMIP_filename(odir, model_prefix, yr,filename)
 
 !
 ! !ARGUMENTS:
-  character(len=*)             :: odir
-  character(len=*)             :: model_prefix
-  integer                      :: yr
-  character(len=*)             :: filename
+  character(len=*), intent(in)             :: odir
+  character(len=*), intent(in)             :: model_prefix
+  integer, intent(in)                      :: yr
+  character(len=*), intent(out)            :: filename
 !
 ! !DESCRIPTION:
 !
@@ -193,7 +193,7 @@ end subroutine create_GWBMIP_filename
 !  \label{interp_GWBMIPrunoffdata}
 !
 ! !INTERFACE:
-subroutine interp_GWBMIPrunoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_GWBMIPrunoffdata(n, nc, nr, var_input, var_output)
 !
 ! !USES:
   use GWBMIPrunoffdataMod
@@ -227,11 +227,11 @@ subroutine interp_GWBMIPrunoffdata(n, nc,nr,var_input,var_output)
 !BOP
 !
 ! !ARGUMENTS:
-  integer            :: n
-  integer            :: nc
-  integer            :: nr
-  real               :: var_input(nc*nr)
-  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  integer, intent(in)          :: n
+  integer, intent(in)          :: nc
+  integer, intent(in)          :: nr
+  real, intent(in)             :: var_input(nc*nr)
+  real, intent(out)            :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
   !EOP
 
   logical*1          :: lb(nc*nr)

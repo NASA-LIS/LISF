@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,7 +15,8 @@
 ! 07 Nov 2019: Sujay Kumar, Initial Specification
 !
 ! !INTERFACE:
-subroutine HYMAP3_getWLpred(n, k,obs_pred)
+subroutine HYMAP3_getWLpred(n, k, obs_pred)
+
 ! !USES:
   use ESMF
   use HYMAP3_routingMod
@@ -29,7 +32,7 @@ subroutine HYMAP3_getWLpred(n, k,obs_pred)
 ! !ARGUMENTS:
   integer, intent(in)    :: n
   integer, intent(in)    :: k
-  real                   :: obs_pred(LIS_rc%obs_ngrid(k),LIS_rc%nensem(n))
+  real, intent(out)      :: obs_pred(LIS_rc%obs_ngrid(k),LIS_rc%nensem(n))
 !
 ! !DESCRIPTION:
 !
@@ -65,9 +68,9 @@ end subroutine HYMAP3_getWLpred
 ! \label{HYMAP3_convertPatchSpaceToObsEnsSpace}
 !
 ! !INTERFACE:
-subroutine HYMAP3_convertPatchSpaceToObsEnsSpace(&
-     n,&
-     k,&
+subroutine HYMAP3_convertPatchSpaceToObsEnsSpace( &
+     n,    &
+     k,    &
      pvar, &
      ovar)
 
@@ -77,11 +80,11 @@ subroutine HYMAP3_convertPatchSpaceToObsEnsSpace(&
   use LIS_DAobservationsMod
 
 ! !ARGUMENTS:
-  integer,          intent(in) :: n
-  integer,          intent(in) :: k
-  real                         :: &
+  integer,          intent(in)  :: n
+  integer,          intent(in)  :: k
+  real,             intent(in)  :: &
        pvar(HYMAP3_routing_struc(n)%nseqall*LIS_rc%nensem(n))
-  real                         :: &
+  real,             intent(out) :: &
        ovar(LIS_rc%obs_ngrid(k),LIS_rc%nensem(n))
 !
 ! !DESCRIPTION:

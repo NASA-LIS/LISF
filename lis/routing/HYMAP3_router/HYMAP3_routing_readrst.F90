@@ -230,7 +230,7 @@ subroutine HYMAP3_readvar_restart(ftn, n, var, varname)
   integer, intent(in)   :: ftn
   integer, intent(in)   :: n
   real, intent(inout)   :: var(LIS_rc%nroutinggrid(n))
-  character(len=*)      :: varname
+  character(len=*), intent(in) :: varname
 
 ! !DESCRIPTION:
 !  Reads a real variable from a NetCDF restart file.
@@ -292,7 +292,7 @@ subroutine HYMAP3_readvar_restart_ens(ftn, n, var, varname)
   integer, intent(in)   :: n
   real, intent(inout)   :: var(LIS_rc%nroutinggrid(n), &
        LIS_rc%nensem(n))
-  character(len=*)      :: varname
+  character(len=*), intent(in) :: varname
 
 ! !DESCRIPTION:
 !  Reads a real variable from a NetCDF restart file.
@@ -356,7 +356,7 @@ subroutine HYMAP3_readbif_restart(ftn, n, var, varname)
   integer, intent(in)   :: ftn
   integer, intent(in)   :: n
   real, intent(inout)   :: var(HYMAP3_routing_struc(n)%nbif)
-  character(len=*)      :: varname
+  character(len=*), intent(in) :: varname
 
 ! !DESCRIPTION:
 !  Reads a real variable from a NetCDF restart file.
@@ -406,7 +406,7 @@ subroutine HYMAP3_readbif_restart_ens(ftn, n, var, varname)
   integer, intent(in)   :: n
   real, intent(inout)   :: var(HYMAP3_routing_struc(n)%nbif,&
        LIS_rc%nensem(n))
-  character(len=*)      :: varname
+  character(len=*), intent(in) :: varname
 
 ! !DESCRIPTION:
 !  Reads a real variable from a NetCDF restart file.

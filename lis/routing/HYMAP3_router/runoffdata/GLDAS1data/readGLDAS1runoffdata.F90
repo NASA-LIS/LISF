@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,7 +13,7 @@
 ! !REVISION HISTORY:
 ! 7 Jan 2016: Sujay Kumar, Initial implementation
 !
-subroutine readGLDAS1runoffdata(n,surface_runoff, baseflow)
+subroutine readGLDAS1runoffdata(n, surface_runoff, baseflow)
 
 ! !USES:
   use GLDAS1runoffdataMod
@@ -34,9 +34,9 @@ subroutine readGLDAS1runoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: &
+  real, intent(out)            :: &
        surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
 
   integer                       :: nc,nr
   real,   allocatable           :: qs(:,:)
@@ -149,8 +149,8 @@ end subroutine readGLDAS1runoffdata
 ! \label{create_GLDAS1_filename}
 !
 ! !INTERFACE:
-subroutine create_GLDAS1_filename(odir,model_name, datares,&
-     yr,mo,doy,hr,filename)
+subroutine create_GLDAS1_filename(odir, model_name, datares, &
+     yr, mo, doy, hr, filename)
 
 !
 ! !USES:
@@ -161,14 +161,14 @@ subroutine create_GLDAS1_filename(odir,model_name, datares,&
 
 !
 ! !ARGUMENTS:
-  character(len=*)             :: odir
-  character(len=*)             :: model_name
-  real                         :: datares
-  integer                      :: yr
-  integer                      :: mo
-  integer                      :: doy
-  integer                      :: hr
-  character(len=*)             :: filename
+  character(len=*), intent(in)  :: odir
+  character(len=*), intent(in)  :: model_name
+  real, intent(in)              :: datares
+  integer, intent(in)           :: yr
+  integer, intent(in)           :: mo
+  integer, intent(in)           :: doy
+  integer, intent(in)           :: hr
+  character(len=*), intent(out) :: filename
 
 !
 ! !DESCRIPTION:
@@ -240,7 +240,7 @@ end subroutine create_GLDAS1_filename
 ! \label{retrieve_GLDAS1data}
 !
 ! !INTERFACE:
-subroutine retrieve_GLDAS1data(igrib,nc,nr,nvars,index,gldas_var)
+subroutine retrieve_GLDAS1data(igrib, nc, nr, nvars, index, gldas_var)
 
 ! !USES:
 #if ( defined USE_GRIBAPI)
@@ -263,11 +263,12 @@ subroutine retrieve_GLDAS1data(igrib,nc,nr,nvars,index,gldas_var)
 !BOP
 !
 ! !ARGUMENTS:
-  integer              :: c,r,ios
-  integer, intent(in)  :: igrib,nc,nr
-  integer, intent(in)  :: nvars,index
-  real                 :: var(nvars,nc*nr)
+  integer, intent(in)  :: igrib, nc, nr
+  integer, intent(in)  :: nvars, index
   real,    intent(out) :: gldas_var(nc*nr)
+
+  integer              :: c,r,ios
+  real                 :: var(nvars,nc*nr)
 
   call grib_get(igrib,"values",var(index,:),ios)
   call LIS_verify(ios,                                            &
@@ -289,7 +290,7 @@ end subroutine retrieve_GLDAS1data
 !  \label{interp_GLDAS1runoffdata}
 !
 ! !INTERFACE:
-subroutine interp_GLDAS1runoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_GLDAS1runoffdata(n, nc, nr, var_input, var_output)
 !
 ! !USES:
   use LIS_coreMod
@@ -323,11 +324,11 @@ subroutine interp_GLDAS1runoffdata(n, nc,nr,var_input,var_output)
 !BOP
 !
 ! !ARGUMENTS:
-  integer            :: n
-  integer            :: nc
-  integer            :: nr
-  real               :: var_input(nc*nr)
-  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  integer, intent(in) :: n
+  integer, intent(in) :: nc
+  integer, intent(in) :: nr
+  real, intent(in)    :: var_input(nc*nr)
+  real, intent(out)   :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
 
   !EOP
   logical*1          :: lb(nc*nr)
@@ -370,5 +371,4 @@ subroutine interp_GLDAS1runoffdata(n, nc,nr,var_input,var_output)
   enddo
 
 end subroutine interp_GLDAS1runoffdata
-
 

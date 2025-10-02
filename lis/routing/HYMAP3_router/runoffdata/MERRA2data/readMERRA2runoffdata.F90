@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -14,7 +14,7 @@
 ! 7 Jan 2016: Sujay Kumar, Initial implementation
 !
 
-subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
+subroutine readMERRA2runoffdata(n, surface_runoff, baseflow)
 
 ! !USES:
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
@@ -35,9 +35,10 @@ subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: surface_runoff(LIS_rc%gnc(n), &
-       LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: &
+       surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+
   integer                       :: nc,nr
   real,   allocatable           :: qs(:,:)
   real,   allocatable           :: qsb(:,:)
@@ -122,7 +123,7 @@ end subroutine readMERRA2runoffdata
 ! \label{create_MERRA2_filename}
 !
 ! !INTERFACE:
-subroutine create_MERRA2_filename(odir, yr,mo,da,filename)
+subroutine create_MERRA2_filename(odir, yr, mo, da, filename)
 
 !
 ! !USES:
@@ -131,11 +132,11 @@ subroutine create_MERRA2_filename(odir, yr,mo,da,filename)
   implicit none
 !
 ! !ARGUMENTS:
-  character(len=*)             :: odir
-  integer                      :: yr
-  integer                      :: mo
-  integer                      :: da
-  character(len=*)             :: filename
+  character(len=*), intent(in)             :: odir
+  integer, intent(in)                      :: yr
+  integer, intent(in)                      :: mo
+  integer, intent(in)                      :: da
+  character(len=*), intent(out)            :: filename
 
 !
 ! !DESCRIPTION:
@@ -174,10 +175,10 @@ subroutine create_MERRA2_filename(odir, yr,mo,da,filename)
   elseif ( yr >= 2010 ) then
      prefix = 'MERRA2_400'
   else
-!     write(LVT_logunit,*) '[ERR] merra2files: date out of range'
-!     write(LVT_logunit,*) '[ERR] Supported years are from 1979-2-1 through ...'
-!     call LVT_endrun()	
-     filename = "none"
+     write(LIS_logunit,*) '[ERR] merra2files: date out of range'
+     write(LIS_logunit,*) '[ERR] Supported years are from 1979-2-1 through ...'
+     call LIS_endrun()
+     !filename = "none"
   endif
 
   filename = trim(odir)//'/'//trim(prefix)//'/stage/Y'//trim(fyr)//&
@@ -192,7 +193,7 @@ end subroutine create_MERRA2_filename
 !  \label{interp_MERRA2runoffdata}
 !
 ! !INTERFACE:
-subroutine interp_MERRA2runoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_MERRA2runoffdata(n, nc, nr, var_input, var_output)
 
 !
 ! !USES:
@@ -228,11 +229,11 @@ subroutine interp_MERRA2runoffdata(n, nc,nr,var_input,var_output)
 !BOP
 !
 ! !ARGUMENTS:
-  integer            :: n
-  integer            :: nc
-  integer            :: nr
-  real               :: var_input(nc*nr)
-  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  integer, intent(in)          :: n
+  integer, intent(in)          :: nc
+  integer, intent(in)          :: nr
+  real, intent(in)             :: var_input(nc*nr)
+  real, intent(out)            :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
 
   !EOP
   logical*1          :: lb(nc*nr)
@@ -255,17 +256,17 @@ subroutine interp_MERRA2runoffdata(n, nc,nr,var_input,var_output)
   enddo
 
   if(LIS_isAtAfinerResolution(n,0.5)) then
-     call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
+     call neighbor_interp(LIS_rc%gridDesc,lb,var_input,        &
           lo,go,nc*nr,LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
-          LIS_domain(n)%lat, LIS_domain(n)%lon,  &
-          MERRA2runoffdata_struc(n)%n11,                         &
+          LIS_domain(n)%lat, LIS_domain(n)%lon,                &
+          MERRA2runoffdata_struc(n)%n11,                       &
           LIS_rc%udef,ios)
   else
-     call upscaleByAveraging(&
-          nc*nr, &
-          LIS_rc%lnc(n)*LIS_rc%lnr(n), &
-          LIS_rc%udef, &
-          MERRA2runoffdata_struc(n)%n11, lb, &
+     call upscaleByAveraging(                                  &
+          nc*nr,                                               &
+          LIS_rc%lnc(n)*LIS_rc%lnr(n),                         &
+          LIS_rc%udef,                                         &
+          MERRA2runoffdata_struc(n)%n11, lb,                   &
           var_input, lo, go)
   endif
   do r = 1,LIS_rc%lnr(n)

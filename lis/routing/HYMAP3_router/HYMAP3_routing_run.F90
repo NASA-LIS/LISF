@@ -10,6 +10,8 @@
 #include "LIS_misc.h"
 !BOP
 !
+! !ROUTINE: HYMAP3_routing_run
+!
 ! !DESCRIPTION:
 !
 !  Reference: Augusto C.V. Getirana, A. Boone, D. Yamazaki, B. Decharme,
@@ -31,9 +33,10 @@
 !                                river flow map.
 ! 27 Apr 2020: Augusto Getirana,  Added support for urban drainage
 !
-! !USES:
+
 subroutine HYMAP3_routing_run(n)
 
+  ! !USES:
   use ESMF
   use HYMAP3_evapMod
   use HYMAP3_initMod
@@ -55,6 +58,7 @@ subroutine HYMAP3_routing_run(n)
   implicit none
 
   integer, intent(in)   :: n
+
   integer               :: m
   type(ESMF_Field)      :: sf_runoff_field
   type(ESMF_Field)      :: baseflow_field
@@ -210,7 +214,7 @@ subroutine HYMAP3_routing_run(n)
              farrayPtr=evapotranspiration_t,rc=status)
         call LIS_verify(status, &
              "HYMAP3_routing_run: ESMF_FieldGet failed for Total Evapotranspiration")
-        
+
         call LIS_tile2grid(n,tmpet,evapotranspiration_t)
 
         call HYMAP3_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),1,&
@@ -219,7 +223,8 @@ subroutine HYMAP3_routing_run(n)
              HYMAP3_routing_struc(n)%seqx,&
              HYMAP3_routing_struc(n)%seqy,tmpet,evap)
 
-        call ESMF_StateGet(LIS_FORC_State(n),trim(LIS_FORC_Tair%varname(1)),tmpField,rc=status)
+        call ESMF_StateGet(LIS_FORC_State(n), &
+             trim(LIS_FORC_Tair%varname(1)),tmpField,rc=status)
         call LIS_verify(status, &
              'HYMAP3_routing_run: ESMF_FieldGet failed for Tair')
 
@@ -925,8 +930,8 @@ subroutine HYMAP3_grid2tile(n,m,tvar,tvar_ens)
 
   integer, intent(in) :: n
   integer, intent(in) :: m
-  real                :: tvar(LIS_rc%nroutinggrid(n))
-  real                :: tvar_ens(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n))
+  real, intent(in)    :: tvar(LIS_rc%nroutinggrid(n))
+  real, intent(out)   :: tvar_ens(LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n))
 
 ! !DESCRIPTION:
 !  This routine converts a tile space variable to the corresponding
