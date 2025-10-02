@@ -13,7 +13,7 @@
 ! 
 ! !DESCRIPTION: 
 !   This module contains interfaces and subroutines to
-!   handle WSF soil moisture retrievals
+!   handle SMAP_E_OPL soil moisture retrievals
 ! 
 ! !REVISION HISTORY: 
 !  6 Jun 2022    Yonghwan Kwon; initial specification
@@ -109,7 +109,7 @@ contains
 ! !DESCRIPTION: 
 !   
 !   This routine completes the runtime initializations and 
-!   creation of data strctures required for handling WSF 
+!   creation of data strctures required for handling SMAP_E_OPL 
 !   soil moisture data. 
 !  
 !   The arguments are: 
@@ -334,7 +334,7 @@ contains
 
     enddo
     write(LIS_logunit,*) &
-         '[INFO] Created the States to hold the WSF observations data'
+         '[INFO] Created the States to hold the SMAP_E_OPL observations data'
 
     do n=1,LIS_rc%nnest
        WSFsm_struc(n)%nc = 2560
