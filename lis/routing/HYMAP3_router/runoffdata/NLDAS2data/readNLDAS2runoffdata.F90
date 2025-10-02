@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,7 +13,7 @@
 ! !REVISION HISTORY:
 ! 7 Jan 2016: Sujay Kumar, Initial implementation
 !
-subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
+subroutine readNLDAS2runoffdata(n, surface_runoff, baseflow)
 
 ! !USES:
 #if ( defined USE_GRIBAPI)
@@ -29,8 +29,8 @@ subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,       intent(in) :: n
-  real                      :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                      :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
 !
 !
 ! !DESCRIPTION:
@@ -98,7 +98,7 @@ subroutine readNLDAS2runoffdata(n,surface_runoff, baseflow)
 #if ( defined USE_GRIBAPI)
   inquire(file=filename, exist=file_exists)
   if(file_exists) then
-     write(LIS_logunit,*) 'Reading '//trim(filename)
+     write(LIS_logunit,*) '[INFO] Reading '//trim(filename)
 
      call grib_open_file(ftn,trim(filename),'r',ios)
      if(ios.ne.0) then
@@ -157,8 +157,8 @@ end subroutine readNLDAS2runoffdata
 ! \label{create_NLDAS2_filename}
 !
 ! !INTERFACE:
-subroutine create_NLDAS2_filename(odir,model_name, &
-     yr,mo,da,doy,hr,filename)
+subroutine create_NLDAS2_filename(odir, model_name, &
+     yr, mo, da, doy, hr, filename)
 
 ! !USES:
   use LIS_logMod
@@ -166,14 +166,14 @@ subroutine create_NLDAS2_filename(odir,model_name, &
   implicit none
 !
 ! !ARGUMENTS:
-  character(len=*)             :: odir
-  character(len=*)             :: model_name
-  integer                      :: yr
-  integer                      :: mo
-  integer                      :: da
-  integer                      :: doy
-  integer                      :: hr
-  character(len=*)             :: filename
+  character(len=*), intent(in)             :: odir
+  character(len=*), intent(in)             :: model_name
+  integer, intent(in)                      :: yr
+  integer, intent(in)                      :: mo
+  integer, intent(in)                      :: da
+  integer, intent(in)                      :: doy
+  integer, intent(in)                      :: hr
+  character(len=*), intent(out)            :: filename
 !
 ! !DESCRIPTION:
 !
@@ -231,7 +231,7 @@ end subroutine create_NLDAS2_filename
 ! \label{retrieve_NLDAS2data}
 !
 ! !INTERFACE:
-subroutine retrieve_NLDAS2data(igrib,nc,nr,nvars,index,nldas_var)
+subroutine retrieve_NLDAS2data(igrib, nc, nr, nvars, index, nldas_var)
 
 ! !USES:
 #if ( defined USE_GRIBAPI)
@@ -281,7 +281,7 @@ end subroutine retrieve_NLDAS2data
 !  \label{interp_NLDAS2runoffdata}
 !
 ! !INTERFACE:
-subroutine interp_NLDAS2runoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_NLDAS2runoffdata(n, nc, nr, var_input, var_output)
 !
 ! !USES:
   use LIS_coreMod
@@ -315,11 +315,11 @@ subroutine interp_NLDAS2runoffdata(n, nc,nr,var_input,var_output)
 !BOP
 !
 ! !ARGUMENTS:
-  integer            :: n
-  integer            :: nc
-  integer            :: nr
-  real               :: var_input(nc*nr)
-  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  integer, intent(in)          :: n
+  integer, intent(in)          :: nc
+  integer, intent(in)          :: nr
+  real, intent(in)             :: var_input(nc*nr)
+  real, intent(out)            :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
   !EOP
 
   logical*1          :: lb(nc*nr)

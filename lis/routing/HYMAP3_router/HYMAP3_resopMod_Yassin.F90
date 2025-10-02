@@ -8,12 +8,20 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module HYMAP3_resopMod_Yassin
-  !module defining Yassin's reservoir operation variables
-  !Augusto Getirana
-  !NASA Goddard Space Flight Center
-  !4 Apr 2025
+
+! !MODULE: HYMAP3_resopMod_Yassin
+!
+! !DESCRIPTION:
+!  module defining Yassin's reservoir operation variables
+!
+! !REVISION HISTORY:
+!  Augusto Getirana
+!  NASA Goddard Space Flight Center
+!  4 Apr 2025
+
   use HYMAP3_modelMod
 
+  implicit none
   private
 
   public :: HYMAP3_resop_main_glb_Yassin
@@ -21,13 +29,13 @@ module HYMAP3_resopMod_Yassin
 contains
   !=============================================
   !=============================================
-  subroutine HYMAP3_resop_main_glb_Yassin(mis,nz,time,dt,inflow,&
-               rivsto,fldsto,runoff,sfcelv1,&
-               maxsto,inidis,inisto,dwndis,deadis,&
-               minsto_mo,nupsto_mo,uppsto_mo,&
-               mindis_mo,nupdis_mo,uppdis_mo,&
-               reg1,reg2,reg3,&
-               outflow,inflow_down)
+  subroutine HYMAP3_resop_main_glb_Yassin(mis, nz, time, dt, inflow, &
+       rivsto, fldsto, runoff, sfcelv1,                              &
+       maxsto, inidis, inisto, dwndis, deadis,                       &
+       minsto_mo, nupsto_mo, uppsto_mo,                              &
+       mindis_mo, nupdis_mo, uppdis_mo,                              &
+       reg1, reg2, reg3,                                             &
+       outflow, inflow_down)
 
     use LIS_logMod
 
@@ -114,12 +122,12 @@ contains
     real*8, intent(in) :: dt                  ! = dt
                                               ! time-step length/duration
 
+    !> Output variables.
+    real, intent(out) :: flowSIM  ! = resrv%flowSIM(1:2)
+
     !> Local variables.
     real*8  :: Fu,rnd
     integer :: it
-
-    !> Output variables.
-    real, intent(out) :: flowSIM  ! = resrv%flowSIM(1:2)
     real :: stoSIM
 
     real,    parameter :: icor  = 1.
@@ -149,6 +157,7 @@ contains
        Inflow, qds, cse, Rx) result(qout)
 
     implicit none
+
     !> Input variables.
     real*8, intent(in) :: Fu, Ld, Lc, Ln, Lf, qmin, qnorm, qnd, dt, &
          smax, Inflow, qds, Rx

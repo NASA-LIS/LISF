@@ -22,9 +22,10 @@ subroutine HYMAP3_getStateSpaceSize(n, size)
   use LIS_logMod,  only  : LIS_verify
 
   implicit none
-! !ARGUMENTS:
+
+  ! !ARGUMENTS:
   integer, intent(in)    :: n
-  integer                :: size
+  integer, intent(out)   :: size
 !
 ! !DESCRIPTION:
 !

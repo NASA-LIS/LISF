@@ -7,13 +7,17 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-
+!
+! !MODULE: HYMAP3_urbanMod
+!
+! !DESCRIPTION: module defining urban drainage variables
+!
 ! !REVISION HISTORY:
 ! 27 Apr 2020: Augusto Getirana, Initial implementation
 !
 module HYMAP3_urbanMod
-  !module defining urban drainage variables
 
+  implicit none
   private
 
   public :: HYMAP3_calc_urban_drain_stonxt
@@ -24,9 +28,11 @@ module HYMAP3_urbanMod
 contains
 
   ! ================================================
-  subroutine HYMAP3_calc_urban_drain_stonxt(zdt,zdrvel,zdrtotwth, &
-       zdrstomax,zdrout,zdrinf,rivdph,zdrsto,zrivsto)
+  subroutine HYMAP3_calc_urban_drain_stonxt(zdt, zdrvel, zdrtotwth, &
+       zdrstomax, zdrout, zdrinf, rivdph, zdrsto, zrivsto)
+
     implicit none
+
     real, intent(in) :: zdt
     real, intent(in) :: zdrvel
     real, intent(in) :: zdrtotwth
@@ -61,9 +67,11 @@ contains
   end subroutine HYMAP3_calc_urban_drain_stonxt
 
   ! ================================================
-  subroutine HYMAP3_calc_urb_drain_out(zdt,zdrrad,zdrman,zdrslp, &
-       zdrstomax,zdrtotlgh,zdrnoutlet,zdrsto,zdrout)
+  subroutine HYMAP3_calc_urb_drain_out(zdt, zdrrad, zdrman, zdrslp, &
+       zdrstomax, zdrtotlgh, zdrnoutlet, zdrsto, zdrout)
+
     implicit none
+
     real, intent(in) :: zdt
     real, intent(in) :: zdrrad
     real, intent(in) :: zdrman
@@ -93,8 +101,8 @@ contains
   end subroutine HYMAP3_calc_urb_drain_out
 
   !=============================================
-  subroutine HYMAP3_get_urban_parameters(drfile,drwth,drhgt,drden, &
-       drvel,drblk,drrad,drlgh,drman,drslp)
+  subroutine HYMAP3_get_urban_parameters(drfile, drwth, drhgt, drden, &
+       drvel, drblk, drrad, drlgh, drman, drslp)
 
     use LIS_logMod
 
@@ -135,9 +143,9 @@ contains
   end subroutine HYMAP3_get_urban_parameters
 
   ! ================================================
-  subroutine HYMAP3_gen_urban_drain_maps(nseqall,drrad,drlgh,drden, &
-       drwth,drblk,grarea,next,flowmap,drstomax,drtotwth,drnoutlet, &
-       drtotlgh)
+  subroutine HYMAP3_gen_urban_drain_maps(nseqall, drrad, drlgh, drden, &
+       drwth, drblk, grarea, next, flowmap, drstomax, drtotwth,        &
+       drnoutlet, drtotlgh)
 
     implicit none
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,10 +17,8 @@
 ! 30 Jan 2016: Hiroko Beaudoing, Initial implementation
 ! 31 Aug 2016: Augusto Getirana, Fix file name format
 !
-!
-!
 !EOP
-subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
+subroutine readGLDAS2runoffdata(n, surface_runoff, baseflow)
 
 ! !USES:
   use GLDAS2runoffdataMod
@@ -36,9 +34,9 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: &
+  real, intent(out)            :: &
        surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
 
   integer                       :: nc,nr
   integer                       :: c,r
@@ -82,7 +80,7 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
 
      inquire(file=filename, exist=file_exists)
      if(file_exists) then
-        write(LIS_logunit,*) 'Reading '//trim(filename)
+        write(LIS_logunit,*) '[INFO] Reading '//trim(filename)
 
         ios = nf90_open(path=filename,&
              mode=NF90_NOWRITE,ncid=nid)
@@ -126,7 +124,7 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
            end do
         else
            write(LIS_logunit,*) &
-                'Runoff input units conversion not supported for this output interval'
+                '[ERR] Runoff input units conversion not supported for this output interval'
            call LIS_endrun()
         endif
      else
@@ -145,7 +143,7 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
 
 end subroutine readGLDAS2runoffdata
 
-subroutine readGLDAS2evapdata(n,evap, potevap)
+subroutine readGLDAS2evapdata(n, evap, potevap)
 
   use GLDAS2runoffdataMod
   use HYMAP3_routingMod
@@ -161,8 +159,8 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: evap(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: potevap(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: evap(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: potevap(LIS_rc%gnc(n),LIS_rc%gnr(n))
 
   integer                       :: nc,nr
   integer                       :: c,r
@@ -212,7 +210,7 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
 
   inquire(file=filename, exist=file_exists)
   if(file_exists) then
-     write(LIS_logunit,*) 'Reading '//trim(filename)
+     write(LIS_logunit,*) '[INFO] Reading '//trim(filename)
 
      ios = nf90_open(path=filename,&
           mode=NF90_NOWRITE,ncid=nid)
@@ -269,8 +267,8 @@ end subroutine readGLDAS2evapdata
 ! \label{create_GLDAS2_filename}
 !
 ! !INTERFACE:
-subroutine create_GLDAS2_filename(odir,model_name, datares,&
-     yr,mo,da, doy,hr,filename)
+subroutine create_GLDAS2_filename(odir, model_name, datares, &
+     yr, mo, da, doy, hr, filename)
 
 !
 ! !USES:
@@ -281,15 +279,15 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
 
 !
 ! !ARGUMENTS:
-  character(len=*)             :: odir
-  character(len=*)             :: model_name
-  real                         :: datares
-  integer                      :: yr
-  integer                      :: mo
-  integer                      :: da
-  integer                      :: doy
-  integer                      :: hr
-  character(len=*)             :: filename
+  character(len=*), intent(in)  :: odir
+  character(len=*), intent(in)  :: model_name
+  real, intent(in)              :: datares
+  integer, intent(in)           :: yr
+  integer, intent(in)           :: mo
+  integer, intent(in)           :: da
+  integer, intent(in)           :: doy
+  integer, intent(in)           :: hr
+  character(len=*), intent(out) :: filename
 !
 ! !DESCRIPTION:
 !
@@ -348,7 +346,7 @@ end subroutine create_GLDAS2_filename
 !  \label{interp_GLDAS2runoffdata}
 !
 ! !INTERFACE:
-subroutine interp_GLDAS2runoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_GLDAS2runoffdata(n, nc, nr, var_input, var_output)
 !
 ! !USES:
   use GLDAS2runoffdataMod
@@ -383,12 +381,13 @@ subroutine interp_GLDAS2runoffdata(n, nc,nr,var_input,var_output)
 !BOP
 !
 ! !ARGUMENTS:
-  integer            :: n
-  integer            :: nc
-  integer            :: nr
-  real               :: var_input(nc*nr)
-  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  integer, intent(in)          :: n
+  integer, intent(in)          :: nc
+  integer, intent(in)          :: nr
+  real, intent(in)             :: var_input(nc*nr)
+  real, intent(out)            :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
   !EOP
+
   logical*1          :: lb(nc*nr)
   integer            :: ios
   integer            :: c,r

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,7 +18,7 @@
 ! and surface runoff and baseflow variables - this will reduce the
 ! number of times input files are read
 
-subroutine HYMAP3_readLISrunoffdata(n,surface_runoff, baseflow)
+subroutine HYMAP3_readLISrunoffdata(n, surface_runoff, baseflow)
 
 ! !USES:
   use HYMAP3_LISrunoffdataMod
@@ -33,8 +33,8 @@ subroutine HYMAP3_readLISrunoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,  intent(in) :: n
-  real                 :: surface_runoff(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  real                 :: baseflow(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  real, intent(out)    :: surface_runoff(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  real, intent(out)    :: baseflow(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
   !caveats
   ! 1) assumes the LIS outputs are the same output interval as that of

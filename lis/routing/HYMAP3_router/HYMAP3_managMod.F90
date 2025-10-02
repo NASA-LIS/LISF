@@ -1,9 +1,25 @@
-! !REVISION HISTORY: 
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+! !MODULE: HYMAP3_managMod
+!
+! !DESCRIPTION
+!
+! !REVISION HISTORY:
 ! 1 May 2021: Augusto Getirana, Initial implementation
 !17 Apr 2023: Augusto Getirana, Add option for prescribed monthly climatology
 !
 module HYMAP3_managMod
   !module containing routines for water management rules
+
+  implicit none
 
   private
 
@@ -12,8 +28,8 @@ module HYMAP3_managMod
 
 contains
   ! ================================================
-  subroutine HYMAP3_manag_rules(time,managtype,nmanagcoef,managqmax, &
-       managact,managcoef,rivout,rivinf,rivinf1)
+  subroutine HYMAP3_manag_rules(time, managtype, nmanagcoef, managqmax, &
+       managact, managcoef, rivout, rivinf, rivinf1)
 
     use LIS_logMod
 
@@ -36,7 +52,8 @@ contains
     endif
     if((managtype==1.or.managtype==2).and.managact==0)return
 
-    !two polynomial equations (ax2 + bx + c) used as a function of pre-defined min-max discharge
+    !two polynomial equations (ax2 + bx + c) used as a function of
+    !pre-defined min-max discharge
     zdistmp=0.
     if(managtype==1)then
        ! single linear equation (ax + b)
@@ -74,14 +91,16 @@ contains
        rivout=max(0.,rivout-zdistmp)
        rivinf=max(0.,rivinf-zdistmp)
     else
-       write(LIS_logunit,*) 'water management type not defined ',managtype
+       write(LIS_logunit,*) &
+            '[ERR] water management type not defined ', managtype
        call LIS_endrun()
     endif
 
   end subroutine HYMAP3_manag_rules
   !=============================================
-  subroutine HYMAP3_get_management_rules(managheader,nx,ny,sindex,nmanag, &
-       nmanagcoef,managloc,managqmax,managact,managtype,managcoef)
+  subroutine HYMAP3_get_management_rules(managheader, nx, ny, sindex, &
+       nmanag, &
+       nmanagcoef, managloc, managqmax, managact, managtype, managcoef)
 
     use LIS_logMod
 
@@ -96,6 +115,7 @@ contains
     integer,      intent(out) :: managtype(nmanag)
     real,         intent(out) :: managcoef(nmanag,nmanagcoef), &
          managqmax(nmanag)
+
     integer                   :: ii,ix,iy,jx,jy
     logical                   :: file_exists
     integer :: ftn
@@ -103,7 +123,8 @@ contains
     inquire(file=managheader,exist=file_exists)
     if(file_exists) then
        ftn = LIS_getNextUnitNumber()
-       write(LIS_logunit,*)'get management rules '//trim(managheader)
+       write(LIS_logunit,*)&
+            '[INFO] get management rules '//trim(managheader)
        open(ftn,file=trim(managheader), status='old')
        read(ftn,*)ii
        do ii=1,nmanag
@@ -116,14 +137,15 @@ contains
        close(ftn)
        call LIS_releaseUnitNumber(ftn)
     else
-       write(LIS_logunit,*) 'file '//trim(managheader)
-       write(LIS_logunit,*) 'failed in opening file in HYMAP3_routingMod'
+       write(LIS_logunit,*) &
+            '[ERR] HYMAP3_routingMod: Failed to open file ' &
+            //trim(managheader)
        call LIS_endrun()
     endif
     return
 10  continue
-    write(LIS_logunit,*) 'failed in getting management rules'
-    write(LIS_logunit,*) 'check header file '//trim(managheader)
+    write(LIS_logunit,*) '[ERR] failed in getting management rules'
+    write(LIS_logunit,*) '[ERR] check header file '//trim(managheader)
     call LIS_endrun()
 
   end subroutine HYMAP3_get_management_rules

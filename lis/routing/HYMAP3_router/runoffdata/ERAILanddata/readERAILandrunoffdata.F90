@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,8 +13,9 @@
 ! !REVISION HISTORY:
 ! 7 Jan 2016: Sujay Kumar, Initial implementation
 !
-! !USES:
-subroutine readERAILandrunoffdata(n,surface_runoff, baseflow)
+
+subroutine readERAILandrunoffdata(n, surface_runoff, baseflow)
+
 ! !USES:
   use ESMF
   use ERAILandrunoffdataMod
@@ -31,9 +32,9 @@ subroutine readERAILandrunoffdata(n,surface_runoff, baseflow)
 
 ! !ARGUMENTS:
   integer,          intent(in) :: n
-  real                         :: &
+  real, intent(out)            :: &
        surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real, intent(out)            :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
 
 !
 ! !DESCRIPTION:
@@ -207,9 +208,9 @@ subroutine create_ERAILand_filename(odir, yr, filename)
 
 !
 ! !ARGUMENTS:
-  character(len=*)             :: odir
-  integer                      :: yr
-  character(len=*)             :: filename
+  character(len=*), intent(in)  :: odir
+  integer, intent(in)           :: yr
+  character(len=*), intent(out) :: filename
 !
 ! !DESCRIPTION:
 !
@@ -231,7 +232,6 @@ subroutine create_ERAILand_filename(odir, yr, filename)
 
   filename = trim(odir)//'/era-interim_stream_fcst2_'//trim(fyr)//'.nc'
 
-
 end subroutine create_ERAILand_filename
 
 !BOP
@@ -240,8 +240,8 @@ end subroutine create_ERAILand_filename
 !  \label{interp_ERAILandrunoffdata}
 !
 ! !INTERFACE:
-subroutine interp_ERAILandrunoffdata(n, nc,nr,var_input,scale_f, &
-     offset_f,var_output)
+subroutine interp_ERAILandrunoffdata(n, nc, nr, var_input, scale_f, &
+     offset_f, var_output)
 !
 ! !USES:
   use ERAILandrunoffdataMod
@@ -251,17 +251,17 @@ subroutine interp_ERAILandrunoffdata(n, nc,nr,var_input,scale_f, &
   implicit none
 
 ! !ARGUMENTS:
-  integer            :: n
-  integer            :: nc
-  integer            :: nr
-  real               :: var_input(nc,nr)
-  real               :: scale_f, offset_f
-  real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  integer, intent(in) :: n
+  integer, intent(in) :: nc
+  integer, intent(in) :: nr
+  real, intent(in)    :: var_input(nc,nr)
+  real, intent(in)    :: scale_f, offset_f
+  real, intent(out)   :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
 !
 ! !DESCRIPTION:
 !   This subroutine spatially transforms the ERA interim land variable to the
 !   model (LIS) output grid and resolution, using a neighbor interpolation
-!   or upscaling approach. 
+!   or upscaling approach.
 !
 !   The arguments are:
 !   \begin{description}
@@ -286,7 +286,7 @@ subroutine interp_ERAILandrunoffdata(n, nc,nr,var_input,scale_f, &
   integer            :: c,r,c1
   logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
-
+  real :: var_input_tmp
   external :: neighbor_interp
   external :: upscaleByAveraging
 
@@ -300,10 +300,10 @@ subroutine interp_ERAILandrunoffdata(n, nc,nr,var_input,scale_f, &
            c1 = c - 240
         endif
 
-        var_input(c,r) = var_input(c,r)*scale_f + offset_f
-        if (var_input(c,r).ge.0) then
+        var_input_tmp = var_input(c,r)*scale_f + offset_f
+        if (var_input_tmp.ge.0) then
            lb(c1+((nr-r+1)-1)*nc) = .true.
-           var_input_1d(c1+((nr-r+1)-1)*nc) = var_input(c,r)
+           var_input_1d(c1+((nr-r+1)-1)*nc) = var_input_tmp
         else
            var_input_1d(c1+((nr-r+1)-1)*nc) = LIS_rc%udef
         endif

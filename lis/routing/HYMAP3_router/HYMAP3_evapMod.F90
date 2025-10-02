@@ -50,9 +50,10 @@ module HYMAP3_evapMod
   real, parameter :: xz0m_min_sea     = 0.00001    ! m
 
 contains
+
   !=======================================================================
-  subroutine HYMAP3_evap_main(evaptype,n,nseqall,mis,outlet,pres,tair, &
-       qair,wind,qnet,evap,ewat,edif)
+  subroutine HYMAP3_evap_main(evaptype, n, nseqall, mis, outlet, pres, &
+       tair, qair, wind, qnet, evap, ewat, edif)
 
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
 
@@ -92,7 +93,7 @@ contains
 
   end subroutine HYMAP3_evap_main
   !=======================================================================
-  subroutine HYMAP3_penman_monteith(pres,tair,wind,qair,qnet,ewat)
+  subroutine HYMAP3_penman_monteith( pres, tair, wind, qair, qnet, ewat)
     implicit none
     real, intent(in)  :: pres,tair,wind,qair,qnet
     real, intent(out) :: ewat

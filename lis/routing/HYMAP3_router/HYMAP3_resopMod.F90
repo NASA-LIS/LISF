@@ -7,6 +7,11 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+! !MODULE HYMAP3_resopMod
+!
+! !DESCRIPTION
+!
 ! !REVISION HISTORY:
 ! 27 Sep 2014: Augusto Getirana, Initial implementation
 ! 30 Jan 2016: Augusto Getirana, Adapt to run in LIS v7.1
@@ -19,6 +24,7 @@ module HYMAP3_resopMod
   !27 Sep 2014
   use HYMAP3_modelMod
 
+  implicit none
   private
 
   public :: HYMAP3_resop_main_glb
@@ -27,11 +33,11 @@ module HYMAP3_resopMod
 contains
   !=============================================
   !=============================================
-  subroutine HYMAP3_resop_main_glb(mis,nz,time,dt,inflow,&
-               rivsto,fldsto,runoff,rivelv_down,rivdph_down,&
-               elevtn,fldhgt,fldstomax,grarea,rivstomax,&
-               rivelv,rivlen,rivwth,resoptype,ntresop,&
-               tresopalt,resopalt,resopoutmin,outflow,inflow_down)
+  subroutine HYMAP3_resop_main_glb(mis, nz, time, dt, inflow, &
+       rivsto, fldsto, runoff, rivelv_down, rivdph_down,      &
+       elevtn, fldhgt, fldstomax, grarea, rivstomax,          &
+       rivelv, rivlen, rivwth, resoptype, ntresop,            &
+       tresopalt, resopalt, resopoutmin, outflow, inflow_down)
 
     use LIS_logMod
 
@@ -138,7 +144,7 @@ contains
   end subroutine HYMAP3_resop_main_glb
   !=============================================
   !=============================================
-  subroutine HYMAP3_resop_inter(time,ntvar,tvar,var,mis,varout)
+  subroutine HYMAP3_resop_inter(time, ntvar, tvar, var, mis, varout)
 
     implicit none
 
@@ -189,7 +195,7 @@ contains
   end subroutine HYMAP3_resop_inter
   !=============================================
   !=============================================
-  subroutine convert_date2fraction_res(zdate0,zdate)
+  subroutine convert_date2fraction_res(zdate0, zdate)
 
     implicit none
 

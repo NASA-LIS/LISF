@@ -7,6 +7,11 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+! !MODULE: HYMAP3_modelMod
+!
+! !DESCRIPTION
+!
 ! !REVISION HISTORY:
 ! 19 Jan 2016: Augusto Getirana, Inclusion of the local inertia
 !   formulation and adaptive time step.
@@ -40,10 +45,11 @@ module HYMAP3_modelMod
 contains
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_dwi(runoff0,basflw0,grarea,roffdwi_ratio,&
-       basfdwi_ratio,roffdwi,basfdwi,runoff)
+  subroutine HYMAP3_dwi(runoff0, basflw0, grarea, roffdwi_ratio, &
+       basfdwi_ratio, roffdwi, basfdwi, runoff)
 
     implicit none
+
     real,    intent(inout) :: runoff0       !input runoff [mm.idt-1]
     real,    intent(inout) :: basflw0       !input baseflow [mm.idt-1]
     real,    intent(in)    :: grarea        !grid area [m2]
@@ -64,9 +70,9 @@ contains
   end subroutine HYMAP3_dwi
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_linear_reservoir_lis(dt,rmis,runoff0,basflw0, &
-       grarea,trnoff,tbsflw,cntime,roffsto,&
-       basfsto,runoff)
+  subroutine HYMAP3_linear_reservoir_lis(dt, rmis, runoff0, basflw0, &
+       grarea, trnoff, tbsflw, cntime, roffsto,&
+       basfsto, runoff)
     ! ================================================
     ! to   This routine simulates surface and underground linear reservoirs
     ! by   Augusto GETIRANA
@@ -130,8 +136,8 @@ contains
   end subroutine HYMAP3_linear_reservoir_lis
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_no_reservoir_lis(dt,rmis,runoff0,basflw0,&
-       roffsto,basfsto,runoff)
+  subroutine HYMAP3_no_reservoir_lis(dt, rmis, runoff0, basflw0, &
+       roffsto, basfsto, runoff)
     ! ================================================
     !      This routine sums runoff and baseflow variables
     ! by   Augusto GETIRANA
@@ -163,7 +169,7 @@ contains
   end subroutine HYMAP3_no_reservoir_lis
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_calc_runoff(dt,fldfrc,runoff,rivsto,fldsto)
+  subroutine HYMAP3_calc_runoff(dt, fldfrc, runoff, rivsto, fldsto)
     ! ================================================
     ! to   calculate runoff to stolage
     ! by   Augusto Getirana after Dai YAMAZAKI
@@ -171,11 +177,13 @@ contains
     ! at   LEGOS/CNES, Toulouse, France
     ! ================================================
     implicit none
+
     real,    intent(in)  ::  dt
     real,    intent(in)  ::  fldfrc !area fraction
     real,    intent(in)  ::  runoff !runoff of the grid [m3/s]
     real,    intent(out) ::  rivsto !river storage [m3]
     real,    intent(out) ::  fldsto !floodplain storage [m3]
+
     real                 ::  rrivrof,rfldrof
 
     !ag (24Mar2022)
@@ -194,11 +202,11 @@ contains
   ! ================================================
   !ag (2Mar2020)
   ! ================================================
-  subroutine HYMAP3_calc_fldstg(nz,grarea,rivlen,rivwth,     &
-                         rivstomax,fldstomax,fldhgt,&
-                         rivsto,fldsto,rivdph,flddph,flddph1,&
-                         fldelv1,fldwth,fldfrc,fldare,       &
-                         rivelv,rivare,levhgt)
+  subroutine HYMAP3_calc_fldstg(nz, grarea, rivlen, rivwth,       &
+                         rivstomax, fldstomax, fldhgt,            &
+                         rivsto, fldsto, rivdph, flddph, flddph1, &
+                         fldelv1, fldwth, fldfrc, fldare,         &
+                         rivelv, rivare, levhgt)
     use LIS_logMod
     ! ================================================
     ! to   calculate river and floodplain staging
@@ -290,9 +298,10 @@ contains
   end subroutine HYMAP3_calc_fldstg
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_calc_rivout_kine(outlet,dt,rivelv,rivelv_down,nxtdst,&
-       rivwth,sfcelv,rivlen,manval,slpmin,&
-       rivsto,rivdph,rivout,rivvel)
+  subroutine HYMAP3_calc_rivout_kine(outlet, dt, rivelv, rivelv_down, &
+       nxtdst, &
+       rivwth, sfcelv, rivlen, manval, slpmin, &
+       rivsto, rivdph, rivout, rivvel)
 
     use LIS_logMod
     ! ================================================
@@ -340,18 +349,19 @@ contains
        rivout=rarea*rvel
        rivout=min(rivout,rivsto/dt)
     else
-       write(LIS_logunit,*)"[ERR] Wrong outlet id",outlet
+       write(LIS_logunit,*)"[ERR] Wrong outlet id", outlet
        call LIS_endrun()
     endif
 
   end subroutine HYMAP3_calc_rivout_kine
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_calc_rivout_iner(time,ic,flowid,slpmax,bckslpmax, &
-       refout,outlet,dt,rivelv,rivelv_down,elevtn,nxtdst,             &
-       rivwth,rivsto,rivsto_down,rivdph,rivdph_down,rivlen,manval,    &
-       grv,rivout,rivvel,sfcelv,                                      &
-       rivout_pre,rivdph_pre,rivdph_pre_down)
+  subroutine HYMAP3_calc_rivout_iner(time, ic, flowid, slpmax,           &
+       bckslpmax,                                                        &
+       refout, outlet, dt, rivelv, rivelv_down, elevtn, nxtdst,          &
+       rivwth, rivsto, rivsto_down, rivdph, rivdph_down, rivlen, manval, &
+       grv, rivout, rivvel, sfcelv,                                      &
+       rivout_pre, rivdph_pre, rivdph_pre_down)
 
     use LIS_logMod
 
@@ -477,14 +487,17 @@ contains
   end subroutine HYMAP3_calc_rivout_iner
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_calc_rivfldout_iner(ic,time,outlet,dt,elevtn,nxtdst,&
-       rivlen,grv,&
-       rivelv,rivelv_down,rivwth,rivsto,rivsto_down,rivdph,rivdph_down,&
-       rivdph_pre_down,rivman,&
-       fldelv,fldelv_down,fldwth,fldsto,fldsto_down,flddph,flddph_down,&
-       flddph_pre_down,fldman,&
-       rivout,rivvel,rivsfcelv,rivout_pre,rivdph_pre,&
-       fldout,fldvel,fldsfcelv,fldout_pre,flddph_pre)
+  subroutine HYMAP3_calc_rivfldout_iner(ic, time, outlet, dt, elevtn, &
+       nxtdst,                                                   &
+       rivlen, grv,                                              &
+       rivelv, rivelv_down, rivwth, rivsto, rivsto_down, rivdph, &
+       rivdph_down,                                              &
+       rivdph_pre_down, rivman,                                  &
+       fldelv, fldelv_down, fldwth, fldsto, fldsto_down, flddph, &
+       flddph_down,                                              &
+       flddph_pre_down, fldman,                                  &
+       rivout, rivvel, rivsfcelv, rivout_pre, rivdph_pre,        &
+       fldout, fldvel, fldsfcelv, fldout_pre, flddph_pre)
 
     use LIS_logMod
     ! ================================================
@@ -494,8 +507,8 @@ contains
     ! ================================================
     implicit none
 
-    integer,  intent(in)  :: ic
-    real*8,    intent(in)    :: time
+    integer,  intent(in)   :: ic
+    real*8,   intent(in)   :: time
     integer, intent(in)    :: outlet          !outlet flag: 0 - river; 1 - ocean
     real,    intent(in)    :: dt              !time step length [sec]
     real,    intent(in)    :: elevtn          !surface elevation [m]
@@ -669,8 +682,8 @@ contains
   end subroutine HYMAP3_calc_rivfldout_iner
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_no_floodplain_flow(fldelv1,flddph1,fldout,fldvel, &
-       sfcelv0,fldout_pre,flddph_pre)
+  subroutine HYMAP3_no_floodplain_flow(fldelv1, flddph1, fldout, fldvel, &
+       sfcelv0, fldout_pre, flddph_pre)
     ! ================================================
     ! Option for floodplain acting as a simple reservoir with no flow
     ! Augusto Getirana
@@ -695,8 +708,9 @@ contains
   end subroutine HYMAP3_no_floodplain_flow
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_calc_stonxt(dt,rivout,fldout,rivinf,fldinf,rivsto, &
-       fldsto)
+  subroutine HYMAP3_calc_stonxt(dt, rivout, fldout, rivinf, fldinf, &
+       rivsto, fldsto)
+
     use LIS_coreMod
     ! ================================================
     ! to   Calculate the storage in the next time step in FTCS diff. eq.
@@ -723,7 +737,7 @@ contains
   end subroutine HYMAP3_calc_stonxt
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_dynstp(dtin,nxtdst,rivdph,grv,zcadp,dt,nt)
+  subroutine HYMAP3_dynstp(dtin, nxtdst, rivdph, grv, zcadp, dt, nt)
     ! ================================================
     ! Augusto Getirana
     ! 31 Mar 2014
@@ -750,7 +764,7 @@ contains
   end subroutine HYMAP3_dynstp
   !=============================================
   !=============================================
-  subroutine HYMAP3_date2frac(yr,mo,da,hr,mn,ss,dt1,time)
+  subroutine HYMAP3_date2frac(yr, mo, da, hr, mn, ss, dt1, time)
 
     implicit none
 
@@ -772,8 +786,8 @@ contains
   end subroutine HYMAP3_date2frac
   ! ================================================
   ! ================================================
-  subroutine HYMAP3_calc_evap_fld(dt,grarea,fldare,rivare,fldsto,rivsto,&
-                           evpdif,evpout)
+  subroutine HYMAP3_calc_evap_fld(dt, grarea, fldare, rivare, fldsto, &
+       rivsto, evpdif, evpout)
   ! ================================================
   ! to   subtract open water efaporation from floodplain water storage
   ! by   Augusto GETIRANA
@@ -791,6 +805,7 @@ contains
     real,    intent(inout) ::  fldsto   !floodplain storage   [m3]
     real,    intent(inout) ::  rivsto   !river storage        [m3]
     real,    intent(out)   ::  evpout   !effective evaporation from floodplains [kg m-2 s-1]
+
     real                   ::  devapriv,devapfld !evaporation from river and floodplains [m3  s-1]
     real                   ::  dfldare           !floodplain surface area [m2]
   ! ================================================
@@ -804,8 +819,8 @@ contains
   end subroutine HYMAP3_calc_evap_fld
   !=============================================
   !=============================================
-  subroutine HYMAP3_get_volume_profile(nz,elevtn,fldhgt,fldstomax,&
-       grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
+  subroutine HYMAP3_get_volume_profile(nz, elevtn, fldhgt, fldstomax, &
+       grarea, rivstomax, rivelv, rivlen, rivwth, elv, vol)
 
     use LIS_logMod
 
@@ -837,6 +852,8 @@ contains
           h1=elevtn;v1=rivstomax
           h2=dph(1);v2=fldstomax(1)
        else
+          write(LIS_logunit,*) &
+               '[ERR] Internal error in HYMAP3_get_volume_profile'
           call LIS_endrun()
        endif
        vol=v1+(v2-v1)*(elv-h1)/(h2-h1)
@@ -848,8 +865,8 @@ contains
   end subroutine HYMAP3_get_volume_profile
   !=============================================
   !=============================================
-  subroutine HYMAP3_get_elevation_profile(nz,elevtn,fldhgt,fldstomax, &
-       grarea,rivstomax,rivelv,rivlen,rivwth,elv,vol)
+  subroutine HYMAP3_get_elevation_profile(nz, elevtn, fldhgt, fldstomax, &
+       grarea, rivstomax, rivelv, rivlen, rivwth, elv, vol)
 
     use LIS_logMod
 
@@ -883,6 +900,8 @@ contains
           h1=elevtn;v1=rivstomax
           h2=dph(1);v2=fldstomax(1)
        else
+          write(LIS_logunit,*) &
+               '[ERR] Internal error in HYMAP3_get_elevation_profile'
           call LIS_endrun()
        endif
        elv=h1+(h2-h1)*(vol-v1)/(v2-v1)
@@ -894,9 +913,11 @@ contains
   end subroutine HYMAP3_get_elevation_profile
 
   !=============================================
-  subroutine HYMAP3_merge_river_floodplain(rivsto,rivman,rivdph,rivwth,&
-       fldsto,fldman,flddph,rivlen,rivdph_down,rivsto_down,fldsto_down,&
-       tmpsto,tmpman,tmpdph,tmpwth,tmpsto_down,tmpdph_down)
+  subroutine HYMAP3_merge_river_floodplain(rivsto, rivman, rivdph, &
+       rivwth,                                                     &
+       fldsto, fldman, flddph, rivlen, rivdph_down, rivsto_down,   &
+       fldsto_down,                                                &
+       tmpsto, tmpman, tmpdph, tmpwth, tmpsto_down, tmpdph_down)
 
     use LIS_logMod
 
@@ -923,11 +944,12 @@ contains
   !=============================================
   !ag (22May2024)
   ! ================================================
-  subroutine HYMAP3_calc_fldstg_lev(nz,grarea,rivlen,rivwth,rivstomax,&
-                         fldstomax,fldhgt,rivare,levhgt,levstomax,&
-                         fldonlystomax,fldstoatlev,elevtn,&
-                         rivsto,fldsto,rivdph,flddph,flddph1,fldelv1,&
-                         fldwth,fldfrc,fldare)
+  subroutine HYMAP3_calc_fldstg_lev(nz, grarea, rivlen, rivwth, &
+       rivstomax,                                               &
+       fldstomax, fldhgt, rivare, levhgt, levstomax,            &
+       fldonlystomax, fldstoatlev, elevtn,                      &
+       rivsto, fldsto, rivdph, flddph, flddph1, fldelv1,        &
+       fldwth, fldfrc, fldare)
 
     use LIS_logMod
     ! ================================================

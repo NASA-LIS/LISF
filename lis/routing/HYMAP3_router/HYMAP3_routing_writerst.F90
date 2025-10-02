@@ -114,8 +114,8 @@ subroutine HYMAP3_dump_restart(n, ftn)
 
   implicit none
 
-  integer, intent(in) :: ftn
   integer, intent(in) :: n
+  integer, intent(in) :: ftn
 
 !
 ! !DESCRIPTION:
@@ -305,8 +305,9 @@ end subroutine HYMAP3_dump_restart
 ! \label{HYMAP3_writeGlobalHeader_restart}
 !
 ! !INTERFACE: HYMAP3_writeGlobalHeader_restart
-subroutine HYMAP3_writeGlobalHeader_restart(ftn,n,&
-     model_name, dimID,dimID_bif)
+subroutine HYMAP3_writeGlobalHeader_restart(ftn, n,&
+     model_name, dimID, dimID_bif)
+
 ! !USES:
   use HYMAP3_routingMod
   use LIS_coreMod
@@ -318,10 +319,10 @@ subroutine HYMAP3_writeGlobalHeader_restart(ftn,n,&
   implicit none
 
 ! !ARGUMENTS:
-  integer,   intent(in)     :: n
   integer,   intent(in)     :: ftn
+  integer,   intent(in)     :: n
   character(len=*), intent(in) :: model_name
-  integer                   :: dimID(1),dimID_bif(1)
+  integer, intent(out)         :: dimID(1),dimID_bif(1)
 
 !
 ! !DESCRIPTION:
@@ -502,7 +503,7 @@ end subroutine HYMAP3_writeGlobalHeader_restart
 ! \label{HYMAP3_writeHeader_restart}
 !
 ! !INTERFACE:
-subroutine HYMAP3_writeHeader_restart(ftn,n,dimID, vid, standard_name, &
+subroutine HYMAP3_writeHeader_restart(ftn, n, dimID, vid, standard_name, &
      long_name, units, vlevels, valid_min, valid_max)
 ! !USES:
   use LIS_coreMod
@@ -514,16 +515,16 @@ subroutine HYMAP3_writeHeader_restart(ftn,n,dimID, vid, standard_name, &
   implicit none
 
 ! !ARGUMENTS:
-  integer                    :: ftn
-  integer                    :: n
-  integer                    :: dimID(1)
-  integer                    :: vid
-  character(len=*)           :: standard_name
-  character(len=*)           :: long_name
-  character(len=*)           :: units
-  integer                    :: vlevels
-  real                       :: valid_min
-  real                       :: valid_max
+  integer, intent(in)          :: ftn
+  integer, intent(in)          :: n
+  integer, intent(in)          :: dimID(1)
+  integer, intent(out)         :: vid
+  character(len=*), intent(in) :: standard_name
+  character(len=*), intent(in) :: long_name
+  character(len=*), intent(in) :: units
+  integer, intent(in)          :: vlevels
+  real, intent(in)             :: valid_min
+  real, intent(in)             :: valid_max
 
 !
 ! !DESCRIPTION:
@@ -625,7 +626,7 @@ subroutine HYMAP3_closeHeader_restart(ftn)
   implicit none
 
 ! !ARGUMENTS:
-  integer            :: ftn
+  integer, intent(in)         :: ftn
 !
 ! !DESCRIPTION:
 !    This routine closes the required NETCDF header.
@@ -677,8 +678,8 @@ subroutine HYMAP3_writevar_restart(ftn, n, var, varid)
 ! !ARGUMENTS:
   integer, intent(in) :: ftn
   integer, intent(in) :: n
-  real                :: var(LIS_rc%nroutinggrid(n))
-  integer             :: varid
+  real, intent(in)    :: var(LIS_rc%nroutinggrid(n))
+  integer, intent(in) :: varid
 
 ! !DESCRIPTION:
 !  Writes a real variable to a NetCDF restart file.
@@ -764,8 +765,8 @@ subroutine HYMAP3_writevar_restart_ens(ftn, n, var, varid)
 ! !ARGUMENTS:
   integer, intent(in) :: ftn
   integer, intent(in) :: n
-  real                :: var(LIS_rc%nroutinggrid(n),LIS_rc%nensem(n))
-  integer             :: varid
+  real, intent(in)    :: var(LIS_rc%nroutinggrid(n),LIS_rc%nensem(n))
+  integer, intent(in) :: varid
 
 ! !DESCRIPTION:
 !  Writes a real variable to a NetCDF restart_ens file.
@@ -859,8 +860,8 @@ subroutine HYMAP3_writebif_restart(ftn, n, var, varid)
 ! !ARGUMENTS:
   integer, intent(in) :: ftn
   integer, intent(in) :: n
-  real                :: var(HYMAP3_routing_struc(n)%nbif)
-  integer             :: varid
+  real, intent(in)    :: var(HYMAP3_routing_struc(n)%nbif)
+  integer, intent(in) :: varid
 
 ! !DESCRIPTION:
 !  Writes a real variable to a NetCDF restart file.
@@ -910,8 +911,8 @@ subroutine HYMAP3_writebif_restart_ens(ftn, n, var, varid)
 ! !ARGUMENTS:
   integer, intent(in) :: ftn
   integer, intent(in) :: n
-  real                :: var(LIS_rc%nroutinggrid(n),LIS_rc%nensem(n))
-  integer             :: varid
+  real, intent(in)    :: var(LIS_rc%nroutinggrid(n),LIS_rc%nensem(n))
+  integer, intent(in) :: varid
 
 ! !DESCRIPTION:
 !  Writes a real variable to a NetCDF restart_ens file.

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,8 +27,8 @@ subroutine HYMAP3_setWL(n, Routing_State)
   implicit none
 
 ! !ARGUMENTS:
-  integer, intent(in)    :: n
-  type(ESMF_State)       :: Routing_State
+  integer, intent(in)                :: n
+  type(ESMF_State), intent(in)       :: Routing_State
 !
 ! !DESCRIPTION:
 !
@@ -144,9 +146,9 @@ subroutine HYMAP3_reorderEnsForOutliers(nensem, statevec, minvalue)
 
   implicit none
 
-  integer              :: nensem
-  real                 :: statevec(nensem)
-  real                 :: minvalue
+  integer, intent(in)              :: nensem
+  real, intent(out)                :: statevec(nensem)
+  real, intent(in)                 :: minvalue
 
   real                 :: minvT, maxvT, minvG, maxvG
   integer              :: k

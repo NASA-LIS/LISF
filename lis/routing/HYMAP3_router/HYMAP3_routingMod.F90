@@ -344,6 +344,8 @@ contains
     use LIS_routingMod
     use LIS_timeMgrMod
 
+    implicit none
+
     integer              :: n
     integer              :: ftn
     integer              :: status
@@ -2992,7 +2994,7 @@ contains
   end subroutine HYMAP3_vector_read_dims
 
   !=============================================
-  subroutine HYMAP3_vector_read_param(ctitle,n,z,array)
+  subroutine HYMAP3_vector_read_param(ctitle, n, z, array)
 
     !USES:
     use LIS_coreMod
@@ -3008,6 +3010,7 @@ contains
     integer,      intent(in)    :: n
     real,         intent(inout) :: &
          array(HYMAP3_routing_struc(n)%nseqall,z)
+
     integer                     :: ftn
     logical                     :: file_exists
     integer                     :: varid
@@ -3043,7 +3046,7 @@ contains
   end subroutine HYMAP3_vector_read_param
 
   !======================================================================
-  subroutine read_netcdf_1d_real(infile,ntiles,jt,it,nt,yvar,var)
+  subroutine read_netcdf_1d_real(infile, ntiles, jt, it, nt, yvar, var)
 
     !USES:
     use LIS_coreMod
@@ -3057,8 +3060,8 @@ contains
     character(*), intent(in)  :: infile,yvar
     integer,      intent(in)  :: ntiles,jt,it,nt
     real*8,         intent(out) :: var(ntiles)
-    integer                   :: varid
 
+    integer                   :: varid
     integer                     :: ftn
     logical                     :: file_exists
 
@@ -3091,8 +3094,9 @@ contains
 
   end subroutine read_netcdf_1d_real
   !===============================================================================
-  subroutine HYMAP3_read_header_resop_yassin(n,yheader,inst, &
-       local_index,down_local_index,glb_index,down_glb_index,nc_index)
+  subroutine HYMAP3_read_header_resop_yassin(n, yheader, inst, &
+       local_index, down_local_index, glb_index, down_glb_index, &
+       nc_index)
 
     use LIS_logMod
 
@@ -3149,7 +3153,7 @@ contains
 
   end subroutine HYMAP3_read_header_resop_yassin
   !======================================================================
-  subroutine HYMAP3_read_param_real(ctitle,n,z,array)
+  subroutine HYMAP3_read_param_real(ctitle, n, z, array)
 
     !USES:
     use LIS_coreMod
@@ -3207,7 +3211,7 @@ contains
   end subroutine HYMAP3_read_param_real
 
   !=============================================
-  subroutine HYMAP3_read_param_real_2d(ctitle,n,array)
+  subroutine HYMAP3_read_param_real_2d(ctitle, n, array)
 
     !USES:
     use LIS_coreMod
@@ -3263,7 +3267,7 @@ contains
 #endif
   end subroutine HYMAP3_read_param_real_2d
 
-  subroutine HYMAP3_read_param_int(ctitle,z,n,array)
+  subroutine HYMAP3_read_param_int(ctitle, z, n, array)
 
     !USES:
     use LIS_coreMod
@@ -3320,7 +3324,7 @@ contains
 #endif
   end subroutine HYMAP3_read_param_int
 
-  subroutine HYMAP3_read_param_int_2d(ctitle,n,array)
+  subroutine HYMAP3_read_param_int_2d(ctitle, n, array)
 
     !USES:
     use LIS_coreMod
@@ -3376,7 +3380,7 @@ contains
 #endif
   end subroutine HYMAP3_read_param_int_2d
 
-  subroutine HYMAP3_read_param_int_2d_global(ctitle,n,array)
+  subroutine HYMAP3_read_param_int_2d_global(ctitle, n, array)
 
     !USES:
     use LIS_coreMod
@@ -3428,9 +3432,10 @@ contains
 
   !=============================================
   !=============================================
-  subroutine HYMAP3_get_data_resop_alt(n,resopdir,resopheader,nresop, &
-       ntresop,resoploc,resoploc_dwn,resoploc_glb,resoploc_dwn_glb, &
-       resopoutmin,tresop,resop,resoptype)
+  subroutine HYMAP3_get_data_resop_alt(n, resopdir, resopheader, &
+       nresop, &
+       ntresop, resoploc, resoploc_dwn, resoploc_glb, resoploc_dwn_glb, &
+       resopoutmin, tresop, resop, resoptype)
 
     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
@@ -3444,6 +3449,7 @@ contains
     real*8,       intent(out) :: tresop(nresop,ntresop)
     real,         intent(out) :: resop(nresop,ntresop), &
          resopoutmin(nresop)
+
     integer                   :: res
     character(50)             :: resopname(nresop)
     character(LIS_CONST_PATH_LEN)            :: yfile
@@ -3460,9 +3466,9 @@ contains
   end subroutine HYMAP3_get_data_resop_alt
   !=============================================
   !=============================================
-  subroutine HYMAP3_get_sea_level_data(n,sealeveldir,sealevelheader, &
-       outletlist,nsealevel,ntsealevel,noutlet,nseqall,outletid, &
-       tsealevel,sealevel)
+  subroutine HYMAP3_get_sea_level_data(n, sealeveldir, sealevelheader, &
+       outletlist, nsealevel, ntsealevel, noutlet, nseqall, outletid,  &
+       tsealevel, sealevel)
 
     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
@@ -3500,7 +3506,7 @@ contains
   end subroutine HYMAP3_get_sea_level_data
   !=============================================
   !=============================================
-  subroutine HYMAP3_read_header_size(yheader,isize)
+  subroutine HYMAP3_read_header_size(yheader, isize)
 
     use LIS_logMod
 
@@ -3536,7 +3542,7 @@ contains
   !=============================================
   !=============================================
   !ag(27Jul2025)
-  subroutine HYMAP3_read_header_size1(yheader,isize,isize1)
+  subroutine HYMAP3_read_header_size1(yheader, isize, isize1)
 
     use LIS_logMod
 
@@ -3571,7 +3577,7 @@ contains
   end subroutine HYMAP3_read_header_size1
   !=============================================
   !=============================================
-  subroutine HYMAP3_read_outlet_list(n,yheader,inst,id,local_index)
+  subroutine HYMAP3_read_outlet_list(n, yheader, inst, id, local_index)
 
     use LIS_logMod
 
@@ -3617,7 +3623,7 @@ contains
   end subroutine HYMAP3_read_outlet_list
   !=============================================
   !=============================================
-  subroutine HYMAP3_read_sea_level_header(yheader,inst,yqname)
+  subroutine HYMAP3_read_sea_level_header(yheader, inst, yqname)
 
     use LIS_logMod
 
@@ -3664,8 +3670,8 @@ contains
   end subroutine HYMAP3_read_sea_level_header
   !=============================================
   !=============================================
-  subroutine HYMAP3_get_discharge_data(insertdir,insertheader,nx,ny, &
-       sindex,ninsert,ntinsert,insertloc,tinsert,insertdis)
+  subroutine HYMAP3_get_discharge_data(insertdir, insertheader, nx, ny, &
+       sindex, ninsert, ntinsert, insertloc, tinsert, insertdis)
 
     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
@@ -3697,9 +3703,9 @@ contains
   end subroutine HYMAP3_get_discharge_data
   !=============================================
   !=============================================
-  subroutine HYMAP3_read_header_resop(n,yheader,inst,yqname, &
-       local_index,down_local_index,glb_index,down_glb_index,outmin, &
-       resoptype)
+  subroutine HYMAP3_read_header_resop(n, yheader, inst, yqname,  &
+       local_index, down_local_index, glb_index, down_glb_index, &
+       outmin, resoptype)
 
     use LIS_logMod
 
@@ -3722,7 +3728,8 @@ contains
     if(file_exists) then
        ftn = LIS_getNextUnitNumber()
        !get name of station files
-       write(LIS_logunit,*)'[INFO] [read_header] get stations info: name and coordinates'
+       write(LIS_logunit,*) &
+            '[INFO] [read_header] get stations info: name and coordinates'
        write(LIS_logunit,*)'[INFO] [read_header] ',yheader,inst
        open(ftn,file=trim(yheader), status='old')
        !ag(27Jul2025)
@@ -3753,15 +3760,15 @@ contains
     endif
     return
 10  continue
-    write(LIS_logunit,*) '[ERR] header file '//trim(yheader)
     write(LIS_logunit,*) &
-         '[ERR] failed in read_header in HYMAP3_routingMod'
+         '[ERR] HYMAP3_read_header_resop: canno read header file ' &
+         //trim(yheader)
     call LIS_endrun()
 
   end subroutine HYMAP3_read_header_resop
   !=============================================
   !=============================================
-  subroutine HYMAP3_read_header(yheader,inst,yqname,ix,iy)
+  subroutine HYMAP3_read_header(yheader, inst, yqname, ix, iy)
 
     use LIS_logMod
 
@@ -3793,22 +3800,22 @@ contains
        close(ftn)
        call LIS_releaseUnitNumber(ftn)
     else
-       write(LIS_logunit,*) '[ERR] header file '//trim(yheader)
        write(LIS_logunit,*) &
-            '[ERR] failed in read_header in HYMAP3_routingMod'
+            '[ERR] HYMAP3_read_header:  Cannot read header file ' &
+            //trim(yheader)
        call LIS_endrun()
     endif
     return
 10  continue
-    write(LIS_logunit,*) '[ERR] header file '//trim(yheader)
     write(LIS_logunit,*) &
-         '[ERR] failed in read_header in HYMAP3_routingMod'
+         '[ERR] HYMAP3_read_header:  Cannot read header file ' &
+         //trim(yheader)
     call LIS_endrun()
 
   end subroutine HYMAP3_read_header
   !=============================================
   !=============================================
-  subroutine HYMAP3_read_time_series(itmax,yfile,ztalt,zhalt)
+  subroutine HYMAP3_read_time_series(itmax, yfile, ztalt, zhalt)
 
     use LIS_logMod
 
@@ -3834,9 +3841,8 @@ contains
        close(ftn)
        call LIS_releaseUnitNumber(ftn)
     else
-       write(LIS_logunit,*) '[ERR] time series file '//trim(yfile)
        write(LIS_logunit,*) &
-            '[ERR] failed in read_time_series in HYMAP3_routing_init'
+            '[ERR] HYMAP3_read_time_series: Cannot read '//trim(yfile)
        call LIS_endrun()
     endif
 
@@ -3850,7 +3856,8 @@ contains
   ! \label{HYMAP3_gather_tiles}
   !
   ! !INTERFACE:
-  subroutine HYMAP3_gather_tiles_int(n,var,var_glb)
+  subroutine HYMAP3_gather_tiles_int(n, var, var_glb)
+
 ! !USES:
     use LIS_coreMod
     use LIS_mpiMod
@@ -3863,9 +3870,9 @@ contains
 
     implicit none
 
-    integer        :: n
-    integer        :: var(LIS_rc%nroutinggrid(n))
-    integer        :: var_glb(LIS_rc%glbnroutinggrid(n))
+    integer, intent(in)     :: n
+    integer, intent(in)     :: var(LIS_rc%nroutinggrid(n))
+    integer, intent(out)    :: var_glb(LIS_rc%glbnroutinggrid(n))
 
     integer        :: tmpvar(LIS_rc%glbnroutinggrid(n))
     integer        :: i,l,ix,iy,ix1,iy1
@@ -3918,9 +3925,9 @@ contains
 
     implicit none
 
-    integer        :: n
-    real           :: var(LIS_rc%nroutinggrid(n))
-    real           :: var_glb(LIS_rc%glbnroutinggrid(n))
+    integer, intent(in)        :: n
+    real, intent(in)           :: var(LIS_rc%nroutinggrid(n))
+    real, intent(out)          :: var_glb(LIS_rc%glbnroutinggrid(n))
 
     real           :: tmpvar(LIS_rc%glbnroutinggrid(n))
     integer        :: i,l,ix,iy,ix1,iy1
@@ -3970,9 +3977,9 @@ contains
 !EOP
     implicit none
 
-    integer             :: n
-    real                :: var_glb(LIS_rc%glbnroutinggrid(n))
-    real                :: var_local(LIS_rc%nroutinggrid(n))
+    integer, intent(in) :: n
+    real, intent(in)    :: var_glb(LIS_rc%glbnroutinggrid(n))
+    real, intent(out)   :: var_local(LIS_rc%nroutinggrid(n))
 
     integer             :: i, ix,iy,ix1,iy1
 
@@ -3991,7 +3998,7 @@ contains
 ! \label{HYMAP3_map_g2l_index}
 !
 ! !INTERFACE:
-  subroutine HYMAP3_map_gxy2l_index(n,glb_x,glb_y,local_index)
+  subroutine HYMAP3_map_gxy2l_index(n, glb_x, glb_y, local_index)
 
 ! !USES:
     use LIS_coreMod
@@ -4006,7 +4013,7 @@ contains
 
     integer, intent(in)  :: n
     integer, intent(out) :: local_index
-    integer, intent(in)  :: glb_x,glb_y
+    integer, intent(in)  :: glb_x, glb_y
 
     integer              :: ix,iy,iloc(1)
 
@@ -4029,7 +4036,7 @@ contains
 ! \label{HYMAP3_map_l2g_index}
 !
 ! !INTERFACE:
-  subroutine HYMAP3_map_l2g_index(n, local_index,glb_index)
+  subroutine HYMAP3_map_l2g_index(n, local_index, glb_index)
 ! !USES:
     use LIS_coreMod
 !
@@ -4040,9 +4047,9 @@ contains
 !EOP
     implicit none
 
-    integer             :: n
-    integer             :: local_index
-    integer             :: glb_index
+    integer, intent(in)             :: n
+    integer, intent(in)             :: local_index
+    integer, intent(out)            :: glb_index
 
     integer             :: ix,iy,ix1,iy1
 

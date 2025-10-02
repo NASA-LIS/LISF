@@ -16,30 +16,30 @@
 !  3 Jun 2020: Augusto Getirana,  Added support for 2-way coupling
 !
 #include "LIS_misc.h"
-subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss, &
-     nseqall,nz,dt,flowmap,linres,evapflag,  &
-     rivout_pre,rivdph_pre,                  &
-     fldout_pre,flddph_pre,fldelv1,          &
-     grv,cadp,steptype,resopflag,floodflag,  &
-     outlet,next,elevtn,nxtdst,grarea,       &
-     fldgrd,fldman,fldhgt,fldstomax,         &
-     rivman,rivelv,rivstomax,                &
-     rivlen,rivwth,rivhgt,rivare,slpmin,     &
-     trnoff,tbsflw,cntime,                   &
-     dwiflag,rnfdwi_ratio,bsfdwi_ratio,      &
-     runoff0,basflw0,evpdif,                 &
-     rivsto,rivdph,rivvel,rivout,evpout,     &
-     fldout,fldsto,flddph,fldvel,fldfrc,     &
-     fldare,sfcelv,roffsto,basfsto,          &
-     rnfdwi,bsfdwi,surfws,                   &
-     dtaout,&
+subroutine HYMAP3_model(n, mis, nx, ny, yr, mo, da, hr, mn, ss, &
+     nseqall, nz, dt, flowmap, linres, evapflag,  &
+     rivout_pre, rivdph_pre,                      &
+     fldout_pre, flddph_pre, fldelv1,             &
+     grv, cadp, steptype, resopflag, floodflag,   &
+     outlet, next, elevtn, nxtdst, grarea,        &
+     fldgrd, fldman, fldhgt, fldstomax,           &
+     rivman, rivelv, rivstomax,                   &
+     rivlen, rivwth, rivhgt, rivare, slpmin,      &
+     trnoff, tbsflw, cntime,                      &
+     dwiflag, rnfdwi_ratio, bsfdwi_ratio,         &
+     runoff0, basflw0, evpdif,                    &
+     rivsto, rivdph, rivvel, rivout,evpout,       &
+     fldout, fldsto, flddph, fldvel, fldfrc,      &
+     fldare, sfcelv, roffsto, basfsto,            &
+     rnfdwi, bsfdwi, surfws,                      &
+     dtaout,                                      &
      !ag (27Apr2020)
      !urban drainage variables/parameters
-     flowtype,drvel,drtotwth,drrad,drman,drslp,&
-     drtotlgh,drnoutlet,drstomax,drout,drsto,&
+     flowtype, drvel, drtotwth, drrad, drman, drslp, &
+     drtotlgh, drnoutlet, drstomax, drout, drsto, &
      !ag(25feb2023)
      !levee parameters
-     levhgt,levstomax,fldonlystomax,fldstoatlev)
+     levhgt, levstomax, fldonlystomax, fldstoatlev)
 
   use HYMAP3_modelMod
   use HYMAP3_routingMod
@@ -101,14 +101,6 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss, &
   real,    intent(out)   :: fldfrc(nseqall)       !area fraction [-]
   real,    intent(out)   :: fldare(nseqall)       !flooded area [m2]
   real,    intent(out)   :: sfcelv(nseqall)       !water surface elevation [m]
-
-  real                   :: evpdif(nseqall)
-  real                   :: rivout0(nseqall)       !adaptive time step river outflow  [m3/s]
-  real                   :: rivvel0(nseqall)       !adaptive time step river flow velocity  [m/s]
-  real                   :: fldout0(nseqall)       !adaptive time step floodplain outflow  [m3/s]
-  real                   :: fldvel0(nseqall)       !adaptive time step floodplain flow velocity  [m/s]
-  real                   :: evpout0(nseqall)       !adaptive time step evaporation from open waters  [mm]
-
   ! Local inertia variables
   real,    intent(inout) :: rivout_pre(nseqall)   !previous river outflow [m3/s]
   real,    intent(inout) :: rivdph_pre(nseqall)   !previous river depth [m]
@@ -120,11 +112,7 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss, &
   !ag (19Jan2016)
   !Adaptive time step
   integer, intent(in)    :: steptype            !time step type: 0 - constant time step; 1 - adaptive time step
-  integer                :: nt(nseqall)         !local number of time steps (>=1 if adaptive time step is active)
-  real                   :: dta(nseqall)        !local time step [s] (<=dt if adaptive time step is active)
   real,    intent(inout) :: dtaout(nseqall)     !minimum local time step [s] (<=dt if adaptive time step is active)
-  integer                :: it
-
   !Reservoir operation
   integer, intent(in)    :: resopflag
 
@@ -137,6 +125,36 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss, &
   real,    intent(in)    :: rnfdwi_ratio(nseqall) !deep water infiltration ratio from surface runoff [-]
   real,    intent(inout) :: bsfdwi(nseqall)       !deep water infiltration from baseflow [mm.idt-1]
   real,    intent(inout) :: rnfdwi(nseqall)       !deep water infiltration from surface runoff [mm.idt-1]
+  !ag (27Apr2020)
+  !urban drainage variables/parameters
+  integer, intent(in)  :: flowtype     !urban drainage flag: 0 - do not compute ; or 1 - compute urban drainage
+  real,    intent(in)  :: drvel
+  real,    intent(in)  :: drtotwth(nseqall)
+  real,    intent(in)  :: drrad
+  real,    intent(in)  :: drman
+  real,    intent(in)  :: drslp
+  real,    intent(in)  :: drtotlgh(nseqall)
+  real,    intent(in)  :: drnoutlet(nseqall)
+  real,    intent(in)  :: drstomax(nseqall)    !maximum urban drainage water storage capacity [m3]
+  real,    intent(inout)    :: drsto(nseqall)   !urban drainage water storage [m3]
+  real,    intent(inout)    :: drout(nseqall)   !urban drainage outflow [m3/s]
+  !ag(25feb2023)
+  !levee parameters
+  real,    intent(in)  :: levhgt(nseqall)
+  real,    intent(in)  :: levstomax(nseqall)
+  real,    intent(in)  :: fldonlystomax(nseqall,nz)
+  real,    intent(in)  :: fldstoatlev(nseqall)
+
+  real                   :: evpdif(nseqall)
+  real                   :: rivout0(nseqall)       !adaptive time step river outflow  [m3/s]
+  real                   :: rivvel0(nseqall)       !adaptive time step river flow velocity  [m/s]
+  real                   :: fldout0(nseqall)       !adaptive time step floodplain outflow  [m3/s]
+  real                   :: fldvel0(nseqall)       !adaptive time step floodplain flow velocity  [m/s]
+  real                   :: evpout0(nseqall)       !adaptive time step evaporation from open waters  [mm]
+  integer                :: nt(nseqall)         !local number of time steps (>=1 if adaptive time step is active)
+  real                   :: dta(nseqall)        !local time step [s] (<=dt if adaptive time step is active)
+
+  integer                :: it
 
   !local variables
   real*8                   :: time                !current time
@@ -152,28 +170,6 @@ subroutine HYMAP3_model(n,mis,nx,ny,yr,mo,da,hr,mn,ss, &
 
   !ag(03Jun2020)
   real*8                 :: stommps
-
-  !ag (27Apr2020)
-  !urban drainage variables/parameters
-  integer, intent(in)  :: flowtype     !urban drainage flag: 0 - do not compute ; or 1 - compute urban drainage
-  real,    intent(in)  :: drvel
-  real,    intent(in)  :: drtotwth(nseqall)
-  real,    intent(in)  :: drrad
-  real,    intent(in)  :: drman
-  real,    intent(in)  :: drslp
-  real,    intent(in)  :: drtotlgh(nseqall)
-  real,    intent(in)  :: drnoutlet(nseqall)
-  real,    intent(in)  :: drstomax(nseqall)    !maximum urban drainage water storage capacity [m3]
-  real,    intent(inout)    :: drsto(nseqall)   !urban drainage water storage [m3]
-  real,    intent(inout)    :: drout(nseqall)   !urban drainage outflow [m3/s]
-
-
-  !ag(25feb2023)
-  !levee parameters
-  real,    intent(in)  :: levhgt(nseqall)
-  real,    intent(in)  :: levstomax(nseqall)
-  real,    intent(in)  :: fldonlystomax(nseqall,nz)
-  real,    intent(in)  :: fldstoatlev(nseqall)
 
   external :: HYMAP3_model_core
 
