@@ -16,7 +16,7 @@
 # SCRIPT: temporal_aggregate.py
 #
 # PURPOSE: Read daily S2S CF-convention netCDF files, calculate monthly
-# averages and accumulations, and write to new CF-convention netCDF file.
+# averages and accumulations, and write to new CF-convention netCF file.
 # This version uses xarray for improved performance over netCDF4.
 #
 # REQUIREMENTS as of 2025:
@@ -41,6 +41,7 @@ import yaml
 # Third-party libraries
 import xarray as xr
 import numpy as np
+from ghis2s.shared.utils import write_ncfile, load_ncdata
 
 # Private methods - keep unchanged utility functions
 def _usage():
@@ -190,7 +191,6 @@ def create_time_aggregated_s2s_filename(output_dir, fcstdate, startdate, enddate
     _check_filename_size(name)
     return name
 
-# New xarray-based functions replacing the netCDF4 versions
 def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdate, startdate,
                                         enddate, model_forcing, config, logger, subtask):
     """
@@ -257,47 +257,46 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     ds_first.close()
     
     # Now open all files for time-varying variables only
-    try:
-        # Only open variables that have time dimension
-        time_varying_vars = acc_vars + tavg_vars
-        
-        # Open with data_vars parameter to only load specific variables
-        ds_all = xr.open_mfdataset(
-            daily_files,
-            concat_dim='time',
-            combine='nested',
-            compat='override',
-            coords='minimal',
-            parallel=True,
-            data_vars=time_varying_vars  # Only load time-varying variables
-        )
-    except Exception as e:
-        logger.error(f"Failed to open multiple files: {e}", subtask=subtask)
-        return None
+    time_varying_vars = acc_vars + tavg_vars
+    ds_all = load_ncdata(daily_files, [logger, subtask],
+                         **dict(concat_dim='time',
+                                combine='nested',
+                                compat='override',
+                                coords='minimal',
+                                parallel=True,
+                                data_vars=time_varying_vars ,  
+                                decode_cf=False))
     
     # Process accumulation variables (sum over time)
     for var in acc_vars:
         if var in ds_all:
-            monthly_ds[var] = ds_all[var].sum(dim='time', keepdims=True)
+            logger.info(f"Processing accumulation variable: {var}", subtask=subtask)
+            data = ds_all[var]
+            ocean_mask = (data == -9999).any(dim='time')
+            data_for_sum = data.where(data != -9999, 0)
+            summed = data_for_sum.sum(dim='time', keepdims=True, keep_attrs=True)
+            if 'time' not in ocean_mask.dims:
+                ocean_mask = ocean_mask.expand_dims(dim='time', axis=data.get_axis_num('time'))
+            result = summed.where(~ocean_mask, -9999)
+            monthly_ds[var] = result
         else:
             logger.error(f"Variable {var} not found in files", subtask=subtask)
     
     # Process time-average variables (mean over time)
     for var in tavg_vars:
         if var in ds_all:
-            monthly_ds[var] = ds_all[var].mean(dim='time', keepdims=True)
+            monthly_ds[var] = ds_all[var].mean(dim='time', keepdims=True, keep_attrs=True)
         else:
             logger.error(f"Variable {var} not found in files", subtask=subtask)
         
     # Convert date to datetime and then to the right format for netCDF
     end_datetime = datetime.datetime.combine(enddate, datetime.time())
     
-    # Create time coordinate as a number (following the original files' approach)
     # Use the same reference time as the daily files
     reference_time = datetime.datetime.combine(startdate, datetime.time())
     
     # Calculate minutes since start date
-    time_value = [(end_datetime - reference_time).total_seconds() / 60.0]
+    time_value = [float(np.float32((end_datetime - reference_time).total_seconds() / 60.0))]
     
     monthly_ds = monthly_ds.assign_coords({
         'time': xr.DataArray(
@@ -320,13 +319,13 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     
     # Create time bounds for the monthly period
     days_in_month = (enddate - startdate).days
-    time_bnds_data = [[0, days_in_month * 24 * 60]]  # Start to end in minutes
+    time_bnds_data = [[0, days_in_month * 24 * 60]]  
     monthly_ds['time_bnds'] = xr.DataArray(
         time_bnds_data,
         dims=['time', 'nv'],
         coords={'time': monthly_ds.time}
     )
-    
+
     # Update cell methods for different variable types
     _update_cell_methods_xarray(monthly_ds, varlists)
     
@@ -334,6 +333,12 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     monthly_ds.attrs['history'] = f"created on date: {time.ctime()}"
     
     # Define encoding for efficient writing
+    for var in monthly_ds.data_vars:
+        if var == 'Streamflow_tavg':
+            del monthly_ds[var].attrs['standard_name']
+            monthly_ds[var].attrs['standard_name'] = "water_volume_transport_in_river_channel"
+        if '_FillValue' in monthly_ds[var].attrs:
+            del monthly_ds[var].attrs['_FillValue']
     encoding = {}
     
     # Handle coordinates and data variables
@@ -346,23 +351,25 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
         elif var == 'time_bnds':
             encoding[var] = {'dtype': 'float32', 'zlib': True, 'complevel': 6}
         elif var in monthly_ds.data_vars and monthly_ds[var].dtype == 'float64':
+            monthly_ds[var].attrs['add_offset'] = 0.0
+            monthly_ds[var].attrs['scale_factor'] = 1.0
+            monthly_ds[var].attrs['missing_value'] = -9999.            
             encoding[var] = {'dtype': 'float32', 'zlib': True, 'complevel': 6, 'shuffle': True, '_FillValue': -9999.0}
+            
+        elif var == 'atime':
+            encoding[var] = {'dtype': 'float64', 'zlib': True, 'complevel': 6, '_FillValue': -9999.0}
         elif var in monthly_ds.data_vars:
             encoding[var] = {'zlib': True, 'complevel': 6, 'shuffle': True, '_FillValue': -9999.0}
-    
+        
     # Write output file
     outfile = create_time_aggregated_s2s_filename(output_dir, fcstdate, startdate,
                                          enddate, model_forcing, config["EXP"]["DOMAIN"])
+
+    logger.info(f"Writing: {outfile}", subtask=subtask)
+    write_ncfile(monthly_ds, outfile, encoding, [logger, subtask])
     
-    try:
-        monthly_ds.to_netcdf(outfile, format='NETCDF4', encoding=encoding)
-    except Exception as e:
-        logger.error(f"Failed to write output file: {e}", subtask=subtask)
-        return None
-    finally:
-        # Clean up
-        ds_all.close()
-        monthly_ds.close()
+    ds_all.close()
+    monthly_ds.close()
     
     return outfile
 
@@ -409,7 +416,7 @@ def agg_driver(argv, logger, subtask):
     )
         
     if outfile:
-        logger.info(f'Temporal aggregation complete: {outfile}', subtask=subtask)
+        logger.info(f'Temporal aggregation complete SUCCESS !', subtask=subtask)
     else:
         logger.error(f"Temporal aggregation failed", subtask=subtask)
         sys.exit(1)

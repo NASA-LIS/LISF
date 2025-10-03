@@ -13,11 +13,10 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: forecast_task_08.py
+# SCRIPT: metforce_biascorrection.py
 #
-# PURPOSE: Generate bias-corrected 6-hourly nmme forecasts using raw monthly
-# forecasts, bias-corrected monthly forecasts and raw 6-hourly forecasts. Based
-# on FORECAST_TASK_08.sh.
+# PURPOSE: Computes the bias correction for the forecast (CFSv2) dataset. Based
+# on FORECAST_TASK_04.sh.
 #
 # REVISION HISTORY:
 # 24 Oct 2021: Ryan Zamora, first version
@@ -28,8 +27,6 @@
 #
 # Standard modules
 #
-
-import os
 import sys
 import argparse
 import yaml
@@ -40,31 +37,33 @@ from ghis2s.shared import utils
 
 def _usage():
     """Print command line usage."""
-    txt = f"[INFO] Usage: {(sys.argv[0])} -s fcst_syr -e fcst_eyr -m month_abbr \
-             -w cwd -n month_num -c config_file -j job_name -t ntasks -H hours -M NMME_MODEL"
+    txt = f"[INFO] Usage: {(sys.argv[0])}  -s fcst_syr -e fcst_eyr -m month_abbr -n month_num \
+                           -w cwd - c config_file -j job_name -t ntasks -H hours"
     print(txt)
     print("[INFO] where")
     print("[INFO] fcst_syr: Start year of forecast")
     print("[INFO] fcst_eyr: End year of forecast")
-    print("[INFO] month_abbr: Abbreviation of the initialization month")
-    print("[INFO] month_num: Integer number of the initialization month")
-    print("[INFO] nmme_model: NMME model name")
+    print("[INFO] month_abbr: Abbreviated month to start forecast")
+    print("[INFO] cwd: current working directory")
     print("[INFO] config_file: Config file that sets up environment")
     print("[INFO] job_name: SLURM job_name")
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
-         job_name, ntasks, hours, cwd, projdir, nmme_model, py_call=False):
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd, py_call=False):
     """Main driver."""
-
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    # get resolution
+    # Base forecast model
+    fcst_model = config['BCSD']['fcst_data_type']
+    
     lats, lons = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
+    
+    # Path of the main project directory
+    projdir = cwd
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
@@ -72,66 +71,67 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     # Path of the directory where supplementary files are kept
     supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 
-    # domain
-    domain = config['EXP']['DOMAIN']
-
     lead_months = config['EXP']['lead_months']
-    datatype = config['SETUP']['DATATYPE']
-    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
-    ens_num = ensemble_sizes[nmme_model]
+    ens_num = config['BCSD']['nof_raw_ens']
+    clim_syr = config['BCSD']['clim_start_year']
+    clim_eyr = config['BCSD']['clim_end_year']
 
-    # Path for where forecast files are located:
-    cfsv2dir = f"{projdir}/bcsd_fcst/CFSv2_{resol}/"
-    forcedir = f"{projdir}/bcsd_fcst/NMME"
+    # Path for where observational & forecast files are located:
+    forcedir = f"{projdir}/bcsd_fcst"
+    obs_indir = f"{forcedir}/USAF-LIS7.3rc8_25km"
+    fcst_indir = f"{forcedir}/{fcst_model}_{resol}"
 
     #  Calculate bias correction for different variables separately:
-    obs_var = "PRECTOT"
-    fcst_var = "PRECTOT"
-    unit = "kg/m^2/s"
-    var_type = 'PRCP'
+    #obs_var_list = ["Rainf_f_tavg", "LWdown_f_tavg", "SWdown_f_tavg", \
+    #    "Psurf_f_tavg", "Qair_f_tavg", "Tair_f_tavg", "Wind_f_tavg"]
+    obs_var_list = ["PRECTOT", "LWGAB", "SWGDN", \
+        "PS", "QV2M", "T2M", "U10M"]
+    fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
+    unit_list = ["kg/m^2/s", "W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
-    # Path for where forecast and bias corrected files are located:
-    subdaily_raw_fcst_dir = f"{cfsv2dir}/raw/6-Hourly/{month_abbr}01"
-    monthly_raw_fcst_dir = f"{forcedir}/raw/Monthly/{month_abbr}01"
-    monthly_bc_fcst_dir = f"{forcedir}/bcsd/Monthly/{month_abbr}01"
+    # BC output directory for FCST:
+    outdir = f"{fcst_indir}/bcsd/Monthly/{month_abbr}01"
 
-    #outdir = f"{forcedir}/bcsd/6-Hourly/{month_abbr}01/{nmme_model}"
-    outdir = f"{forcedir}/final/6-Hourly/{nmme_model}/{month_abbr}01/"
-
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-
-    print("[INFO] Processing temporal disaggregation of CFSv2 variables")
+    print("[INFO] Processing forecast bias correction of CFSv2 variables")
 
     slurm_commands = []
-    for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
+#    for var_num in range(len(obs_var_list)):
+    for var_num, var_value in enumerate(obs_var_list):
+        if var_num in [0, 2]:
+            var_type = "PRCP"
+        else:
+            var_type = "TEMP"
+
+        obs_var = var_value
+        fcst_var = fcst_var_list[var_num]
+        unit = unit_list[var_num]
+        #print(f"{var_num} {fcst_var}")
         cmd = "python"
-        cmd += f" {srcdir}/temporal_disaggregation_nmme_6hourly_module.py"
+        cmd += f" {srcdir}/bias_correction_modulefast.py"
         cmd += f" {obs_var}"
         cmd += f" {fcst_var}"
-        cmd += f" {year}"
-        cmd += f" {month_num}"
         cmd += f" {var_type}"
         cmd += f" {unit}"
-        cmd += f" {nmme_model}"
-        cmd += f" {ens_num}"
+        cmd += f" {month_num}"
         cmd += f" {lead_months}"
-        cmd += f" {year}"
-        cmd += f" {year}"
+        cmd += f" {ens_num}"
+        cmd += f" {fcst_syr}"
+        cmd += f" {fcst_eyr}"
+        cmd += f" {clim_syr}"
+        cmd += f" {clim_eyr}"
+        cmd += f" {obs_indir}"
+        cmd += f" {fcst_indir}"
         cmd += f" {config_file}"
-        cmd += f" {monthly_bc_fcst_dir}"
-        cmd += f" {subdaily_raw_fcst_dir}"
         cmd += f" {outdir}"
-        cmd += f" {domain}"
-        jobfile = job_name + '_' + nmme_model + '_run.j'
-        jobname = job_name + '_' + nmme_model + '_'
+        jobfile = job_name + '_' + obs_var + '_run.j'
+        jobname = job_name + '_' + obs_var + '_'
 
         if py_call:
             slurm_commands.append(cmd)
-        else:
+        else:            
             utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
-    print(f"[INFO] Wrote NMME temporal disaggregation script for: {month_abbr}")
+    print(f"[INFO] Completed writing forecast bias correction scripts for: {month_abbr}")
     if py_call:
         return slurm_commands
 #
@@ -148,10 +148,8 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
     parser.add_argument('-H', '--hours', required=True, help='hours')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-    parser.add_argument('-M', '--nmme_model', required=True, help='NMME Model')
-    parser.add_argument('-p', '--project_directory', required=True, help='Project (E2ES) directory')
 
     args = parser.parse_args()
 
     main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
-         args.job_name, args.ntasks, args.hours, args.cwd, args.args.project_directory, nmme_model)
+         args.job_name, args.ntasks, args.hours, args.cwd)

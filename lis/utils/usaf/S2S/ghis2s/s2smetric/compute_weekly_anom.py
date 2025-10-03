@@ -12,6 +12,7 @@ from concurrent.futures import ProcessPoolExecutor
 from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
                         LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
 from ghis2s.shared.logging_utils import TaskLogger
+from ghis2s.shared.utils import write_ncfile, load_ncdata
 # pylint: enable=import-error
 # pylint: disable=consider-using-f-string
 
@@ -71,7 +72,7 @@ if CONFIG['SETUP']['DATATYPE'] == 'hindcast':
                                                  DOMAIN_NAME, FCST_INIT_MON, curdate.month, curdate.day,
                                                  enddate.month, enddate.day)
             curdate += relativedelta(days=7)
-            enddate += relativedelta(days=7)
+            enddate += relativedelta(days=7)            
             print(INFILE)
             week_xr = xr.open_mfdataset(INFILE, combine='by_coords')
             mean_xr.append(week_xr.mean(dim = ['time','ensemble']))
@@ -158,13 +159,12 @@ def process_variable(var_name, ANOM):
                                                   enddate.year, enddate.month, enddate.day)
         curdate += relativedelta(days=7)
         enddate += relativedelta(days=7)
-        fcst_xr = xr.open_dataset(fcst_file)
+        logger.info(f"Reading target {fcst_file}", subtask=var_name)
+        fcst_xr = load_ncdata(fcst_file, [logger, var_name])
         fcst_data = sel_var(fcst_xr, var_name, HYD_MODEL)
         mean_data = sel_var(mean_xr.isel(lead_time=lead), var_name, HYD_MODEL)
         std_data = sel_var(std_xr.isel(lead_time=lead), var_name, HYD_MODEL)
 
-        logger.info(f"Reading target {fcst_file}", subtask=var_name)
-        
         # Initialize the anomaly array on first lead
         if lead == 0:
             ens_count = fcst_xr.sizes['ensemble']
@@ -199,8 +199,8 @@ def process_variable(var_name, ANOM):
             
         for ens in range(ens_count):
             all_anom[ens, lead, :, :] = this_anom [:,:,ens,0]
-            lats = np.array(fcst_xr.lat.values)
-            lons = np.array(fcst_xr.lon.values)
+            lats = np.array(fcst_xr.lat.values, dtype=np.float64)
+            lons = np.array(fcst_xr.lon.values, dtype=np.float64)
         del fcst_xr
     
     ### Step-4 Writing output file
@@ -263,7 +263,7 @@ with ProcessPoolExecutor(max_workers=num_workers) as executor:
             result = future.result()
             datasets.append(result)
         except Exception as e:
-            logger.error(f"Failed processing for {var_name}: {str(e)}", subtask=var_name)
+            logger.error(f"Failed processing for {var_name}: {str(e)}")
         
 
 # Merge all datasets
@@ -272,5 +272,5 @@ encoding = {var: comp for var in merged_dataset.data_vars}
 
 # Write the merged dataset to a single file
 logger.info(f"Writing merged output to {OUTFILE}")
-merged_dataset.to_netcdf(OUTFILE, format="NETCDF4", encoding=encoding)
-logger.info(f"Processing {NMME_MODEL} completed successfully")
+write_ncfile(merged_dataset, OUTFILE, encoding, [logger, ''])
+

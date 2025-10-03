@@ -1,1 +1,1 @@
-from . import s2smetric_main
+from . import s2smetric_driver

@@ -50,9 +50,9 @@ import sys
 # written in Python.  We therefore disable a check for this line to avoid a
 # known false alarm.
 # pylint: disable=no-name-in-module, too-many-branches, too-many-statements, too-many-locals
-from netCDF4 import Dataset as nc4_dataset
 import numpy as np
 import yaml
+from ghis2s.shared.utils import write_ncfile, load_ncdata
 
 # pylint: enable=no-name-in-module
 
@@ -82,7 +82,7 @@ def create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
         sys.exit(1)
     return name
 
-def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date, logger, subtask):
+def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date, curdate, logger, subtask):
     """Copy LDT, NoahMP and HYMAP2 fields into same file using xarray."""
     
     # Define dimension mapping
@@ -141,9 +141,9 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
     }
     
     # Open datasets with xarray
-    ds_noahmp = xr.open_dataset(noahmp_file)
-    ds_hymap2 = xr.open_dataset(hymap2_file)
-    ds_ldt = xr.open_dataset(ldtfile)
+    ds_noahmp = load_ncdata(noahmp_file, [logger, subtask])
+    ds_hymap2 = load_ncdata(hymap2_file, [logger, subtask])
+    ds_ldt = load_ncdata(ldtfile, [logger, subtask])
         
     def safe_rename_dims(dataset, rename_dict):
         existing_dims = {k: v for k, v in rename_dict.items() if k in dataset.sizes}
@@ -299,9 +299,8 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
             coord_attrs.update({
                 "axis": "T",
                 "bounds": "time_bnds",
-                "begin_date": (fcst_date + datetime.timedelta(days=1)).strftime("%Y%m%d"),
-                "begin_time": "000000",
-                "long_name": "time",
+                "begin_date" : curdate.strftime("%Y%m%d"),
+                "begin_time" : "000000",
             })
                 
         elif coord_name == "lat":
@@ -309,7 +308,7 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
                 "axis": "Y",
                 "standard_name": "latitude",
                 "long_name": "latitude",
-                "units": "degrees_north",
+                "units": "degree_north",
                 "vmin": 0.0,
                 "vmax": 0.0
             })
@@ -319,7 +318,7 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
                 "axis": "X", 
                 "standard_name": "longitude",
                 "long_name": "longitude",
-                "units": "degrees_east",
+                "units": "degree_east",
                 "vmin": 0.0,
                 "vmax": 0.0
             })
@@ -349,7 +348,11 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
         for attr in encoding_related:
             if attr in var_attrs:
                 del var_attrs[attr]
-        
+
+        # unitless variables
+        if var_name in ['FloodedFrac_tavg', 'Greenness_inst', 'Landmask_inst', 'RelSMC_tavg']:
+            var_attrs["units"] = "1"
+            
         # Set missing_value for data variables (but let encoding handle _FillValue)
         if var_name not in ['atime', ]:
             var_attrs['missing_value'] = -9999.0
@@ -440,10 +443,6 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
     for var in special_data_vars:
         if var in merged_ds:
             encoding[var] = {'_FillValue': None}
-            #if var == 'soil_layer':
-            #    encoding[var]['dtype'] = 'int32'
-            #elif var in ['soil_layer_thickness', 'time_bnds']:
-            #    encoding[var]['dtype'] = 'float32'
             # Remove any existing _FillValue and missing_value from attributes
             if '_FillValue' in merged_ds[var].attrs:
                 del merged_ds[var].attrs['_FillValue']
@@ -464,15 +463,13 @@ def merge_files_xarray(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date,
             merged_ds[var].attrs['add_offset'] = 0.0
             merged_ds[var].attrs['scale_factor'] = 1.0
 
-    try:
-        merged_ds.to_netcdf(merge_file, format='NETCDF4', encoding=encoding)
-    except Exception as e:
-        logger.error(f"Error saving file: {e}", subtask=subtask)
-        raise
-    finally:
-        ds_noahmp.close()
-        ds_hymap2.close() 
-        ds_ldt.close()
+    logger.info(f"Writing: {merge_file}", subtask=subtask)
+    write_ncfile(merged_ds, merge_file, encoding, [logger, subtask])
+
+    ds_noahmp.close()
+    ds_hymap2.close() 
+    ds_ldt.close()
+    merged_ds.close()
 
     return
 

@@ -35,6 +35,7 @@ from concurrent.futures import ProcessPoolExecutor
 from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
                         LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
 from ghis2s.shared.logging_utils import TaskLogger
+from ghis2s.shared.utils import write_ncfile, load_ncdata
 
 # pylint: enable=import-error
 # pylint: disable=consider-using-f-string
@@ -126,7 +127,7 @@ def process_variable(var_name, METRIC_NAME):
 
         # First reading all available years for the given
         # forecast initialization month
-        all_clim_data1 = xr.open_mfdataset(infile1, combine='by_coords')
+        all_clim_data1 = load_ncdata(infile1, [logger, var_name], **dict(combine='by_coords'))
 
         # Now selecting only the years that are within the climatology
         sel_cim_data = all_clim_data1.sel(time= \
@@ -158,7 +159,7 @@ def process_variable(var_name, METRIC_NAME):
         logger.info(f"Reading target {INFILE}", subtask=var_name)
         
         # Note target will always have only one time step
-        target_data = xr.open_mfdataset(INFILE, combine='by_coords')
+        target_data = load_ncdata(INFILE, [logger, var_name], **dict(combine='by_coords'))
 
         ## Now selecting the desired variable
         target_fcst_data = sel_var(target_data, var_name, HYD_MODEL)
@@ -176,7 +177,7 @@ def process_variable(var_name, METRIC_NAME):
         ## so if the target_FORECASTS have 4 members there will be
         ## 4 members in anomaly output and so on.
         if lead == 0:
-            all_anom = np.ones((ens_count, LEAD_NUM, lat_count, lon_count))*-9999
+            all_anom = np.ones((ens_count, LEAD_NUM, lat_count, lon_count))*-9999.
             
         logger.info('Converting data into anomaly', subtask=var_name)    
         all_clim_mean = all_clim_data.mean (dim = ['time','ensemble'], skipna = True)
@@ -289,16 +290,16 @@ with ProcessPoolExecutor(max_workers=num_workers) as executor:
             result = future.result()
             datasets.append(result)
         except Exception as e:
-            logger.error(f"Failed processing for {var_name}: {str(e)}", subtask=var_name)
+            logger.error(f"Failed processing : {str(e)}")
 
 # Merge all datasets
 logger.info("Merging all datasets")
 merged_dataset = xr.merge(datasets)
-comp = dict(zlib=True, complevel=6, shuffle=True, missing_value= -9999., _FillValue= -9999.)
+comp = dict(zlib=True, complevel=6, shuffle=True, _FillValue= -9999.)
 encoding = {var: comp for var in merged_dataset.data_vars}
 
 # Write the merged dataset to a single file
 logger.info(f"Writing merged output to {OUTFILE}")
-merged_dataset.to_netcdf(OUTFILE, format="NETCDF4", encoding=encoding)
-logger.info(f"Processing {NMME_MODEL} completed successfully")
+write_ncfile(merged_dataset, OUTFILE, encoding, [logger, ''])
+
 

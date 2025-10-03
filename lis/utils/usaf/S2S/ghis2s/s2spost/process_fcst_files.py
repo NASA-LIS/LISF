@@ -168,7 +168,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
         logger.info(f's2spost/merge_lisf_files.py processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}',
                     subtask=subtask)
         try:
-            merge_files_xarray(ldtfile, noahmp_file, hymap_file, merge_file, fcstdate, logger, subtask)
+            merge_files_xarray(ldtfile, noahmp_file, hymap_file, merge_file, fcstdate, curdate, logger, subtask)
             logger.info(f'Merged file: {merge_file}', subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
         except Exception as e:
             logger.error(f"Failed processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}: {str(e)}", 
@@ -214,7 +214,7 @@ def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model
     argv.append(f"{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}")
     argv.append(model_forcing)
     subtask = f'{model_forcing} {startdate.year:04d}{startdate.month:02d}'
-    logger.info(f's2spost/temporal_aggregate.py processing {firstdate.year:04d}{firstdate.month:02d}-{enddate.year:04d}{enddate.month:02d}', subtask=subtask)
+    logger.info(f's2spost/temporal_aggregate.py processing {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}', subtask=subtask)
     agg_driver(argv, logger, subtask)
 
 def _driver():

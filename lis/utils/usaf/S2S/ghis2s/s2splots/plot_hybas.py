@@ -67,7 +67,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         levels = plot_utils.dicts('anom_levels', 'standardized')
 
     # READ ANOMALIES
-    anom = get_anom(data_dir, var_name, metric)
+    anom = get_anom(data_dir, var_name, metric, [logger,''])
     anom_crop = plot_utils.crop(boundary, anom)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
@@ -76,7 +76,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         plot_arr[i,:,:] = np.where(hybas_mask > 0, plot_arr[i,:,:],-9999.)
 
     figure = figure_template.format(plotdir, region, var_name)
-
+    logger.info(f"Plotting {figure}")
     titles = []
     for lead in lead_month:
         fcast_month = smonth+lead

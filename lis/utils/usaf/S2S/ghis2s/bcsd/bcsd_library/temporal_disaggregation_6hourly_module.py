@@ -23,7 +23,7 @@ from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
-from ghis2s.shared.utils import get_domain_info
+from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
@@ -32,10 +32,10 @@ limits = lim()
 
 CF2VAR = {
     'PRECTOT': 'PRECTOT',
-    'LWGAB': 'LWS',
-    'SWGDN': 'SLRSF',
+    'LWGAB': 'LWGAB',
+    'SWGDN': 'SWGDN',
     'PS': 'PS',
-    'QV2M':'Q2M',
+    'QV2M':'QV2M',
     'T2M': 'T2M',
     'U10M': 'WIND',
     'WIND10M': 'WIND',
@@ -163,7 +163,7 @@ def process_ensemble(MON, ens):
     
     logger.info(f"Reading bias corrected monthly forecasts {ens} {BC_INFILE}", subtask=task_label)
 
-    MON_BC_DATAG = xr.open_dataset(BC_INFILE)
+    MON_BC_DATAG = load_ncdata(BC_INFILE, [logger, task_label])
 
     LONS = MON_BC_DATAG['longitude'].values
     LATS = MON_BC_DATAG['latitude'].values
@@ -204,7 +204,8 @@ def process_ensemble(MON, ens):
             MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
             FCST_YEAR, FCST_MONTH)
         logger.info(f"Reading raw monthly forecast {MONTHLY_INFILE}", subtask=task_label)
-        MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(MONTHLY_INFILE)
+        MONTHLY_INPUT_RAW_DATAG = load_ncdata(MONTHLY_INFILE, [logger, task_label])
+        
         MONTHLY_INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),
                                                              lat=slice(LAT1,LAT2))
         MONTHLY_INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATA[FCST_VAR][:,:]
@@ -214,7 +215,7 @@ def process_ensemble(MON, ens):
         SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
         FCST_YEAR, FCST_MONTH)
         logger.info(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}", subtask=task_label)
-        INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
+        INPUT_RAW_DATAG = load_ncdata(SUBDAILY_INFILE, [logger, task_label])
         INPUT_RAW_DATA = INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
 
         # Bias corrected monthly value

@@ -31,7 +31,7 @@ class TaskLogger:
         # Clean task name (remove .j if present)
         self.task_name = task_name.replace('.j', '') if task_name.endswith('.j') else task_name
         pid = os.getpid()
-        self.log_file = f"{log_dir}/{self.task_name}_{pid}.log"  
+        self.log_file = f"{log_dir}/logs/{self.task_name}_{pid}.log"  
 
         # Create file and write header
         with open(self.log_file, 'w') as f:
@@ -227,7 +227,7 @@ class GHIS2SLogger:
                 subdir = task_info.get('subdir', '')
 
                 task_dir = self.scratch_path / subdir
-                log_pattern = str(task_dir / f"{task_name}*.log")
+                log_pattern = str(task_dir / f"logs/{task_name}*.log")
                 matching_logs = glob.glob(log_pattern)
 
                 # Add found log files in the schedule order

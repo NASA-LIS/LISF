@@ -62,7 +62,8 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     under_over = ['gray', 'blue']
 
     # READ ANOMALIES
-    anom = get_anom(data_dir, var_name, metric)
+    logger.info(f"Plotting {var_name} SANOM", subtask=region)        
+    anom = get_anom(data_dir, var_name, metric, [logger, region])
     anom_crop = plot_utils.crop(boundary, anom)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
@@ -71,7 +72,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         plot_arr[i,:,:] = np.where(hymap_mask >= 1.0e9, plot_arr[i,:,:],-9999.)
 
     figure = figure_template.format(plotdir, region, var_name)
-
+    logger.info(f"Figure {figure}", subtask=region)       
     titles = []
     for lead in lead_month:
         fcast_month = smonth+lead
@@ -124,7 +125,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
-            ldt = xr.open_mfdataset(ldtfile)
+            ldt = xr.open_dataset(ldtfile)
             ldt_crop = plot_utils.crop(domain, ldt)
             mask = ldt_crop.HYMAP_drain_area.values
 
@@ -146,7 +147,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
-        anom = get_anom(data_dir, var_name, metric)
+        anom = get_anom(data_dir, var_name, metric, [logger, region])
         anom_crop = plot_utils.crop(domain, anom)
         median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
@@ -162,6 +163,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
 
         plot_arr = median_anom[lead_month, ]
         figure = figure_template.format(plotdir, region, var_name)
+        logger.info(f"Figure: {figure}", subtask=region)  
         titles = []
         for lead in lead_month:
             if var_name == 'Streamflow':
@@ -207,10 +209,10 @@ def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, region):
 
     ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
         config['SETUP']['ldtinputfile']
-    ldt = xr.open_mfdataset(ldtfile)
+    ldt = xr.open_dataset(ldtfile)
     ldt_crop = plot_utils.crop(boundary, ldt)
     hymap_mask = ldt_crop.HYMAP_drain_area.values
-
+    
     plot_anoms_basin(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
                downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],
                      cum_area[vmask], boundary, region, google_path, hymap_mask)

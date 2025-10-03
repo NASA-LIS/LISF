@@ -3,6 +3,7 @@ import sys
 import glob
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
+import xarray as xr
 import subprocess
 import re
 import threading
@@ -15,8 +16,8 @@ import argparse
 from ghis2s.s2s_app import s2s_api
 from ghis2s.shared import utils, logging_utils
 from ghis2s.lis_fcst import generate_lis_config_scriptfiles_fcst
-from ghis2s.s2spost import s2spost_main
-from ghis2s.s2smetric import s2smetric_main
+from ghis2s.s2spost import s2spost_driver
+from ghis2s.s2smetric import s2smetric_driver
 from ghis2s import bcsd
 from ghis2s.shared.logging_utils import TaskLogger
 
@@ -103,59 +104,53 @@ class DownloadForecasts():
 
     def NMME_file_checker(self):
         """ Checks NMME forecast files availability """
-        Mmm = datetime(int(self.year), int(self.month), 1).strftime("%b")
-        prec_files = glob.glob(f"{self.NMME_RAWDIR}/*/*{Mmm}.{self.year}.nc")
-        print("[INFO] Current NMME files present: ")
-        for file in prec_files:
-            print(file)
-
-        with open(self.E2ESDIR + self.config_file, 'r') as f:
-            config_lines = f.readlines()
-        
-        nmme_models = {
-            "CanSIPS-IC4": "GNEMO52, CanESM5",
-            "COLA-RSMAS-CESM1": "CESM1",
-            "GFDL-SPEAR": "GFDL",
-            "NASA-GEOSS2S": "GEOSv2",
-            "NCEP-CFSv2": "CFSv2"
+        print(" ")
+        print("==================================================================================================")
+        print(" NMME Precip file checker.......")
+        print("==================================================================================================")
+        nmme_path_dict = {
+            'CFSv2': ['NCEP-CFSv2','NCEP-CFSv2'],
+            'GEOSv2': ['NASA-GEOSS2S','NASA-GEOSS2S'],
+            'CCM4': ['CanSIPS-IC3','CanSIPS-IC3'],
+            'GNEMO5': ['CanSIPS-IC3','CanSIPS-IC3'],
+            'CanESM5': ['CanSIPS-IC4','CanESM5'],
+            'GNEMO52': ['CanSIPS-IC4', 'GEM5.2-NEMO'],
+            'CCSM4': ['COLA-RSMAS-CCSM4', 'COLA-RSMAS-CCSM4'],
+            'CESM1': ['COLA-RSMAS-CESM1', 'COLA-RSMAS-CESM1'],
+            'GFDL': ['GFDL-SPEAR', 'GFDL-SPEAR'],
         }
+        
+        Mmm = datetime(int(self.year), int(self.month), 1).strftime("%b")
+        MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 
+               'Sep', 'Oct', 'Nov', 'Dec']
+        INFILE_TEMP = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
 
-        have_model = "["
+        havenot_files = {}
+        
+        for model in self.MODELS:
+            nmme_path = nmme_path_dict[model]
+            INFILE = INFILE_TEMP.format(self.NMME_RAWDIR, nmme_path[0], nmme_path[1], MON[self.month-1], self.year)
+            if not os.path.exists(INFILE):
+                havenot_files[model] = INFILE
 
-        if len(prec_files) < 5:
-            print("[WARN] -- Some NMME model data may be missing or not available ... ")
-            command = f"bash {self.E2ESDIR}/s2s_app/download_nmme_precip.sh {self.YYYY} {Mmm} {self.E2ESDIR}/${self.config_file}"
-            process = subprocess.run(command, shell=True)
+        if len(havenot_files) > 0:
+            print("Following NMME precip files are missing:")
+            for key, value in havenot_files.items():
+                print(f"{key}: {value}")
+
+            print("  ")
+            print("Please download missing files before launching the forecast.")
+            print("Alternatively, if you wish to exclude them from the current forecast:")
+            print(f"      Remove {list(havenot_files.keys())} from NMME_models in")
+            print(f"      {self.config_file} and launch the forecast.")
             
-            prec_files = glob.glob(f"{self.NMME_RAWDIR}/*/*{Mmm}.{self.year}.nc")
-            print(" ... New NMME files downloaded: ")
-            for file in prec_files:
-                print(file)
+            sys.exit()
 
-            for dir in ["CanSIPS-IC4", "COLA-RSMAS-CESM1", "GFDL-SPEAR", "NASA-GEOSS2S", "NCEP-CFSv2"]:
-                fdown = f"{self.NMME_RAWDIR}/{dir}/prec.{dir}.mon_{Mmm}.{self.year}.nc"
-                if os.path.isfile(fdown) and os.path.getsize(fdown) > 0:
-                    have_model += f"{nmme_models[dir]}, "
-                else:
-                    if os.path.exists(fdown):
-                        os.remove(fdown)
-
-            have_model = have_model.rstrip(', ') + "]"
-
-            if len(have_model.split()) < 7:
-                navail = len(have_model.split()) - 1
-                print(f"\nPrecipitation forecasts are available for only {navail} NMME models ({have_model}).")
-                yesorno = input("Do you want to continue (Y/N)? ")
-
-                if yesorno.lower() == 'y':
-                    line2 = next(i for i, line in enumerate(config_lines) if 'NMME_models:' in line)
-                    new_line = f"  NMME_models: {have_model}\n"
-                    config_lines[line2] = new_line
-
-                    with open(self.E2ESDIR + self.config_file, 'w') as f:
-                        f.writelines(config_lines)
-                else:
-                    exit()
+        print("Found below NMME precipitation files:")
+        for model in self.MODELS:
+            nmme_path = nmme_path_dict[model]
+            INFILE = INFILE_TEMP.format(self.NMME_RAWDIR, nmme_path[0], nmme_path[1], MON[self.month-1], self.year)
+            print(f"{model}: {INFILE}")
 
     def CFSv2_download(self):
         """ download CFSv2 forecasts """
@@ -348,19 +343,20 @@ class S2Srun(DownloadForecasts):
         self.SCRDIR = self.E2ESDIR + 'scratch/' + self.YYYY + self.MM + '/'
         self.MODELS = self.config["EXP"]["NMME_models"]
         self.CONSTRAINT = self.config['SETUP']['CONSTRAINT']
+        self.FCST_MODEL = self.config['BCSD']['fcst_data_type']
         self.schedule = {}
         self.additional_env_vars = additional_env_vars
         
         if not os.path.exists(self.E2ESDIR + 'scratch/'):
             subprocess.run(["setfacl", "-R", "-m", "u::rwx,g::rwx,o::r", self.E2ESDIR], check=True)
 
-        os.makedirs(self.SCRDIR + '/lis_darun', exist_ok=True)
-        os.makedirs(self.SCRDIR + '/ldt_ics', exist_ok=True)
-        os.makedirs(self.SCRDIR + '/bcsd_fcst', exist_ok=True)
-        os.makedirs(self.SCRDIR + '/lis_fcst', exist_ok=True)
-        os.makedirs(self.SCRDIR + '/s2spost', exist_ok=True)
-        os.makedirs(self.SCRDIR + '/s2smetric', exist_ok=True)
-        os.makedirs(self.SCRDIR + '/s2splots', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/lis_darun/logs', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/ldt_ics/logs', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/bcsd_fcst/logs', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/lis_fcst/logs', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/s2spost/logs', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/s2smetric/logs', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/s2splots/logs', exist_ok=True)
 
     def create_symlink(self, source, link_name):
         """
@@ -373,7 +369,96 @@ class S2Srun(DownloadForecasts):
         except FileExistsError:
             print(f"Symbolic link {link_name} already exists, skipping creation.")
         return
+
+    def rst_file_checker(self):
+        # previous month
+        date_obj = datetime.strptime(f"{self.YYYY}-{self.MM}-01", "%Y-%m-%d")
+        previous_month_date = date_obj - relativedelta(months=1)
+        YYYYMMP = previous_month_date.strftime("%Y%m")
+        YYYYP = YYYYMMP[:4]
+        MMP = YYYYMMP[4:6]
+
+        rst_path = self.E2ESDIR + 'lis_darun/output/'
+        dapert = f'DAPERT/{YYYYP}{MMP}/LIS_DAPERT_{YYYYP}{MMP}010000.d01.bin'
+        surf_rst = f'SURFACEMODEL/{YYYYP}{MMP}/LIS_RST_NOAHMP401_{YYYYP}{MMP}010000.d01.nc'
+        rout_rst = f'ROUTING/{YYYYP}{MMP}/LIS_RST_HYMAP2_router_{YYYYP}{MMP}010000.d01.nc'
+
+        # Check each restart file
+        print(" ")
+        print("==================================================================================================")
+        print(" Land Model Restart file checker.......")
+        print("==================================================================================================")
+        restart_files = {
+            'DAPERT': rst_path + dapert,
+            'SURFACEMODEL': rst_path + surf_rst,
+            'ROUTING': rst_path + rout_rst
+        }
+    
+        missing_files = []
+        for file_type, file_path in restart_files.items():
+            if not os.path.exists(file_path):
+                missing_files.append(f"{file_type}: {file_path}")
+    
+        if missing_files:
+            print(f"[ERROR] Missing restart files for {YYYYP}-{MMP}:")
+            for missing_file in missing_files:
+                print(f"[ERROR]   {missing_file}")
+            print("[ERROR] Cannot launch forecast without required restart files!")
+            sys.exit()
+ 
+        else:
+            print(f"[INFO] All restart files found for {YYYYP}-{MMP}")
+            for file_type, file_path in restart_files.items():
+                print(f"[INFO]   {file_type}: {os.path.basename(file_path)}")
+        return
+
+    def clim_files_checker(self):
+        print(" ")
+        print("==================================================================================================")
+        print(" BCSD Climatological file checker.......")
+        print("==================================================================================================")
+
+        def check_file(infile, description):
+            try:
+                dataset = xr.open_dataset(infile)
+                print(f"{description} : {infile} is good.")
+            except Exception as e:
+                print(f"PROBLEM openning {infile} {e}")
+
+        FCST_CLIM_FILE_TEMPLATE = '{}hindcast/bcsd_fcst/{}_{}/raw/Climatology/{}/{}_fcst_clim.nc'
+        date_obj = datetime.strptime(f"{self.YYYY}-{self.MM}-01", "%Y-%m-%d")
+        mmm = date_obj.strftime("%b").lower() + '01'
+        lats, lons = utils.get_domain_info(self.config_file, coord=True)
+        resol = f'{round((lats[1] - lats[0])*100)}km'
+                
+        def check_available_file(FCST_VAR):
+            alternate_name = {
+                'LWGAB': 'LWS',
+                'SWGDN': 'SLRSF',
+                'QV2M': 'Q2M',
+            }
+            if os.path.exists(FCST_CLIM_FILE_TEMPLATE.format(self.E2ESDIR, self.FCST_MODEL, resol, mmm, FCST_VAR)):
+                return FCST_CLIM_FILE_TEMPLATE.format(self.E2ESDIR, self.FCST_MODEL, resol, mmm, FCST_VAR)
+            else:
+                return FCST_CLIM_FILE_TEMPLATE.format(self.E2ESDIR, self.FCST_MODEL, resol, mmm,alternate_name[FCST_VAR])
+        
+        OBS_CLIM_FILE_TEMPLATE = '{}/{}_obs_clim.nc'
             
+        # Obs clim files
+        obs_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
+        obs_path = self.E2ESDIR + 'hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'
+
+        for var in obs_var_list:
+            check_file(OBS_CLIM_FILE_TEMPLATE.format(obs_path, var), 'USAF-LIS7.3rc8_25km Climate')
+
+        # metforce clim
+        fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
+        for FCST_VAR in fcst_var_list:
+            infile = FCST_CLIM_FILE_TEMPLATE.format(self.E2ESDIR, self.FCST_MODEL, resol, mmm, FCST_VAR)
+            if FCST_VAR in ['LWGAB', 'SWGDN', 'QV2M']:
+                infile = check_available_file(FCST_VAR)
+            check_file(infile, self.FCST_MODEL+ '_' + resol)
+        
     def CFSv2_file_checker(self):
         spinner_done = [False]
         def spinner():
@@ -538,6 +623,7 @@ class S2Srun(DownloadForecasts):
                 f.write(f"module use -a {self.LISFDIR}env/discover/\n")
                 f.write(f"module --ignore-cache load {self.LISHMOD}\n")
                 f.write("ulimit -s unlimited\n")
+                f.write(f"export PYTHONPATH={self.LISFDIR}lis/utils/usaf/S2S/\n")
                 f.write(f"cd {self.SCRDIR}\n")
                 f.write(f"python {self.LISFDIR}lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py -y {self.year} -m {self.month} -c {self.E2ESDIR}{self.config_file} -l\n")
     
@@ -800,11 +886,20 @@ class S2Srun(DownloadForecasts):
         MMP = YYYYMMP[4:6]
         monP = int(MMP)    
         PERTMODE = self.config['EXP']['pertmode']
-        os.chdir(self.SCRDIR +'/lis_darun')
-        
+        os.makedirs(self.SCRDIR + '/lis_darun/input/', exist_ok=True)
+        os.chdir(self.SCRDIR +'/lis_darun/input/')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/forcing_variables.txt', 'forcing_variables.txt')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/noahmp401_parms','noahmp401_parms')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/template_files','template_files')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/attribs','attribs')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/tables','tables')
+        self.create_symlink(self.SUPDIR + '/lis_darun/cdf/' +self.DOMAIN,'cdf')
+        self.create_symlink(self.SUPDIR + '/lis_darun/RS_DATA','RS_DATA')
+        self.create_symlink(self.SUPDIR + '/lis_darun/' + self.LDTFILE, self.LDTFILE) 
+
+        os.chdir(self.SCRDIR +'/lis_darun/')
         CWD=self.SCRDIR +'lis_darun'
         self.create_symlink(self.LISFDIR + '/lis/LIS', 'LIS')
-        self.create_symlink(self.E2ESDIR + '/lis_darun/input', 'input')
         self.create_symlink(self.E2ESDIR + '/lis_darun/output', 'output')
         self.create_symlink(self.METFORC, self.METFORC.rstrip('/').split('/')[-1])
 
@@ -876,6 +971,7 @@ class S2Srun(DownloadForecasts):
             prev = None
             
         os.makedirs(self.E2ESDIR + '/ldt_ics/input/', exist_ok=True)
+        os.makedirs(self.SCRDIR + '/ldt_ics/input/', exist_ok=True)
         os.chdir(self.E2ESDIR + '/ldt_ics/')
         [os.makedirs(model, exist_ok=True) for model in self.MODELS]
         os.makedirs('ldt.config_files', exist_ok=True)
@@ -887,12 +983,14 @@ class S2Srun(DownloadForecasts):
         os.chdir(self.E2ESDIR + '/ldt_ics/input/')
         self.create_symlink(self.SUPDIR + '/lis_darun/' + self.LDTFILE, self.LDTFILE)
         self.create_symlink(self.SUPDIR + '/LS_PARAMETERS', 'LS_PARAMETERS')
+        os.chdir(self.SCRDIR + '/ldt_ics/input/')
+        self.create_symlink(self.SUPDIR + '/lis_darun/' + self.LDTFILE, self.LDTFILE)
+        self.create_symlink(self.SUPDIR + '/LS_PARAMETERS', 'LS_PARAMETERS')
     
         os.chdir(self.SCRDIR + '/ldt_ics')
         CWD=self.SCRDIR + 'ldt_ics'
         self.create_symlink(self.LISFDIR + '/ldt/LDT', 'LDT')
         self.create_symlink(self.E2ESDIR + '/lis_darun/output', 'lisda_output')
-        self.create_symlink(self.E2ESDIR + '/ldt_ics/input', 'input')
 
         for model in self.MODELS:
             self.create_symlink(self.E2ESDIR + '/ldt_ics/' + model, model)
@@ -932,18 +1030,18 @@ class S2Srun(DownloadForecasts):
         """ BCSD 12 steps """
         lats, lons = utils.get_domain_info(self.config_file, coord=True)
         resol = f'{round((lats[1] - lats[0])*100)}km'
-        fcast_clim_dir='{}/hindcast/bcsd_fcst/CFSv2_{}/raw/Climatology/'.format(self.E2ESROOT, resol)
+        fcast_clim_dir='{}/hindcast/bcsd_fcst/{}_{}/raw/Climatology/'.format(self.E2ESROOT, self.FCST_MODEL, resol)
         nmme_clim_dir='{}/hindcast/bcsd_fcst/NMME/raw/Climatology/'.format(self.E2ESROOT)
         usaf_25km='{}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'.format(self.E2ESROOT)
 
         os.makedirs(self.E2ESDIR + '/bcsd_fcst', exist_ok=True)
         os.chdir(self.E2ESDIR + '/bcsd_fcst')
         os.makedirs('USAF-LIS7.3rc8_25km/raw', exist_ok=True)
-        os.makedirs(f'CFSv2_{resol}/raw', exist_ok=True)
+        os.makedirs(f'{self.FCST_MODEL}_{resol}/raw', exist_ok=True)
         os.makedirs('NMME/raw', exist_ok=True)
     
         # link Climatology directories
-        os.chdir(self.E2ESDIR + f'/bcsd_fcst/CFSv2_{resol}/raw')
+        os.chdir(self.E2ESDIR + f'/bcsd_fcst/{self.FCST_MODEL}_{resol}/raw')
         self.create_symlink(fcast_clim_dir, 'Climatology')
 
         os.chdir(self.E2ESDIR + '/bcsd_fcst/NMME/raw')
@@ -960,16 +1058,16 @@ class S2Srun(DownloadForecasts):
         date_obj = datetime.strptime(f"{self.YYYY}-{self.MM}-01", "%Y-%m-%d")
         mmm = date_obj.strftime("%b").lower()
 
-        # (1) bcsd01 - regrid CFSv2 files
-        # -------------------------------
-        jobname='bcsd01_'
+        # (1) metforce_regridding (formerly bcsd01) - regrid metforce (CFSv2/GEOSv3 files
+        # ---------------------------------------------------------------------
+        jobname='mf_regrid_'
         resol_info = {
-            '25km': {'CPT': str(1), 'MEM':'13GB', 'NT': str(self.config["EXP"]["lead_months"]), 'TPN': 18, 'l_sub': 2,'HOURS': str(1)},
+            '25km': {'CPT': str(1), 'MEM':'13GB', 'NT': str(self.config["EXP"]["lead_months"]), 'TPN': 2*int(self.config["EXP"]["lead_months"]), 'l_sub': 2,'HOURS': str(1)},
             '10km': {'CPT': str(1), 'MEM':'120GB', 'NT': str(1), 'TPN': 2, 'l_sub': 2, 'HOURS': str(3)},
             '5km': {'CPT': str(1), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1, 'HOURS': str(self.config["EXP"]["lead_months"])},
         }
         info = resol_info[resol]    
-        slurm_commands = bcsd.task_01.main(self.E2ESDIR +'/' + self.config_file, self.year, None,
+        slurm_commands = bcsd.metforce_regridding.main(self.E2ESDIR +'/' + self.config_file, self.year, None,
                                            mmm, CWD, jobname, 1, 2, py_call=True)
 
         # multi tasks per job
@@ -995,10 +1093,10 @@ class S2Srun(DownloadForecasts):
             utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
             #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), info['HOURS'], CWD, command_list=slurm_sub[i])
  
-        # (3) bcsd03 regridding NMME
-        # --------------------------
-        jobname='bcsd03_'
-        slurm_commands = bcsd.task_03.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month,
+        # (3) precip_regridding (formerly bcsd03) regridding precipitation (NMME)
+        # ---------------------------------------
+        jobname='pr_regrid_'
+        slurm_commands = bcsd.precip_regridding.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month,
                                            jobname, 1, str(2), CWD, py_call=True)
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
@@ -1013,18 +1111,18 @@ class S2Srun(DownloadForecasts):
         utils.remove_sbatch_lines(jobname + 'run.sh')
         #utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
 
-        # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
+        # (4) metforce_biascorrection (formerly bcsd04): Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
         # --------------------------------------------------------------------------
-        jobname='bcsd04_'
+        jobname='mf_biascorr_'
         par_info = {}
         par_info['CPT'] = '10'
         par_info['NT']= str(1)
         par_info['MEM']= '240GB'
         par_info['TPN'] = None
         par_info['MP'] = True
-        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd01_' in key]
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd03_' in key])
-        slurm_commands = bcsd.task_04.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+        prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_regrid_' in key])
+        slurm_commands = bcsd.metforce_biascorrection.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
         l_sub = 1
@@ -1043,14 +1141,14 @@ class S2Srun(DownloadForecasts):
             utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
             #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
-        # (5) bcsd05: Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
+        # (5) precip_biascorrection (bcsd05): Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
         # -------------------------------------------------------------------------
-        jobname='bcsd05_'
-        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd01_' in key]
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd03_' in key])
+        jobname='pr_biascorr_'
+        prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_regrid_' in key])
         slurm_commands = []
         for nmme_model in self.MODELS:
-            var1 = bcsd.task_05.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+            var1 = bcsd.precip_biascorrection.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, nmme_model, py_call=True)
             slurm_commands.extend(var1)
         
@@ -1075,18 +1173,18 @@ class S2Srun(DownloadForecasts):
             utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1)) 
             #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
-        # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
+        # (6) metforce_temporal_disaggregation (formerly bcsd06: after 4 and 5)
         # ---------------------------------------------------------------------
-        jobname='bcsd06_'
+        jobname='mf_tempdis_'
         par_info = {}
         par_info['CPT'] = '12'
         par_info['NT']= str(1)
         par_info['MEM']= '240GB'
         par_info['TPN'] = None
         par_info['MP'] = True
-        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd04_' in key]
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd05_' in key])         
-        slurm_commands = bcsd.task_06.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+        prev = [f"{key}" for key in self.schedule.keys() if 'mf_biascorr_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_biascorr_' in key])         
+        slurm_commands = bcsd.metforce_temporal_disaggregation.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                            1, 3, CWD, self.E2ESDIR, py_call=True)
 
         # multi tasks per job
@@ -1106,9 +1204,9 @@ class S2Srun(DownloadForecasts):
             utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
             #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 5, CWD, command_list=slurm_sub[i])
 
-        # (8) bcsd08: NMME disaagregation
+        # (8) precip temporal disaggregation (formerly task_08.py)
         # -------------------------------
-        jobname='bcsd08_'
+        jobname='pr_tempdis_'
         par_info = {}
         par_info['CPT'] = '15'
         par_info['NT']= str(1)
@@ -1116,9 +1214,9 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True        
         slurm_commands = []
-        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd06_' in key]
+        prev = [f"{key}" for key in self.schedule.keys() if 'mf_tempdis_' in key]
         for nmme_model in self.MODELS:
-            var1 = bcsd.task_08.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+            var1 = bcsd.precip_temporal_disaggregation.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, self.E2ESDIR, nmme_model, py_call=True)
             slurm_commands.extend(var1)
 
@@ -1143,15 +1241,15 @@ class S2Srun(DownloadForecasts):
         # Task 10: Combine the NMME forcing fields into final format for LIS to read
         #          and symbolically link to the reusable CFSv2 met forcings
         # ---------------------------------------------------------------------------
-        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd08_' in key]
-        slurm_9_10 = bcsd.task_09.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm,
-                                       self.MM, jobname,1, 4, CWD, self.E2ESDIR, 'CFSv2', py_call=True)
+        prev = [f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key]
+        slurm_9_10 = bcsd.combine_forcings.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm,
+                                       self.MM, jobname,1, 4, CWD, self.E2ESDIR, self.FCST_MODEL, py_call=True)
         # bcsd09
-        jobname='bcsd09_'
+        jobname='combine_files_'
         par_info = {}
-        par_info['CPT'] = '12'
-        par_info['NT']= str(1)
-        par_info['MEM']= '240GB'
+        par_info['CPT'] = str(self.config['BCSD']['nof_raw_ens'])
+        par_info['NT'] = str(1)
+        par_info['MEM'] = '240GB'
         par_info['TPN'] = None
         par_info['MP'] = True        
 
@@ -1173,7 +1271,7 @@ class S2Srun(DownloadForecasts):
 
     def lis_fcst(self):
         """ LIS forecast """
-        prev = [job for job in ['ldtics_run.j', 'bcsd10_run.j'] if job in self.schedule] or None
+        prev = [job for job in ['ldtics_run.j', 'combine_files_run.j'] if job in self.schedule] or None
         jobname='lis_fcst'
         os.makedirs(self.E2ESDIR + 'lis_fcst/', exist_ok=True)
         os.makedirs(self.E2ESDIR + 'lis_fcst/input/LDT_ICs/', exist_ok=True)
@@ -1190,6 +1288,14 @@ class S2Srun(DownloadForecasts):
             os.makedirs(self.E2ESDIR + 'lis_fcst/' + self.YYYY + self.MM + '/' + model + '/logs/', exist_ok=True)
             self.create_symlink(self.E2ESDIR + 'ldt_ics/'  + model, model)
 
+        os.makedirs(self.SCRDIR + 'lis_fcst/input', exist_ok=True)
+        os.chdir(self.SCRDIR + 'lis_fcst/input/')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/forcing_variables.txt','forcing_variables.txt')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/noahmp401_parms','noahmp401_parms')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_fcst/template_files','template_files')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_fcst/tables','tables')
+        self.create_symlink(self.SUPDIR + '/lis_darun/' + self.LDTFILE, self.LDTFILE)
+        
         os.chdir(self.SCRDIR + 'lis_fcst/')
         CWD=self.SCRDIR + 'lis_fcst'
         self.create_symlink(self.LISFDIR + 'lis/LIS', 'LIS')
@@ -1251,7 +1357,7 @@ class S2Srun(DownloadForecasts):
                 self.create_symlink(self.E2ESDIR + 's2spost/' + self.MM + '/' + self.YYYY + self.MM + '/' + model, model)
             else:
                 self.create_symlink(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, model)
-            var1, var2, var3 = s2spost_main.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
+            var1, var2, var3 = s2spost_driver.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
             slurm_commands.extend(var1)
             monthly_commands.extend(var2)
             weekly_commands.extend(var3)
@@ -1356,7 +1462,7 @@ class S2Srun(DownloadForecasts):
             par_info['TPN'] = None
             par_info['MP'] = True
             slurm_commands = []
-            var1 = s2smetric_main.driver(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+            var1 = s2smetric_driver.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(1), nmme_model= 'all_models', py_call=True, weekly=True)
             slurm_commands.extend(var1)
             tfile = self.sublist_to_file(slurm_commands, CWD)
@@ -1382,7 +1488,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         for i, model in enumerate(self.MODELS):
-            slurm_commands = s2smetric_main.driver(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+            slurm_commands = s2smetric_driver.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(1), nmme_model= model, py_call=True)
 
             tfile = self.sublist_to_file(slurm_commands, CWD)
@@ -1411,7 +1517,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         for i, model in enumerate(self.MODELS):
-            slurm_commands = s2smetric_main.driver(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+            slurm_commands = s2smetric_driver.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(4), nmme_model= model, py_call=True, weekly=True)
 
             tfile = self.sublist_to_file(slurm_commands, CWD)
@@ -1437,7 +1543,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
 
-        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/s2smetric_main.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"]
+        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/s2smetric_driver.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"]
         tfile = self.sublist_to_file(COMMAND, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_tiff_run.j', 's2smetric_tiff_', 1, str(1), CWD, tfile.name, parallel_run=par_info)
@@ -1460,7 +1566,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
 
-        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/s2smetric_main.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file} -W"]
+        COMMAND = [f"python {self.LISHDIR}/ghis2s/s2smetric/s2smetric_driver.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file} -W"]
         tfile = self.sublist_to_file(COMMAND, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_weekly_tiff_run.j', 's2smetric_weekly_tiff_', 1, str(1), CWD, tfile.name, parallel_run=par_info)
@@ -1510,13 +1616,31 @@ class S2Srun(DownloadForecasts):
 
         # 2nd job
         jobname='s2splots_02_'
-        slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}"]
+        slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -M ANOM"]
         par_info = {}
-        par_info['CPT'] = str(14)
-        par_info['MEM']= '10GB'
+        par_info['CPT'] = str(7)
+        par_info['MEM']= '240GB'
         par_info['NT']= str(1)
         par_info['TPN'] = None
-        par_info['MP'] = False
+        par_info['MP'] = True
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(2), CWD, tfile.name, parallel_run=par_info)
+            self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+       # 3rd job
+        jobname='s2splots_03_'
+        slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -M SANOM"]
+        par_info = {}
+        par_info['CPT'] = str(7)
+        par_info['MEM']= '240GB'
+        par_info['NT']= str(1)
+        par_info['TPN'] = None
+        par_info['MP'] = True
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
@@ -1530,8 +1654,8 @@ class S2Srun(DownloadForecasts):
         utils.remove_sbatch_lines(jobname + 'run.sh')
         #utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
 
-        # 3rd job
-        jobname='s2splots_03_'
+        # 4th job
+        jobname='s2splots_04_'
         slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_hybas.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}"]
         par_info = {}
         par_info['CPT'] = str(5)
@@ -1556,9 +1680,11 @@ class S2Srun(DownloadForecasts):
         return
          
     def main(self):
-        # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
-        self.CFSv2_file_checker()
+        # (1) File checkers to ensure RST files are available and downloaded files are not corrupted.
+        self.rst_file_checker()
         super(S2Srun, self).NMME_file_checker()
+        self.clim_files_checker()
+        self.CFSv2_file_checker()
         
         # (2) LISDA run
         self.lis_darun()

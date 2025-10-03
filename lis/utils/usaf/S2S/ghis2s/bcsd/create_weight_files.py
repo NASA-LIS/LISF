@@ -11,6 +11,7 @@ from ghis2s.bcsd.bcsd_library import convert_forecast_data_to_netcdf as cfdn
 
 CFSV2_file = '/discover/nobackup/projects/lis/MET_FORCING/CFSv2//Oper_TS/2024/20241217/tmp2m.01.2024121706.daily.grb2'
 NMME_file = '/discover/nobackup/projects/usaf_lis/GHI_S2S/NMME//CanSIPS-IC4/prec.CanESM5.mon_Jan.2025.nc'
+GEOS5_file = '/discover/nobackup/projects/usaf_lis/smahanam/MET_FORCING/GEOSv3/sfc_tavg_3hr_glo_L720x361_sfc/202410/ens01/geos_s2s_v3.200210.nc'
 
 def get_land_mask(config, cfsv2_data):
     """
@@ -72,7 +73,7 @@ if __name__ == "__main__":
     resol = round((lats[1] - lats[0])*100)
 
     if args.forcing == 'NMME':
-    #NMME
+        #NMME
         force = xr.open_dataset(NMME_file, decode_times=False)
         force = force.rename({'Y': 'latitude', 'X': 'longitude'})
         land_mask = get_land_mask(config, force)
@@ -81,21 +82,21 @@ if __name__ == "__main__":
         # CFSv2
         force = cfdn.wgrib2_to_netcdf(CFSV2_file)
         land_mask = get_land_mask(config, force)
-        
+
+    if args.forcing == 'GEOSv3':
+        # GEOSv3
+        force = xr.open_dataset(GEOS5_file)
+        force = force.rename({'lat': 'latitude', 'lon': 'longitude'})
+        land_mask = get_land_mask(config, force)
+
+
     land_mask.to_netcdf(weightdir + f'{args.forcing}_{resol}km_landmask.nc4', format="NETCDF4",
-                        encoding = {"LANDMASK": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.}})
+                        encoding = {"LANDMASK": {'dtype': 'uint8', "zlib":True, "complevel":6, "shuffle":True, "missing_value":255}})
 
-    #any_land = land_mask.LANDMASK > 0
-    #
-    #sample_field = cfsv2.T2M.isel(step=0)
-    #masked_sample = sample_field.where(any_land)
-
-    #masked_cfsv2 = xr.Dataset({
-    #    "T2M": masked_sample,  
-    #})
-
-    # bilinear
-    weight_file = weightdir + f'{args.forcing}_{resol}km_bilinear.nc'
+    # bilinear_land
+    force_masked = force.copy()
+    force_masked['mask'] = land_mask['LANDMASK']
+    weight_file = weightdir + f'{args.forcing}_{resol}km_bilinear_land.nc'
     print(weight_file)
     ds_out = xr.Dataset(
             {
@@ -103,8 +104,8 @@ if __name__ == "__main__":
                 "lon": (["lon"], lons),
             }
         )
-    run_xe= xe.Regridder(force, ds_out, "bilinear", periodic=True, 
-                         filename=weight_file)
+    run_xe= xe.Regridder(force_masked, ds_out, "bilinear", periodic=True, 
+                         filename=weight_file, extrap_method='nearest_s2d')
     # conservative
     weight_file = weightdir + f'{args.forcing}_{resol}km_conservative.nc'
     print(weight_file)

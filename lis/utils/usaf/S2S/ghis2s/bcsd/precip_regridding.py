@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: forecast_task_03.py
+# SCRIPT: precip_regridding.py
 #
 # PURPOSE: Reorganizes the downloaded NMME data into a format for further
 # processing. Based on FORECAST_TASK_03.sh.
@@ -59,28 +59,17 @@ def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd, py_
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
-    # Path of the directory where supplementary files are kept
-    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
-
-    # List of NMME models and ensemble sizes to use
-    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
-
     # Path for where raw and bias corrected forecast files are located:
-    nmme_download_dir = config['BCSD']['nmme_download_dir']
     forcedir = f"{projdir}/bcsd_fcst/NMME"
     nmme_output_dir = f"{forcedir}/raw/Monthly"
     slurm_commands = []
     for nmme_model in  config['EXP']['NMME_models']:
-        ensemble_size = ensemble_sizes[nmme_model]
         cmd = "python"
-        cmd += f" {srcdir}/nmme_reorg_f.py"
+        cmd += f" {srcdir}/nmme_spatial_downscale.py"
         cmd += f" {month_num}"
         cmd += f" {current_year}"
-        cmd += f" {nmme_download_dir}"
         cmd += f" {nmme_output_dir}"
-        cmd += f" {supplementary_dir}"
         cmd += f" {nmme_model}"
-        cmd += f" {ensemble_size}"
         cmd += f" {config_file}"
         jobfile = job_name + '_' + nmme_model + '_run.j'
         jobname = job_name + '_' + nmme_model + '_'

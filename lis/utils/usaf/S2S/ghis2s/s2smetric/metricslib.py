@@ -19,6 +19,8 @@ import os
 import glob
 import xarray as xr
 import numpy as np
+import gc
+from ghis2s.shared.utils import load_ncdata
 
 def _get_snow_cover(sel_cim_data):
     """Return snow cover [%]."""
@@ -239,7 +241,7 @@ def merged_metric_filename(output_dir, startdate, enddate,
     _check_filename_size(name)
     return name
 
-def get_anom(path, var_name, metric, weekly=False):
+def get_anom(path, var_name, metric, logger, weekly=False):
     def preproc(ds_):
         ''' select only the 1st ensemble for streamflow '''
         ds_ = ds_.isel(ens=0)
@@ -251,13 +253,30 @@ def get_anom(path, var_name, metric, weekly=False):
         regex = f"{path}/PS.*GP.LIS-S2S-*S2SMETRICS_DD*DF.NC"
 
     files = glob.glob(regex)
+    thisvar = var_name + '_' + metric
     if var_name == 'Streamflow':
+        kwargs = {
+            'concat_dim': 'ens', 
+            'combine': 'nested',
+            'preprocess': preproc
+        }
+        #anom_ds = load_ncdata(files, logger, var_name=thisvar,  **kwargs)
         anom_ds = xr.open_mfdataset(files, concat_dim='ens', combine='nested', preprocess=preproc)
     else:
+        #anom_ds = load_ncdata(files, logger, var_name=thisvar, **dict(concat_dim='ens', combine='nested'))
         anom_ds = xr.open_mfdataset(files, concat_dim='ens', combine='nested')
     anom_ds = anom_ds.rename({'latitude': 'lat', 'longitude': 'lon'})
     anom = anom_ds[var_name + '_' + metric]
+    del anom_ds
+    gc.collect()
     return anom.to_dataset(name='anom')
+    #del anom_ds
+    #gc.collect()  
+    #result = anom_da.to_dataset(name='anom')
+    #del anom_da
+    #gc.collect()   
+
+    #return result
 
     
     

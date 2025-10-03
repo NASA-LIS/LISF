@@ -24,6 +24,7 @@ import argparse
 import xarray as xr
 import numpy as np
 import yaml
+import gc
 from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 import plot_utils
@@ -48,7 +49,8 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     if standardized_anomaly == 'Y':
         metric = "SANOM"
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
-        
+
+    subtask = region + ': ' + metric
     plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/' 
     plotdir = plotdir_template.format(fcst_year, fcst_mon)
     if not os.path.exists(plotdir):
@@ -65,12 +67,12 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in config_["POST"]["metric_vars"]:
-        logger.info(f"Plotting {var_name} {metric}", subtask=region)        
+        logger.info(f"Plotting {var_name} {metric}", subtask=subtask)        
         # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
-            ldt = xr.open_mfdataset(ldtfile)
+            ldt = xr.open_dataset(ldtfile)
             ldt_crop = plot_utils.crop(domain, ldt)
             mask = ldt_crop.HYMAP_drain_area.values
 
@@ -96,7 +98,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
-        anom = get_anom(data_dir, var_name, metric)
+        anom = get_anom(data_dir, var_name, metric, [logger, subtask])
         anom_crop = plot_utils.crop(domain, anom)
         median_anom = np.median(anom_crop.anom.values, axis=0)
 
@@ -120,6 +122,8 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
 
         plot_arr = median_anom[lead_month, ]
         figure = figure_template.format(plotdir, region, var_name)
+        logger.info(f"Figure: {figure}", subtask=subtask)
+        
         titles = []
         for lead in lead_month:
             if var_name == 'Streamflow':
@@ -149,6 +153,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
                              cartopy_datadir=cartopy_dir)
         del anom
         del anom_crop
+        gc.collect()
 
 if __name__ == '__main__':
 
@@ -157,6 +162,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--fcst_mon', required=True, help= 'forecast end year')
     parser.add_argument('-c', '--configfile', required=True, help='config file name')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-M', '--metric', required=True, help='ANOM or SANOM')
 
     args = parser.parse_args()
     configfile = args.configfile
@@ -168,40 +174,29 @@ if __name__ == '__main__':
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    num_calls = 14
+    num_calls = 7
     num_workers = int(os.environ.get('NUM_WORKERS', num_calls))
 
     from concurrent.futures import ProcessPoolExecutor
-    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+    with ProcessPoolExecutor(max_workers=7) as executor:
         futures = []
-        #if config ["EXP"]["DOMAIN"] == 'AFRICOM':
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  )
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  )
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  )
-        #           
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME', standardized_anomaly = 'Y')
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  , standardized_anomaly = 'Y')
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  , standardized_anomaly = 'Y')
-        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
-        #           
-        #    if config ["EXP"]["DOMAIN"] == 'GLOBAL':
-          # Submit tasks properly
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA'))
+        if args.metric == "ANOM":  
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA'))
 
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly='Y'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly='Y'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly='Y'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA', standardized_anomaly='Y'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA', standardized_anomaly='Y'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly='Y'))
-        futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly='Y'))
+        if args.metric == "SANOM":  
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly='Y'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly='Y'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly='Y'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA', standardized_anomaly='Y'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA', standardized_anomaly='Y'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly='Y'))
+            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly='Y'))
 
         for future in futures:
             result = future.result()  
