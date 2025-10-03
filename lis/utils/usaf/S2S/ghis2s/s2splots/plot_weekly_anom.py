@@ -10,7 +10,13 @@ import yaml
 # pylint: disable=import-error
 import plot_utils
 from ghis2s.s2smetric.metricslib import get_anom
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
+
+task_name = os.environ.get('SCRIPT_NAME')
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'Running s2splots/plot_weekly_anom.py')
 
 def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
     plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
@@ -25,7 +31,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
     nrows = 2
     ncols = 3
     domain = plot_utils.dicts('boundary', region)
-
+    subtask = region + ': ' + anom_type
     data_dir = cwd + f'/s2smetric/{fcst_year:04d}{fcst_mon:02d}/'
     cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     
@@ -44,7 +50,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
 
         under_over = plot_utils.dicts('lowhigh', load_table)               
         # READ ANOMALIES
-        anom = get_anom(data_dir, var_name, anom_type, weekly=True)
+        anom = get_anom(data_dir, var_name, anom_type, [logger, subtask], weekly=True)
         anom_crop = plot_utils.crop(domain, anom)
         median_anom = np.median(anom_crop.anom.values, axis=0)
         plot_arr = median_anom[lead_week, ]
@@ -62,6 +68,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
             
         maxloc = np.unravel_index(np.nanargmax(plot_arr), plot_arr.shape)
         figure = figure_template.format(plotdir, region, var_name, anom_type.lower())
+        logger.info(f"Plotting {figure}", subtask=subtask)  
         stitle = var_name + ' Forecast'
         if anom_type == 'ANOM':
             anom_minmax = plot_utils.dicts('anom_minmax', var_name) 

@@ -13,11 +13,11 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: forecast_task_06.py
+# SCRIPT: precip_temporal_disaggregation.py
 #
-# PURPOSE: Generate bias-corrected 6-hourly forecasts using raw monthly
+# PURPOSE: Generate bias-corrected 6-hourly nmme forecasts using raw monthly
 # forecasts, bias-corrected monthly forecasts and raw 6-hourly forecasts. Based
-# on FORECAST_TASK_06.sh.
+# on FORECAST_TASK_08.sh.
 #
 # REVISION HISTORY:
 # 24 Oct 2021: Ryan Zamora, first version
@@ -28,6 +28,7 @@
 #
 # Standard modules
 #
+
 import os
 import sys
 import argparse
@@ -39,26 +40,30 @@ from ghis2s.shared import utils
 
 def _usage():
     """Print command line usage."""
-    txt = f"[INFO] Usage: {(sys.argv[0])} -s fcst_syr -e fcst_eyr -m month_abbr -n month_num \
-                          -w cwd - c config_file -j job_name -t ntasks -H hours"
+    txt = f"[INFO] Usage: {(sys.argv[0])} -s fcst_syr -e fcst_eyr -m month_abbr \
+             -w cwd -n month_num -c config_file -j job_name -t ntasks -H hours -M NMME_MODEL"
     print(txt)
     print("[INFO] where")
     print("[INFO] fcst_syr: Start year of forecast")
     print("[INFO] fcst_eyr: End year of forecast")
-    print("[INFO] month_abbr: Abbreviated month to start forecast")
+    print("[INFO] month_abbr: Abbreviation of the initialization month")
     print("[INFO] month_num: Integer number of the initialization month")
-    print("[INFO] cwd: current working directory")
+    print("[INFO] nmme_model: NMME model name")
     print("[INFO] config_file: Config file that sets up environment")
     print("[INFO] job_name: SLURM job_name")
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd, projdir, py_call=False):
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
+         job_name, ntasks, hours, cwd, projdir, nmme_model, py_call=False):
     """Main driver."""
-    
+
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
+
+    # Base forecast model
+    fcst_model = config['BCSD']['fcst_data_type']
 
     # get resolution
     lats, lons = utils.get_domain_info(config_file, coord=True)
@@ -66,7 +71,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
-    srcdir2 = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/'
 
     # Path of the directory where supplementary files are kept
     supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
@@ -75,23 +79,26 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     domain = config['EXP']['DOMAIN']
 
     lead_months = config['EXP']['lead_months']
-    ens_num = config['BCSD']['nof_raw_ens']
-    model_name = config['BCSD']['fcst_data_type']
+    datatype = config['SETUP']['DATATYPE']
+    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
+    ens_num = ensemble_sizes[nmme_model]
 
     # Path for where forecast files are located:
-    forcedir = f"{projdir}/bcsd_fcst/CFSv2_{resol}"
+    cfsv2dir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}/"
+    forcedir = f"{projdir}/bcsd_fcst/NMME"
 
     #  Calculate bias correction for different variables separately:
-    obs_var_list = ["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
-    fcst_var_list = ["LWS", "SLRSF", "PS", "Q2M", "T2M", "WIND10M"]
-    unit_list = ["W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
+    obs_var = "PRECTOT"
+    fcst_var = "PRECTOT"
+    unit = "kg/m^2/s"
+    var_type = 'PRCP'
 
     # Path for where forecast and bias corrected files are located:
-    subdaily_raw_fcst_dir = f"{forcedir}/raw/6-Hourly/{month_abbr}01"
+    subdaily_raw_fcst_dir = f"{cfsv2dir}/raw/6-Hourly/{month_abbr}01"
     monthly_raw_fcst_dir = f"{forcedir}/raw/Monthly/{month_abbr}01"
     monthly_bc_fcst_dir = f"{forcedir}/bcsd/Monthly/{month_abbr}01"
 
-    outdir = f"{forcedir}/bcsd/6-Hourly/{month_abbr}01"
+    outdir = f"{forcedir}/final/6-Hourly/{nmme_model}/{month_abbr}01/"
 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -100,54 +107,33 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
 
     slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
-        cmd2 = '\n'
-        for var_num, var_value in enumerate(obs_var_list):
-            if var_num == 1:
-                var_type = "PRCP"
-                #cmd2 = "python"
-                #cmd2 += f" {srcdir2}/task_07.py"
-                #cmd2 += f" -s {year}"
-                #cmd2 += f" -m {month_abbr}"
-                #cmd2 += f" -w {projdir}"
-                #cmd2 += f" -r {resol}"
-                #slurm_commands.append(cmd2)
-            else:
-                cmd2 = '\n'
-                var_type = "TEMP"
+        cmd = "python"
+        cmd += f" {srcdir}/temporal_disaggregation_nmme_6hourly_module.py"
+        cmd += f" {obs_var}"
+        cmd += f" {fcst_var}"
+        cmd += f" {year}"
+        cmd += f" {month_num}"
+        cmd += f" {var_type}"
+        cmd += f" {unit}"
+        cmd += f" {nmme_model}"
+        cmd += f" {ens_num}"
+        cmd += f" {lead_months}"
+        cmd += f" {year}"
+        cmd += f" {year}"
+        cmd += f" {config_file}"
+        cmd += f" {monthly_bc_fcst_dir}"
+        cmd += f" {subdaily_raw_fcst_dir}"
+        cmd += f" {outdir}"
+        cmd += f" {domain}"
+        jobfile = job_name + '_' + nmme_model + '_run.j'
+        jobname = job_name + '_' + nmme_model + '_'
 
-            obs_var = var_value
-            fcst_var = fcst_var_list[var_num]
-            unit = unit_list[var_num]
+        if py_call:
+            slurm_commands.append(cmd)
+        else:
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
-            cmd = "python"
-            cmd += f" {srcdir}/temporal_disaggregation_6hourly_module.py"
-            cmd += f" {obs_var}"
-            cmd += f" {fcst_var}"
-            cmd += f" {year}"
-            cmd += f" {month_num}"
-            cmd += f" {var_type}"
-            cmd += f" {unit}"
-            cmd += f" {model_name}"
-            cmd += f" {ens_num}"
-            cmd += f" {lead_months}"
-            cmd += f" {year}"
-            cmd += f" {year}"
-            cmd += f" {config_file}"
-            cmd += f" {monthly_bc_fcst_dir}"
-            cmd += f" {monthly_raw_fcst_dir}"
-            cmd += f" {subdaily_raw_fcst_dir}"
-            cmd += f" {outdir}"       
-            cmd += f" {domain}"
-            jobfile = job_name + '_' + obs_var + '_run.j'
-            jobname = job_name + '_' + obs_var + '_'
-                        
-            if py_call:
-                slurm_commands.append(cmd)
-            else:
-                utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd,
-                                 in_command=cmd)
-
-    print(f"[INFO] Completed CFSv2 temporal disaggregation for: {(month_abbr)}")
+    print(f"[INFO] Wrote NMME temporal disaggregation script for: {month_abbr}")
     if py_call:
         return slurm_commands
 #
@@ -164,9 +150,10 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
     parser.add_argument('-H', '--hours', required=True, help='hours')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-M', '--nmme_model', required=True, help='NMME Model')
     parser.add_argument('-p', '--project_directory', required=True, help='Project (E2ES) directory')
 
     args = parser.parse_args()
-    
+
     main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
-         args.job_name, args.ntasks, args.hours, args.cwd, args.project_directory)
+         args.job_name, args.ntasks, args.hours, args.cwd, args.args.project_directory, nmme_model)

@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: s2spost_main.py
+# SCRIPT: s2spost_driver.py
 #
 # PURPOSE: Loops through multiple months of a completed LIS S2S forecast, and
 # submits batch jobs (one per month) to generate CF-convention netCDF files.

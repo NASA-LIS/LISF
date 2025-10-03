@@ -38,7 +38,6 @@ import xesmf as xe
 import yaml
 import gc
 
-#from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 from ghis2s.bcsd.bcsd_library.convert_forecast_data_to_netcdf import read_wgrib
 from ghis2s.shared.utils import get_domain_info
@@ -124,7 +123,7 @@ def write_monthly_files(this_6h1, file_6h, file_mon):
 
     encoding = {
         var: {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
-        for var in ["PRECTOT", "PS", "T2M", "LWS", "SLRSF", "Q2M", "U10M", "V10M", "WIND10M"]
+        for var in ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "U10M", "V10M", "WIND10M"]
     }
 
     this_6h.to_netcdf(file_6h, format="NETCDF4", encoding=encoding)
@@ -138,12 +137,12 @@ def write_monthly_files(this_6h1, file_6h, file_mon):
 
 def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, subtask):
     regrid_method = {
-        '25km': {'PRECTOT':'conservative', 'SLRSF':'bilinear', 'LWS':'bilinear','PS':'bilinear',
-                 'Q2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
-        '10km': {'PRECTOT':'conservative', 'SLRSF':'bilinear', 'LWS':'bilinear','PS':'bilinear',
-                 'Q2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
-        '5km': {'PRECTOT':'conservative', 'SLRSF':'conservative', 'LWS':'conservative','PS':'conservative',
-                 'Q2M':'conservative', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},}
+        '25km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
+        '10km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
+        '5km': {'PRECTOT':'conservative', 'SWGDN':'conservative', 'LWGAB':'conservative','PS':'conservative',
+                 'QV2M':'conservative', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},}
     
     outdir_6hourly = outdirs["outdir_6hourly"]
     outdir_monthly = outdirs["outdir_monthly"]
@@ -219,12 +218,12 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
                                                 var_name = "PS")
     ds_out["T2M"].values[:] = limits.clip_array(np.array(ds_out["T2M"].values[:]),
                                                  var_name = "T2M")
-    ds_out["LWS"].values[:] = limits.clip_array(np.array(ds_out["LWS"].values[:]),
-                                                 var_name = "LWS")
-    ds_out["SLRSF"].values[:] = limits.clip_array(np.array(ds_out["SLRSF"].values[:]),
-                                                   var_name = "SLRSF")
-    ds_out["Q2M"].values[:] = limits.clip_array(np.array(ds_out["Q2M"].values[:]),
-                                                 var_name = "Q2M")
+    ds_out["LWGAB"].values[:] = limits.clip_array(np.array(ds_out["LWGAB"].values[:]),
+                                                 var_name = "LWGAB")
+    ds_out["SWGDN"].values[:] = limits.clip_array(np.array(ds_out["SWGDN"].values[:]),
+                                                   var_name = "SWGDN")
+    ds_out["QV2M"].values[:] = limits.clip_array(np.array(ds_out["QV2M"].values[:]),
+                                                 var_name = "QV2M")
     ds_out["WIND10M"].values[:] = limits.clip_array(np.array(ds_out["WIND10M"].values[:]),
                                                      var_name = "WIND")
 
@@ -276,7 +275,7 @@ def _driver(rank):
     subtask = f'{dt1.year:04d}{dt1.month:02d}'
     logger = TaskLogger(task_name,
                         os.getcwd(),
-                        f'bcsd/process_forecast_data.py processing CFSv2 forcings for {subtask}')
+                        f'bcsd/process_cfsv2_forcing.py processing CFSv2 forcings for {subtask}')
 
     dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
     dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))

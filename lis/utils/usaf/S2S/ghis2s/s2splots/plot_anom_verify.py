@@ -149,14 +149,12 @@ def grib2_xr(gfile, args):
 
     return ds_out
 
-def comp_monthly_nafpa (config_file, year, month, flabel):
+def comp_monthly_nafpa (config_file, year, month, flabel, logger):
     ''' The function regrid to output grid and compute monthly mean '''
 
     with open(config_file, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     
-
-
     # Read all CFSv2 forcings
     met_path = cfg["SETUP"]["METFORC"] + '/' + flabel + '/'
 
@@ -178,7 +176,7 @@ def comp_monthly_nafpa (config_file, year, month, flabel):
             'regridder': 0}
 
     for gfile in file_list:
-        print(gfile)
+        logger[0].info(f"NAFPA file: {gfile}", subtask=logger[1])  
         ds.append(grib2_xr(gfile, args))
 
     ds_xr =  xr.concat(ds, dim = 'time')
@@ -290,7 +288,7 @@ if __name__ == "__main__":
     #    '/hindcast/bcsd_fcst/{}/Climatology_{:04d}-{:04d}/'.format(flabel, cyear_beg, cyear_end)
     # nafpa_clim_xr = xr.open_dataset(glob.glob(climdir + '*{:02d}.nc4'.format(month))[0])
 
-    nafpa_mon_xr =  comp_monthly_nafpa(args.config_file, year, month, flabel)
+    nafpa_mon_xr =  comp_monthly_nafpa(args.config_file, year, month, flabel, [logger, f"Lag {lag}"])
     #nafpa_mon_xr.to_netcdf('nafpa_05.nc4', format="NETCDF4",
     #                  encoding = {'TMP':{"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
     #                              'APCP': {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.}})

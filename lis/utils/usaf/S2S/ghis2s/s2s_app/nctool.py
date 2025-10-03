@@ -42,8 +42,8 @@ from numpy import unravel_index
 import xarray as xr
 #pylint: disable=too-many-arguments, line-too-long
 ZERO_DIFF = False
-ATOL = 1.e-03
-RTOL = 1e-03
+ATOL = 1.e-05
+RTOL = 1.e-05
 def file_info(infile):
     ''' read file info. '''
     def print_summary (arr):
@@ -82,11 +82,18 @@ def diff_nc(file1, file2):
     if file1.endswith('.nc') or file1.endswith('.NC') or file1.endswith('.nc4'):
         _a = xr.open_dataset(file1)
         _b = xr.open_dataset(file2)
+        vars_to_drop = ['time_bnds', 'time']
+        existing_vars = [var for var in vars_to_drop if var in _a.data_vars or var in _a.coords]
+        if existing_vars:
+            _a = _a.drop_vars(existing_vars)
+        existing_vars = [var for var in vars_to_drop if var in _b.data_vars or var in _b.coords]
+        if existing_vars:
+            _b = _b.drop_vars(existing_vars)
         if ZERO_DIFF:
-            xr.testing.assert_equal(_a.drop_vars(['time_bnds','time']), _b.drop_vars(['time_bnds','time']))
+            xr.testing.assert_equal(_a, _b)
             print (file1,': is identical.')
         else:
-            xr.testing.assert_allclose(_a.drop_vars(['time_bnds','time']), _b.drop_vars(['time_bnds','time']), rtol=RTOL)
+            xr.testing.assert_allclose(_a, _b, rtol=RTOL)
             print (file1,': is close at relative tolerance of ' + str(RTOL) + '.')
 
 def print_var(latp, lonp, latname, lonname, varname, filename):

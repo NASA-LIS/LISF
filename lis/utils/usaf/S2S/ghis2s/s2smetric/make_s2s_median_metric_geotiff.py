@@ -381,10 +381,18 @@ def _driver():
     startdates_by_month = mgt.get_startdates_by_month()
     median_values = mgt.get_median_values()
     for imonth in range(0, num_months):
-        metadata["forecast_month"] = f"{imonth + 1}"
-        metadata["valid_year_and_month"] = \
-            f"{startdates_by_month[imonth].year:04d}" + \
-            f"-{startdates_by_month[imonth].month:02d}"
+        if len(sys.argv) == 4:
+            metadata["forecast_month"] = f"{imonth + 1}"
+            metadata["valid_year_and_month"] = \
+                f"{startdates_by_month[imonth].year:04d}" + \
+                f"-{startdates_by_month[imonth].month:02d}"
+        else:
+            metadata["forecast_week"] = f"{imonth + 1}"
+            metadata["valid_year_and_month_day"] = \
+                f"{startdates_by_month[imonth].year:04d}" + \
+                f"-{startdates_by_month[imonth].month:02d}" + \
+                f"-{startdates_by_month[imonth].day:02d}"
+        
         var2d = median_values[imonth][::-1, :] # Flip y-axis
         geotiff_filename = \
             mgt.make_geotiff_filename(metric, imonth)

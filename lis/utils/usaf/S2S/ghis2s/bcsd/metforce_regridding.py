@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: forecast_task_01.py
+# SCRIPT: metforce_regridding.py
 #
 # PURPOSE: Processes the CFSv2 forecast data and outputs in 6-hourly and
 # monthly time resolutions.  Based on FORECAST_TASK_01.sh.
@@ -89,6 +89,13 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    # Base forecast model
+    fcst_model = config['BCSD']['fcst_data_type']
+
+    if fcst_model.upper() not in ['CFSV2', 'GEOSV3']:
+        print(f'Unsupported forecast data {fcst_model}')
+        sys.exit()
+
     # get resolution
     lats, lons = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
@@ -100,7 +107,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
     # Paths for the daily forecast data (input and output paths)
-    outdir = f"{projdir}/bcsd_fcst/CFSv2_{resol}/raw"
+    outdir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}/raw"
 
     imon = f"{month_abbr}01"
     ic_dates = calc_ic_dates(imon)
@@ -117,14 +124,18 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
             cmd_list = []
             for cyear in range(syear,eyear+1):
                 cmd = "python"
-                cmd += f" {srcdir}/process_forecast_data.py"
+                if fcst_model == 'CFSv2':
+                    cmd += f" {srcdir}/process_cfsv2_forcing.py"
+                if fcst_model == 'GEOSv3':
+                    cmd += f" {srcdir}/geosv3_geosv3_forcing.py"
                 cmd += f" {cyear:04d}"
                 cmd += f" {ens_num:02d}"
                 cmd += f" {imon}"
                 cmd += f" {outdir}"
                 cmd += f" {config_file}"
-                for ic_date in ic_dates:
-                    cmd += f" {ic_date}"
+                if fcst_model == 'CFSv2':
+                    for ic_date in ic_dates:
+                        cmd += f" {ic_date}"
                 cmd_list.append(cmd)
                 slurm_commands.append(cmd)
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
@@ -135,14 +146,18 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
 
         else:
             cmd = "python"
-            cmd += f" {srcdir}/process_forecast_data.py"
+            if fcst_model == 'CFSv2':
+                cmd += f" {srcdir}/process_cfsv2_forcing.py"
+            if fcst_model == 'GEOSv3':
+                cmd += f" {srcdir}/process_geosv3_forcing.py"
             cmd += f" {syear:04d}"
             cmd += f" {ens_num:02d}"
             cmd += f" {imon}"
             cmd += f" {outdir}"
             cmd += f" {config_file}"
-            for ic_date in ic_dates:
-                cmd += f" {ic_date}"                
+            if fcst_model == 'CFSv2':
+                for ic_date in ic_dates:
+                    cmd += f" {ic_date}"                
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
             

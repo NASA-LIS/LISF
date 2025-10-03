@@ -16,8 +16,8 @@ import numpy as np
 import xarray as xr
 import yaml
 # pylint: disable=import-error
-from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
-from ghis2s.shared.utils import get_domain_info
+from ghis2s.shared.utils import get_domain_info, load_ncdata
+from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
 # This function takes in a time series as input and provides sorted times series of values and
@@ -60,7 +60,10 @@ lat1, lat2, lon1, lon2 = get_domain_info(CONFIGFILE, extent=True)
 
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
-
+subtask = VAR_NAME
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'bcsd/bcsd_library/calc_and_write_observational_climatology.py: {VAR_NAME}')
 INFILE_TEMPLATE = '{}/{:04d}{:02d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
 OUTFILE_TEMPLATE = '{}/{}_obs_clim.nc'
 
@@ -83,8 +86,8 @@ for YEAR in range(CLIM_SYR, CLIM_EYR+1):
            lis_month -= 12
            lis_year = lis_year + 1
         INFILE = INFILE_TEMPLATE.format(INDIR, lis_year, lis_month, lis_year, lis_month)
-        print (f"Reading Observed Data {INFILE}")
-        OBS_DATA_COARSE[MON_COUNTER, ] = read_nc_files(INFILE, VAR_NAME)
+        logger.info(f"Reading Observed Data {INFILE}",  subtask=subtask)
+        OBS_DATA_COARSE[MON_COUNTER, ] = load_ncdata(INFILE, [logger,subtask], var_name=VAR_NAME).values 
 #       Impose mask on precip values:
         if VAR_NAME == 'Rainf_f_tavg':
            OBS_DATA_COARSE[MON_COUNTER,mask == 0] = -9999.

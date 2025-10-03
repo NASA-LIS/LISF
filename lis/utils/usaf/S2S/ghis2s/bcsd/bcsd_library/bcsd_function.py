@@ -36,18 +36,18 @@ class VarLimits:
         min_limit={'PRECTOT': 1.e-7,
                   'PS': 30000.,
                   'T2M': 180.,
-                  'LWS': 10.,
-                  'SLRSF': 0.,
-                  'Q2M': 0.,
+                  'LWGAB': 10.,
+                  'SWGDN': 0.,
+                  'QV2M': 0.,
                   'WIND': 0.
         }
 
         max_limit={'PRECTOT': 0.04,
                   'PS': 110000.,
                   'T2M': 332.,
-                  'LWS': 700.,
-                  'SLRSF': 1367.,
-                  'Q2M': 0.05,
+                  'LWGAB': 700.,
+                  'SWGDN': 1367.,
+                  'QV2M': 0.05,
                   'WIND': 70.
         }
 

@@ -61,9 +61,9 @@ def _make_settings_dict(patched_timestring,
 def wgrib2_to_netcdf(grib2_file):
     new_name = {
         'prate':'PRECTOT','sp':'PS','t2m':'T2M',
-        'dlwrf':'LWS','dswrf':'SLRSF','sh2':'Q2M',
-        'u10':'U10M','v10':'V10M','q':'Q2M',
-        'sdlwrf':'LWS','sdswrf':'SLRSF',}
+        'dlwrf':'LWGAB','dswrf':'SWGDN','sh2':'QV2M',
+        'u10':'U10M','v10':'V10M','q':'QV2M',
+        'sdlwrf':'LWGAB','sdswrf':'SWGDN',}
     
     ds_ = cfgrib.open_dataset(grib2_file, indexpath ="", decode_timedelta=True)
     for varname, da_ in ds_.data_vars.items():

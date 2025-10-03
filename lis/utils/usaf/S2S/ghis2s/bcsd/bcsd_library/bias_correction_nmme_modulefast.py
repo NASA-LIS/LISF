@@ -15,13 +15,14 @@ import calendar
 from datetime import datetime
 import numpy as np
 from dateutil.relativedelta import relativedelta
+from time import ctime as t_ctime
+from time import time as t_time
 import xarray as xr
 import yaml
 # pylint: disable=import-error
 import yaml
 from ghis2s.bcsd.bcsd_library import bcsd_function
-from ghis2s.bcsd.bcsd_library.bcsd_stats_functions import write_4d_netcdf
-from ghis2s.shared.utils import get_domain_info, load_ncdata
+from ghis2s.shared.utils import get_domain_info, load_ncdata, write_ncfile
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
@@ -207,5 +208,59 @@ for MON in [INIT_FCST_MON]:
     logger.info(f"Writing {OUTFILE}", subtask = subtask)
     SDATE = datetime(TARGET_FCST_SYR, MON, 1)
     dates = [SDATE+relativedelta(years=n) for n in range(CORRECT_FCST_COARSE.shape[0])]
-    write_4d_netcdf(OUTFILE, CORRECT_FCST_COARSE, FCST_VAR, MODEL_NAME, \
-    'Bias corrected', UNIT, 5, LONS, LATS, ENS_NUM, LEAD_FINAL, SDATE, dates)
+
+    # Create coordinate arrays
+    leads_coord = np.arange(0.5, LEAD_FINAL+0.5)
+    ens_coord = np.arange(0, ENS_NUM)
+
+    # Convert dates to days since SDATE
+    string_date = datetime.strftime(SDATE, "%Y-%m-%d")
+    time_coord = [(d - SDATE).days for d in dates]
+
+    # Create the Dataset
+    out_xr = xr.Dataset(
+        {
+            FCST_VAR: (['time', 'Lead', 'Ens', 'latitude', 'longitude'], 
+                       CORRECT_FCST_COARSE)
+        },
+        coords={
+            'time': time_coord,
+            'Lead': leads_coord,
+            'Ens': ens_coord,
+            'latitude': LATS,
+            'longitude': LONS
+        }
+    )
+    
+    # Set global attributes
+    out_xr.attrs['description'] = 'Bias corrected'
+    out_xr.attrs['history'] = 'Created ' + t_ctime(t_time())
+    out_xr.attrs['source'] = MODEL_NAME
+
+    # Set coordinate attributes
+    out_xr['latitude'].attrs['units'] = 'degrees_north'
+    out_xr['longitude'].attrs['units'] = 'degrees_east'
+    out_xr['Ens'].attrs['units'] = 'unitless'
+    out_xr['time'].attrs['units'] = f'days since {string_date}'
+    out_xr['time'].attrs['calendar'] = 'gregorian'
+    
+    # Set variable attributes
+    out_xr[FCST_VAR].attrs['units'] = UNIT
+    
+    # Set up encoding
+    encoding = {
+        FCST_VAR: {
+            'dtype': 'float32',
+            'zlib': True,
+            'complevel': 6,
+            'shuffle': True,
+            '_FillValue': -9999.0
+        },
+        'longitude': {'dtype': 'float32'},
+        'latitude': {'dtype': 'float32'},
+        'Lead': {'dtype': 'float64'},
+        'Ens': {'dtype': 'float64'},
+        'time': {'dtype': 'float64'}
+    }
+
+    write_ncfile(out_xr, OUTFILE, encoding, logger)    

@@ -13,10 +13,10 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: forecast_task_09.py
+# SCRIPT: combine_forcings.py
 #
 # PURPOSE: Combine all non-precip 6-hourly files into one file and copy BCSD
-# precip files in to the same directory. Based on FORECAST_TASK_09.sh.
+# precip files in to the same directory. 
 #
 # REVISION HISTORY:
 # 24 Oct 2021: Ryan Zamora, first version
@@ -60,6 +60,9 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    # Base forecast model
+    fcst_model = config['BCSD']['fcst_data_type']
+    
     # get resolution
     lats, lons = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
@@ -72,11 +75,10 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     srcdir2 = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/'
 
     # Path for the final 6-hourly forcing data:
-    forcedir = f"{projdir}/bcsd_fcst/CFSv2_{resol}"
+    forcedir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}"
 
     print("[INFO] Combining subdaily BC CFSv2 non-precip variables")
     slurm_9_10 = []
-    slurm_11_12 = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
         cmd += f" {srcdir}/combine_sub_daily_downscaled_forcings.py"
@@ -86,6 +88,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         cmd += f" {ens_num}"
         cmd += f" {lead_months}"
         cmd += f" {forcedir}"
+        cmd += f" {config_file}"
         jobfile = job_name + '_run.j'
         jobname = job_name + '_'
 
@@ -95,59 +98,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
             utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
     print(f"[INFO] Wrote  CFSv2 combination script for: {month_abbr}")
-
-    # Now write task 10 scripts
-
-    for nmme_model in  config['EXP']['NMME_models']:
-        cmd = "python"
-        cmd += f" {srcdir2}/task_10.py"
-        cmd += f" -c {config_file}"
-        cmd += f" -s {year}"
-        cmd += f" -m {month_abbr}"
-        cmd += f" -w {projdir}"
-        cmd += f" -n {month_num}"
-        cmd += f" -M {nmme_model}"
-        jobfile = 'bcsd10_' + nmme_model + '_run.j'
-        jobname = 'bcsd10_' + nmme_model + '_'
-
-        if py_call:
-            slurm_9_10.append(cmd)
-        else:
-            utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
-
-    # Now write task 11 scripts
-
-    #cmd = "python"
-    #cmd += f" {srcdir2}/task_11.py"
-    #cmd += f" -s {year}"
-    #cmd += f" -m {month_abbr}"
-    #cmd += f" -c {config_file}"
-    #cmd += f" -w {cwd}"
-    #cmd += f" -n {month_num}"
-    #jobfile = 'bcsd11_run.j'
-    #jobname = 'bcsd11_'
-
-    #if py_call:
-    #    slurm_11_12.append(cmd)
-    #else:
-    #    utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
-
-    # Now write task 12 scripts
-
-    #cmd = "python"
-    #cmd += f" {srcdir2}/task_12.py"
-    #cmd += f" -s {year}"
-    #cmd += f" -m {month_abbr}"
-    #cmd += f" -c {config_file}"
-    #cmd += f" -w {cwd}"
-    #cmd += f" -n {month_num}"
-    #jobfile = 'bcsd12_run.j'
-    #jobname = 'bcsd12_'
-
-    #if py_call:
-    #    slurm_11_12.append(cmd)
-    #else:
-    #    utils.job_script(config_file, jobfile, jobname, ntasks, '3', cwd, in_command=cmd)
 
     if py_call:
         return slurm_9_10

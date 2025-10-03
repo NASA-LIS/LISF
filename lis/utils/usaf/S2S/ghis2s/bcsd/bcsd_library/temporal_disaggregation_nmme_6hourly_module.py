@@ -28,7 +28,7 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
-from ghis2s.shared.utils import get_domain_info
+from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
@@ -248,7 +248,7 @@ def process_ensemble(ens):
     FCST_VAR, MODEL_NAME, MONTH_NAME, BC_FCST_SYR, BC_FCST_EYR)
 
     logger.info(f"Reading bias corrected monthly forecasts {BC_INFILE}", subtask=task_label)
-    MON_BC_DATAG = xr.open_dataset(BC_INFILE)
+    MON_BC_DATAG = load_ncdata(BC_INFILE, [logger, task_label])
     LONS = MON_BC_DATAG['longitude'].values
     LATS = MON_BC_DATAG['latitude'].values
     II1 = np.min(np.where (LONS >= LON1))
@@ -285,7 +285,7 @@ def process_ensemble(ens):
         SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, (ens % 12) + 1, MONTH_NAME, \
         FCST_YEAR, FCST_MONTH)
         logger.info(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}", subtask=task_label)
-        MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
+        MONTHLY_INPUT_RAW_DATAG = load_ncdata(SUBDAILY_INFILE, [logger, task_label])
         INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
         MONTHLY_INPUT_RAW_DATA = INPUT_RAW_DATA[FCST_VAR].mean(dim = 'time')
 

@@ -21,12 +21,13 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor
 import concurrent.futures
+import yaml
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
-from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
+from ghis2s.shared.utils import load_ncdata, get_domain_info
 from ghis2s.shared.logging_utils import TaskLogger
 # pylint: enable=import-error
 
@@ -128,29 +129,38 @@ logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'bcsd/bcsd_library/combine_sub_daily_downscaled_forcings.py processing {sys.argv[3]} for month {int(sys.argv[1]):04d}{int(sys.argv[2]):02d}')
 
+INIT_FCST_YEAR = int(sys.argv[1])
+## initial forecast year for which to downscale the data
+INIT_FCST_MON = int(sys.argv[2])
+## initial forecast month for which to downscale the data
+
+MODEL_NAME = str(sys.argv[3])
+ENS_NUM = int(sys.argv[4])
+LEAD_FINAL = int(sys.argv[5])
+MONTH_NAME_TEMPLATE = '{}01'
+MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON].lower())
+
+#Directory and file addresses
+BASEDIR = str(sys.argv[6])
+CONFIG_FILE = str(sys.argv[7])
+
+lats, lons = get_domain_info(CONFIG_FILE, coord=True)
+resol = round((lats[1] - lats[0])*100.)/100.
+if MODEL_NAME == 'CFSv2':
+    FORCE_DT = 21600
+
+if MODEL_NAME == 'GEOSv3':
+    FORCE_DT = 10800
+    
 def process_ensemble(ens):
-    subtask = f'ens{ens:02d}'
-    INIT_FCST_YEAR = int(sys.argv[1])
-    ## initial forecast year for which to downscale the data
-    INIT_FCST_MON = int(sys.argv[2])
-    ## initial forecast month for which to downscale the data
-
-    MODEL_NAME = str(sys.argv[3])
-    ENS_NUM = int(sys.argv[4])
-    LEAD_FINAL = int(sys.argv[5])
-    MONTH_NAME_TEMPLATE = '{}01'
-    MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON].lower())
-
-    #Directory and file addresses
-    BASEDIR = str(sys.argv[6])
+    subtask = f'ens{ens:02d}'    
     INDIR_TEMPLATE = '{}/bcsd/6-Hourly/{}/{:04d}/ens{:01d}'
     #### Change the model name here for other models
     INFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
     OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/ens{:01d}'
-    OUTFILE_TEMPLATE = '{}/CFSv2.{:04d}{:02d}.nc4'
+    OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
-    #VAR_NAME_LIST=['LWS', 'SLRSF', 'PS', 'Q2M', 'T2M', 'WIND10M']
     VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
     UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
 
@@ -178,16 +188,20 @@ def process_ensemble(ens):
             VAR = VAR_NAME_LIST[VAR_NUM]
             INFILE = INFILE_TEMPLATE.format(INDIR, VAR, FCST_YEAR, \
                                             FCST_MONTH)
-            TEMP = read_nc_files(INFILE, VAR)
+            logger.info(f"Reading {INFILE}", subtask=subtask)
+            temp_da = load_ncdata(INFILE, [logger, subtask],  var_name=VAR)
+            TEMP = temp_da.values
+            
             if VAR == VAR_NAME_LIST[0]:
-                LATS, LONS = read_nc_files(INFILE, 'lat'), \
-                    read_nc_files(INFILE, 'lon')
+                LATS, LONS = temp_da.lat.values, temp_da.lon.values
                 IN_DATA = np.empty((len(VAR_NAME_LIST), TEMP.shape[0], \
                                     len(LATS), len(LONS)))
             IN_DATA[VAR_NUM, ] = TEMP
+            temp_da.close()
+            del temp_da
 
         ### Finished reading all files now writing combined output
-        OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_YEAR, FCST_MONTH)
+        OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, MODEL_NAME, FCST_YEAR, FCST_MONTH)
         logger.info(f"Writing {OUTFILE}", subtask=subtask)
         SDATE = datetime(FCST_YEAR, FCST_MONTH, 1, 6)
         NUM_DAYS = TEMP.shape[0]
@@ -195,7 +209,7 @@ def process_ensemble(ens):
         write_bc_netcdf(OUTFILE, IN_DATA, VAR_NAME_LIST, \
                         'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \
                         UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 8, LATS[-1], \
-                        LONS[-1], LATS[0], LONS[0], 0.25, 0.25, 21600)
+                        LONS[-1], LATS[0], LONS[0], resol, resol, FORCE_DT)
 
 logger.info("Starting parallel processing of ensemmbles")
 num_workers = int(sys.argv[4])
@@ -218,6 +232,7 @@ MODEL_NAME = str(sys.argv[3])
 ENS_NUM = int(sys.argv[4])
 LEAD_FINAL = int(sys.argv[5])
 BASEDIR = str(sys.argv[6])
+CONFIGFILE = str(sys.argv[6])
 MONTH_NAME_TEMPLATE = '{}01'
 MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])    
 OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)

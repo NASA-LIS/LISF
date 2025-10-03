@@ -114,8 +114,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
             _f.write('#SBATCH --mem=0' + '\n')
 
         _f.write('#SBATCH --job-name=' + job_name + '\n')
-        _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
-        _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
+        _f.write('#SBATCH --output ' + cwd + '/logs/' + job_name + '%j.out' + '\n')
+        _f.write('#SBATCH --error ' + cwd + '/logs/' + job_name + '%j.err' + '\n')
         _f.write('\n')
         _f.write('#######################################################################' + '\n')
         _f.write('#                  Run LISF S2S ' + job_name + '\n')
@@ -281,7 +281,7 @@ def print_status_report (e2es, yyyymm):
     for file_no, jfile in enumerate(jfiles):
         job_file = jfile.split("/")[3]
         jcut = jfile[:-(len('run.j'))]
-        ofile = glob.glob(jcut + "*.out")
+        ofile = glob.glob(jcut + "logs/*.out")
         if len(ofile) == 1:
             if file_no == 0:
                 efile = ofile[0][:-(len('out'))]+'err'
@@ -367,8 +367,8 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
                 _f.write('#SBATCH --ntasks-per-node='+ ntasks + '\n')
 
         _f.write('#SBATCH --job-name=' + job_name + '\n')
-        _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
-        _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
+        _f.write('#SBATCH --output ' + cwd + '/logs/' + job_name + '%j.out' + '\n')
+        _f.write('#SBATCH --error ' + cwd + '/logs/' + job_name + '%j.err' + '\n')
         _f.write('\n')
         _f.write('#######################################################################' + '\n')
         _f.write('#                  Run LISF S2S ' + job_name + '\n')
@@ -456,9 +456,23 @@ def tiff_to_da(file):
     
 def load_ncdata(infile, logger,  var_name=None, **kwargs):
     try:
+        if isinstance(infile, str) and ('*' in infile or '?' in infile):
+            matching_files = glob.glob(infile)
+            if not matching_files:
+                logger[0].error(f"No files found matching pattern: {infile}", subtask=logger[1])
+                sys.exit()
+            elif len(matching_files) == 1:
+                infile = matching_files[0]
+                multi_file_kwargs = ['combine', 'concat_dim', 'data_vars', 'coords', 'compat', 'join']
+                kwargs = {k: v for k, v in kwargs.items() if k not in multi_file_kwargs}
+            else:
+                infile = matching_file
         if var_name is not None:
-            dataset = xr.open_dataset(infile, **kwargs)
-            data = dataset[var_name].values
+            if isinstance(infile, str):
+                dataset = xr.open_dataset(infile, **kwargs)
+            else:
+                dataset = xr.open_mfdataset(infile, **kwargs)      
+            data = dataset[var_name]
             dataset.close()  
             del dataset
             return data
@@ -468,4 +482,15 @@ def load_ncdata(infile, logger,  var_name=None, **kwargs):
             return xr.open_mfdataset(infile, **kwargs)
     except Exception as e:
         logger[0].error(f"Couldn't open {infile}", subtask=logger[1])
+        logger[0].error(f"xarray error {e}", subtask=logger[1])
         sys.exit()
+
+def write_ncfile(out_xr, outfile, encoding, logger):
+    try:
+        out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding)
+        return
+    except Exception as e:
+        logger[0].error(f"Error saving file: {e}", subtask=logger[1])
+        sys.exit()
+    
+    

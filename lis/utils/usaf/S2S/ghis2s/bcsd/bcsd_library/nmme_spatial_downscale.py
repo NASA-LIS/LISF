@@ -87,7 +87,6 @@ fcast_ens_index = {
 
 hcast_p1 = {
     'CFSv2': [1982, 2010],
-    'GEOSv2': [0, ENS_NUM],
     'CCM4': [1991, 2020],
     'GNEMO5': [1991, 2020],
     'CanESM5': [1991, 2020],
