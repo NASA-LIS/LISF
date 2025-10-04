@@ -51,6 +51,127 @@ def _read_cmd_args():
 
     return args
 
+def write_monthly_files(this_6h, file_6h, file_mon):
+    encoding = {
+        var: {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
+        for var in ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "WIND10M"]
+    }
+
+    this_6h.to_netcdf(file_6h, format="NETCDF4", encoding=encoding)
+    this_mon = this_6h.mean(dim="time")
+    this_mon.to_netcdf(file_mon, format="NETCDF4", encoding=encoding)
+    this_6h.close()
+    this_mon.close()
+    del this_6h, this_mon
+    return
+
+def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger, subtask):
+    regrid_method = {
+        '25km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'WIND10M':'bilinear'},
+        '10km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'WIND10M':'bilinear'},
+        '5km': {'PRECTOT':'conservative', 'SWGDN':'conservative', 'LWGAB':'conservative','PS':'conservative',
+                 'QV2M':'conservative', 'T2M':'bilinear', 'WIND10M':'bilinear'},}
+    
+    outdir_6hourly = outdirs["outdir_6hourly"]
+    outdir_monthly = outdirs["outdir_monthly"]
+    final_name_pfx = f"{fcst_init['monthday']}.geosv3."
+    reftime = \
+         f"{fcst_init['year']}-{fcst_init['month']}-{fcst_init['day']}"
+    reftime += f",{fcst_init['hour']}:00:00,1hour"
+
+    # resample to the S2S grid
+    # build regridder
+    weightdir = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/'
+    target_land_mask = xr.open_dataset(args["config"]['SETUP']['supplementarydir'] + '/lis_darun/' + \
+                             args["config"]['SETUP']['ldtinputfile'])
+    target_land_mask = target_land_mask.rename({'north_south': 'lat', 'east_west': 'lon'})
+    
+    lats, lons = get_domain_info(args["configfile"], coord=True)
+    resol = round((lats[1] - lats[0])*100)
+    resol = f'{resol}km'
+    # read GEOSv3 land mask
+    geosv3_land_mask = xr.open_dataset(weightdir + f'GEOSv3_{resol}_landmask.nc4')
+    
+    '''
+    resol='25km': NY=720, NX=1440; 
+    resol='10km': NY=1500, NX=3600; 
+    resol='5km': NY=3000, NX=7200; 
+    geosv3 dimensions: step: 248, latitude: 361, longitude: 720
+    '''
+    
+    method = regrid_method.get(resol)
+    ds_out = xr.Dataset(
+        {
+            "lat": (["lat"], lats),
+            "lon": (["lon"], lons),
+        }
+    )
+    geosv3_masked = geosv3_in.copy()
+    geosv3_masked['mask'] = geosv3_land_mask['LANDMASK']
+
+    weight_file = weightdir + f'GEOSv3_{resol}_bilinear_land.nc'
+    bil_regridder = xe.Regridder(geosv3_masked, ds_out, "bilinear", periodic=True, 
+                                 reuse_weights=True,
+                                 extrap_method='nearest_s2d', 
+                                 filename=weight_file)
+
+    weight_file = weightdir + f'GEOSv3_{resol}_conservative.nc'
+    con_regridder = xe.Regridder(geosv3_in, ds_out, "conservative", periodic=True, 
+                                 reuse_weights=True, 
+                                 filename=weight_file)
+    
+    bilinear_vars = [var for var in geosv3_in.data_vars if var in method and method[var] == 'bilinear']
+    conservative_vars = [var for var in geosv3_in.data_vars if var in method and method[var] == 'conservative']
+
+    if bilinear_vars:
+        geosv3_bilinear = geosv3_masked[bilinear_vars]
+        result_bilinear = apply_regridding_with_mask(geosv3_bilinear, bil_regridder,
+                                                     geosv3_land_mask, target_land_mask, 'bilinear')
+        for var in bilinear_vars:
+            ds_out[var] = result_bilinear[var]
+
+    if conservative_vars:
+        geosv3_conservative = geosv3_in[conservative_vars]
+        result_conservative = apply_regridding_with_mask(geosv3_conservative, con_regridder,
+                                                         geosv3_land_mask, None, 'conservative')
+        for var in conservative_vars:
+            ds_out[var] = result_conservative[var]
+            
+    mmm = fcst_init['monthday'].split("0")[0].capitalize()
+    dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
+    # clip limits
+    ds_out["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out["PRECTOT"].values[:]),
+                                                     var_name = "PRECTOT", precip=True)
+    ds_out["PS"].values[:] = limits.clip_array(np.array(ds_out["PS"].values[:]),
+                                                var_name = "PS")
+    ds_out["T2M"].values[:] = limits.clip_array(np.array(ds_out["T2M"].values[:]),
+                                                 var_name = "T2M")
+    ds_out["LWGAB"].values[:] = limits.clip_array(np.array(ds_out["LWGAB"].values[:]),
+                                                 var_name = "LWGAB")
+    ds_out["SWGDN"].values[:] = limits.clip_array(np.array(ds_out["SWGDN"].values[:]),
+                                                   var_name = "SWGDN")
+    ds_out["QV2M"].values[:] = limits.clip_array(np.array(ds_out["QV2M"].values[:]),
+                                                 var_name = "QV2M")
+    ds_out["WIND10M"].values[:] = limits.clip_array(np.array(ds_out["WIND10M"].values[:]),
+                                                     var_name = "WIND")
+
+    dt1 = dt1 + relativedelta(months=rank)
+    file_6h = outdir_6hourly + '/' + \
+        final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+    file_mon = outdir_monthly + '/' + \
+        final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+
+    write_monthly_files(ds_out, file_6h, file_mon)
+    logger.info(f"Writing: 3h GEOSv3 file: {file_6h}", subtask = subtask)
+    logger.info(f"Writing: monthly GEOSv3 file: {file_mon}", subtask = subtask)
+    ds_out.close()
+    geosv3_masked.close()
+    del ds_out, geosv3_masked
+    logger.info(f"Done processing GEOSv3 forecast files for {rank}", subtask = subtask)
+    return
+
 def _driver(rank):
     """Main driver. rank = forecast month"""
     new_name = {'PRECTOTCORR': 'PRECTOT', 'T2M': 'T2M', 'PS': 'PS',
@@ -77,24 +198,48 @@ def _driver(rank):
     yyyymm_ic = f'{dt0.year:04d}{dt0.month:02d}'
     yyyymm_fc = f'{dt1.year:04d}{dt1.month:02d}'
     ensNN = f'/ens{ens_num:02d}/'
+    fcst_init["month"] = int(dt0.month)
+    fcst_init["day"] = int(dt0.day)
+    fcst_init["hour"] = 0
     
     geos_file = args["forcedir"] + yyyymm_ic + ensNN + f'geos_s2s_v3.{yyyymm_fc}.nc'
-    
     rad_file = args["forcedir"] + yyyymm_ic + ensNN + f'rad_geos_s2s_v3.{yyyymm_fc}.nc'
+    logger.info(f"Reading GEOS file: {geos_file}", subtask = subtask)
+    logger.info(f"Reading Radiation file: {rad_file}", subtask = subtask)
+    geos_full = load_ncdata(geos_file, [logger, subtask])[['PRECTOTCORR', 'T2M', 'PS', 'Q2M', 'U10M', 'V10M','time','lat','lon']].load()
+    geos_full =  geos_full.rename({'lat': 'latitude', 'lon': 'longitude'})
+    rad_full = load_ncdata(rad_file, [logger, subtask])[['LWS', 'SWGDWN']].load()
+    rad_full =  rad_full.rename({'lat': 'latitude', 'lon': 'longitude'})
     
-    print(rank, ' ',geos_file)
-    sys.exit()
+    # Create new dataset with renamed variables
+    geos_ds = xr.Dataset()
+    
+    for var in ['PRECTOTCORR', 'T2M', 'PS', 'Q2M']:
+        geos_ds[new_name[var]] = geos_full[var]
 
-    fcst_init['date'] = f"{fcst_init['year']}{fcst_init['monthday']}"
-    fcst_init['month'] = int(fcst_init['monthday'][0:2])
-    fcst_init['day'] = int(fcst_init['monthday'][2:4])
-    fcst_init['timestring'] = f"{fcst_init['date']}{fcst_init['hour']}"
-    print(rank, fcst_init)
-    sys.exit()
-    logger.info(f"Forecast Init Date: {fcst_init['monthday']} {year}", subtask = subtask)
-    # Print Ensemble member and reference date+cycle time:
-    txt_reftime = _print_reftime(fcst_init, ens_num)
-    logger.info(f"Reference time: {txt_reftime}", subtask = subtask)
+    geos_ds['time'] = geos_full['time']
+    geos_ds['latitude'] = geos_full['latitude']
+    geos_ds['longitude'] = geos_full['longitude']
+    
+    # Calculate wind magnitude
+    u10 = magnitude(geos_full['U10M'], geos_full['V10M'])
+    geos_ds['WIND10M'] = u10
+    geos_ds['WIND10M'].attrs = {
+        'units': 'm/s',
+        'short_name': 'wnd10m',
+        'long_name': 'Wind Speed',
+        'level': '10 m above ground'
+    }
+    
+    # Add radiation variables
+    for var in ['LWS', 'SWGDWN']:
+        geos_ds[new_name[var]] = rad_full[var]
+    
+    # Close datasets to free memory
+    geos_full.close()
+    rad_full.close()
+    del geos_full, rad_full
+    gc.collect()
 
     # 6-hourly output dir:
     outdirs['outdir_6hourly'] = \
@@ -102,7 +247,7 @@ def _driver(rank):
         f"{fcst_init['monthday']}/{year}/ens{ens_num}"
     if not os.path.exists(outdirs['outdir_6hourly']):
         os.makedirs(outdirs['outdir_6hourly'], exist_ok=True)
-
+        
     # Monthly output dir:
     outdirs['outdir_monthly'] = \
         f"{args['outdir']}/Monthly/" + \
@@ -110,39 +255,9 @@ def _driver(rank):
     if not os.path.exists(outdirs['outdir_monthly']):
         os.makedirs(outdirs['outdir_monthly'], exist_ok=True)
 
-    # Load GEOSv3 variables:
-    
-    
-    cfsv2 = []
-    for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
-                    "q2m", "wnd10m"]:
-        logger.info(f"CFSv2 variable: {varname}", subtask = subtask)
-        subdir, file_pfx, file_sfx = \
-            _set_input_file_info(fcst_init['year_cfsv2'],
-                                 fcst_init['month'],
-                                 varname)
-        indir = f"{args['forcedir']}/{subdir}/"
-        if subdir == "Oper_TS" and not os.path.exists(indir):
-            indir = f"{args['forcedir']}/"
-
-        indir += f"{fcst_init['year_cfsv2']}/{fcst_init['date']}"
-
-        # Checking CFSv2 member-date subdir presence:
-        if not os.path.isdir(indir):
-            logger.error(f"CFSV2 directory, {indir}, does NOT exist.", subtask= subtask)
-            sys.exit(1)  # Exit with an error code
-
-        # Convert GRIB file to netCDF and handle missing/corrupted data
-        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], \
-                                 file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir'],
-                                 [logger,subtask]))
-
-    cfsv2 = xr.merge (cfsv2, compat='override')
-    _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
-                                         (cfsv2['valid_time']  < dt2)),
-                                        outdirs, fcst_init, args, rank, logger, subtask)
-    cfsv2.close()
-    del cfsv2
+    _migrate_to_monthly_files(geos_ds, outdirs, fcst_init, args, rank, logger, subtask)
+    geos_ds.close()
+    del geos_ds
     gc.collect()
     return 
 
