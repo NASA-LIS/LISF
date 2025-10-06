@@ -118,8 +118,8 @@ def process_ensemble(MON, ens):
     task_label = subtask + f'-ens{ens:02d}'
     # All file formats
     MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
-    MONTHLY_RAW_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
-    SUBDAILY_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
+    MONTHLY_RAW_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.{}.{:04d}{:02d}.nc'
+    SUBDAILY_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.{}.{:04d}{:02d}.nc'
     SUBDAILY_OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
     MONTHLY_NMME_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
     
@@ -198,7 +198,7 @@ def process_ensemble(MON, ens):
         if FCST_VAR != 'PRECTOT':
             MONTHLY_INFILE = MONTHLY_RAW_INFILE_TEMPLATE.format(\
             MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
-            FCST_YEAR, FCST_MONTH)
+                                                                MODEL_NAME.lower(), FCST_YEAR, FCST_MONTH)
         else:
             MONTHLY_INFILE = MONTHLY_NMME_INFILE_TEMPLATE.format(\
             MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
@@ -213,7 +213,7 @@ def process_ensemble(MON, ens):
         # Sub-Daily raw data
         SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
         SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
-        FCST_YEAR, FCST_MONTH)
+                                                          MODEL_NAME.lower(), FCST_YEAR, FCST_MONTH)
         logger.info(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}", subtask=task_label)
         INPUT_RAW_DATAG = load_ncdata(SUBDAILY_INFILE, [logger, task_label])
         INPUT_RAW_DATA = INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
@@ -286,4 +286,4 @@ for MON in [int(sys.argv[4])]:
         for future in futures:
             result = future.result()
             
-    logger.info(f"CFSv2 6-hourly disaggregation completed successfully")
+    logger.info(f"{MODEL_NAME} disaggregation completed successfully")
