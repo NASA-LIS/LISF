@@ -94,7 +94,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
 
     if fcst_model.upper() not in ['CFSV2', 'GEOSV3']:
         print(f'Unsupported forecast data {fcst_model}')
-        sys.exit()
+        sys.exit(1)
 
     # get resolution
     lats, lons = utils.get_domain_info(config_file, coord=True)

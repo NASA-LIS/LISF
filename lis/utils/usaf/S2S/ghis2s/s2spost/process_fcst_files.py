@@ -159,10 +159,10 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
 
         if not os.path.exists(noahmp_file):
             logger.error(f"Missing: {noahmp_file}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
-            sys.exit()
+            sys.exit(1)
         if not os.path.exists(hymap_file):
             logger.error(f"Missing: {hymap_file}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
-            sys.exit()
+            sys.exit(1)
 
         merge_file = create_final_filename(topdatadir, fcstdate, curdate, model_forcing.upper(), config["EXP"]["DOMAIN"])
         logger.info(f's2spost/merge_lisf_files.py processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}',

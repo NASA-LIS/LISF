@@ -234,7 +234,7 @@ def write_clim(config_file, month, flabel):
                                "shuffle":True, "missing_value":-9999.},
                         'APCP': {"zlib":True, "complevel":6,
                                  "shuffle":True, "missing_value":-9999.}})
-    sys.exit()
+    sys.exit(0)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
