@@ -449,7 +449,7 @@ class S2Srun(DownloadForecasts):
         obs_path = self.E2ESDIR + 'hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'
 
         for var in obs_var_list:
-            check_file(OBS_CLIM_FILE_TEMPLATE.format(obs_path, var), 'USAF-LIS7.3rc8_25km Climate')
+            check_file(OBS_CLIM_FILE_TEMPLATE.format(obs_path, var), 'USAF-LIS7.3rc8_25km Climatology')
 
         # metforce clim
         fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
@@ -1659,10 +1659,10 @@ class S2Srun(DownloadForecasts):
         slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_hybas.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}"]
         par_info = {}
         par_info['CPT'] = str(5)
-        par_info['MEM']= '10GB'
+        par_info['MEM']= '240GB'
         par_info['NT']= str(1)
         par_info['TPN'] = None
-        par_info['MP'] = False
+        par_info['MP'] = True
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',

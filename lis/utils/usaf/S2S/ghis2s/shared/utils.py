@@ -140,20 +140,35 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
             _f.write('export NUM_WORKERS='+ parallel_run['CPT'] + '\n')
         _f.write('cd ' + cwd + '\n')
 
+        _f.write("PIDS=()\n")
         if command_list is None and group_jobs is None:
             _f.write(f"{this_command} || exit 1\n")
+            _f.write("PIDS+=($!)\n")
+            _f.write("\n")
             _f.write(f"{sec_command}\n")
+            _f.write("PIDS+=($!)\n")
+            _f.write("\n")
         else:
             if group_jobs:
                 for cmd in group_jobs:
                     if parallel_run is not None:
                         _f.write(f"srun --exclusive --cpus-per-task={parallel_run['CPT']} --ntasks {parallel_run['NT']} {cmd} &\n")
+                        _f.write("PIDS+=($!)\n")
+                        _f.write("\n")
                     else:
                         _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
-                _f.write("wait\n")
+                        _f.write("PIDS+=($!)\n")
+                        _f.write("\n")
+
             if command_list:
                 for cmd in command_list:
                     _f.write(f"{cmd} \n")
+                    _f.write("PIDS+=($!)\n")
+                    _f.write("\n")
+        _f.write("""for pid in "${PIDS[@]}"; do
+    wait $pid || { echo "[ERROR] Process failed. Exiting."; exit 1; }
+done
+       """)
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
@@ -461,7 +476,7 @@ def load_ncdata(infile, logger,  var_name=None, **kwargs):
             matching_files = glob.glob(infile)
             if not matching_files:
                 logger[0].error(f"No files found matching pattern: {infile}", subtask=logger[1])
-                sys.exit()
+                sys.exit(1)
             elif len(matching_files) == 1:
                 infile = matching_files[0]
                 multi_file_kwargs = ['combine', 'concat_dim', 'data_vars', 'coords', 'compat', 'join']
@@ -484,7 +499,7 @@ def load_ncdata(infile, logger,  var_name=None, **kwargs):
     except Exception as e:
         logger[0].error(f"Couldn't open {infile}", subtask=logger[1])
         logger[0].error(f"xarray error {e}", subtask=logger[1])
-        sys.exit()
+        sys.exit(1)
 
 def write_ncfile(out_xr, outfile, encoding, logger):
     try:
@@ -492,6 +507,6 @@ def write_ncfile(out_xr, outfile, encoding, logger):
         return
     except Exception as e:
         logger[0].error(f"Error saving file: {e}", subtask=logger[1])
-        sys.exit()
+        sys.exit(1)
     
     
