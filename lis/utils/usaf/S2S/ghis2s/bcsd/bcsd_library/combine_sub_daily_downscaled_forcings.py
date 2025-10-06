@@ -211,7 +211,7 @@ def process_ensemble(ens):
                         UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 8, LATS[-1], \
                         LONS[-1], LATS[0], LONS[0], resol, resol, FORCE_DT)
 
-logger.info("Starting parallel processing of ensemmbles")
+logger.info("Starting parallel processing of ensembles")
 num_workers = int(sys.argv[4])
 # ProcessPoolExecutor parallel processing
 with ProcessPoolExecutor(max_workers=num_workers) as executor:
@@ -267,4 +267,4 @@ for iens, ens_value in enumerate(range(ENS_NUM)):
     if returncode != 0:
         logger.error(f"Problem calling creating last precip symbolic link to {dst_file}!")
 
-logger.info(f"Ran SUCCESSFULY !")
+logger.info(f"Ran SUCCESSFULLY !")

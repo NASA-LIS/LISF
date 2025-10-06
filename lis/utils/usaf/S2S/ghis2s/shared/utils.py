@@ -94,7 +94,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
                     else:
                         if 'mil' in cfg['SETUP']['CONSTRAINT']:
                             _f.write('#SBATCH --partition=packable'  + '\n')
-                        _f.write('#SBATCH --mem-per-cpu=' + parallel_run['MEM'] + '\n')
+                        mpc = str(math.ceil(240 / parallel_run['TPN'])) + 'GB'
+                        _f.write('#SBATCH --mem-per-cpu=' + mpc + '\n')
                     _f.write('#SBATCH --cpus-per-task=' + parallel_run['CPT'] + '\n')
                 else:
                     if 'cssrw' in cfg['SETUP']['CONSTRAINT']:

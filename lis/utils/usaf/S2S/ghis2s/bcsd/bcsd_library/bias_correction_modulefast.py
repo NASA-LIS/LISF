@@ -74,7 +74,7 @@ OBS_CLIM_FILE_TEMPLATE = '{}/raw/Climatology/{}_obs_clim.nc'
 FCST_CLIM_FILE_TEMPLATE = '{}/raw/Climatology/{}/{}_fcst_clim.nc'
 MONTH_NAME_TEMPLATE = '{}01'
 # CFSV2 monthly filename template:
-FCST_INFILE_TEMPLATE = '{}/raw/Monthly/{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
+FCST_INFILE_TEMPLATE = '{}/raw/Monthly/{}/{:04d}/ens{:01d}/{}.{}.{:04d}{:02d}.nc'
 
 CONFIG_FILE = str(sys.argv[14])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
@@ -169,7 +169,7 @@ for mon in [INIT_FCST_MON]:
                             relativedelta(months=lead_num)
                 fcst_year, fcst_month = fcst_date.year, fcst_date.month
                 infile = FCST_INFILE_TEMPLATE.format(FCST_INDIR, month_name, \
-                init_fcst_year, ens+1, month_name, fcst_year, fcst_month)
+                                                     init_fcst_year, ens+1, month_name, fcst_model.lower(), fcst_year, fcst_month)
                 logger.info(f"Reading forecast file {infile}", subtask=subtask)
                 fcst_coarse[init_fcst_year-TARGET_FCST_SYR, lead_num, ens, ] = \
                 load_ncdata(infile, [logger, subtask], var_name=FCST_VAR)

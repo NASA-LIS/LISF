@@ -227,7 +227,9 @@ def process_ensemble(ens):
     CONFIG_FILE = str(sys.argv[12])
     LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
     LAT_LDT, LON_LDT = get_domain_info(CONFIG_FILE, coord=True)
-    
+    with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+    fcst_model = config['BCSD']['fcst_data_type']
     MONTHLY_BC_FCST_DIR = str(sys.argv[13])
     SUBDAILY_RAW_FCST_DIR = str(sys.argv[14])
     BASE_OUTDIR = str(sys.argv[15])
@@ -236,7 +238,7 @@ def process_ensemble(ens):
     
     # All file formats
     MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
-    SUBDAILY_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
+    SUBDAILY_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.{}.{:04d}{:02d}.nc'
     SUBDAILY_OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
     ## This provides abbrevated version of the name of a month: (e.g. for
@@ -283,7 +285,7 @@ def process_ensemble(ens):
         # Sub-Daily raw data
         SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
         SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, (ens % 12) + 1, MONTH_NAME, \
-        FCST_YEAR, FCST_MONTH)
+                                                          fcst_model.lower(), FCST_YEAR, FCST_MONTH)
         logger.info(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}", subtask=task_label)
         MONTHLY_INPUT_RAW_DATAG = load_ncdata(SUBDAILY_INFILE, [logger, task_label])
         INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
