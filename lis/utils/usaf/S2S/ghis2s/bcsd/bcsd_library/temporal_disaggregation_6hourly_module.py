@@ -273,6 +273,7 @@ def process_ensemble(MON, ens):
                         LAT_LDT[1] - LAT_LDT[0], 21600)
         
 logger.info("Starting parallel processing of ensemmbles")
+MODEL_NAME = str(sys.argv[7])
 for MON in [int(sys.argv[4])]:
     num_workers = int(os.environ.get('NUM_WORKERS', int(sys.argv[8])))
     # ProcessPoolExecutor parallel processing
