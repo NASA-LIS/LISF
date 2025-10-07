@@ -487,7 +487,7 @@ contains
     integer  :: nmu_m(1)
     real     :: mu_2
     integer  :: nmu
-    real     :: mean_v, med_v, sstd_v
+    real     :: mean_v, sstd_v
     real     :: ci_val
     integer  :: i,k,l,kk,tid
     integer  :: stid, m,t
@@ -666,7 +666,7 @@ contains
     real     :: ens_std
     real     :: ci_val,ci_val1
     integer  :: i,k,l,kk,tid
-    integer  :: stid, m,t
+    integer  :: m, t
     real     :: metric_tsdom(nsize_m)
     real     :: maxv, minv
     real     :: maxv1, minv1
@@ -894,7 +894,7 @@ contains
     real     :: mean_v, sstd_v
     real     :: ci_val
     integer  :: i,k,l,kk,tid
-    integer  :: stid, m,t
+    integer  :: m
     real     :: metric_tsdom(LVT_LIS_rc(1)%ntiles)
     real     :: maxv, minv
     integer  :: nensem
