@@ -1054,6 +1054,7 @@ Acceptable values are:
 |"`NLDAS router`"  | use the NLDAS router
 |"`HYMAP router`"  | use the HyMAP router
 |"`HYMAP2 router`" | use the HyMAP2 router
+|"`HYMAP3 router`" | use the HyMAP3 router
 |"`RAPID router`" | use the RAPID router
 |====
 
@@ -10930,7 +10931,194 @@ HYMAP2 routing model start mode: "coldstart"
 HYMAP2 routing model restart interval: "1mo"
 HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
 HYMAP2 enable 2-way coupling: 0
-HYMAP2 2-way coupling flooded fraction threshold: 2.0
+HYMAP2 2-way coupling flooded fraction threshold: 0.1
+....
+
+[[sssec_hymap3routing,HYMAP3 routing]]
+==== HYMAP3 routing
+
+`HYMAP3 routing model time step:` specifies the timestep for
+the HyMAP3 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP3 routing model output interval:` defines the output
+writing interval for the HyMAP3 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP3 run in ensemble mode:` specifies whether to run the
+HyMAP3 router in ensemble mode.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not run in ensemble mode
+|1     | Run in ensemble mode
+|====
+
+`HYMAP3 routing method:` specifies the HyMAP3 routing method
+to use.
+Acceptable values are:
+
+|====
+|Value              | Description
+
+|kinematic          | use kinematic method
+|diffusive          | use diffusive method
+|"`local inertia`"  | use local inertia method
+|hybrid             | use hybrid method (requires a river flow map from LDT)
+|urban             | use urban hydrology method (requires river flow and urban drainage outlet maps from LDT, and an additional lis.config_ entry)
+|====
+`HYMAP3 urban drainage parameter file:` specifies the text file name containing gutter and drainage network parameters. This config entry is only used when ` HYMAP3 routing method:` is set to `urban`.
+|====
+`HYMAP3 routing model time step method:` specifies the HyMAP3
+routing model time step method to use. This option is elective. If not defined,  HYMAP3 adopts `adaptive` by default.
+
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|constant  | use constant timestep
+|adaptive  | use adaptive (time-varying) timesteps (must provide an alfa coefficient value)
+|====
+
+`HYMAP3 routing model adaptive time step alfa coefficient:`
+specifies the adaptive time step alfa coefficient (a real number)
+for the HyMAP3 router.  This option is elective. If not defined,  HYMAP3 adopts 0.5 by default. This coefficient is not needed if using the `constant` time step method.
+
+`HYMAP3 floodplain dynamics:` specifies whether simulate
+floodplain dynamics in the HyMAP3 router.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP3 reservoir operation option:` specifies whether to use reservoir operations in the HyMAP3 router.  This option is elective. If not defined,  HYMAP3 does not use reservoir operation.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use data-driven model (additional _lis.config_ entries required)
+|2     | Use parameter-based model (additional _lis.config_ entries required)
+|3     | Use beaver dam module (additional _lis.config_ entries required)
+|====
+additional _lis.config_ entries for  data-driven model
+
+`HYMAP3 reservoir operation input directory:` specifies the input
+directory for the reservoir operation files to be used when using
+reservoir operations with the HyMAP3 router.  This config entry is
+only used when `HYMAP3 reservoir operation option:` is set to 1.
+
+`HYMAP3 reservoir operation header filename:` specifies the filename
+header for the reservoir operation files to be used when using
+reservoir operations with the HyMAP3 router.  This config entry is
+only used when `HYMAP3 reservoir operation option:` is set to 1.
+
+|====
+additional _lis.config_ entries for parameter-based model 
+`HYMAP3 reservoir operation input file:` specifies NetCDF file containing reservoir parameters. This config entry is only used when `HYMAP3 reservoir operation option:` is set to 2.
+
+`HYMAP3 reservoir list:` specifies text file containing the list of reservoirs. This config entry is only used when `HYMAP3 reservoir operation option:` is set to 2.
+
+|====
+` HYMAP3 levee:` specifies whether to account for levees. This option is elective. If not defined,  HYMAP3 does not account for levees.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use (requires a levee map from LDT)
+
+|====
+` HYMAP3 sea level:` specifies whether to account for sea levels as downstream boundary condition. This option is elective. If not defined,  HYMAP3 does not account for sea levels. 
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use (requires additional lis.config_ entries)
+
+|====
+`HYMAP3 sea level input directory:` specifies the directory where data is found when using sea levels as downstream boundary condition with the HyMAP3 router.  This config entry is only used when `HYMAP3 sea level:` is set to 1.
+
+|====
+`HYMAP3 sea level header filename:` specifies the filename header for the sea level files to be used when using sea levels as downstream boundary condition with the HyMAP3 router. This config entry is only used when `HYMAP3 sea level:` is set to 1.
+
+|====
+`HYMAP3 sea level outlet list:` specifies the text filename listing the outlet grid cells using sea level data as downstream boundary conditions with the HyMAP3 router. This config entry is only used when `HYMAP3 sea level:` is set to 1.
+
+|====
+
+`HYMAP3 routing model start mode:` specifies the restart mode
+to be used for the HyMAP3 router.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|restart   | A restart mode is being used; read a HyMAP3 restart file
+|coldstart | A cold start mode is being used; no restart file read
+|====
+
+`HYMAP3 routing model restart interval:` defines the restart writing
+interval for the HyMAP3 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP3 routing model restart file:` specifies the HyMAP3 router
+active restart file.
+
+`HYMAP3 enable 2-way coupling:` specifies whether to enable 2-way coupling.
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP3 2-way coupling flooded fraction threshold:` specifies the flooded fraction
+threshold used in the 2-way coupling mode.
+
+.Example _lis.config_ entry
+....
+HYMAP3 routing model time step: "30mn"
+HYMAP3 routing model output interval: "1da"
+HYMAP3 run in ensemble mode: 0
+HYMAP3 routing method: "kinematic"
+HYMAP3 routing model time step method: "constant"
+HYMAP3 routing model adaptive time step alfa coefficient: 0.7
+HYMAP3 floodplain dynamics: 1
+HYMAP3 reservoir operation option: 1
+HYMAP3 reservoir operation input directory: "./reservoir_data"
+HYMAP3 reservoir operation header filename: "RESDATA"
+HYMAP3 levees: 1
+HYMAP3 sea level: 1
+HYMAP3 sea level input directory: “./sea_level_data”
+HYMAP3 sea level header filename: “SEALEVDATA”_
+HYMAP3 sea level outlet list: “OUTLETLIST”
+HYMAP3 routing model start mode: "coldstart"
+HYMAP3 routing model restart interval: "1mo"
+HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_197901030000.d01.nc
+HYMAP3 enable 2-way coupling: 0
+HYMAP3 2-way coupling flooded fraction threshold: 0.1
 ....
 
 
