@@ -1121,7 +1121,6 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_regrid_' in key])
         slurm_commands = bcsd.metforce_biascorrection.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
@@ -1144,8 +1143,7 @@ class S2Srun(DownloadForecasts):
         # (5) precip_biascorrection (bcsd05): Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
         # -------------------------------------------------------------------------
         jobname='pr_biascorr_'
-        prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_regrid_' in key])
+        prev = [f"{key}" for key in self.schedule.keys() if 'pr_regrid_' in key]
         slurm_commands = []
         for nmme_model in self.MODELS:
             var1 = bcsd.precip_biascorrection.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
@@ -1183,7 +1181,6 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         prev = [f"{key}" for key in self.schedule.keys() if 'mf_biascorr_' in key]
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_biascorr_' in key])         
         slurm_commands = bcsd.metforce_temporal_disaggregation.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                            1, 3, CWD, self.E2ESDIR, py_call=True)
 
@@ -1214,7 +1211,8 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True        
         slurm_commands = []
-        prev = [f"{key}" for key in self.schedule.keys() if 'mf_tempdis_' in key]
+        prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_biascorr_' in key])
         for nmme_model in self.MODELS:
             var1 = bcsd.precip_temporal_disaggregation.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, self.E2ESDIR, nmme_model, py_call=True)
@@ -1241,7 +1239,7 @@ class S2Srun(DownloadForecasts):
         # Task 10: Combine the NMME forcing fields into final format for LIS to read
         #          and symbolically link to the reusable CFSv2 met forcings
         # ---------------------------------------------------------------------------
-        prev = [f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key]
+        prev = [f"{key}" for key in self.schedule.keys() if 'mf_tempdis_' in key]
         slurm_9_10 = bcsd.combine_forcings.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm,
                                        self.MM, jobname,1, 4, CWD, self.E2ESDIR, self.FCST_MODEL, py_call=True)
         # bcsd09
@@ -1272,6 +1270,7 @@ class S2Srun(DownloadForecasts):
     def lis_fcst(self):
         """ LIS forecast """
         prev = [job for job in ['ldtics_run.j', 'combine_files_run.j'] if job in self.schedule] or None
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key])
         jobname='lis_fcst'
         os.makedirs(self.E2ESDIR + 'lis_fcst/', exist_ok=True)
         os.makedirs(self.E2ESDIR + 'lis_fcst/input/LDT_ICs/', exist_ok=True)
