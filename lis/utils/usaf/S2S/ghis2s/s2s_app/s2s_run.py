@@ -1227,7 +1227,7 @@ class S2Srun(DownloadForecasts):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                        jobname + '{:02d}_'.format(i+1), 1, str(1), CWD, tfile.name, parallel_run=par_info)
+                                        jobname + '{:02d}_'.format(i+1), 1, str(2), CWD, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
@@ -1294,6 +1294,7 @@ class S2Srun(DownloadForecasts):
         self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/noahmp401_parms','noahmp401_parms')
         self.create_symlink(self.LISHDIR + '/ghis2s/lis_fcst/template_files','template_files')
         self.create_symlink(self.LISHDIR + '/ghis2s/lis_fcst/tables','tables')
+        self.create_symlink(self.E2ESDIR + '/ldt_ics','LDT_ICs')
         self.create_symlink(self.SUPDIR + '/lis_darun/' + self.LDTFILE, self.LDTFILE)
         
         os.chdir(self.SCRDIR + 'lis_fcst/')
