@@ -13,7 +13,7 @@
 ! \label{read_WSFsm}
 !
 ! !REVISION HISTORY:
-!  23 Feb 2023: Eric Kemp; Updated to read netCDF file.
+!  2 Oct 2025; Ehsan Jalilvand, initial specification.
 !
 ! !INTERFACE:
 subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
@@ -623,12 +623,21 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   rc = nf90_inq_varid(ncid=ncid, &
        name='arfs_sm', &
        varid=var_id)
+  ! log for debugging
   if (rc .ne. 0) then
-     write(LIS_logunit,*)'[ERR] Cannot read arfs_sm ', trim(fname)
-     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     write(LIS_logunit,*)'[ERR] Cannot read arfs_sm from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] NetCDF error code: ', rc
+     write(LIS_logunit,*)'[ERR] NetCDF error message: ', trim(nf90_strerror(rc))
      rc = nf90_close(ncid)
      return
   end if
+  
+  !if (rc .ne. 0) then
+     !write(LIS_logunit,*)'[ERR] Cannot read arfs_sm ', trim(fname)
+     !write(LIS_logunit,*)'[ERR] LIS will continue...'
+     !rc = nf90_close(ncid)
+     !return
+  !end if
 
   ! Read the retrievals
   allocate(tmp(nlon, nlat, ntime))

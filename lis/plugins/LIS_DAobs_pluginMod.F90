@@ -269,6 +269,11 @@ subroutine LIS_DAobs_plugin
     use SMAPEOPLsm_Mod,       only : SMAPEOPLsm_setup
 #endif
 
+!EJ
+#if ( defined DA_OBS_WSF_SM )
+    use WSFsm_Mod,       only : WSFsm_setup
+#endif
+
 #if ( defined DA_OBS_NASA_SMAPVOD )
     use NASASMAPvod_Mod,          only : NASASMAPvod_setup
 #endif
@@ -485,6 +490,11 @@ subroutine LIS_DAobs_plugin
 !YK
 #if ( defined DA_OBS_SMAP_E_OPL_SM)
     external read_SMAPEOPLsm, write_SMAPEOPLsmobs
+#endif
+
+!EJ
+#if ( defined DA_OBS_WSF_SM)
+    external read_WSFsm, write_WSFsmobs
 #endif
 
 #if ( defined DA_OBS_NASA_SMAPVOD)
@@ -913,6 +923,17 @@ subroutine LIS_DAobs_plugin
         read_SMAPEOPLsm)
    call registerwritedaobs(trim(LIS_SMAPEOPLsmobsId)//char(0),&
         write_SMAPEOPLsmobs)
+#endif
+
+!EJ
+#if ( defined DA_OBS_WSF_SM )
+   call registerdaobsclass(trim(LIS_WSFsmobsId),"LSM")
+   call registerdaobssetup(trim(LIS_WSFsmobsId)//char(0),&
+        WSFsm_setup)
+   call registerreaddaobs(trim(LIS_WSFsmobsId)//char(0),&
+        read_WSFsm)
+   call registerwritedaobs(trim(LIS_WSFsmobsId)//char(0),&
+        write_WSFsmobs)
 #endif
 
 #if ( defined DA_OBS_NASA_SMAPVOD )
