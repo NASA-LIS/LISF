@@ -16,7 +16,8 @@
 !   handle WSF soil moisture retrievals
 ! 
 ! !REVISION HISTORY: 
-!  6 Jun 2022    Yonghwan Kwon; initial specification
+!  2 Oct 2025 Ehsan Jalilvand; initial specification
+
 module WSFsm_Mod
 ! !USES: 
   use ESMF

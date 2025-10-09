@@ -1,0 +1,89 @@
+# ========================================
+# Fortran build and compilation artifacts
+# ========================================
+
+# Object and module files
+*.o
+*.obj
+*.mod
+*.smod
+*.dyn
+*.d
+*.a
+*.so
+*.dll
+*.lib
+*.exe
+*.out
+
+# Build directories
+build/
+bin/
+lib/
+CMakeFiles/
+cmake-build*/
+Makefile
+CMakeCache.txt
+*.cmake
+*.make
+*.log
+
+# Compiler-generated files
+fort.*
+*.lst
+*.map
+*.stackdump
+*.pch
+*.trace
+
+# ========================================
+# Jupyter Notebooks and Python cache
+# ========================================
+
+# Jupyter checkpoints and autosaves
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+*.ipynb_autosave/
+*.ipynb.tmp
+*.ipynb~
+*.ipynb.json
+**/.ipynb_checkpoints/*
+.ipynb_checkpoints/*
+
+# Python cache directories
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Notebook extensions / local settings
+.jupyter/
+.local/
+.ipython/
+profile_default/
+.nbgrader/
+*.nbconvert.ipynb
+
+# ========================================
+# Editor and system files
+# ========================================
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS / Linux / Windows
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Temporary / backup files
+*~
+*.swp
+*.bak
+*.tmp
+*.log
+*.old
+

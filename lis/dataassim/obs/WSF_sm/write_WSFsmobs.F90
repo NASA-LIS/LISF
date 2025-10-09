@@ -9,15 +9,16 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
-! !ROUTINE: write_SMAPEOPLsmobs
-! \label{write_SMAPEOPLsmobs}
+! !ROUTINE: write_WSFsmobs
+! \label{write_WSFsmobs}
 ! 
 ! !REVISION HISTORY: 
 ! 25Jan2008: Sujay Kumar; Initial Specification
 ! 06Jun2022: Yonghwan Kwon; Modified for SMAP_E_OPL soil moisture
+! 02Oct2025: Ehsan Jalilvand; Modified for WSF soil moisture
 ! 
 ! !INTERFACE: 
-subroutine write_SMAPEOPLsmobs(n, k, OBS_State)
+subroutine write_WSFsmobs(n, k, OBS_State)
 ! !USES: 
   use ESMF
   use LIS_coreMod
@@ -70,7 +71,7 @@ subroutine write_SMAPEOPLsmobs(n, k, OBS_State)
 
      if(LIS_masterproc) then 
         ftn = LIS_getNextUnitNumber()
-        call SMAPEOPL_smobsname(n,k,obsname)        
+        call WSFsm_obsname(n,k,obsname)        
 
         call LIS_create_output_directory('DAOBS')
         open(ftn,file=trim(obsname), form='unformatted')
@@ -85,14 +86,14 @@ subroutine write_SMAPEOPLsmobs(n, k, OBS_State)
 
   endif  
 
-end subroutine write_SMAPEOPLsmobs
+end subroutine write_WSFsmobs
 
 !BOP
-! !ROUTINE: SMAPEOPL_smobsname
-! \label{SMAPEOPL_smobsname}
+! !ROUTINE: WSFsm_obsname
+! \label{WSFsm_obsname}
 ! 
 ! !INTERFACE: 
-subroutine SMAPEOPL_smobsname(n,k,obsname)
+subroutine WSFsm_obsname(n,k,obsname)
 ! !USES: 
   use LIS_coreMod, only : LIS_rc
 
@@ -120,4 +121,4 @@ subroutine SMAPEOPL_smobsname(n,k,obsname)
        '/LISDAOBS_'//cdate1// &
        trim(cda)//trim(cdate)//'.1gs4r'
 
-end subroutine SMAPEOPL_smobsname
+end subroutine WSFsm_obsname
