@@ -29,20 +29,18 @@
 
 
 # Standard modules
+import os
+import sys
 import datetime
 from dateutil.relativedelta import relativedelta
-import os
-import pathlib
-import subprocess
-import sys
-import shutil
-import glob
 import yaml
-# pylint: disable=f-string-without-interpolation
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments,too-many-arguments,too-many-locals
 # Local modules
 from ghis2s.shared.logging_utils import TaskLogger
-from merge_lisf_files import create_final_filename, merge_files_xarray
-from temporal_aggregate import agg_driver
+#from merge_lisf_files import create_final_filename, merge_files_xarray
+#from temporal_aggregate import agg_driver
+from ghis2s.s2spost.merge_lisf_files import create_final_filename, merge_files_xarray
+from ghis2s.s2spost.temporal_aggregate import agg_driver
 
 # Local functions
 def _usage():
@@ -127,12 +125,15 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
     """Automate daily processing for given month."""
 
     task_name = os.environ.get('SCRIPT_NAME')
-    logger = TaskLogger(task_name,
-                        os.getcwd(),
-                        f's2spost/process_fcst_files.py processing daily {model_forcing} for month {startdate.year:04d}{startdate.month:02d}')
-    
+    logger = TaskLogger(
+        task_name,
+        os.getcwd(),
+        (f's2spost/process_fcst_files.py processing daily '
+        f'{model_forcing} for month {startdate.year:04d}{startdate.month:02d}')
+    )
+
     delta = datetime.timedelta(days=1)
-    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
+    #scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
     ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config["SETUP"]["ldtinputfile"]
 
     # The very first day may be missing. Gracefully handle this
@@ -153,25 +154,45 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
     while curdate <= enddate:
         subtask = f'{model_forcing} {startdate.year:04d}{startdate.month:02d}'
         model = "SURFACEMODEL"
-        noahmp_file = f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
+        noahmp_file = (
+            f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/"
+            f"LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
+        )
         model = "ROUTING"
-        hymap_file = f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
-
+        hymap_file = (
+            f"lis_fcst/{model_forcing}/{model}/{curdate.year:04d}{curdate.month:02d}/"
+            f"LIS_HIST_{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}0000.d01.nc"
+        )
         if not os.path.exists(noahmp_file):
-            logger.error(f"Missing: {noahmp_file}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
-            sys.exit(1)
-        if not os.path.exists(hymap_file):
-            logger.error(f"Missing: {hymap_file}", subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
+            logger.error(
+                f"Missing: {noahmp_file}",
+                subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
             sys.exit(1)
 
-        merge_file = create_final_filename(topdatadir, fcstdate, curdate, model_forcing.upper(), config["EXP"]["DOMAIN"])
-        logger.info(f's2spost/merge_lisf_files.py processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}',
-                    subtask=subtask)
+        if not os.path.exists(hymap_file):
+            logger.error(
+                f"Missing: {hymap_file}",
+                subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
+            sys.exit(1)
+
+        merge_file = create_final_filename(
+            topdatadir,
+            fcstdate,
+            curdate,
+            model_forcing.upper(),
+            config["EXP"]["DOMAIN"],
+        )
+
+        logger.info(
+            f's2spost/merge_lisf_files.py processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}',
+            subtask=subtask
+        )
         try:
             merge_files_xarray(ldtfile, noahmp_file, hymap_file, merge_file, fcstdate, curdate, logger, subtask)
-            logger.info(f'Merged file: {merge_file}', subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
+            logger.info( \
+                f'Merged file: {merge_file}', subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
         except Exception as e:
-            logger.error(f"Failed processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}: {str(e)}", 
+            logger.error(f"Failed processing {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}: {str(e)}",
                         subtask=f'{model_forcing} {startdate.year:04d}{startdate.month:02d}')
             sys.exit(1)
 
@@ -183,13 +204,12 @@ def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model
     task_name = os.environ.get('SCRIPT_NAME')
     logger = TaskLogger(task_name,
                         os.getcwd(),
-                        f's2spost/process_fcst_files.py processing {model_forcing} {period} {startdate.year:04d}{startdate.month:02d}')
-
-    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
+                        f's2spost/process_fcst_files.py processing {model_forcing} {period} '
+                        f'{startdate.year:04d}{startdate.month:02d}')
 
     firstdate = startdate
     if period == "MONTHLY":
-        # The very first day may be missing.  Gracefully handle this.    
+        # The very first day may be missing.  Gracefully handle this.
         if _is_lis_output_missing(firstdate, model_forcing):
             firstdate += datetime.timedelta(days=1)
 
@@ -214,7 +234,10 @@ def _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model
     argv.append(f"{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}")
     argv.append(model_forcing)
     subtask = f'{model_forcing} {startdate.year:04d}{startdate.month:02d}'
-    logger.info(f's2spost/temporal_aggregate.py processing {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}', subtask=subtask)
+    logger.info(
+        f's2spost/temporal_aggregate.py processing '
+        f'{firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}-'
+        f'{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}', subtask=subtask)
     agg_driver(argv, logger, subtask)
 
 def _driver():
@@ -228,7 +251,8 @@ def _driver():
     if len(sys.argv) == 6:
         _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forcing)
     else:
-        _proc_time_period(config, configfile, topdatadir, fcstdate, startdate, model_forcing, sys.argv[6])
+        _proc_time_period(config, configfile, topdatadir, fcstdate, startdate,
+            model_forcing, sys.argv[6])
 
 # Invoke driver
 if __name__ == "__main__":

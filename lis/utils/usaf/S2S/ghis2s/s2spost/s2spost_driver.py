@@ -35,6 +35,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import yaml
 from ghis2s.shared import utils
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments,too-many-arguments,too-many-locals
 
 LEAD_WEEKS = 6
 # pylint: disable=too-many-locals, import-outside-toplevel
@@ -79,7 +80,7 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
 
     total_months = int(config["EXP"]["lead_months"])
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
-    
+
     # One batch job per month (call to process_fcst_files.py):
     fcstdate = startdate
     curdate = startdate
@@ -104,8 +105,8 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
             slurm_commands.append(cmd)
             monthly_commands.append(cmd + f" MONTHLY")
         else:
-            utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
-            
+            utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd, None, in_command=cmd)
+
         newdate = _advance_date_by_month(curdate)
         curdate = newdate
 
@@ -126,11 +127,11 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
         curdate += relativedelta(days=7)
 
     if py_call:
-        return slurm_commands, monthly_commands, weekly_commands 
-        
+        return slurm_commands, monthly_commands, weekly_commands
+
 # Invoke driver
 if __name__ == "__main__":
-    """Main driver."""
+    # Main S2S-Post driver
     parser = argparse.ArgumentParser()
     parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
     parser.add_argument('-m', '--fcst_mon', required=True, help='initial forecast month')

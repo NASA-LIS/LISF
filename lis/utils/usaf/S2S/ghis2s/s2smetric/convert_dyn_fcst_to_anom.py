@@ -18,27 +18,25 @@
 
 # Standard modules
 from datetime import datetime, date
-from dateutil.relativedelta import relativedelta
 import glob
 import os
-import subprocess
 import sys
+from concurrent.futures import ProcessPoolExecutor
 import yaml
 
 # Third-party modules
 from dateutil.relativedelta import relativedelta
 import numpy as np
 import xarray as xr
-from concurrent.futures import ProcessPoolExecutor
 # Local modules
 # pylint: disable=import-error
+from ghis2s.shared.utils import write_ncfile, load_ncdata
+from ghis2s.shared.logging_utils import TaskLogger
 from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
                         LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
-from ghis2s.shared.logging_utils import TaskLogger
-from ghis2s.shared.utils import write_ncfile, load_ncdata
-
 # pylint: enable=import-error
-# pylint: disable=consider-using-f-string
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
 #
 
 # Start reading from command line.
@@ -63,10 +61,15 @@ CURRENTDATE = date(TARGET_YEAR, FCST_INIT_MON, 1)
 ENDDATE = CURRENTDATE
 ENDDATE += relativedelta(months=int(CONFIG["EXP"]["lead_months"]))
 FCST_INIT_DAY = 1
-OUTDIR = BASEOUTDIR + '/' 
+OUTDIR = BASEOUTDIR + '/'
 os.makedirs(OUTDIR, exist_ok=True)
 
-# name of variable, forecast initial month and forecast year is in the file
+# Name of variable, forecast initial month and forecast year is in the file
+
+TARGET_INFILE_TEMPLATE1 = ""
+TARGET_INFILE_TEMPLATE2 = ""
+CLIM_INFILE_TEMPLATE1 = ""
+CLIM_INFILE_TEMPLATE2 = ""
 
 if DOMAIN_NAME == 'AFRICOM':
     TARGET_INFILE_TEMPLATE1 = \
@@ -87,6 +90,7 @@ CLIM_INFILE_TEMPLATE2 = 'PA.ALL_DD.*{:02d}01_DT.0000_FP.*{:02d}??-*{:02d}01_DF.N
 TARGET_INFILE_TEMPLATE = TARGET_INFILE_TEMPLATE1 + TARGET_INFILE_TEMPLATE2
 CLIM_INFILE_TEMPLATE = CLIM_INFILE_TEMPLATE1 + CLIM_INFILE_TEMPLATE2
 ## String in this format allows to select all the files for the given month
+
 num_vars = 2*len(METRIC_VARS)
 num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
 
@@ -97,6 +101,9 @@ logger = TaskLogger(task_name,
                     f'{NMME_MODEL} running s2smetric/convert_dyn_fcast_to_anom.py')
 
 def process_variable(var_name, METRIC_NAME):
+    """
+    This routine processes each variable and metric (e.g., anomalies).
+    """
     logger.info(f"Starting processing {var_name} for metric {METRIC_NAME}", subtask=var_name)
     if METRIC_NAME == "ANOM":
         LONG_NAMES = LONG_NAMES_ANOM
@@ -104,11 +111,11 @@ def process_variable(var_name, METRIC_NAME):
     else:
         LONG_NAMES = LONG_NAMES_SANOM
         UNITS = UNITS_SANOM
-        
+
     for lead in range(LEAD_NUM):
         logger.info(f"Reading output from Hindcast runs - lead: {lead}", subtask=var_name)
         logger.info(f"Processing var_name: {var_name}, lead: {lead}", subtask=var_name)
- 
+
         ## Step-1: Read and process the climatology
         smon = datetime(CLIM_SYR, FCST_INIT_MON, FCST_INIT_DAY) + \
                     relativedelta(months=lead)
@@ -157,7 +164,7 @@ def process_variable(var_name, METRIC_NAME):
                                                emon1.year, emon1.month)
 
         logger.info(f"Reading target {INFILE}", subtask=var_name)
-        
+
         # Note target will always have only one time step
         target_data = load_ncdata(INFILE, [logger, var_name], **dict(combine='by_coords'))
 
@@ -178,13 +185,13 @@ def process_variable(var_name, METRIC_NAME):
         ## 4 members in anomaly output and so on.
         if lead == 0:
             all_anom = np.ones((ens_count, LEAD_NUM, lat_count, lon_count))*-9999.
-            
-        logger.info('Converting data into anomaly', subtask=var_name)    
+
+        logger.info('Converting data into anomaly', subtask=var_name)
         all_clim_mean = all_clim_data.mean (dim = ['time','ensemble'], skipna = True)
 
         if METRIC_NAME == "SANOM":
             all_clim_std  = all_clim_data.std (dim = ['time','ensemble'], skipna = True)
-            
+
         if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or \
            (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
             all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
@@ -216,7 +223,7 @@ def process_variable(var_name, METRIC_NAME):
                 vectorize=True,  # loop over non-core dims
                 dask="forbidden",
                 output_dtypes=[np.float64])
-           
+
         for ens in range(ens_count):
             all_anom[ens, lead, :, :] = this_anom [:,:,ens,0]
 
@@ -234,7 +241,8 @@ def process_variable(var_name, METRIC_NAME):
                      (lon_count*0.25), 0.25)
 
     anom_xr = xr.Dataset()
-    anom_xr[var_name.replace('-','_') + '_' + METRIC_NAME] = (('ens', 'time', 'latitude', 'longitude'), all_anom)
+    anom_xr[var_name.replace('-','_') + '_' + METRIC_NAME] = \
+        (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
     anom_xr.coords['time'] = (('time'), np.arange(0, LEAD_NUM, dtype=int))
@@ -289,8 +297,11 @@ with ProcessPoolExecutor(max_workers=num_workers) as executor:
         try:
             result = future.result()
             datasets.append(result)
+        except (ValueError, TypeError, IOError, RuntimeError) as e:
+            logger.error(f"Failed processing for: {str(e)}")
         except Exception as e:
-            logger.error(f"Failed processing : {str(e)}")
+            logger.error(f"Unexpected error processing: {str(e)}")
+            raise
 
 # Merge all datasets
 logger.info("Merging all datasets")
@@ -301,5 +312,3 @@ encoding = {var: comp for var in merged_dataset.data_vars}
 # Write the merged dataset to a single file
 logger.info(f"Writing merged output to {OUTFILE}")
 write_ncfile(merged_dataset, OUTFILE, encoding, [logger, ''])
-
-

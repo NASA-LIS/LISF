@@ -17,6 +17,8 @@ Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py a
 Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
 '''
 # pylint: disable=no-value-for-parameter
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
 
 import os
 import calendar
@@ -28,9 +30,9 @@ from netCDF4 import Dataset
 import numpy as np
 import yaml
 # pylint: disable=import-error
-import plot_utils
 from ghis2s.s2smetric.metricslib import get_anom
 from ghis2s.shared.logging_utils import TaskLogger
+import plot_utils
 # pylint: enable=import-error
 
 USAF_COLORS = True
@@ -47,7 +49,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     metric = "SANOM"
     figure_template = '{}/NMME_plot_{}_{}_basins_sanom.png'
 
-    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/'
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
@@ -62,7 +64,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     under_over = ['gray', 'blue']
 
     # READ ANOMALIES
-    logger.info(f"Plotting {var_name} SANOM", subtask=region)        
+    logger.info(f"Plotting {var_name} SANOM", subtask=region)
     anom = get_anom(data_dir, var_name, metric, [logger, region])
     anom_crop = plot_utils.crop(boundary, anom)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
@@ -72,7 +74,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         plot_arr[i,:,:] = np.where(hymap_mask >= 1.0e9, plot_arr[i,:,:],-9999.)
 
     figure = figure_template.format(plotdir, region, var_name)
-    logger.info(f"Figure {figure}", subtask=region)       
+    logger.info(f"Figure {figure}", subtask=region)
     titles = []
     for lead in lead_month:
         fcast_month = smonth+lead
@@ -104,7 +106,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         metric = "SANOM"
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/'
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
@@ -120,7 +122,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in ['RZSM', 'SFCSM', 'Precip', 'AirT']:
-        logger.info(f"Plotting {var_name} {metric}", subtask=region)        
+        logger.info(f"Plotting {var_name} {metric}", subtask=region)
         # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
@@ -163,7 +165,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
 
         plot_arr = median_anom[lead_month, ]
         figure = figure_template.format(plotdir, region, var_name)
-        logger.info(f"Figure: {figure}", subtask=region)  
+        logger.info(f"Figure: {figure}", subtask=region)
         titles = []
         for lead in lead_month:
             if var_name == 'Streamflow':
@@ -212,7 +214,7 @@ def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, region):
     ldt = xr.open_dataset(ldtfile)
     ldt_crop = plot_utils.crop(boundary, ldt)
     hymap_mask = ldt_crop.HYMAP_drain_area.values
-    
+
     plot_anoms_basin(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
                downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],
                      cum_area[vmask], boundary, region, google_path, hymap_mask)

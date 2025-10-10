@@ -1,20 +1,44 @@
-from datetime import datetime, date
-import glob
+#!/usr/bin/env python3
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+"""
+#------------------------------------------------------------------------------
+#
+# SCRIPT: compute_weekly_anom.py
+#
+# PURPOSE: Calculates weekly anomaly metrics to be written out.
+#
+# REVISION HISTORY:
+# 28 Jul 2025: S. Mahanama, initial code
+#
+#------------------------------------------------------------------------------
+"""
+
+from datetime import date
 import os
 import sys
-import yaml
+from concurrent.futures import ProcessPoolExecutor
 from dateutil.relativedelta import relativedelta
+import yaml
 import numpy as np
 import xarray as xr
-from concurrent.futures import ProcessPoolExecutor
 
 # pylint: disable=import-error
-from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
-                        LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
 from ghis2s.shared.logging_utils import TaskLogger
 from ghis2s.shared.utils import write_ncfile, load_ncdata
+from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
+                        LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
 # pylint: enable=import-error
-# pylint: disable=consider-using-f-string
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
 
 LEAD_WEEKS = 6
 FCST_INIT_MON = int(sys.argv[1])
@@ -55,38 +79,44 @@ if CONFIG['SETUP']['DATATYPE'] == 'hindcast':
     num_vars = len(CONFIG["EXP"]["NMME_models"])
     num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
     def process_model(nmme_model):
+        """
+        Process each NMME model for weekly outputs.
+        """
         curdate = CURRENTDATE
         enddate = curdate
         enddate += relativedelta(days=6)
         mean_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "MEAN", nmme_model.upper(),
-                                                 DOMAIN_NAME, FCST_INIT_MON, CURRENTDATE.month, CURRENTDATE.day,
+                                                 DOMAIN_NAME, FCST_INIT_MON,
+                                                 CURRENTDATE.month, CURRENTDATE.day,
                                                  ENDDATE.month, ENDDATE.day)
         std_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "STD", nmme_model.upper(),
-                                                 DOMAIN_NAME, FCST_INIT_MON, CURRENTDATE.month, CURRENTDATE.day,
+                                                 DOMAIN_NAME, FCST_INIT_MON,
+                                                 CURRENTDATE.month, CURRENTDATE.day,
                                                  ENDDATE.month, ENDDATE.day)
-        
         mean_xr = []
         std_xr = []
         for _ in range(LEAD_WEEKS):
-            INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS, FCST_INIT_MON,nmme_model,nmme_model.upper(),
-                                                 DOMAIN_NAME, FCST_INIT_MON, curdate.month, curdate.day,
+            INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS, FCST_INIT_MON,
+                                                 nmme_model,nmme_model.upper(),
+                                                 DOMAIN_NAME, FCST_INIT_MON,
+                                                 curdate.month, curdate.day,
                                                  enddate.month, enddate.day)
             curdate += relativedelta(days=7)
-            enddate += relativedelta(days=7)            
+            enddate += relativedelta(days=7)
             print(INFILE)
             week_xr = xr.open_mfdataset(INFILE, combine='by_coords')
             mean_xr.append(week_xr.mean(dim = ['time','ensemble']))
             std_xr.append(week_xr.std(dim = ['time','ensemble']))
-        
+
         # Concatenate the lists and add lead time dimension
         mean_concat = xr.concat(mean_xr, dim='lead_time')
         std_concat = xr.concat(std_xr, dim='lead_time')
-    
+
         # Add lead time coordinates (weeks 1, 2, 3, etc.)
         lead_time_coords = range(1, LEAD_WEEKS + 1)
         mean_concat = mean_concat.assign_coords(lead_time=lead_time_coords)
         std_concat = std_concat.assign_coords(lead_time=lead_time_coords)
-    
+
         # Add attributes
         mean_concat.lead_time.attrs['units'] = 'weeks'
         mean_concat.lead_time.attrs['long_name'] = 'Lead time in weeks'
@@ -98,7 +128,7 @@ if CONFIG['SETUP']['DATATYPE'] == 'hindcast':
         mean_concat.to_netcdf(mean_file, format="NETCDF4", encoding=encoding)
         encoding = {var: comp for var in std_concat.data_vars}
         std_concat.to_netcdf(std_file, format="NETCDF4", encoding=encoding)
-        
+
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         futures = []
         for nmme_model in CONFIG["EXP"]["NMME_models"]:
@@ -108,7 +138,7 @@ if CONFIG['SETUP']['DATATYPE'] == 'hindcast':
         for future in futures:
             result = future.result()
     sys.exit()
-    
+
 WEEKLY_VARS = CONFIG["POST"]["weekly_vars"]
 
 OUTDIR = BASEOUTDIR + '/'
@@ -125,6 +155,9 @@ num_vars = 2*len(WEEKLY_VARS)
 num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
 
 def process_variable(var_name, ANOM):
+    """
+    Function to process each variable and metric (e.g., anomalies)
+    """
     logger.info(f"Starting processing {var_name} for metric {ANOM}", subtask=var_name)
     if ANOM == "ANOM":
         LONG_NAMES = LONG_NAMES_ANOM
@@ -132,7 +165,7 @@ def process_variable(var_name, ANOM):
     else:
         LONG_NAMES = LONG_NAMES_SANOM
         UNITS = UNITS_SANOM
-          
+
     # Create array to store anomaly data (initialized here for each variable)
     all_anom = None
     curdate = CURRENTDATE
@@ -140,21 +173,24 @@ def process_variable(var_name, ANOM):
     enddate += relativedelta(days=6)
     logger.info(f"Reading Hindcast statistics", subtask=var_name)
     mean_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "MEAN", NMME_MODEL.upper(),
-                                              DOMAIN_NAME, FCST_INIT_MON, CURRENTDATE.month, CURRENTDATE.day,
+                                              DOMAIN_NAME, FCST_INIT_MON,
+                                              CURRENTDATE.month, CURRENTDATE.day,
                                               ENDDATE.month, ENDDATE.day)
     std_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "STD", NMME_MODEL.upper(),
-                                             DOMAIN_NAME, FCST_INIT_MON, CURRENTDATE.month, CURRENTDATE.day,
+                                             DOMAIN_NAME, FCST_INIT_MON,
+                                             CURRENTDATE.month, CURRENTDATE.day,
                                              ENDDATE.month, ENDDATE.day)
     logger.info(f"Reading forecast climatological mean {mean_file}", subtask=var_name)
     logger.info(f"Reading forecast climatological std {std_file}", subtask=var_name)
     mean_xr = xr.open_dataset(mean_file)
     std_xr = xr.open_dataset(std_file)
-     
+
     for lead in range(LEAD_WEEKS):
         logger.info(f"Processing var_name: {var_name}, lead: {lead}", subtask=var_name)
 
-        fcst_file = TARGET_INFILE_TEMPLATE.format(FORECASTS,  CURRENTDATE.year,CURRENTDATE.month, NMME_MODEL,
-                                                  NMME_MODEL.upper(), DOMAIN_NAME, TARGET_YEAR, FCST_INIT_MON,
+        fcst_file = TARGET_INFILE_TEMPLATE.format(FORECASTS, CURRENTDATE.year, CURRENTDATE.month,
+                                                  NMME_MODEL, NMME_MODEL.upper(), DOMAIN_NAME,
+                                                  TARGET_YEAR, FCST_INIT_MON,
                                                   curdate.year, curdate.month, curdate.day,
                                                   enddate.year, enddate.month, enddate.day)
         curdate += relativedelta(days=7)
@@ -164,6 +200,7 @@ def process_variable(var_name, ANOM):
         fcst_data = sel_var(fcst_xr, var_name, HYD_MODEL)
         mean_data = sel_var(mean_xr.isel(lead_time=lead), var_name, HYD_MODEL)
         std_data = sel_var(std_xr.isel(lead_time=lead), var_name, HYD_MODEL)
+        this_anom = None
 
         # Initialize the anomaly array on first lead
         if lead == 0:
@@ -171,7 +208,7 @@ def process_variable(var_name, ANOM):
             lat_count = fcst_xr.sizes['lat']
             lon_count = fcst_xr.sizes['lon']
             all_anom = np.ones((ens_count, LEAD_WEEKS, lat_count, lon_count))*-9999.
-            
+
         if ANOM == 'ANOM':
             this_anom = xr.apply_ufunc(
                 compute_anomaly,
@@ -196,19 +233,20 @@ def process_variable(var_name, ANOM):
                 vectorize=True,  # loop over non-core dims
                 dask="forbidden",
                 output_dtypes=[np.float64])
-            
+
         for ens in range(ens_count):
-            all_anom[ens, lead, :, :] = this_anom [:,:,ens,0]
+            all_anom[ens, lead, :, :] = this_anom[:,:,ens,0]
             lats = np.array(fcst_xr.lat.values, dtype=np.float64)
             lons = np.array(fcst_xr.lon.values, dtype=np.float64)
         del fcst_xr
-    
+
     ### Step-4 Writing output file
     all_anom = np.ma.masked_array(all_anom, mask=(all_anom == -9999.))
 
     ## Creating latitude and longitude arrays
     anom_xr = xr.Dataset()
-    anom_xr[var_name.replace('-','_') + '_' + ANOM] = (('ens', 'time', 'latitude', 'longitude'), all_anom)
+    anom_xr[var_name.replace('-','_') + '_' + ANOM] = \
+        (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
     anom_xr.coords['time'] = (('time'), np.arange(0, LEAD_WEEKS, dtype=int))
@@ -262,9 +300,11 @@ with ProcessPoolExecutor(max_workers=num_workers) as executor:
         try:
             result = future.result()
             datasets.append(result)
-        except Exception as e:
+        except (ValueError, TypeError, IOError, RuntimeError) as e:
             logger.error(f"Failed processing for {var_name}: {str(e)}")
-        
+        except Exception as e:
+            logger.error(f"Unexpected error processing {var_name}: {str(e)}")
+            raise
 
 # Merge all datasets
 merged_dataset = xr.merge(datasets)
@@ -273,4 +313,3 @@ encoding = {var: comp for var in merged_dataset.data_vars}
 # Write the merged dataset to a single file
 logger.info(f"Writing merged output to {OUTFILE}")
 write_ncfile(merged_dataset, OUTFILE, encoding, [logger, ''])
-

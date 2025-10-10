@@ -149,7 +149,8 @@ def compute_sanomaly (target_fcst_data, fcst_clim, fcst_std):
     fcst_clim_bc = np.broadcast_to(fcst_clim, target_fcst_data.shape)
     fcst_std_bc = np.broadcast_to(fcst_std, target_fcst_data.shape)
     valid_std = np.logical_and(fcst_std_bc > 0, ~np.isnan(fcst_std_bc))
-    out_var[valid_std] = (target_fcst_data[valid_std] - fcst_clim_bc[valid_std]) / fcst_std_bc[valid_std]
+    out_var[valid_std] = (target_fcst_data[valid_std] \
+                       - fcst_clim_bc[valid_std]) / fcst_std_bc[valid_std]
 
     return out_var
 
@@ -219,7 +220,7 @@ def merged_metric_filename(output_dir, startdate, enddate,
             print("[ERR] Output file name is too long!")
             print(f"[ERR] {os.path.basename(name)} exceeds 128 characters!")
             sys.exit(1)
-            
+
     name = f"{output_dir}"
     name += "/PS.557WW"
     name += "_SC.U"
@@ -271,16 +272,9 @@ def get_anom(path, var_name, metric, logger, weekly=False):
     gc.collect()
     return anom.to_dataset(name='anom')
     #del anom_ds
-    #gc.collect()  
+    #gc.collect()
     #result = anom_da.to_dataset(name='anom')
     #del anom_da
-    #gc.collect()   
+    #gc.collect()
 
     #return result
-
-    
-    
-
-    
-
-
