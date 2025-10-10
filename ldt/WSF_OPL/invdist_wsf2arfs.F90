@@ -10,7 +10,8 @@
 !
 ! MODULE: invdist_wsf2arfs
 !
-! DESCRIPTION: Subroutine to resample WSF TB onto Air Force Grid
+! DESCRIPTION: Resample WSF TB onto Air Force Grid
+!              EXACT match to AMSR_OPL processing
 !
 !-------------------------------------------------------------------------
 
@@ -20,59 +21,119 @@ MODULE invdist_wsf2arfs
 
 CONTAINS
 
-    SUBROUTINE WSF2ARFS_INVDIS(tb_in, lat_in, lon_in, &
-        quality_flag_in, land_frac_in, &
-        nscans_in, nfovs_in, nchans_in, &
+    SUBROUTINE WSF2ARFS_INVDIS_EXACT(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
+        tb_23h, tb_23v, tb_36h, tb_36v, tb_89h, tb_89v, land_water_frac, &
+        snow, precip, quality_flag, &
+        lat_in, lon_in, nscans_in, nfovs_in, &
         ref_lat, ref_lon, &
-        tb_out, quality_flag_out, land_frac_out, &
-        sample_count)
+        arfs_time, arfs_land_water_frac, &
+        arfs_tb_10h, arfs_tb_10v, arfs_tb_18h, arfs_tb_18v, &
+        arfs_tb_23h, arfs_tb_23v, arfs_tb_36h, arfs_tb_36v, &
+        arfs_tb_89h, arfs_tb_89v, arfs_quality_flag, &
+        arfs_sample_v, arfs_sample_h)
     
-    ! Arguments
-    integer, intent(in) :: nscans_in, nfovs_in, nchans_in
-    real*4, intent(in) :: tb_in(nchans_in, nscans_in, nfovs_in)
-    real*4, intent(in) :: lat_in(nscans_in, nfovs_in)
-    real*4, intent(in) :: lon_in(nscans_in, nfovs_in)
-    integer*1, intent(in) :: quality_flag_in(:,:,:)  ! (nbands, nscans, nfovs)
-    real*4, intent(in) :: land_frac_in(nscans_in, nfovs_in)
-    real*8, intent(in) :: ref_lat(:)
-    real*8, intent(in) :: ref_lon(:)
-    real*4, intent(out) :: tb_out(nchans_in, size(ref_lon), size(ref_lat))
-    integer*1, intent(out) :: quality_flag_out(size(ref_lon), size(ref_lat))
-    real*4, intent(out) :: land_frac_out(size(ref_lon), size(ref_lat))
-    integer*4, intent(out) :: sample_count(size(ref_lon), size(ref_lat))
+    ! Arguments - EXACT match to AMSR_OPL signature
+    integer, intent(in) :: nscans_in, nfovs_in
+    real*8, intent(in) :: tim(:)
+    real*4, intent(in) :: tb_10h(nscans_in, nfovs_in), tb_10v(nscans_in, nfovs_in)
+    real*4, intent(in) :: tb_18h(nscans_in, nfovs_in), tb_18v(nscans_in, nfovs_in)
+    real*4, intent(in) :: tb_23h(nscans_in, nfovs_in), tb_23v(nscans_in, nfovs_in)
+    real*4, intent(in) :: tb_36h(nscans_in, nfovs_in), tb_36v(nscans_in, nfovs_in)
+    real*4, intent(in) :: tb_89h(nscans_in, nfovs_in), tb_89v(nscans_in, nfovs_in)
+    real*4, intent(in) :: land_water_frac(nscans_in, nfovs_in)
+    integer*4, intent(in) :: snow(nscans_in, nfovs_in), precip(nscans_in, nfovs_in)
+    integer*1, intent(in) :: quality_flag(nscans_in, nfovs_in)
+    real*4, intent(in) :: lat_in(nscans_in, nfovs_in), lon_in(nscans_in, nfovs_in)
+    real*8, intent(in) :: ref_lat(:), ref_lon(:)
     
-    ! Local variables
-    integer :: ii, jj, ichan, r, c, rr, cc, rmin, rmax, cmin, cmax
-    integer :: zerodistflag(size(ref_lon), size(ref_lat))
+    ! Outputs
+    real*8, intent(out) :: arfs_time(2560,1920)
+    real*4, intent(out) :: arfs_tb_10h(2560,1920), arfs_tb_10v(2560,1920)
+    real*4, intent(out) :: arfs_tb_18h(2560,1920), arfs_tb_18v(2560,1920)
+    real*4, intent(out) :: arfs_tb_23h(2560,1920), arfs_tb_23v(2560,1920)
+    real*4, intent(out) :: arfs_tb_36h(2560,1920), arfs_tb_36v(2560,1920)
+    real*4, intent(out) :: arfs_tb_89h(2560,1920), arfs_tb_89v(2560,1920)
+    real*4, intent(out) :: arfs_land_water_frac(2560,1920)
+    integer*1, intent(out) :: arfs_quality_flag(2560,1920)
+    integer*4, intent(out) :: arfs_sample_v(2560,1920), arfs_sample_h(2560,1920)
+    
+    ! Local variables - EXACT match to AMSR_OPL
+    integer :: ii, jj, r, c, rr, cc, rmin, rmax, cmin, cmax, i, j
+    integer, allocatable :: zerodistflag(:,:)
     real*8, parameter :: RE_KM = 6371.228
-    real*8, parameter :: SEARCH_RADIUS = 20.0
+    real*8, parameter :: search_radius = 20.0
     real*8, parameter :: PI = 3.141592653589793238
-    real*8, parameter :: D2R = PI/180.0
+    real*8, parameter :: d2r = PI/180.0
     real*8 :: gcdist, lat1, lon1, lat2, lon2
-    real*4 :: wt_tb(nchans_in, size(ref_lon), size(ref_lat))
-    real*4 :: wt_land(size(ref_lon), size(ref_lat))
-    integer :: quality_sum(size(ref_lon), size(ref_lat))
-    integer :: quality_count(size(ref_lon), size(ref_lat))
-    logical :: is_valid
-    integer :: band_idx
+    logical :: has_snow, has_precip
     
-    write(LDT_logunit,*)'[INFO] Starting inverse distance resampling'
+    ! Weight arrays
+    real*4 :: arfs_wt_tim(2560,1920)
+    real*4 :: arfs_wt_tb10h(2560,1920), arfs_wt_tb10v(2560,1920)
+    real*4 :: arfs_wt_tb18h(2560,1920), arfs_wt_tb18v(2560,1920)
+    real*4 :: arfs_wt_tb23h(2560,1920), arfs_wt_tb23v(2560,1920)
+    real*4 :: arfs_wt_tb36h(2560,1920), arfs_wt_tb36v(2560,1920)
+    real*4 :: arfs_wt_tb89h(2560,1920), arfs_wt_tb89v(2560,1920)
+    real*4 :: arfs_wt_land_water_frac(2560,1920)
+    
+    ! Quality flag tracking - EXACT match to AMSR_OPL
+    integer :: snow_count(2560,1920), precip_count(2560,1920)
+    integer :: ocean_count(2560,1920), total_count(2560,1920)
+    integer :: excluded_snow_count(2560,1920), excluded_precip_count(2560,1920)
+    
+    write(LDT_logunit,*)'[INFO] Starting WSF inverse distance resampling'
+    write(LDT_logunit,*)'[INFO] Using EXACT AMSR_OPL processing'
     write(LDT_logunit,*)'[INFO] Input dimensions: ', nscans_in, 'x', nfovs_in
     write(LDT_logunit,*)'[INFO] Output dimensions: ', size(ref_lon), 'x', size(ref_lat)
-    write(LDT_logunit,*)'[INFO] Number of channels: ', nchans_in
+    
+    ! Initialize arrays
+    allocate(zerodistflag(size(ref_lon), size(ref_lat)))
+    zerodistflag = 0
     
     ! Initialize output arrays
-    zerodistflag = 0
-    tb_out = 0.0
-    wt_tb = 0.0
-    land_frac_out = 0.0
-    wt_land = 0.0
-    sample_count = 0
-    quality_flag_out = 0
-    quality_sum = 0
-    quality_count = 0
+    arfs_time = 0.0
+    arfs_tb_10h = 0.0
+    arfs_tb_10v = 0.0
+    arfs_tb_18h = 0.0
+    arfs_tb_18v = 0.0
+    arfs_tb_23h = 0.0
+    arfs_tb_23v = 0.0
+    arfs_tb_36h = 0.0
+    arfs_tb_36v = 0.0
+    arfs_tb_89h = 0.0
+    arfs_tb_89v = 0.0
+    arfs_land_water_frac = 0.0
     
-    ! Loop through all input points
+    ! Initialize weight arrays
+    arfs_wt_tim = 0.0
+    arfs_wt_tb10h = 0.0
+    arfs_wt_tb10v = 0.0
+    arfs_wt_tb18h = 0.0
+    arfs_wt_tb18v = 0.0
+    arfs_wt_tb23h = 0.0
+    arfs_wt_tb23v = 0.0
+    arfs_wt_tb36h = 0.0
+    arfs_wt_tb36v = 0.0
+    arfs_wt_tb89h = 0.0
+    arfs_wt_tb89v = 0.0
+    arfs_wt_land_water_frac = 0.0
+    
+    ! Initialize quality flag tracking
+    arfs_quality_flag = 0
+    snow_count = 0
+    precip_count = 0
+    ocean_count = 0
+    total_count = 0
+    excluded_snow_count = 0
+    excluded_precip_count = 0
+    arfs_sample_v = 0
+    arfs_sample_h = 0
+    
+    write(LDT_logunit,*)'[DEBUG] Array dimensions:'
+    write(LDT_logunit,*)'   nscans_in, nfovs_in = ', nscans_in, nfovs_in
+    write(LDT_logunit,*)'   size(ref_lat), size(ref_lon) = ', size(ref_lat), size(ref_lon)
+    
+    ! Loop through all input footprints
     do jj = 1, nfovs_in
         if (mod(jj, 50) == 0) then
             write(LDT_logunit,*)'[INFO] Processing FOV ', jj, ' of ', nfovs_in
@@ -83,20 +144,11 @@ CONTAINS
             if (lat_in(ii,jj) < -90.0 .or. lat_in(ii,jj) > 90.0 .or. &
                 lon_in(ii,jj) < 0.0 .or. lon_in(ii,jj) > 360.0) then
                 cycle
-            end if
+            endif
             
-            ! Check data quality - use first band as representative
-            is_valid = .true.
-            if (size(quality_flag_in, 1) > 0) then
-                band_idx = 1  ! Use first band for quality check
-                ! Bit 0 = IsNotValid
-                if (BTEST(quality_flag_in(band_idx,ii,jj), 0)) then
-                    is_valid = .false.
-                end if
-            end if
-            
-            ! Skip if invalid
-            if (.not. is_valid) cycle
+            ! Check if footprint has snow or precip
+            has_snow = (IBITS(quality_flag(ii,jj), 2, 1) == 1)
+            has_precip = (IBITS(quality_flag(ii,jj), 1, 1) == 1)
             
             ! Find nearest ARFS grid point
             c = MINLOC(ABS(lat_in(ii,jj)-ref_lat(:)), 1)
@@ -106,7 +158,7 @@ CONTAINS
             if (r < 1 .or. r > size(ref_lon) .or. &
                 c < 1 .or. c > size(ref_lat)) then
                 cycle
-            end if
+            endif
             
             ! Define search window
             rmin = max(1, r-5)
@@ -114,18 +166,20 @@ CONTAINS
             cmin = max(1, c-5)
             cmax = min(size(ref_lat), c+5)
             
+            ! Bounds check
+            if (rmin < 1 .or. rmax > size(ref_lon) .or. &
+                cmin < 1 .or. cmax > size(ref_lat)) then
+                cycle
+            endif
+            
             ! Loop through search window
             do cc = cmin, cmax
-                lat2 = ref_lat(cc) * D2R
+                lat2 = ref_lat(cc) * d2r
                 
                 do rr = rmin, rmax
-                    lon2 = ref_lon(rr) * D2R
-                    lat1 = lat_in(ii,jj) * D2R
-                    
-                    ! Convert longitude to -180 to 180 range for distance calculation
-                    lon1 = lon_in(ii,jj)
-                    if (lon1 > 180.0) lon1 = lon1 - 360.0
-                    lon1 = lon1 * D2R
+                    lon2 = ref_lon(rr) * d2r
+                    lat1 = lat_in(ii,jj) * d2r
+                    lon1 = lon_in(ii,jj) * d2r
                     
                     ! Calculate great circle distance
                     if (lat1 == lat2 .and. lon1 == lon2) then
@@ -133,100 +187,264 @@ CONTAINS
                     else
                         gcdist = RE_KM * DACOS(DSIN(lat1) * DSIN(lat2) + &
                             DCOS(lat1) * DCOS(lat2) * DCOS(lon1-lon2))
-                    end if
+                    endif
                     
                     ! Process if within search radius
-                    if (gcdist < SEARCH_RADIUS) then
-                        sample_count(rr,cc) = sample_count(rr,cc) + 1
+                    if (gcdist < search_radius) then
+                        ! ALWAYS update counts for quality flag tracking (ALL footprints)
+                        total_count(rr,cc) = total_count(rr,cc) + 1
+                        if (IBITS(quality_flag(ii,jj), 0, 1) == 1) &
+                            ocean_count(rr,cc) = ocean_count(rr,cc) + 1
+                        if (IBITS(quality_flag(ii,jj), 1, 1) == 1) &
+                            precip_count(rr,cc) = precip_count(rr,cc) + 1
+                        if (IBITS(quality_flag(ii,jj), 2, 1) == 1) &
+                            snow_count(rr,cc) = snow_count(rr,cc) + 1
                         
-                        if (gcdist < 0.0001) then
-                            ! Exact match
-                            zerodistflag(rr,cc) = 1
-                            
-                            do ichan = 1, nchans_in
-                                if (tb_in(ichan,ii,jj) > 0.0 .and. &
-                                    tb_in(ichan,ii,jj) < 400.0) then
-                                    tb_out(ichan,rr,cc) = tb_in(ichan,ii,jj)
-                                    wt_tb(ichan,rr,cc) = 1.0
-                                end if
-                            end do
-                            
-                            if (land_frac_in(ii,jj) >= 0.0) then
-                                land_frac_out(rr,cc) = land_frac_in(ii,jj)
-                                wt_land(rr,cc) = 1.0
-                            end if
-                            
-                            ! Copy quality flag for exact match
-                            if (size(quality_flag_in, 1) > 0) then
-                                quality_flag_out(rr,cc) = quality_flag_in(1,ii,jj)
-                            end if
-                            
+                        ! Check if this footprint should be excluded from resampling
+                        if (has_snow .or. has_precip) then
+                            ! Track excluded footprints
+                            if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
+                            if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
                         else
-                            ! Weighted by inverse distance
-                            if (zerodistflag(rr,cc) /= 1) then
-                                do ichan = 1, nchans_in
-                                    if (tb_in(ichan,ii,jj) > 0.0 .and. &
-                                        tb_in(ichan,ii,jj) < 400.0) then
-                                        tb_out(ichan,rr,cc) = tb_out(ichan,rr,cc) + &
-                                            tb_in(ichan,ii,jj) / gcdist
-                                        wt_tb(ichan,rr,cc) = wt_tb(ichan,rr,cc) + &
+                            ! No snow/precip - proceed with actual resampling
+                            if (gcdist < 0.0001D0) then
+                                ! Exact match
+                                zerodistflag(rr,cc) = 1
+                                arfs_quality_flag(rr,cc) = quality_flag(ii,jj)
+                                
+                                ! Time
+                                if (ii <= size(tim)) then
+                                    if (tim(ii) >= 0) then
+                                        arfs_time(rr,cc) = tim(ii)
+                                        arfs_wt_tim(rr,cc) = 1.0
+                                    endif
+                                endif
+                                
+                                ! TB channels
+                                if (tb_10h(ii,jj) > 0 .and. tb_10h(ii,jj) < 400) then
+                                    arfs_tb_10h(rr,cc) = tb_10h(ii,jj)
+                                    arfs_wt_tb10h(rr,cc) = 1.0
+                                endif
+                                if (tb_10v(ii,jj) > 0 .and. tb_10v(ii,jj) < 400) then
+                                    arfs_tb_10v(rr,cc) = tb_10v(ii,jj)
+                                    arfs_wt_tb10v(rr,cc) = 1.0
+                                endif
+                                if (tb_18h(ii,jj) > 0 .and. tb_18h(ii,jj) < 400) then
+                                    arfs_tb_18h(rr,cc) = tb_18h(ii,jj)
+                                    arfs_wt_tb18h(rr,cc) = 1.0
+                                endif
+                                if (tb_18v(ii,jj) > 0 .and. tb_18v(ii,jj) < 400) then
+                                    arfs_tb_18v(rr,cc) = tb_18v(ii,jj)
+                                    arfs_wt_tb18v(rr,cc) = 1.0
+                                endif
+                                if (tb_23h(ii,jj) > 0 .and. tb_23h(ii,jj) < 400) then
+                                    arfs_tb_23h(rr,cc) = tb_23h(ii,jj)
+                                    arfs_wt_tb23h(rr,cc) = 1.0
+                                endif
+                                if (tb_23v(ii,jj) > 0 .and. tb_23v(ii,jj) < 400) then
+                                    arfs_tb_23v(rr,cc) = tb_23v(ii,jj)
+                                    arfs_wt_tb23v(rr,cc) = 1.0
+                                endif
+                                if (tb_36h(ii,jj) > 0 .and. tb_36h(ii,jj) < 400) then
+                                    arfs_tb_36h(rr,cc) = tb_36h(ii,jj)
+                                    arfs_wt_tb36h(rr,cc) = 1.0
+                                endif
+                                if (tb_36v(ii,jj) > 0 .and. tb_36v(ii,jj) < 400) then
+                                    arfs_tb_36v(rr,cc) = tb_36v(ii,jj)
+                                    arfs_wt_tb36v(rr,cc) = 1.0
+                                endif
+                                if (tb_89h(ii,jj) > 0 .and. tb_89h(ii,jj) < 400) then
+                                    arfs_tb_89h(rr,cc) = tb_89h(ii,jj)
+                                    arfs_wt_tb89h(rr,cc) = 1.0
+                                endif
+                                if (tb_89v(ii,jj) > 0 .and. tb_89v(ii,jj) < 400) then
+                                    arfs_tb_89v(rr,cc) = tb_89v(ii,jj)
+                                    arfs_wt_tb89v(rr,cc) = 1.0
+                                endif
+                                
+                                ! Land water fraction
+                                if (land_water_frac(ii,jj) >= 0) then
+                                    arfs_land_water_frac(rr,cc) = land_water_frac(ii,jj)
+                                    arfs_wt_land_water_frac(rr,cc) = 1.0
+                                endif
+                                
+                            else
+                                ! Weighted by inverse distance
+                                if (zerodistflag(rr,cc) /= 1) then
+                                    ! Time
+                                    if (ii <= size(tim)) then
+                                        if (tim(ii) >= 0) then
+                                            arfs_time(rr,cc) = arfs_time(rr,cc) + tim(ii) / gcdist
+                                            arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 / gcdist
+                                        endif
+                                    endif
+                                    
+                                    ! TB channels
+                                    if (tb_10h(ii,jj) > 0 .and. tb_10h(ii,jj) < 400) then
+                                        arfs_tb_10h(rr,cc) = arfs_tb_10h(rr,cc) + tb_10h(ii,jj) / gcdist
+                                        arfs_wt_tb10h(rr,cc) = arfs_wt_tb10h(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_10v(ii,jj) > 0 .and. tb_10v(ii,jj) < 400) then
+                                        arfs_tb_10v(rr,cc) = arfs_tb_10v(rr,cc) + tb_10v(ii,jj) / gcdist
+                                        arfs_wt_tb10v(rr,cc) = arfs_wt_tb10v(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    ! ... (similar for all other channels)
+                                    if (tb_18h(ii,jj) > 0 .and. tb_18h(ii,jj) < 400) then
+                                        arfs_tb_18h(rr,cc) = arfs_tb_18h(rr,cc) + tb_18h(ii,jj) / gcdist
+                                        arfs_wt_tb18h(rr,cc) = arfs_wt_tb18h(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_18v(ii,jj) > 0 .and. tb_18v(ii,jj) < 400) then
+                                        arfs_tb_18v(rr,cc) = arfs_tb_18v(rr,cc) + tb_18v(ii,jj) / gcdist
+                                        arfs_wt_tb18v(rr,cc) = arfs_wt_tb18v(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_23h(ii,jj) > 0 .and. tb_23h(ii,jj) < 400) then
+                                        arfs_tb_23h(rr,cc) = arfs_tb_23h(rr,cc) + tb_23h(ii,jj) / gcdist
+                                        arfs_wt_tb23h(rr,cc) = arfs_wt_tb23h(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_23v(ii,jj) > 0 .and. tb_23v(ii,jj) < 400) then
+                                        arfs_tb_23v(rr,cc) = arfs_tb_23v(rr,cc) + tb_23v(ii,jj) / gcdist
+                                        arfs_wt_tb23v(rr,cc) = arfs_wt_tb23v(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_36h(ii,jj) > 0 .and. tb_36h(ii,jj) < 400) then
+                                        arfs_tb_36h(rr,cc) = arfs_tb_36h(rr,cc) + tb_36h(ii,jj) / gcdist
+                                        arfs_wt_tb36h(rr,cc) = arfs_wt_tb36h(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_36v(ii,jj) > 0 .and. tb_36v(ii,jj) < 400) then
+                                        arfs_tb_36v(rr,cc) = arfs_tb_36v(rr,cc) + tb_36v(ii,jj) / gcdist
+                                        arfs_wt_tb36v(rr,cc) = arfs_wt_tb36v(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_89h(ii,jj) > 0 .and. tb_89h(ii,jj) < 400) then
+                                        arfs_tb_89h(rr,cc) = arfs_tb_89h(rr,cc) + tb_89h(ii,jj) / gcdist
+                                        arfs_wt_tb89h(rr,cc) = arfs_wt_tb89h(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    if (tb_89v(ii,jj) > 0 .and. tb_89v(ii,jj) < 400) then
+                                        arfs_tb_89v(rr,cc) = arfs_tb_89v(rr,cc) + tb_89v(ii,jj) / gcdist
+                                        arfs_wt_tb89v(rr,cc) = arfs_wt_tb89v(rr,cc) + 1.0 / gcdist
+                                    endif
+                                    
+                                    ! Land water fraction
+                                    if (land_water_frac(ii,jj) >= 0) then
+                                        arfs_land_water_frac(rr,cc) = arfs_land_water_frac(rr,cc) + &
+                                            land_water_frac(ii,jj) / gcdist
+                                        arfs_wt_land_water_frac(rr,cc) = arfs_wt_land_water_frac(rr,cc) + &
                                             1.0 / gcdist
-                                    end if
-                                end do
-                                
-                                if (land_frac_in(ii,jj) >= 0.0) then
-                                    land_frac_out(rr,cc) = land_frac_out(rr,cc) + &
-                                        land_frac_in(ii,jj) / gcdist
-                                    wt_land(rr,cc) = wt_land(rr,cc) + 1.0 / gcdist
-                                end if
-                                
-                                ! Accumulate quality flags for majority vote
-                                if (size(quality_flag_in, 1) > 0) then
-                                    quality_sum(rr,cc) = quality_sum(rr,cc) + &
-                                        quality_flag_in(1,ii,jj)
-                                    quality_count(rr,cc) = quality_count(rr,cc) + 1
-                                end if
-                            end if
-                        end if
-                    end if
-                end do  ! rr
-            end do  ! cc
-        end do  ! ii
-    end do  ! jj
+                                    endif
+                                endif ! zerodistflag check
+                            endif ! gcdist < 0.0001
+                        endif ! has_snow .or. has_precip
+                    endif ! gcdist < search_radius
+                end do !rr
+            end do !cc
+        end do !ii
+    end do !jj
     
-    write(LDT_logunit,*)'[INFO] Applying weights to resampled data'
+    ! Apply weighting and set fill values
+    write(LDT_logunit,*)'[INFO] Applying weights and computing averages...'
     
-    ! Apply weights
-    do cc = 1, size(ref_lat)
-        do rr = 1, size(ref_lon)
-            if (zerodistflag(rr,cc) == 0) then
-                ! Not an exact match - apply weights
-                do ichan = 1, nchans_in
-                    if (wt_tb(ichan,rr,cc) > 0.0) then
-                        tb_out(ichan,rr,cc) = tb_out(ichan,rr,cc) / wt_tb(ichan,rr,cc)
-                    end if
-                end do
-                
-                if (wt_land(rr,cc) > 0.0) then
-                    land_frac_out(rr,cc) = land_frac_out(rr,cc) / wt_land(rr,cc)
-                end if
-                
-                ! Average quality flag
-                if (quality_count(rr,cc) > 0) then
-                    quality_flag_out(rr,cc) = int(quality_sum(rr,cc) / &
-                        quality_count(rr,cc), kind=1)
-                end if
-            end if
+    WHERE(arfs_time /= 0.0 .AND. arfs_wt_tim /= 0.0)
+        arfs_time = arfs_time / arfs_wt_tim
+    ELSEWHERE
+        arfs_time = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_10h /= 0.0 .AND. arfs_wt_tb10h /= 0.0)
+        arfs_tb_10h = arfs_tb_10h / arfs_wt_tb10h
+    ELSEWHERE
+        arfs_tb_10h = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_10v /= 0.0 .AND. arfs_wt_tb10v /= 0.0)
+        arfs_tb_10v = arfs_tb_10v / arfs_wt_tb10v
+    ELSEWHERE
+        arfs_tb_10v = -9999.0
+    END WHERE
+    
+    ! ... (similar for all channels)
+    WHERE(arfs_tb_18h /= 0.0 .AND. arfs_wt_tb18h /= 0.0)
+        arfs_tb_18h = arfs_tb_18h / arfs_wt_tb18h
+    ELSEWHERE
+        arfs_tb_18h = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_18v /= 0.0 .AND. arfs_wt_tb18v /= 0.0)
+        arfs_tb_18v = arfs_tb_18v / arfs_wt_tb18v
+    ELSEWHERE
+        arfs_tb_18v = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_23h /= 0.0 .AND. arfs_wt_tb23h /= 0.0)
+        arfs_tb_23h = arfs_tb_23h / arfs_wt_tb23h
+    ELSEWHERE
+        arfs_tb_23h = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_23v /= 0.0 .AND. arfs_wt_tb23v /= 0.0)
+        arfs_tb_23v = arfs_tb_23v / arfs_wt_tb23v
+    ELSEWHERE
+        arfs_tb_23v = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_36h /= 0.0 .AND. arfs_wt_tb36h /= 0.0)
+        arfs_tb_36h = arfs_tb_36h / arfs_wt_tb36h
+    ELSEWHERE
+        arfs_tb_36h = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_36v /= 0.0 .AND. arfs_wt_tb36v /= 0.0)
+        arfs_tb_36v = arfs_tb_36v / arfs_wt_tb36v
+    ELSEWHERE
+        arfs_tb_36v = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_89h /= 0.0 .AND. arfs_wt_tb89h /= 0.0)
+        arfs_tb_89h = arfs_tb_89h / arfs_wt_tb89h
+    ELSEWHERE
+        arfs_tb_89h = -9999.0
+    END WHERE
+    
+    WHERE(arfs_tb_89v /= 0.0 .AND. arfs_wt_tb89v /= 0.0)
+        arfs_tb_89v = arfs_tb_89v / arfs_wt_tb89v
+    ELSEWHERE
+        arfs_tb_89v = -9999.0
+    END WHERE
+    
+    WHERE(arfs_land_water_frac /= 0.0 .AND. arfs_wt_land_water_frac /= 0.0)
+        arfs_land_water_frac = arfs_land_water_frac / arfs_wt_land_water_frac
+    ELSEWHERE
+        arfs_land_water_frac = -9999.0
+    END WHERE
+    
+    ! Finalize quality flags using majority vote
+    write(LDT_logunit,*)'[INFO] Computing majority vote for quality flags...'
+    
+    do i = 1, 2560
+        do j = 1, 1920
+            if (arfs_quality_flag(i,j) == 0) then
+                if (total_count(i,j) > 0) then
+                    ! Ocean flag
+                    if (ocean_count(i,j) > total_count(i,j)/2) then
+                        arfs_quality_flag(i,j) = IOR(arfs_quality_flag(i,j), 1)
+                    endif
+                    
+                    ! Precipitation flag
+                    if (precip_count(i,j) > total_count(i,j)/2) then
+                        arfs_quality_flag(i,j) = IOR(arfs_quality_flag(i,j), 2)
+                    endif
+                    
+                    ! Snow flag
+                    if (snow_count(i,j) > total_count(i,j)/2) then
+                        arfs_quality_flag(i,j) = IOR(arfs_quality_flag(i,j), 4)
+                    endif
+                endif
+            endif
         end do
     end do
     
-    ! Count valid output points
-    write(LDT_logunit,*)'[INFO] Resampling complete'
-    write(LDT_logunit,*)'[INFO] Valid output points: ', &
-        count(sample_count > 0)
-    write(LDT_logunit,*)'[INFO] Max samples per point: ', &
-        maxval(sample_count)
+    ! Cleanup
+    deallocate(zerodistflag)
     
-    END SUBROUTINE WSF2ARFS_INVDIS
+    write(LDT_logunit,*)'[INFO] Resampling complete'
+    
+    END SUBROUTINE WSF2ARFS_INVDIS_EXACT
 
 END MODULE invdist_wsf2arfs
