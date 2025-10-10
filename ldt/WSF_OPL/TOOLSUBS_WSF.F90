@@ -11,6 +11,7 @@
 ! MODULE: TOOLSUBS_WSF
 !
 ! DESCRIPTION: Module for reading WSF NetCDF data with AMSR-style processing
+!              CORRECTED: Fixed variable declarations and nf90_close usage
 !
 !-------------------------------------------------------------------------
 
@@ -26,9 +27,9 @@ MODULE TOOLSUBS_WSF
 CONTAINS
 
     SUBROUTINE get_wsf_data_with_flags(filename, &
-        tb_lowres, lat, lon, land_frac_low, &
-        snow, precip, quality_flag, &
-        nscans, nfovs, nchans, ierr)
+        tb_lowres, lat, lon, land_frac_low, quality_flag, &
+        earth_inc_angle, snow, precip, &
+        nscans, nfovs, nchans, chan_frequencies, chan_polarizations, ierr)
     
     ! Arguments  
     character(*), intent(in) :: filename
@@ -36,14 +37,17 @@ CONTAINS
     real*4, allocatable, intent(out) :: lat(:,:)           ! (nscans, nfovs)
     real*4, allocatable, intent(out) :: lon(:,:)           ! (nscans, nfovs)
     real*4, allocatable, intent(out) :: land_frac_low(:,:) ! (nscans, nfovs)
+    integer*1, allocatable, intent(out) :: quality_flag(:,:) ! (nscans, nfovs)
+    real*4, allocatable, intent(out) :: earth_inc_angle(:,:,:) ! (nchans, nscans, nfovs)
     integer*4, allocatable, intent(out) :: snow(:,:)       ! (nscans, nfovs)
     integer*4, allocatable, intent(out) :: precip(:,:)     ! (nscans, nfovs)
-    integer*1, allocatable, intent(out) :: quality_flag(:,:) ! (nscans, nfovs)
+    real*4, allocatable, intent(out) :: chan_frequencies(:)
+    character*1, allocatable, intent(out) :: chan_polarizations(:)
     integer, intent(out) :: nscans, nfovs, nchans
     integer, intent(out) :: ierr
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-    ! Local variables
+    ! Local variables - ALL DECLARATIONS MUST BE HERE
     integer :: ncid, varid
     integer :: nscanr_dimid, nfovr_dimid, nchan_dimid
     logical :: file_exists
@@ -51,6 +55,8 @@ CONTAINS
     real :: sil, tt18
     real*4, allocatable :: tb_18v(:,:), tb_18h(:,:)
     real*4, allocatable :: tb_23v(:,:), tb_36v(:,:), tb_89v(:,:)
+    real*4, allocatable :: chan_freq(:)      ! CORRECTED: Moved here
+    character*1, allocatable :: chan_pol(:)  ! CORRECTED: Moved here
     
     ierr = 0
     nscans = 0
@@ -80,7 +86,7 @@ CONTAINS
     ierr = nf90_inq_dimid(ncid, 'nScanR', nscanr_dimid)
     if (ierr /= NF90_NOERR) then
         write(LDT_logunit,*)'[ERR] Cannot find dimension nScanR'
-        call nf90_close(ncid)
+        ierr = nf90_close(ncid)  ! CORRECTED: Function, not subroutine
         ierr = 1
         return
     end if
@@ -94,14 +100,17 @@ CONTAINS
     write(LDT_logunit,*)'[INFO] Dimensions: nScanR=', nscans, &
         ' nFOVR=', nfovs, ' nChan=', nchans
     
-    ! Allocate arrays
+    ! Allocate all arrays
     allocate(tb_lowres(nchans, nscans, nfovs))
     allocate(lat(nscans, nfovs))
     allocate(lon(nscans, nfovs))
     allocate(land_frac_low(nscans, nfovs))
+    allocate(earth_inc_angle(nchans, nscans, nfovs))
     allocate(snow(nscans, nfovs))
     allocate(precip(nscans, nfovs))
     allocate(quality_flag(nscans, nfovs))
+    allocate(chan_frequencies(nchans))
+    allocate(chan_polarizations(nchans))
     
     ! Allocate temporary arrays for snow/precip detection
     allocate(tb_18v(nscans, nfovs))
@@ -110,11 +119,27 @@ CONTAINS
     allocate(tb_36v(nscans, nfovs))
     allocate(tb_89v(nscans, nfovs))
     
+    ! Allocate temporary arrays for channel info
+    allocate(chan_freq(nchans))
+    allocate(chan_pol(nchans))
+    
+    ! Initialize arrays
+    tb_lowres = 0.0
+    lat = 0.0
+    lon = 0.0
+    land_frac_low = 0.0
+    earth_inc_angle = 0.0
+    snow = 0
+    precip = 0
+    quality_flag = 0
+    
     ! Read latitude
     ierr = nf90_inq_varid(ncid, 'Latitude', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, lat)
         write(LDT_logunit,*)'[INFO] Read Latitude'
+    else
+        write(LDT_logunit,*)'[WARN] Could not read Latitude'
     end if
     
     ! Read longitude
@@ -122,6 +147,8 @@ CONTAINS
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, lon)
         write(LDT_logunit,*)'[INFO] Read Longitude'
+    else
+        write(LDT_logunit,*)'[WARN] Could not read Longitude'
     end if
     
     ! Read TbLowRes
@@ -129,6 +156,8 @@ CONTAINS
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, tb_lowres)
         write(LDT_logunit,*)'[INFO] Read TbLowRes'
+    else
+        write(LDT_logunit,*)'[WARN] Could not read TbLowRes'
     end if
     
     ! Read LandFractionLowRes
@@ -136,14 +165,77 @@ CONTAINS
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, land_frac_low)
         write(LDT_logunit,*)'[INFO] Read LandFractionLowRes'
+    else
+        write(LDT_logunit,*)'[WARN] Could not read LandFractionLowRes'
     end if
     
-    ! Close file for now
-    ierr = nf90_close(ncid)
+    ! Read Earth Incidence Angle
+    ierr = nf90_inq_varid(ncid, 'EarthIncAngle', varid)
+    if (ierr == NF90_NOERR) then
+        ierr = nf90_get_var(ncid, varid, earth_inc_angle)
+        write(LDT_logunit,*)'[INFO] Read EarthIncAngle'
+    else
+        ! Try alternative name
+        ierr = nf90_inq_varid(ncid, 'earth_incidence_angle', varid)
+        if (ierr == NF90_NOERR) then
+            ierr = nf90_get_var(ncid, varid, earth_inc_angle)
+            write(LDT_logunit,*)'[INFO] Read earth_incidence_angle'
+        else
+            write(LDT_logunit,*)'[WARN] Could not read Earth Incidence Angle'
+            earth_inc_angle = 55.0  ! Default value
+        end if
+    end if
+    
+    ! Read channel frequencies
+    ierr = nf90_inq_varid(ncid, 'ChanFrequency', varid)
+    if (ierr == NF90_NOERR) then
+        ierr = nf90_get_var(ncid, varid, chan_freq)
+        write(LDT_logunit,*)'[INFO] Read ChanFrequency'
+        chan_frequencies(:) = chan_freq(:)
+    else
+        write(LDT_logunit,*)'[WARN] Could not read ChanFrequency, using defaults'
+        ! Set default frequencies based on WSF standard channels
+        if (nchans >= 10) then
+            chan_frequencies(1:2) = 10.65
+            chan_frequencies(3:4) = 18.7
+            chan_frequencies(5:6) = 23.8
+            chan_frequencies(7:8) = 36.5
+            chan_frequencies(9:10) = 89.0
+        end if
+    end if
+    
+    ! Read channel polarizations
+    ierr = nf90_inq_varid(ncid, 'ChanPolarization', varid)
+    if (ierr == NF90_NOERR) then
+        ! CORRECTED: Read as character array properly
+        do i = 1, nchans
+            ierr = nf90_get_var(ncid, varid, chan_pol(i:i), &
+                start=(/i/), count=(/1/))
+        end do
+        write(LDT_logunit,*)'[INFO] Read ChanPolarization'
+        chan_polarizations(:) = chan_pol(:)
+    else
+        write(LDT_logunit,*)'[WARN] Could not read ChanPolarization, using defaults'
+        ! Set default polarizations (V,H pattern)
+        if (nchans >= 10) then
+            chan_polarizations(1) = 'V'
+            chan_polarizations(2) = 'H'
+            chan_polarizations(3) = 'V'
+            chan_polarizations(4) = 'H'
+            chan_polarizations(5) = 'V'
+            chan_polarizations(6) = 'H'
+            chan_polarizations(7) = 'V'
+            chan_polarizations(8) = 'H'
+            chan_polarizations(9) = 'V'
+            chan_polarizations(10) = 'H'
+        end if
+    end if
+    
+    ! Close file
+    ierr = nf90_close(ncid)  ! CORRECTED: Function, not subroutine
     
     ! ==================================================================
     ! EXTRACT SPECIFIC CHANNELS FOR SNOW/PRECIP DETECTION
-    ! Match AMSR_OPL processing exactly
     ! ==================================================================
     write(LDT_logunit,*)'[INFO] Extracting channels for snow/precip detection'
     
@@ -154,63 +246,43 @@ CONTAINS
     tb_36v = 0.0
     tb_89v = 0.0
     
-    ! Extract channels based on frequency
-    ! Need to read channel info from file
-    ierr = nf90_open(trim(filename), NF90_NOWRITE, ncid)
-    
-    ! Read channel frequencies and polarizations to identify channels
-    real*4, allocatable :: chan_freq(:)
-    character*1, allocatable :: chan_pol(:)
-    allocate(chan_freq(nchans))
-    allocate(chan_pol(nchans))
-    
-    ierr = nf90_inq_varid(ncid, 'ChanFrequency', varid)
-    if (ierr == NF90_NOERR) ierr = nf90_get_var(ncid, varid, chan_freq)
-    
-    ierr = nf90_inq_varid(ncid, 'ChanPolarization', varid)
-    if (ierr == NF90_NOERR) ierr = nf90_get_var(ncid, varid, chan_pol)
-    
-    ierr = nf90_close(ncid)
-    
-    ! Extract specific channels needed for snow/precip algorithm
+    ! Extract specific channels based on frequency and polarization
     do ichan = 1, nchans
         ! 18.7 GHz V
-        if (abs(chan_freq(ichan) - 18.7) < 0.1 .and. &
+        if (abs(chan_freq(ichan) - 18.7) < 0.5 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
             tb_18v(:,:) = tb_lowres(ichan,:,:)
             write(LDT_logunit,*)'[INFO] Found TB_18V at channel ', ichan
         end if
         
         ! 18.7 GHz H
-        if (abs(chan_freq(ichan) - 18.7) < 0.1 .and. &
+        if (abs(chan_freq(ichan) - 18.7) < 0.5 .and. &
             (chan_pol(ichan) == 'h' .or. chan_pol(ichan) == 'H')) then
             tb_18h(:,:) = tb_lowres(ichan,:,:)
             write(LDT_logunit,*)'[INFO] Found TB_18H at channel ', ichan
         end if
         
         ! 23.8 GHz V
-        if (abs(chan_freq(ichan) - 23.8) < 0.1 .and. &
+        if (abs(chan_freq(ichan) - 23.8) < 0.5 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
             tb_23v(:,:) = tb_lowres(ichan,:,:)
             write(LDT_logunit,*)'[INFO] Found TB_23V at channel ', ichan
         end if
         
         ! 36.5 GHz V
-        if (abs(chan_freq(ichan) - 36.5) < 0.1 .and. &
+        if (abs(chan_freq(ichan) - 36.5) < 1.0 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
             tb_36v(:,:) = tb_lowres(ichan,:,:)
             write(LDT_logunit,*)'[INFO] Found TB_36V at channel ', ichan
         end if
         
         ! 89.0 GHz V
-        if (abs(chan_freq(ichan) - 89.0) < 0.1 .and. &
+        if (abs(chan_freq(ichan) - 89.0) < 2.0 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
             tb_89v(:,:) = tb_lowres(ichan,:,:)
             write(LDT_logunit,*)'[INFO] Found TB_89V at channel ', ichan
         end if
     end do
-    
-    deallocate(chan_freq, chan_pol)
     
     ! ==================================================================
     ! SNOW AND PRECIPITATION DETECTION
@@ -302,6 +374,7 @@ CONTAINS
     
     ! Cleanup temporary arrays
     deallocate(tb_18v, tb_18h, tb_23v, tb_36v, tb_89v)
+    deallocate(chan_freq, chan_pol)
     
     write(LDT_logunit,*)'[INFO] Successfully read all WSF data with flags'
     ierr = 0
@@ -315,5 +388,57 @@ CONTAINS
 #endif
     
     END SUBROUTINE get_wsf_data_with_flags
+
+    ! ==================================================================
+    ! Simplified version without snow/precip detection (for compatibility)
+    ! ==================================================================
+    SUBROUTINE get_wsf_data(filename, &
+        tb_lowres, lat, lon, land_frac_low, &
+        quality_flag, earth_inc_angle, &
+        nscans, nfovs, nchans, ierr)
+    
+    character(*), intent(in) :: filename
+    real*4, allocatable, intent(out) :: tb_lowres(:,:,:)
+    real*4, allocatable, intent(out) :: lat(:,:)
+    real*4, allocatable, intent(out) :: lon(:,:)
+    real*4, allocatable, intent(out) :: land_frac_low(:,:)
+    integer*1, allocatable, intent(out) :: quality_flag(:,:,:)
+    real*4, allocatable, intent(out) :: earth_inc_angle(:,:,:)
+    integer, intent(out) :: nscans, nfovs, nchans
+    integer, intent(out) :: ierr
+    
+    ! Local variables
+    integer*4, allocatable :: snow(:,:), precip(:,:)
+    integer*1, allocatable :: quality_flag_2d(:,:)
+    real*4, allocatable :: chan_freq(:)
+    character*1, allocatable :: chan_pol(:)
+    integer :: i, j, k
+    
+    ! Call the main routine
+    call get_wsf_data_with_flags(filename, &
+        tb_lowres, lat, lon, land_frac_low, quality_flag_2d, &
+        earth_inc_angle, snow, precip, &
+        nscans, nfovs, nchans, chan_freq, chan_pol, ierr)
+    
+    if (ierr == 0 .and. allocated(quality_flag_2d)) then
+        ! Expand 2D quality flag to 3D for compatibility
+        allocate(quality_flag(nchans, nscans, nfovs))
+        do k = 1, nchans
+            do j = 1, nfovs
+                do i = 1, nscans
+                    quality_flag(k,i,j) = quality_flag_2d(i,j)
+                end do
+            end do
+        end do
+        deallocate(quality_flag_2d)
+    end if
+    
+    ! Cleanup
+    if (allocated(snow)) deallocate(snow)
+    if (allocated(precip)) deallocate(precip)
+    if (allocated(chan_freq)) deallocate(chan_freq)
+    if (allocated(chan_pol)) deallocate(chan_pol)
+    
+    END SUBROUTINE get_wsf_data
 
 END MODULE TOOLSUBS_WSF

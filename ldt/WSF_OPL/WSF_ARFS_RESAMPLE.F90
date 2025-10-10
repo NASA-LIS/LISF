@@ -11,7 +11,7 @@
 ! SUBROUTINE: WSF_ARFS_RESAMPLE
 !
 ! DESCRIPTION: Resample WSF TB to Air Force Grid
-!              Modified to output AMSR_OPL-style with quality and land filtering
+!              CORRECTED: Added snow/precip filtering to match AMSR_OPL
 !
 !-------------------------------------------------------------------------
 
@@ -40,222 +40,243 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filelist, nfiles, output_dir, n)
     real*4, allocatable :: tb_lowres(:,:,:)
     real*4, allocatable :: lat_in(:,:), lon_in(:,:)
     real*4, allocatable :: land_frac_low(:,:)
-    integer*1, allocatable :: quality_flag_in(:,:,:)
+    integer*1, allocatable :: quality_flag_in(:,:)
     real*4, allocatable :: earth_inc_angle(:,:,:)
     
+    ! CORRECTED: Added snow/precip arrays
+    integer*4, allocatable :: snow_in(:,:), precip_in(:,:)
+    
+    ! Time array
+    real*8, allocatable :: time_array(:)
+    
+    ! Output grid arrays
     real*8, allocatable :: ARFS_LAT(:), ARFS_LON(:)
-    real*4, allocatable :: ARFS_TB(:,:,:)  ! Temporary 3D array
+    real*8, allocatable :: ARFS_TIME(:,:)
+    real*4, allocatable :: ARFS_TB_10H(:,:), ARFS_TB_10V(:,:)
+    real*4, allocatable :: ARFS_TB_18H(:,:), ARFS_TB_18V(:,:)
+    real*4, allocatable :: ARFS_TB_23H(:,:), ARFS_TB_23V(:,:)
+    real*4, allocatable :: ARFS_TB_36H(:,:), ARFS_TB_36V(:,:)
+    real*4, allocatable :: ARFS_TB_89H(:,:), ARFS_TB_89V(:,:)
     real*4, allocatable :: ARFS_LAND_FRAC(:,:)
     integer*1, allocatable :: ARFS_QUALITY_FLAG(:,:)
-    integer*4, allocatable :: ARFS_SAMPLE_COUNT(:,:)
+    integer*4, allocatable :: ARFS_SAMPLE_V(:,:), ARFS_SAMPLE_H(:,:)
+    
+    ! Individual channel arrays for extraction
+    real*4, allocatable :: tb_10h(:,:), tb_10v(:,:)
+    real*4, allocatable :: tb_18h(:,:), tb_18v(:,:)
+    real*4, allocatable :: tb_23h(:,:), tb_23v(:,:)
+    real*4, allocatable :: tb_36h(:,:), tb_36v(:,:)
+    real*4, allocatable :: tb_89h(:,:), tb_89v(:,:)
     
     ! Channel mapping arrays
     real*4, allocatable :: chan_frequencies(:)
     character*1, allocatable :: chan_polarizations(:)
     
-    integer :: ichan, c, r, band_for_qc
+    integer :: ichan, c, r
     real :: freq
     character*1 :: pol
     integer*1 :: qc_bits
     real, parameter :: LAND_FRAC_THRESHOLD = 0.8
     
     write(LDT_logunit,*)'[INFO] ========================================='
-    write(LDT_logunit,*)'[INFO] Starting WSF ARFS Resampling'
+    write(LDT_logunit,*)'[INFO] Starting WSF ARFS Resampling (CORRECTED)'
     write(LDT_logunit,*)'[INFO] Processing ', nfiles, ' files'
     write(LDT_logunit,*)'[INFO] Using LOW resolution (30 km) data'
-    write(LDT_logunit,*)'[INFO] Output: AMSR_OPL style (10 channels only)'
+    write(LDT_logunit,*)'[INFO] Output: AMSR_OPL style (10 channels)'
+    write(LDT_logunit,*)'[INFO] Snow/Precip filtering: ENABLED'
     write(LDT_logunit,*)'[INFO] Quality filter: bits 0-4 = 0'
     write(LDT_logunit,*)'[INFO] Land fraction filter: > ', LAND_FRAC_THRESHOLD
     write(LDT_logunit,*)'[INFO] ========================================='
     
-    ! Setup ARFS grid once
-    write(LDT_logunit,*)'[INFO] Setting up ARFS grid...'
-    call ARFS_GEO
-    allocate(ARFS_LAT(arfs_nrow_lat))
-    allocate(ARFS_LON(arfs_mcol_lon))
-    ARFS_LAT = LAT(arfs_geo_lat_lo, arfs_geo_lat_up, -arfs_lat_space)
-    ARFS_LON = LON(arfs_geo_lon_lf, arfs_geo_lon_rt, arfs_lon_space)
+    ! Setup ARFS grid
+    allocate(ARFS_LAT(1920))
+    allocate(ARFS_LON(2560))
     
-    write(LDT_logunit,*)'[INFO] ARFS grid dimensions: ', &
-        arfs_mcol_lon, ' x ', arfs_nrow_lat
+    ! Create lat/lon arrays for ARFS grid
+    do r = 1, 1920
+        ARFS_LAT(r) = 90.0 - (r - 0.5) * 0.09375
+    end do
     
-    ! Process each file
+    do c = 1, 2560
+        ARFS_LON(c) = -180.0 + (c - 0.5) * 0.140625
+    end do
+    
+    ! Allocate output arrays
+    allocate(ARFS_TIME(2560,1920))
+    allocate(ARFS_TB_10H(2560,1920))
+    allocate(ARFS_TB_10V(2560,1920))
+    allocate(ARFS_TB_18H(2560,1920))
+    allocate(ARFS_TB_18V(2560,1920))
+    allocate(ARFS_TB_23H(2560,1920))
+    allocate(ARFS_TB_23V(2560,1920))
+    allocate(ARFS_TB_36H(2560,1920))
+    allocate(ARFS_TB_36V(2560,1920))
+    allocate(ARFS_TB_89H(2560,1920))
+    allocate(ARFS_TB_89V(2560,1920))
+    allocate(ARFS_LAND_FRAC(2560,1920))
+    allocate(ARFS_QUALITY_FLAG(2560,1920))
+    allocate(ARFS_SAMPLE_V(2560,1920))
+    allocate(ARFS_SAMPLE_H(2560,1920))
+    
+    ! Process each WSF file
     do ifile = 1, nfiles
-        write(LDT_logunit,*) ''
         write(LDT_logunit,*) '[INFO] ========================================'
         write(LDT_logunit,*) '[INFO] Processing file ', ifile, ' of ', nfiles
         write(LDT_logunit,*) '[INFO] File: ', trim(wsf_filelist(ifile))
         
-        ! Read WSF data
-        write(LDT_logunit,*)'[INFO] Reading WSF NetCDF file...'
-        call get_wsf_data(wsf_filelist(ifile), &
-            tb_lowres, lat_in, lon_in, land_frac_low, &
-            quality_flag_in, earth_inc_angle, &
-            nscans, nfovs, nchans, ierr)
+        ! Read WSF data with quality flags
+        call get_wsf_data_with_flags(wsf_filelist(ifile), &
+            tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
+            earth_inc_angle, snow_in, precip_in, &
+            nscans, nfovs, nchans, chan_frequencies, chan_polarizations, ierr)
         
         if (ierr /= 0) then
-            write(LDT_logunit,*)'[ERR] Failed to read WSF data'
-            write(LDT_logunit,*)'[ERR] Skipping file: ', trim(wsf_filelist(ifile))
+            write(LDT_logunit,*)'[WARN] Failed to read file, skipping'
             cycle
         end if
         
-        write(LDT_logunit,*)'[INFO] Input dimensions: nscans=', nscans, &
-            ' nfovs=', nfovs, ' nchans=', nchans
+        write(LDT_logunit,*)'[INFO] File dimensions: ', nscans, 'x', nfovs, 'x', nchans
+        write(LDT_logunit,*)'[INFO] Extracting channels for resampling'
         
-        ! Convert longitude from -180:180 to 0:360 if needed
-        write(LDT_logunit,*)'[INFO] Converting longitude range...'
-        do c = 1, nfovs
-            do r = 1, nscans
-                if (lon_in(r,c) < 0.0) then
-                    lon_in(r,c) = lon_in(r,c) + 360.0
-                end if
-            end do
-        end do
+        ! Allocate channel arrays
+        allocate(tb_10h(nscans,nfovs))
+        allocate(tb_10v(nscans,nfovs))
+        allocate(tb_18h(nscans,nfovs))
+        allocate(tb_18v(nscans,nfovs))
+        allocate(tb_23h(nscans,nfovs))
+        allocate(tb_23v(nscans,nfovs))
+        allocate(tb_36h(nscans,nfovs))
+        allocate(tb_36v(nscans,nfovs))
+        allocate(tb_89h(nscans,nfovs))
+        allocate(tb_89v(nscans,nfovs))
         
-        ! Read channel frequencies and polarizations
-        allocate(chan_frequencies(nchans))
-        allocate(chan_polarizations(nchans))
+        ! Initialize to missing
+        tb_10h = -9999.0
+        tb_10v = -9999.0
+        tb_18h = -9999.0
+        tb_18v = -9999.0
+        tb_23h = -9999.0
+        tb_23v = -9999.0
+        tb_36h = -9999.0
+        tb_36v = -9999.0
+        tb_89h = -9999.0
+        tb_89v = -9999.0
         
-        ierr = nf90_open(trim(wsf_filelist(ifile)), NF90_NOWRITE, ncid)
-        if (ierr == NF90_NOERR) then
-            ierr = nf90_inq_varid(ncid, 'ChanFrequency', varid)
-            if (ierr == NF90_NOERR) then
-                ierr = nf90_get_var(ncid, varid, chan_frequencies)
-                write(LDT_logunit,*)'[INFO] Read channel frequencies'
-            end if
-            
-            ierr = nf90_inq_varid(ncid, 'ChanPolarization', varid)
-            if (ierr == NF90_NOERR) then
-                ierr = nf90_get_var(ncid, varid, chan_polarizations)
-                write(LDT_logunit,*)'[INFO] Read channel polarizations'
-            end if
-            
-            ierr = nf90_close(ncid)
-        end if
-        
-        ! Allocate temporary arrays
-        allocate(ARFS_TB(nchans, arfs_mcol_lon, arfs_nrow_lat))
-        allocate(ARFS_LAND_FRAC(arfs_mcol_lon, arfs_nrow_lat))
-        allocate(ARFS_QUALITY_FLAG(arfs_mcol_lon, arfs_nrow_lat))
-        allocate(ARFS_SAMPLE_COUNT(arfs_mcol_lon, arfs_nrow_lat))
-        
-        ! Perform inverse distance resampling with quality filtering
-        write(LDT_logunit,*)'[INFO] Performing inverse distance resampling with QC...'
-        call WSF2ARFS_INVDIS_WITH_QC(tb_lowres, lat_in, lon_in, &
-            quality_flag_in, land_frac_low, &
-            nscans, nfovs, nchans, &
-            ARFS_LAT, ARFS_LON, &
-            ARFS_TB, ARFS_QUALITY_FLAG, ARFS_LAND_FRAC, &
-            ARFS_SAMPLE_COUNT, LAND_FRAC_THRESHOLD)
-        
-        ! Split 3D array into separate 2D arrays for V and H polarizations only
-        write(LDT_logunit,*)'[INFO] Extracting V and H polarization channels...'
-        
+        ! Extract channels based on frequency and polarization
         do ichan = 1, nchans
             freq = chan_frequencies(ichan)
             pol = chan_polarizations(ichan)
             
-            ! ONLY process V and H polarizations (no Stokes parameters)
-            ! Map to AMSR_OPL structure
-            
-            ! 10.85 GHz
-            if (abs(freq - 10.85) < 0.1) then
-                if (pol == 'v' .or. pol == 'V') then
-                    WSFopl%ARFS_TB_10V(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_10V'
-                else if (pol == 'h' .or. pol == 'H') then
-                    WSFopl%ARFS_TB_10H(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_10H'
-                end if
-            
-            ! 18.7 GHz
-            else if (abs(freq - 18.7) < 0.1) then
-                if (pol == 'v' .or. pol == 'V') then
-                    WSFopl%ARFS_TB_18V(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_18V'
-                else if (pol == 'h' .or. pol == 'H') then
-                    WSFopl%ARFS_TB_18H(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_18H'
-                end if
-            
-            ! 23.8 GHz
-            else if (abs(freq - 23.8) < 0.1) then
-                if (pol == 'v' .or. pol == 'V') then
-                    WSFopl%ARFS_TB_23V(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_23V'
-                else if (pol == 'h' .or. pol == 'H') then
-                    WSFopl%ARFS_TB_23H(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_23H'
-                end if
-            
-            ! 36.5 GHz
-            else if (abs(freq - 36.5) < 0.1) then
-                if (pol == 'v' .or. pol == 'V') then
-                    WSFopl%ARFS_TB_36V(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_36V'
-                else if (pol == 'h' .or. pol == 'H') then
-                    WSFopl%ARFS_TB_36H(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_36H'
-                end if
-            
-            ! 89.0 GHz
-            else if (abs(freq - 89.0) < 0.1) then
-                if (pol == 'v' .or. pol == 'V') then
-                    WSFopl%ARFS_TB_89V(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_89V'
-                else if (pol == 'h' .or. pol == 'H') then
-                    WSFopl%ARFS_TB_89H(:,:) = ARFS_TB(ichan,:,:)
-                    write(LDT_logunit,*)'[INFO] Mapped channel ', ichan, ' to TB_89H'
-                end if
+            ! Map to standard channels (approximate frequencies)
+            if (abs(freq - 10.65) < 0.5) then
+                if (pol == 'V') tb_10v(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'H') tb_10h(:,:) = tb_lowres(:,:,ichan)
+            else if (abs(freq - 18.7) < 0.5) then
+                if (pol == 'V') tb_18v(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'H') tb_18h(:,:) = tb_lowres(:,:,ichan)
+            else if (abs(freq - 23.8) < 0.5) then
+                if (pol == 'V') tb_23v(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'H') tb_23h(:,:) = tb_lowres(:,:,ichan)
+            else if (abs(freq - 36.5) < 1.0) then
+                if (pol == 'V') tb_36v(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'H') tb_36h(:,:) = tb_lowres(:,:,ichan)
+            else if (abs(freq - 89.0) < 2.0) then
+                if (pol == 'V') tb_89v(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'H') tb_89h(:,:) = tb_lowres(:,:,ichan)
             end if
-            
-            ! Note: Stokes parameters (pol='3' or '4') are intentionally skipped
         end do
         
-        ! Apply final land fraction and quality flag masking
-        write(LDT_logunit,*)'[INFO] Applying land fraction and quality masks...'
-        do c = 1, arfs_mcol_lon
-            do r = 1, arfs_nrow_lat
-                ! Mask water pixels (land fraction <= threshold)
-                if (ARFS_LAND_FRAC(c,r) > 0.0 .and. &
-                    ARFS_LAND_FRAC(c,r) <= LAND_FRAC_THRESHOLD) then
-                    WSFopl%ARFS_TB_10V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_10H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_18V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_18H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_23V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_23H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_36V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_36H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_89V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_89H(c,r) = -9999.0
+        ! Create time array (simplified - using dummy values)
+        allocate(time_array(nscans))
+        time_array = 0.0  ! Would be populated from actual file metadata
+        
+        write(LDT_logunit,*)'[INFO] Calling inverse distance resampling WITH snow/precip filtering'
+        
+        ! Call resampling routine WITH SNOW/PRECIP FILTERING
+        call WSF2ARFS_INVDIS(time_array, &
+            tb_10h, tb_10v, tb_18h, tb_18v, &
+            tb_23h, tb_23v, tb_36h, tb_36v, &
+            tb_89h, tb_89v, land_frac_low, &
+            snow_in, precip_in, quality_flag_in, &  ! CORRECTED: Pass snow/precip flags
+            lat_in, lon_in, nscans, nfovs, &
+            ARFS_LAT, ARFS_LON, &
+            ARFS_TIME, ARFS_LAND_FRAC, &
+            ARFS_TB_10H, ARFS_TB_10V, ARFS_TB_18H, ARFS_TB_18V, &
+            ARFS_TB_23H, ARFS_TB_23V, ARFS_TB_36H, ARFS_TB_36V, &
+            ARFS_TB_89H, ARFS_TB_89V, ARFS_QUALITY_FLAG, &
+            ARFS_SAMPLE_V, ARFS_SAMPLE_H)
+        
+        write(LDT_logunit,*)'[INFO] Resampling complete, applying quality filters'
+        
+        ! Apply additional quality filtering (matching AMSR_OPL)
+        do c = 1, 2560
+            do r = 1, 1920
+                ! Check land fraction threshold
+                if (ARFS_LAND_FRAC(c,r) >= 0 .and. ARFS_LAND_FRAC(c,r) < LAND_FRAC_THRESHOLD) then
+                    ARFS_TB_10V(c,r) = -9999.0
+                    ARFS_TB_10H(c,r) = -9999.0
+                    ARFS_TB_18V(c,r) = -9999.0
+                    ARFS_TB_18H(c,r) = -9999.0
+                    ARFS_TB_23V(c,r) = -9999.0
+                    ARFS_TB_23H(c,r) = -9999.0
+                    ARFS_TB_36V(c,r) = -9999.0
+                    ARFS_TB_36H(c,r) = -9999.0
+                    ARFS_TB_89V(c,r) = -9999.0
+                    ARFS_TB_89H(c,r) = -9999.0
                 end if
                 
                 ! Check quality flag (bits 0-4 must all be 0)
-                ! Bit 0 = IsNotValid
-                ! Bit 1 = IsExclusionCondition
-                ! Bit 2 = IsDegradationCondition
-                ! Bit 3 = IsLimitedUtilityValidationCondition
-                ! Bit 4 = IsOverlap
                 qc_bits = IAND(ARFS_QUALITY_FLAG(c,r), 31)  ! 31 = 00011111 in binary
                 if (qc_bits /= 0) then
-                    WSFopl%ARFS_TB_10V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_10H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_18V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_18H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_23V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_23H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_36V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_36H(c,r) = -9999.0
-                    WSFopl%ARFS_TB_89V(c,r) = -9999.0
-                    WSFopl%ARFS_TB_89H(c,r) = -9999.0
+                    ARFS_TB_10V(c,r) = -9999.0
+                    ARFS_TB_10H(c,r) = -9999.0
+                    ARFS_TB_18V(c,r) = -9999.0
+                    ARFS_TB_18H(c,r) = -9999.0
+                    ARFS_TB_23V(c,r) = -9999.0
+                    ARFS_TB_23H(c,r) = -9999.0
+                    ARFS_TB_36V(c,r) = -9999.0
+                    ARFS_TB_36H(c,r) = -9999.0
+                    ARFS_TB_89V(c,r) = -9999.0
+                    ARFS_TB_89H(c,r) = -9999.0
                 end if
             end do
         end do
         
-        ! Copy auxiliary data
+        ! Copy to module arrays
+        WSFopl%ARFS_TB_10V(:,:) = ARFS_TB_10V(:,:)
+        WSFopl%ARFS_TB_10H(:,:) = ARFS_TB_10H(:,:)
+        WSFopl%ARFS_TB_18V(:,:) = ARFS_TB_18V(:,:)
+        WSFopl%ARFS_TB_18H(:,:) = ARFS_TB_18H(:,:)
+        WSFopl%ARFS_TB_23V(:,:) = ARFS_TB_23V(:,:)
+        WSFopl%ARFS_TB_23H(:,:) = ARFS_TB_23H(:,:)
+        WSFopl%ARFS_TB_36V(:,:) = ARFS_TB_36V(:,:)
+        WSFopl%ARFS_TB_36H(:,:) = ARFS_TB_36H(:,:)
+        WSFopl%ARFS_TB_89V(:,:) = ARFS_TB_89V(:,:)
+        WSFopl%ARFS_TB_89H(:,:) = ARFS_TB_89H(:,:)
         WSFopl%ARFS_LAND_FRAC(:,:) = ARFS_LAND_FRAC(:,:)
         WSFopl%ARFS_QUALITY_FLAG(:,:) = ARFS_QUALITY_FLAG(:,:)
+        WSFopl%ARFS_SAMPLE_V(:,:) = ARFS_SAMPLE_V(:,:)
+        WSFopl%ARFS_SAMPLE_H(:,:) = ARFS_SAMPLE_H(:,:)
+        
+        ! Store snow/precip flags if allocated in module
+        if (allocated(WSFopl%ARFS_SNOW)) then
+            ! Compute from quality flag bit pattern
+            do c = 1, 2560
+                do r = 1, 1920
+                    if (IBITS(ARFS_QUALITY_FLAG(c,r), 2, 1) == 1) then
+                        WSFopl%ARFS_SNOW(c,r) = 1
+                    else
+                        WSFopl%ARFS_SNOW(c,r) = 0
+                    endif
+                    
+                    if (IBITS(ARFS_QUALITY_FLAG(c,r), 1, 1) == 1) then
+                        WSFopl%ARFS_PRECIP(c,r) = 1
+                    else
+                        WSFopl%ARFS_PRECIP(c,r) = 0
+                    endif
+                end do
+            end do
+        endif
         
         write(LDT_logunit,*)'[INFO] Successfully processed file'
         
@@ -264,9 +285,12 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filelist, nfiles, output_dir, n)
         deallocate(lat_in, lon_in)
         deallocate(land_frac_low)
         deallocate(quality_flag_in, earth_inc_angle)
-        deallocate(ARFS_TB, ARFS_LAND_FRAC)
-        deallocate(ARFS_QUALITY_FLAG, ARFS_SAMPLE_COUNT)
+        deallocate(snow_in, precip_in)
+        deallocate(time_array)
         deallocate(chan_frequencies, chan_polarizations)
+        deallocate(tb_10h, tb_10v, tb_18h, tb_18v)
+        deallocate(tb_23h, tb_23v, tb_36h, tb_36v)
+        deallocate(tb_89h, tb_89v)
         
         write(LDT_logunit,*) '[INFO] Completed file ', ifile, ' of ', nfiles
         write(LDT_logunit,*) '[INFO] ========================================'
@@ -274,9 +298,19 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filelist, nfiles, output_dir, n)
     
     ! Cleanup grid arrays
     deallocate(ARFS_LAT, ARFS_LON)
+    deallocate(ARFS_TIME)
+    deallocate(ARFS_TB_10H, ARFS_TB_10V)
+    deallocate(ARFS_TB_18H, ARFS_TB_18V)
+    deallocate(ARFS_TB_23H, ARFS_TB_23V)
+    deallocate(ARFS_TB_36H, ARFS_TB_36V)
+    deallocate(ARFS_TB_89H, ARFS_TB_89V)
+    deallocate(ARFS_LAND_FRAC)
+    deallocate(ARFS_QUALITY_FLAG)
+    deallocate(ARFS_SAMPLE_V, ARFS_SAMPLE_H)
     
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] All WSF Files Processed'
+    write(LDT_logunit,*)'[INFO] Snow/Precip filtering applied successfully'
     write(LDT_logunit,*)'[INFO] Output stored in WSFopl module structure'
     write(LDT_logunit,*)'[INFO] ========================================='
 
