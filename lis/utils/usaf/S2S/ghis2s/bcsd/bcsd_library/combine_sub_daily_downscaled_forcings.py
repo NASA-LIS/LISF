@@ -189,7 +189,7 @@ def process_ensemble(ens):
             INFILE = INFILE_TEMPLATE.format(INDIR, VAR, FCST_YEAR, \
                                             FCST_MONTH)
             logger.info(f"Reading {INFILE}", subtask=subtask)
-            temp_da = load_ncdata(INFILE, [logger, subtask],  var_name=VAR)
+            temp_da = load_ncdata(INFILE, [logger, subtask],  var_name=VAR, **dict(decode_cf=False))
             TEMP = temp_da.values
             
             if VAR == VAR_NAME_LIST[0]:
