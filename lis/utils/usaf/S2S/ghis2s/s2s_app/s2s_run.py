@@ -1702,8 +1702,14 @@ if __name__ == "__main__":
 
     # Print SLURM job report
     if  args.report:
-        command = f"s2s_app/s2s_run.sh -y {args.year} -m {args.month} -c {args.config_file} -r Y"
-        process = subprocess.run(command, shell=True)
+        JOB_SCHEDULE = os.path.join(s2s.SCRDIR, 'SLURM_JOB_SCHEDULE')
+        if os.path.exists(JOB_SCHEDULE):
+            command = f"s2s_app/s2s_run.sh -y {args.year} -m {args.month} -c {args.config_file} -r Y"
+            process = subprocess.run(command, shell=True)
+        else:
+            cylc_workflow = 'CYLC-' + s2s.YYYY + s2s.MM
+            command = f"sh s2s_app/cylc_walltime.sh {cylc_workflow}"
+            process = subprocess.run(command, shell=True)
         sys.exit()
 
     # Write LOG file
