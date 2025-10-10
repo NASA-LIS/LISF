@@ -30,10 +30,12 @@ import xesmf as xe
 import numpy as np
 import yaml
 import eccodes
-import plot_utils
 from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.shared.logging_utils import TaskLogger
-# pylint: disable=invalid-name, consider-using-f-string, import-outside-toplevel, redefined-outer-name
+import plot_utils
+# pylint: disable=invalid-name, import-outside-toplevel, redefined-outer-name
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
 
 USAF_COLORS = True
 FONT_SIZE1 = 16
@@ -93,6 +95,8 @@ def grib2_xr(gfile, args):
     ftn = open(gfile, 'rb')
     nmsgs = eccodes.codes_count_in_file(ftn)
 
+    t_2m = None
+    pcp3hr = None
     for i in range(0, nmsgs):
         gid = eccodes.codes_grib_new_from_file(ftn)
 
@@ -154,7 +158,7 @@ def comp_monthly_nafpa (config_file, year, month, flabel, logger):
 
     with open(config_file, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
-    
+
     # Read all CFSv2 forcings
     met_path = cfg["SETUP"]["METFORC"] + '/' + flabel + '/'
 
@@ -176,7 +180,7 @@ def comp_monthly_nafpa (config_file, year, month, flabel, logger):
             'regridder': 0}
 
     for gfile in file_list:
-        logger[0].info(f"NAFPA file: {gfile}", subtask=logger[1])  
+        logger[0].info(f"NAFPA file: {gfile}", subtask=logger[1])
         ds.append(grib2_xr(gfile, args))
 
     ds_xr =  xr.concat(ds, dim = 'time')
@@ -204,7 +208,8 @@ def write_clim(config_file, month, flabel):
     for year in range(cyear_beg, cyear_end + 1):
         file_list.extend(glob.glob(met_path + '{:04d}{:02d}*/*.GR1'.format(year, month)))
 
-    outfile = outdir + ".".join(file_list[0].split("/")[-1].split(".")[:-3]) + '.{:02d}.nc4'.format(month)
+    outfile = outdir + \
+              ".".join(file_list[0].split("/")[-1].split(".")[:-3]) + '.{:02d}.nc4'.format(month)
     print (outfile)
 
     # read in GR1 files and regrid to a xarray Dataset
@@ -253,7 +258,7 @@ if __name__ == "__main__":
     logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'Running s2splots/plot_anom_verify.py')
-    
+
     flabel = 'usaf_lis75s2s_gfs2galwem'
     lead = lag - 1
     clim_month = fmonth - lag
@@ -275,20 +280,20 @@ if __name__ == "__main__":
 
     with open(args.config_file, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
-    
+
     plotdir = cwd + '/s2splots/{:04d}{:02d}/'.format(fyear,fmonth)
     cartopy.config['data_dir'] = cfg['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     if month == 12:
         ndays = (date(year+1, 1, 1) - date(year, month, 1)).days
     else:
         ndays = (date(year, month+1, 1) - date(year, month, 1)).days
-    
+
     # (1) usaf_lis75s2s_gfs2galwem anomaly
     #climdir = cfg["SETUP"]["E2ESDIR"] + \
     #    '/hindcast/bcsd_fcst/{}/Climatology_{:04d}-{:04d}/'.format(flabel, cyear_beg, cyear_end)
     # nafpa_clim_xr = xr.open_dataset(glob.glob(climdir + '*{:02d}.nc4'.format(month))[0])
 
-    nafpa_mon_xr =  comp_monthly_nafpa(args.config_file, year, month, flabel, [logger, f"Lag {lag}"])
+    nafpa_mon_xr = comp_monthly_nafpa(args.config_file, year, month, flabel, [logger, f"Lag {lag}"])
     #nafpa_mon_xr.to_netcdf('nafpa_05.nc4', format="NETCDF4",
     #                  encoding = {'TMP':{"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
     #                              'APCP': {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.}})
@@ -312,18 +317,26 @@ if __name__ == "__main__":
         'AirT': 'Anomaly (' + plot_utils.dicts('units', 'Air_T_AF') + ')',
         'Precip': 'Anomaly (' + plot_utils.dicts('units', 'Precip_AF') + ')'}
 
-    titles = ['Forecast:'+fstr + '            Valid: '+vstr1+'-'+vstr2, 'Observed VT: ' +vstr1+'-'+vstr2, 'Forecast:'+fstr + '            Valid: '+vstr1+'-'+vstr2]
+    titles = [
+        'Forecast:'+fstr + '            Valid: '+vstr1+'-'+vstr2,
+        'Observed VT: ' +vstr1+'-'+vstr2,
+        'Forecast:'+fstr + '            Valid: '+vstr1+'-'+vstr2]
+
     cbar_axes_horizontal = [0.15, 0.04, 0.7, 0.02]
     cbar_axes_vertical = [0.9, 0.37, 0.03, 0.5] # [left, bottom, width, height]
 
+    usaf_clim_file = ""
     for var in OUT_VARS:
-        logger.info(f"Plotting {var}", subtask=f"Lag {lag}")        
+        logger.info(f"Plotting {var}", subtask=f"Lag {lag}")
         # read USAF-LIS7.3rc8_25km 30-year climatology
+        var = ""
         if var == 'AirT':
-            usaf_clim_file = cfg["SETUP"]["E2ESDIR"] + '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/T2M_obs_clim.nc'
+            usaf_clim_file = (cfg["SETUP"]["E2ESDIR"] +
+                              '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/T2M_obs_clim.nc')
 
         if var == 'Precip':
-            usaf_clim_file = cfg["SETUP"]["E2ESDIR"] + '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/PRECTOT_obs_clim.nc'
+            usaf_clim_file = (cfg["SETUP"]["E2ESDIR"] +
+                             '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/PRECTOT_obs_clim.nc')
 
         usaf_clim_xr = load_ncdata(usaf_clim_file, [logger, f"Lag {lag}"])
         usaf_clim_var = np.mean(usaf_clim_xr['clim'].values[clim_month,:], axis=0)
@@ -334,14 +347,18 @@ if __name__ == "__main__":
         under_over = plot_utils.dicts('lowhigh', load_table)
         convf = conv_factors.get(var)
         clabel = clabels.get(var)
-        figure = plotdir + var + '_verification_F' + fdate.strftime("%Y%m%d") + '_V' + vdate_beg.strftime("%Y%m%d") + '-' + vdate_end.strftime("%Y%m%d") + '.png'
+        figure = (plotdir + var + '_verification_F' + fdate.strftime("%Y%m%d") +
+                  '_V' + vdate_beg.strftime("%Y%m%d") + '-' +
+                  vdate_end.strftime("%Y%m%d") + '.png')
         logger.info(f"Generating: {figure}", subtask=f"Lag {lag}")
-        
+
+        nafpa_anom = None
         if var == 'AirT':
-            nafpa_anom = (np.array(nafpa_mon_xr[usaf_vars.get(var)].values) - usaf_clim_var)*convf # nafpa_clim_xr[usaf_vars.get(var)].values)*convf
+            nafpa_anom = (np.array(nafpa_mon_xr[usaf_vars.get(var)].values) - usaf_clim_var)*convf
+            # nafpa_clim_xr[usaf_vars.get(var)].values)*convf
         if var == 'Precip':
             nafpa_anom = (np.array(nafpa_mon_xr[usaf_vars.get(var)].values)*8. - usaf_clim_var*86400.)*convf
-#            nafpa_anom = nafpa_anom * 8. # nafpa anoms are mm/[3hr] converted to per mm/[day]
+            # nafpa_anom = nafpa_anom * 8. # nafpa anoms are mm/[3hr] converted to per mm/[day]
         plot_arr = np.zeros([3, nafpa_anom.shape[0], nafpa_anom.shape[1]],dtype=float)
         plot_arr[1,:] = nafpa_anom
         tmp_arr = np.zeros([nafpa_anom.shape[0], nafpa_anom.shape[1]],dtype=float)
@@ -350,7 +367,11 @@ if __name__ == "__main__":
         #logger.info(f"Reading:  PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{year:04d}{month:02d}01_FP.{year:04d}{month:02d}01-{end_date.strftime('%Y%m%d')}_DF.NC", subtask=f"Lag {lag}")
         #print (s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(year, month, year, month, end_date.strftime("%Y%m%d")))
         for model in cfg["EXP"]["NMME_models"]:
-            ncfile = s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(model.upper(), year, month, year, month, end_date.strftime("%Y%m%d"))
+            ncfile = (s2smdir +
+                      'PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
+                      'PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'
+                      .format(model.upper(), year, month, year, month,
+                              end_date.strftime("%Y%m%d")))
             logger.info(f"Reading: {ncfile}", subtask=f"Lag {lag}")
             ncdata = load_ncdata(ncfile, [logger, f"Lag {lag}"])
             anoms.append(ncdata[var + '_ANOM'])
@@ -359,7 +380,7 @@ if __name__ == "__main__":
         nc_med = compute_median (anoms, lead)
         plot_arr[0,:] = nc_med.values *convf
         if var == 'Precip':
-           plot_arr[0,:] = plot_arr[0,:]/ndays 
+            plot_arr[0,:] = plot_arr[0,:]/ndays
 
         # plotting
         style_color = plot_utils.load_table(load_table)

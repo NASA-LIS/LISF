@@ -25,7 +25,9 @@ from concurrent.futures import ProcessPoolExecutor
 import yaml
 from ghis2s.shared import utils
 from ghis2s.shared.logging_utils import TaskLogger
-# pylint: disable=consider-using-f-string, too-many-locals, import-outside-toplevel
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments,import-outside-toplevel
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
+
 # Local methods
 def _usage():
     """Print command line usage."""
@@ -68,7 +70,8 @@ def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
         if py_call:
             slurm_commands.append(cmd)
         else:
-            utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
+            utils.job_script(configfile, jobfile, job_name, ntasks,
+                             hours, cwd, None, in_command=cmd)
     else:
         py_script = "compute_weekly_anom.py"
         cmd = "python"
@@ -84,7 +87,8 @@ def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
         if py_call:
             slurm_commands.append(cmd)
         else:
-            utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
+            utils.job_script(configfile, jobfile, job_name, ntasks,
+                             hours, cwd, None, in_command=cmd)
 
     if py_call:
         return slurm_commands
@@ -107,18 +111,24 @@ if __name__ == "__main__":
         if args.weekly:
             logger = TaskLogger(task_name,
                                 os.getcwd(),
-                                f's2smetric/postprocess_nmme_job.py-> make_s2s_median_metric_geotiff.py to generate weekly TIF files.')
+                                's2smetric/postprocess_nmme_job.py-> '
+                                'make_s2s_median_metric_geotiff.py to generate weekly TIF files.')
         else:
             logger = TaskLogger(task_name,
                                 os.getcwd(),
-                                f's2smetric/postprocess_nmme_job.py-> make_s2s_median_metric_geotiff.py to generate monthly TIF files.')
+                                's2smetric/postprocess_nmme_job.py-> '
+                                'make_s2s_median_metric_geotiff.py to generate monthly TIF files.')
 
         def run_tiff_py(cmd):
+            """
+            Run *TIF format processing script
+            """
             if subprocess.call(cmd, shell=True) != 0:
                 print("[ERR] Problem running make_s2s_median_metric_geotiff.py")
                 sys.exit(1)
-                
-        baseoutdir = args.cwd + '/s2smetric/{:04d}{:02d}'.format(int(args.fcst_year), int(args.fcst_mon))
+
+        baseoutdir = (args.cwd + '/s2smetric/' +
+                     '{:04d}{:02d}'.format(int(args.fcst_year), int(args.fcst_mon)))
         with open(args.configfile, 'r', encoding="utf-8") as file:
             config = yaml.safe_load(file)
 
@@ -156,8 +166,8 @@ if __name__ == "__main__":
                 except Exception as e:
                     logger.error(f"Failed writing TIF files: {str(e)}", subtask=metric)
 
-        logger.info(f"Writing TIF files completed successfully")
-                
+        logger.info("Writing TIF files completed successfully")
+
     else:
         main(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.cwd,
              nmme_model=args.nmme_model, jobname=args.jobname, ntasks=args.ntasks,

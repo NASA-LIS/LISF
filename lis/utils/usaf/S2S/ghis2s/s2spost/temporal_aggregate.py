@@ -42,6 +42,7 @@ import yaml
 import xarray as xr
 import numpy as np
 from ghis2s.shared.utils import write_ncfile, load_ncdata
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments,too-many-arguments,too-many-locals
 
 # Private methods - keep unchanged utility functions
 def _usage():
@@ -96,7 +97,7 @@ def _read_cmd_args(argv, logger, subtask):
     end_yyyymmdd = argv[5]
     enddate = _proc_date(end_yyyymmdd)
     if startdate > enddate:
-        logger.error(f"Start date is after end date!", subtask=subtask)
+        logger.error("Start date is after end date!", subtask=subtask)
         sys.exit(1)
 
     # Get ID for model forcing for LIS
@@ -197,18 +198,17 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     This is good to time aggregate daily files
     1) For weekly files precise startdate and enddates (included) are passed as arguments 
     2) For monthly files dates included are Day02 of the month through Day01 of the next month, 
-       while datestamps in filenames show day01 of the month to day01 of the next month except for the first forecast month
+       while datestamps in filenames show day01 of the month to day01 of the next month,
+       except for the first forecast month
     """
 
     is_monthly = (enddate - startdate).days > 25
     curdate = startdate
 
     if is_monthly:
-        ''' 
-           1) the 1st day has been counted by the previous month already, so we exclude it
-           2) Just to be consistent with the previos version that month 1 starts counting from day 3
-        '''
-        days_to_add = 1 
+        # 1) the 1st day has been counted by the previous month already, so we exclude it
+        # 2) Just to be consistent with the previos version that month 1 starts counting from day 3
+        days_to_add = 1
         curdate += datetime.timedelta(days=days_to_add)
 
     # Create list of all daily files
@@ -222,40 +222,40 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
         else:
             logger.error(f"Missing file: {infile}", subtask=subtask)
         curdate += datetime.timedelta(days=1)
-    
+
     if not daily_files:
-        logger.error(f"No daily files found!", subtask=subtask)
+        logger.error("No daily files found!", subtask=subtask)
         return None
-        
+
     # Separate variables into different categories
     acc_vars = varlists["var_acc_list"]
     tavg_vars = []
-    for listname in ["var_tavg_land_list", "var_tavg_f_list", 
+    for listname in ["var_tavg_land_list", "var_tavg_f_list",
                      "var_tavg_twsgws_list", "var_tair_max_list", "var_tair_min_list"]:
         tavg_vars += varlists[listname]
-    
+
     const_vars = varlists["const_list"]
-        
+
     # First, open just one file to get the constant variables
     ds_first = xr.open_dataset(daily_files[0])
-    
+
     # Create monthly dataset starting with constant variables
     monthly_ds = xr.Dataset()
-    
+
     # Copy constant variables (these don't have time dimension)
     for var in const_vars:
         if var in ds_first:
-            monthly_ds[var] = ds_first[var]  
+            monthly_ds[var] = ds_first[var]
         else:
             logger.error(f"Constant variable {var} not found", subtask=subtask)
-    
+
     # Copy coordinates from first file (except time)
     for coord in ds_first.coords:
         if coord != 'time':
             monthly_ds = monthly_ds.assign_coords({coord: ds_first.coords[coord]})
-    
+
     ds_first.close()
-    
+
     # Now open all files for time-varying variables only
     time_varying_vars = acc_vars + tavg_vars
     ds_all = load_ncdata(daily_files, [logger, subtask],
@@ -264,9 +264,9 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
                                 compat='override',
                                 coords='minimal',
                                 parallel=True,
-                                data_vars=time_varying_vars ,  
+                                data_vars=time_varying_vars,
                                 decode_cf=False))
-    
+
     # Process accumulation variables (sum over time)
     for var in acc_vars:
         if var in ds_all:
@@ -281,23 +281,23 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
             monthly_ds[var] = result
         else:
             logger.error(f"Variable {var} not found in files", subtask=subtask)
-    
+
     # Process time-average variables (mean over time)
     for var in tavg_vars:
         if var in ds_all:
             monthly_ds[var] = ds_all[var].mean(dim='time', keepdims=True, keep_attrs=True)
         else:
             logger.error(f"Variable {var} not found in files", subtask=subtask)
-        
+
     # Convert date to datetime and then to the right format for netCDF
     end_datetime = datetime.datetime.combine(enddate, datetime.time())
-    
+
     # Use the same reference time as the daily files
     reference_time = datetime.datetime.combine(startdate, datetime.time())
-    
+
     # Calculate minutes since start date
     time_value = [float(np.float32((end_datetime - reference_time).total_seconds() / 60.0))]
-    
+
     monthly_ds = monthly_ds.assign_coords({
         'time': xr.DataArray(
             time_value,
@@ -313,13 +313,13 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
             }
         )
     })
-    
+
     # Copy global attributes from the multi-file dataset
     monthly_ds.attrs = ds_all.attrs.copy()
-    
+
     # Create time bounds for the monthly period
     days_in_month = (enddate - startdate).days
-    time_bnds_data = [[0, days_in_month * 24 * 60]]  
+    time_bnds_data = [[0, days_in_month * 24 * 60]]
     monthly_ds['time_bnds'] = xr.DataArray(
         time_bnds_data,
         dims=['time', 'nv'],
@@ -328,10 +328,10 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
 
     # Update cell methods for different variable types
     _update_cell_methods_xarray(monthly_ds, varlists)
-    
+
     # Update global attributes
     monthly_ds.attrs['history'] = f"created on date: {time.ctime()}"
-    
+
     # Define encoding for efficient writing
     for var in monthly_ds.data_vars:
         if var == 'Streamflow_tavg':
@@ -340,10 +340,10 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
         if '_FillValue' in monthly_ds[var].attrs:
             del monthly_ds[var].attrs['_FillValue']
     encoding = {}
-    
+
     # Handle coordinates and data variables
     all_vars = list(monthly_ds.coords.keys()) + list(monthly_ds.data_vars.keys())
-    
+
     for var in all_vars:
         if var in ['time', 'lat', 'lon', 'ensemble', 'soil_layer']:
             # Skip coordinate variables - let xarray handle them automatically
@@ -353,29 +353,28 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
         elif var in monthly_ds.data_vars and monthly_ds[var].dtype == 'float64':
             monthly_ds[var].attrs['add_offset'] = 0.0
             monthly_ds[var].attrs['scale_factor'] = 1.0
-            monthly_ds[var].attrs['missing_value'] = -9999.            
+            monthly_ds[var].attrs['missing_value'] = -9999.
             encoding[var] = {'dtype': 'float32', 'zlib': True, 'complevel': 6, 'shuffle': True, '_FillValue': -9999.0}
-            
         elif var == 'atime':
             encoding[var] = {'dtype': 'float64', 'zlib': True, 'complevel': 6, '_FillValue': -9999.0}
         elif var in monthly_ds.data_vars:
             encoding[var] = {'zlib': True, 'complevel': 6, 'shuffle': True, '_FillValue': -9999.0}
-        
+
     # Write output file
     outfile = create_time_aggregated_s2s_filename(output_dir, fcstdate, startdate,
                                          enddate, model_forcing, config["EXP"]["DOMAIN"])
 
     logger.info(f"Writing: {outfile}", subtask=subtask)
     write_ncfile(monthly_ds, outfile, encoding, [logger, subtask])
-    
+
     ds_all.close()
     monthly_ds.close()
-    
+
     return outfile
 
 def _update_cell_methods_xarray(ds, varlists):
     """Update cell_method attributes for variables in xarray dataset."""
-    
+
     for var_name in ds.data_vars:
         if var_name in varlists["var_tavg_twsgws_list"]:
             ds[var_name].attrs['cell_methods'] = \
@@ -398,27 +397,25 @@ def _update_cell_methods_xarray(ds, varlists):
 
 def agg_driver(argv, logger, subtask):
     """Main driver using xarray approach."""
-        
+
     # Get the directories and dates
     configfile, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing = _read_cmd_args(argv, logger, subtask)
-    
+
     # Load config file
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-    
+
     varlists = _make_varlists(config)
-        
+
     # Process all files at once using xarray
     outfile = _create_time_aggregated_file_xarray(
-        varlists, input_dir, output_dir, fcstdate, 
+        varlists, input_dir, output_dir, fcstdate,
         startdate, enddate, model_forcing, config,
         logger, subtask
     )
-        
+
     if outfile:
-        logger.info(f'Temporal aggregation complete SUCCESS !', subtask=subtask)
+        logger.info('Temporal aggregation complete SUCCESS !', subtask=subtask)
     else:
-        logger.error(f"Temporal aggregation failed", subtask=subtask)
+        logger.error("Temporal aggregation failed", subtask=subtask)
         sys.exit(1)
-
-

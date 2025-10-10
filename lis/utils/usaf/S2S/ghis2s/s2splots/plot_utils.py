@@ -37,12 +37,15 @@ import cartopy
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cartopy.io.img_tiles as cimgt
-import shapely.geometry as sgeom
 import cartopy.mpl.ticker as cticker
+import shapely.geometry as sgeom
 import requests
 import dask
 import PIL
 import numpy as np
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
+
 mpl.use('pdf')
 
 FONT_SIZE1 = 16
@@ -565,15 +568,15 @@ def load_table (table_key):
                     [145, 145, 145],
                     [120, 120, 120],
                     [ 94,  94,  94],
-                    [ 74,  74,  74]],        
+                    [ 74,  74,  74]],
         }
 
     # add a few 24-level monotone colors
     start_brown = np.array([204, 153, 102])
-    end_brown = np.array([51, 25, 0]) 
+    end_brown = np.array([51, 25, 0])
     start_green = np.array([255, 255, 152])
-    end_green = np.array([0, 51, 0]) 
-    
+    end_green = np.array([0, 51, 0])
+
     num_steps = 24
     gradient_brown = np.linspace(start_brown, end_brown, num_steps, dtype=int)
     gradient_green = np.linspace(start_green, end_green, num_steps, dtype=int)
@@ -596,7 +599,7 @@ def load_table (table_key):
     gradient_orange_to_brown = np.linspace(end_orange, end_brown, num_steps // 2, dtype=int)
     gradient_yellow_to_brown = np.concatenate((gradient_yellow_to_orange, gradient_orange_to_brown))
     rgb_list = gradient_yellow_to_brown.tolist()
-    tables['mono_YOB'] = rgb_list    
+    tables['mono_YOB'] = rgb_list
 
     if table_key[-1] == '_':
         ct_ = tables[table_key[:-1]]
@@ -738,9 +741,9 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         fig = plt.figure(figsize= (FIGWIDTH * ncols, FIGWIDTH * nrows))
     else:
         fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
-        
+
     gs_ = gridspec.GridSpec(nrows, ncols, wspace=0.1, hspace=0.1)
-    
+
     if colorbar2 is None:
         cax = fig.add_axes(cbar_axes)
         orientation = 'horizontal'
@@ -767,23 +770,24 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         elif projection[0] == "mol":
             ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.Mollweide())
         elif projection[0] == 'polar':
-            ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.Stereographic(central_latitude=projection[1]))
+            ax_ = fig.add_subplot(gs_[count_plot],
+                                  projection=ccrs.Stereographic(central_latitude=projection[1]))
             ax_.set_extent([domain[2], domain[3], domain[0], domain[1]], crs=ccrs.PlateCarree())
-             
+
         cs_ = plt.pcolormesh(_x, _y, var[count_plot,],
                              norm=colors.BoundaryNorm(levels,ncolors=cmap.N, clip=False),
                              cmap=cmap,zorder=4, alpha=0.8,
                              transform=ccrs.PlateCarree())
-        
+
         if projection is None:
             gl_ = ax_.gridlines(draw_labels=True)
         else:
             gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, zorder=11)
             if projection[0] == 'polar':
-                gl_.xformatter = cticker.LongitudeFormatter()  
-                gl_.yformatter = cticker.LatitudeFormatter()  
-                gl_.linewidth = 1  
-                gl_.color = 'gray'  
+                gl_.xformatter = cticker.LongitudeFormatter()
+                gl_.yformatter = cticker.LatitudeFormatter()
+                gl_.linewidth = 1
+                gl_.color = 'gray'
                 gl_.linestyle = '--'
 
         gl_.top_labels = False
@@ -799,7 +803,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
                 gl_.right_labels = True
                 gl_.xformatter = cticker.LongitudeFormatter()
                 gl_.yformatter = cticker.LatitudeFormatter()
-                
+
         plt.title(titles[count_plot], fontsize=fscale*FONT_SIZE2)
 
         if np.mod (count_plot, ncols) == 0:
@@ -819,7 +823,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         if (domain[3] - domain[2]) < 180.:
             ax_.add_feature(cfeature.STATES,  linestyle=':',linewidth=0.9,
                             edgecolor='black', facecolor='none')
-            
+
         if colorbar2 is not None:
             if count_plot < colorbar2['begin']:
                 cax = cax_one
@@ -827,7 +831,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
             else:
                 cax = cax_two
                 orientation = colorbar2['orientation'][1]
-                
+
         if under_over[0] == "white" and under_over[1] == "white":
             cbar = fig.colorbar(cs_, cax=cax, orientation=orientation, ticks=levels)
         else:
@@ -838,7 +842,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
             cbar.ax.tick_params(labelsize=fscale*10, labelrotation=0)
         if clabel is not None:
             cbar.set_label(clabel, fontsize=fscale*30)
-        
+
         plt.savefig(figure, dpi=150, format='png', bbox_inches='tight')
     plt.close()
 

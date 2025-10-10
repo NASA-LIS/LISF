@@ -222,7 +222,7 @@ def process_ensemble(ens):
     LEAD_FINAL = int(sys.argv[9])
     MONTH_NAME_TEMPLATE = '{}01'
     MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON].lower())
-    
+
     BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[10]), int(sys.argv[11])
     CONFIG_FILE = str(sys.argv[12])
     LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
@@ -235,7 +235,7 @@ def process_ensemble(ens):
     BASE_OUTDIR = str(sys.argv[15])
     OUTDIR_TEMPLATE = '{}/{:04d}/ens{:01d}'
     DOMAIN=str(sys.argv[16])
-    
+
     # All file formats
     MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
     SUBDAILY_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.{}.{:04d}{:02d}.nc'
@@ -293,7 +293,7 @@ def process_ensemble(ens):
 
         # Bias corrected monthly value
         MON_BC_VALUE = MON_BC_DATA[INIT_FCST_YEAR-BC_FCST_SYR, LEAD_NUM, :,:]
-        
+ 
         # make sure lat/lon are aligned.
         if (not np.array_equal(MONTHLY_INPUT_RAW_DATA["lat"].values,
                                MON_BC_VALUE["lat"].values)) or \
@@ -324,14 +324,14 @@ def process_ensemble(ens):
 
         correct2 = np.moveaxis(correct.values,2,0)
         OUTPUT_BC_DATA[:,JJ1:JJ2+1, II1:II2+1] = correct2[:,:,:]
-        
+
         # Find neighboring OUTPUT_BC_DATA to add sub-monthly distribution
         OUTPUT_BC_REVISED, cnt_beg, cnt_end = use_neighbors_diurnal_cycle (OUTPUT_BC_DATA)
         logger.info(f"NOF cells without precip diurnal cycle : {cnt_beg} (before) {cnt_end} (after)", subtask=task_label)
-        
+
         # clip limits - 6hr NMME bcsd files:
         OUTPUT_BC_REVISED = limits.clip_array(OUTPUT_BC_REVISED, var_name="PRECTOT", precip=True)
-        
+
         ### Finish correcting values for all timesteps in the given
         ### month and ensemble member
         logger.info(f"Writing {OUTFILE}", subtask=task_label)
@@ -339,14 +339,14 @@ def process_ensemble(ens):
                                                mask=OUTPUT_BC_REVISED == -9999.)
         date = [FCST_DATE+relativedelta(hours=n*6) for n in \
                 range(NUM_TIMESTEPS)]
-            
+ 
         write_bc_netcdf(OUTFILE, OUTPUT_BC_REVISED, OBS_VAR, \
                         'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
                         OBS_VAR, LONS, LATS, FCST_DATE, date, 8, np.max(LAT_LDT), \
                         np.max(LON_LDT), np.min(LAT_LDT), np.min(LON_LDT), LON_LDT[1] - LON_LDT[0], \
                         LAT_LDT[1] - LAT_LDT[0], 21600)
 
-logger.info("Starting parallel processing of ensemmbles")        
+logger.info("Starting parallel processing of number of members")
 num_workers = int(sys.argv[8])
 # ProcessPoolExecutor parallel processing
 with ProcessPoolExecutor(max_workers=num_workers) as executor:
@@ -393,6 +393,4 @@ for iens, ens_value in enumerate(range(ENS_NUM)):
     if returncode != 0:
         logger.error(f"Problem calling creating last precip symbolic link to {dst_file}!")
 
-logger.info(f"Ran SUCCESSFULY !")
-
-            
+logger.info(f"RAN SUCCESSFULLY !")
