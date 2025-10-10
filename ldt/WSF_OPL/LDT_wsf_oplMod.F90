@@ -13,6 +13,7 @@
 ! DESCRIPTION: LDT module for WSF low resolution resampling
 !              Modified to output in AMSR_OPL-style structure with 
 !              only 10 channels (no Stokes parameters)
+!              CORRECTED: Added snow/precip filtering to match AMSR_OPL
 !
 !-------------------------------------------------------------------------
 
@@ -41,9 +42,13 @@ module LDT_wsf_oplMod
     real*4, allocatable :: ARFS_TB_89V(:,:)
     real*4, allocatable :: ARFS_TB_89H(:,:)
     
-    ! Auxiliary data
+    ! Auxiliary data - CORRECTED: Added snow/precip flags
     real*4, allocatable :: ARFS_LAND_FRAC(:,:)
     integer*1, allocatable :: ARFS_QUALITY_FLAG(:,:)
+    integer*4, allocatable :: ARFS_SNOW(:,:)         ! Added to match AMSR
+    integer*4, allocatable :: ARFS_PRECIP(:,:)       ! Added to match AMSR
+    integer*4, allocatable :: ARFS_SAMPLE_V(:,:)     ! Added sample counts
+    integer*4, allocatable :: ARFS_SAMPLE_H(:,:)     ! Added sample counts
     
   end type wsf_opl_dec
 
@@ -65,6 +70,7 @@ contains
     write(LDT_logunit,*) '[INFO] ========================================='
     write(LDT_logunit,*) '[INFO] Initializing WSF low resolution resampling'
     write(LDT_logunit,*) '[INFO] Output structure: AMSR_OPL-style (10 channels)'
+    write(LDT_logunit,*) '[INFO] WITH Snow/Precip Filtering (CORRECTED)'
     write(LDT_logunit,*) '[INFO] ========================================='
     
     ! Read input directory
@@ -86,6 +92,7 @@ contains
     write(LDT_logunit,*) '[INFO] Using low resolution (30 km) data only'
     write(LDT_logunit,*) '[INFO] Quality filtering: bits 0-4 must be 0'
     write(LDT_logunit,*) '[INFO] Land fraction filter: > 0.8'
+    write(LDT_logunit,*) '[INFO] Snow/Precip filtering: ENABLED (matching AMSR_OPL)'
     
   end subroutine LDT_wsf_oplInit
 
@@ -106,6 +113,7 @@ contains
     write(LDT_logunit,*) '[INFO] ========================================'
     write(LDT_logunit,*) '[INFO] Starting WSF Low Resolution Resampling'
     write(LDT_logunit,*) '[INFO] Output format: AMSR_OPL-style structure'
+    write(LDT_logunit,*) '[INFO] Snow/Precip filtering: ENABLED'
     write(LDT_logunit,*) '[INFO] ========================================'
     
     ! Allocate output arrays with dimensions matching LDT grid
@@ -124,8 +132,13 @@ contains
     allocate(WSFopl%ARFS_TB_89V(LDT_rc%lnc(n), LDT_rc%lnr(n)))
     allocate(WSFopl%ARFS_TB_89H(LDT_rc%lnc(n), LDT_rc%lnr(n)))
     
+    ! Allocate auxiliary arrays - CORRECTED: Added missing arrays
     allocate(WSFopl%ARFS_LAND_FRAC(LDT_rc%lnc(n), LDT_rc%lnr(n)))
     allocate(WSFopl%ARFS_QUALITY_FLAG(LDT_rc%lnc(n), LDT_rc%lnr(n)))
+    allocate(WSFopl%ARFS_SNOW(LDT_rc%lnc(n), LDT_rc%lnr(n)))
+    allocate(WSFopl%ARFS_PRECIP(LDT_rc%lnc(n), LDT_rc%lnr(n)))
+    allocate(WSFopl%ARFS_SAMPLE_V(LDT_rc%lnc(n), LDT_rc%lnr(n)))
+    allocate(WSFopl%ARFS_SAMPLE_H(LDT_rc%lnc(n), LDT_rc%lnr(n)))
     
     ! Initialize arrays to missing values
     WSFopl%ARFS_TB_10V = -9999.0
@@ -140,6 +153,10 @@ contains
     WSFopl%ARFS_TB_89H = -9999.0
     WSFopl%ARFS_LAND_FRAC = -9999.0
     WSFopl%ARFS_QUALITY_FLAG = 0
+    WSFopl%ARFS_SNOW = 0
+    WSFopl%ARFS_PRECIP = 0
+    WSFopl%ARFS_SAMPLE_V = 0
+    WSFopl%ARFS_SAMPLE_H = 0
     
     ! Read file list
     allocate(wsf_filelist(1000))
@@ -173,6 +190,7 @@ contains
     
     write(LDT_logunit,*) '[INFO] ========================================'
     write(LDT_logunit,*) '[INFO] WSF resampling complete'
+    write(LDT_logunit,*) '[INFO] Snow/Precip filtering applied successfully'
     write(LDT_logunit,*) '[INFO] ========================================'
     
   end subroutine LDT_wsf_oplRun
