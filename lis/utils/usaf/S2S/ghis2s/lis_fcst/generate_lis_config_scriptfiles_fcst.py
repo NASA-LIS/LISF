@@ -167,14 +167,14 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
 
 def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
     """Main driver."""
-    global _NMME_MODELS, _NUM_ENSMEMBERS 
+    global _NMME_MODELS, _NUM_ENSMEMBERS
     # Load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-        
+
     _NMME_MODELS = config['EXP']['NMME_models']
     _NUM_ENSMEMBERS = config['EXP']['ensemble_sizes'][0]
-    
+
     domlabel=''
     if config['EXP']['DOMAIN'] == 'AFRICOM':
         domlabel = 's2safricom'

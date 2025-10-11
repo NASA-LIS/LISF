@@ -17,11 +17,13 @@ Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py a
 Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
 '''
 # pylint: disable=no-value-for-parameter
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
 
 import os
 import calendar
 import argparse
-import xarray as xr
+#import xarray as xr
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset
 # pylint: enable=no-name-in-module
@@ -112,7 +114,9 @@ if __name__ == '__main__':
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    rnetwork =  Dataset (config['SETUP']['supplementarydir'] + '/s2splots/RiverNetwork_information.nc4', mode='r')
+    rnetwork = Dataset(
+        config['SETUP']['supplementarydir'] + '/s2splots/RiverNetwork_information.nc4',
+        mode='r')
     downstream_lon = np.array (rnetwork.variables['DownStream_lon'][:])
     downstream_lat = np.array (rnetwork.variables['DownStream_lat'][:])
     upstream_lon   = np.array (rnetwork.variables['UpStream_lon'][:])

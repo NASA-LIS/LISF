@@ -16,20 +16,22 @@ for a given forecast start month and year. The script consolidated
 Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py and
 Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
 '''
-# pylint: disable=no-value-for-parameter
+# pylint: disable=no-value-for-parameter,line-too-long
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
 
 import os
 import calendar
 import argparse
+import gc
+from concurrent.futures import ProcessPoolExecutor
 import xarray as xr
 import numpy as np
 import yaml
-import gc
-from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
-import plot_utils
 from ghis2s.s2smetric.metricslib import get_anom
 from ghis2s.shared.logging_utils import TaskLogger
+import plot_utils
 # pylint: enable=import-error
 
 USAF_COLORS = True
@@ -44,14 +46,14 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     '''
     metric = "ANOM"
     figure_template = '{}/NMME_plot_{}_{}_FCST_anom.png'
-    
+
     # Standardized anomaly input and plot file templates (option):
     if standardized_anomaly == 'Y':
         metric = "SANOM"
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
     subtask = region + ': ' + metric
-    plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/' 
+    plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/'
     plotdir = plotdir_template.format(fcst_year, fcst_mon)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
@@ -67,7 +69,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in config_["POST"]["metric_vars"]:
-        logger.info(f"Plotting {var_name} {metric}", subtask=subtask)        
+        logger.info(f"Plotting {var_name} {metric}", subtask=subtask)
         # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
@@ -123,7 +125,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         plot_arr = median_anom[lead_month, ]
         figure = figure_template.format(plotdir, region, var_name)
         logger.info(f"Figure: {figure}", subtask=subtask)
-        
+
         titles = []
         for lead in lead_month:
             if var_name == 'Streamflow':
@@ -177,10 +179,10 @@ if __name__ == '__main__':
     num_calls = 7
     num_workers = int(os.environ.get('NUM_WORKERS', num_calls))
 
-    from concurrent.futures import ProcessPoolExecutor
+    # from concurrent.futures import ProcessPoolExecutor
     with ProcessPoolExecutor(max_workers=7) as executor:
         futures = []
-        if args.metric == "ANOM":  
+        if args.metric == "ANOM":
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL'))
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA'))
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE'))
@@ -189,7 +191,7 @@ if __name__ == '__main__':
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA'))
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA'))
 
-        if args.metric == "SANOM":  
+        if args.metric == "SANOM":
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly='Y'))
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly='Y'))
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly='Y'))
@@ -199,4 +201,4 @@ if __name__ == '__main__':
             futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly='Y'))
 
         for future in futures:
-            result = future.result()  
+            result = future.result()

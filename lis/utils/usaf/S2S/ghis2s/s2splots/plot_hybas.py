@@ -12,25 +12,27 @@
 
 '''
 This script plots streamflow anomalies along river pathways while using the Google map as a canvas.
-- Sarith Mahanama (2023-01-13
+- Sarith Mahanama (2023-01-13)
 '''
 # pylint: disable=no-value-for-parameter
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
 
 import os
 import calendar
 import argparse
 import math
+from concurrent.futures import ProcessPoolExecutor
 import xarray as xr
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset
 # pylint: enable=no-name-in-module
 import numpy as np
 import yaml
-from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
-import plot_utils
 from ghis2s.s2smetric.metricslib import get_anom
 from ghis2s.shared.logging_utils import TaskLogger
+import plot_utils
 # pylint: enable=import-error
 
 STANDARDIZED_ANOMALY = 'Y'
@@ -39,7 +41,7 @@ DEFCOMS = ['INDOPACOM', 'CENTCOM', 'AFRICOM', 'EUCOM', 'SOUTHCOM']
 task_name = os.environ.get('SCRIPT_NAME')
 logger = TaskLogger(task_name,
                     os.getcwd(),
-                    f'Running s2splots/plot_hybas.py')
+                    'Running s2splots/plot_hybas.py')
 
 def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
                carea, boundary, region, google_path, hybas_mask):
@@ -52,7 +54,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         metric = "SANOM"
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' 
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/'
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir, exist_ok=True)
@@ -117,7 +119,7 @@ def process_domain (fcst_year, fcst_mon, cwd, config, plot_domain):
     bas = 0
     google_path = config['SETUP']['supplementarydir'] + '/s2splots/'
     for bid in bmask.BASIN_ID.values:
-        logger.info(f"Plotting Streamflow_tavg SANOM in {bid}", subtask=plot_domain)        
+        logger.info(f"Plotting Streamflow_tavg SANOM in {bid}", subtask=plot_domain)
         hybas_mask = bmask.basin_mask.values[bas,:,:]
         tx_ = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lons))
         ty_ = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lats))
@@ -149,17 +151,18 @@ if __name__ == '__main__':
     # load config file
     with open(configfile, 'r', encoding="utf-8") as file:
         config_ = yaml.safe_load(file)
-        
+
     exp_domain = config_["EXP"]["DOMAIN"]
     if exp_domain == 'GLOBAL':
         num_calls = 5
         num_workers = int(os.environ.get('NUM_WORKERS', num_calls))
-        from concurrent.futures import ProcessPoolExecutor
+        # from concurrent.futures import ProcessPoolExecutor
         with ProcessPoolExecutor(max_workers=num_workers) as executor:
             futures = []
-    
+
             for plot_domain_ in DEFCOMS:
-                futures.append(executor.submit(process_domain, fcst_year_, fcst_mon_, cwd_, config_, plot_domain_))
+                futures.append(executor.submit(
+                    process_domain, fcst_year_, fcst_mon_, cwd_, config_, plot_domain_))
             for future in futures:
                 result = future.result()
     else:
