@@ -37,8 +37,6 @@ import yaml
 # pylint: disable=f-string-without-interpolation,too-many-positional-arguments,too-many-arguments,too-many-locals
 # Local modules
 from ghis2s.shared.logging_utils import TaskLogger
-#from merge_lisf_files import create_final_filename, merge_files_xarray
-#from temporal_aggregate import agg_driver
 from ghis2s.s2spost.merge_lisf_files import create_final_filename, merge_files_xarray
 from ghis2s.s2spost.temporal_aggregate import agg_driver
 
@@ -133,7 +131,6 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
     )
 
     delta = datetime.timedelta(days=1)
-    #scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
     ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config["SETUP"]["ldtinputfile"]
 
     # The very first day may be missing. Gracefully handle this

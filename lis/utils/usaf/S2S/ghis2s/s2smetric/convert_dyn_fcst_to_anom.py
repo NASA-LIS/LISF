@@ -37,7 +37,6 @@ from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metri
 # pylint: enable=import-error
 # pylint: disable=f-string-without-interpolation,too-many-positional-arguments
 # pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
-#
 
 # Start reading from command line.
 FCST_INIT_MON = int(sys.argv[1])

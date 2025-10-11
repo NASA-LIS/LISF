@@ -35,10 +35,11 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import yaml
 from ghis2s.shared import utils
-# pylint: disable=f-string-without-interpolation,too-many-positional-arguments,too-many-arguments,too-many-locals
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments,too-many-arguments
+# pylint: disable=too-many-locals, import-outside-toplevel
 
 LEAD_WEEKS = 6
-# pylint: disable=too-many-locals, import-outside-toplevel
+
 def _usage():
     """Print command line usage."""
     txt = \
