@@ -40,8 +40,8 @@
 import os
 import sys
 import datetime
-from dateutil.relativedelta import relativedelta
 import glob
+from dateutil.relativedelta import relativedelta
 import yaml
 
 # Third party modules
@@ -180,7 +180,7 @@ class _MetricGeoTiff:
             newdate = date
             newdate += relativedelta(days=7)
             return newdate
-        
+
         if date.month == 12:
             newdate = datetime.datetime(year=(date.year + 1),
                                         month=1,
@@ -392,7 +392,7 @@ def _driver():
                 f"{startdates_by_month[imonth].year:04d}" + \
                 f"-{startdates_by_month[imonth].month:02d}" + \
                 f"-{startdates_by_month[imonth].day:02d}"
-        
+
         var2d = median_values[imonth][::-1, :] # Flip y-axis
         geotiff_filename = \
             mgt.make_geotiff_filename(metric, imonth)

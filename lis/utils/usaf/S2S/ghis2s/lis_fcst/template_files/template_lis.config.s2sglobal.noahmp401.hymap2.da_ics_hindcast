@@ -7,6 +7,7 @@ Surface model types:                    "LSM"  "Openwater"
 Land surface model:                     "Noah-MP.4.0.1"
 Open water model:                       "template open water"
 Surface model output interval:          1da
+Number of dimensions in the lat/lon output fields:  "2D"
 
 Blending method for forcings:           overlay
 Number of met forcing sources:          2
