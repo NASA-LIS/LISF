@@ -51,8 +51,6 @@ import xarray as xr
 import numpy as np
 from ghis2s.shared.utils import write_ncfile, load_ncdata
 
-# pylint: enable=no-name-in-module
-
 # Private methods.
 def create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
     """Create final filename, following 557 convention."""

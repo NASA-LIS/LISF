@@ -261,20 +261,12 @@ def get_anom(path, var_name, metric, logger, weekly=False):
             'combine': 'nested',
             'preprocess': preproc
         }
-        #anom_ds = load_ncdata(files, logger, var_name=thisvar,  **kwargs)
         anom_ds = xr.open_mfdataset(files, concat_dim='ens', combine='nested', preprocess=preproc)
     else:
-        #anom_ds = load_ncdata(files, logger, var_name=thisvar, **dict(concat_dim='ens', combine='nested'))
         anom_ds = xr.open_mfdataset(files, concat_dim='ens', combine='nested')
     anom_ds = anom_ds.rename({'latitude': 'lat', 'longitude': 'lon'})
     anom = anom_ds[var_name + '_' + metric]
     del anom_ds
     gc.collect()
-    return anom.to_dataset(name='anom')
-    #del anom_ds
-    #gc.collect()
-    #result = anom_da.to_dataset(name='anom')
-    #del anom_da
-    #gc.collect()
 
-    #return result
+    return anom.to_dataset(name='anom')

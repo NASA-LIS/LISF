@@ -164,7 +164,6 @@ class _MetricGeoTiff:
                     self.set_startdates_enddates_by_month()
                     start_end_set = True
                 rootgrp.close()
-            #print(np.nanmax(np.median(var, axis=0)), np.nanmin(np.median(var, axis=0)))
             # mask out -9999 first
             masked_var = np.ma.masked_where((var == -9999) | np.isnan(var), var)
             # Calculate median on masked array
