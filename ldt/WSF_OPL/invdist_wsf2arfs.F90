@@ -68,20 +68,41 @@ CONTAINS
     logical :: has_snow, has_precip
     
     ! Weight arrays
-    real*8 :: arfs_wt_tim(2560,1920)
-    real*4 :: arfs_wt_tb10h(2560,1920), arfs_wt_tb10v(2560,1920)
-    real*4 :: arfs_wt_tb18h(2560,1920), arfs_wt_tb18v(2560,1920)
-    real*4 :: arfs_wt_tb23h(2560,1920), arfs_wt_tb23v(2560,1920)
-    real*4 :: arfs_wt_tb36h(2560,1920), arfs_wt_tb36v(2560,1920)
-    real*4 :: arfs_wt_tb89h(2560,1920), arfs_wt_tb89v(2560,1920)
-    real*4 :: arfs_wt_land_water_frac(2560,1920)
+    real*8, allocatable :: arfs_wt_tim(:,:)
+    real*4, allocatable :: arfs_wt_tb10h(:,:), arfs_wt_tb10v(:,:)
+    real*4, allocatable :: arfs_wt_tb18h(:,:), arfs_wt_tb18v(:,:)
+    real*4, allocatable :: arfs_wt_tb23h(:,:), arfs_wt_tb23v(:,:)
+    real*4, allocatable :: arfs_wt_tb36h(:,:), arfs_wt_tb36v(:,:)
+    real*4, allocatable :: arfs_wt_tb89h(:,:), arfs_wt_tb89v(:,:)
+    real*4, allocatable :: arfs_wt_land_water_frac(:,:)
     
-    ! Quality flag tracking - EXACT match to AMSR_OPL
-    integer :: snow_count(2560,1920), precip_count(2560,1920)
-    integer :: ocean_count(2560,1920), total_count(2560,1920)
-    integer :: excluded_snow_count(2560,1920), excluded_precip_count(2560,1920)
+    integer, allocatable :: snow_count(:,:), precip_count(:,:)
+    integer, allocatable :: ocean_count(:,:), total_count(:,:)
+    integer, allocatable :: excluded_snow_count(:,:),excluded_precip_count(:,:)
     
     write(LDT_logunit,*)'[INFO] Starting WSF inverse distance resampling'
+    ! Allocate weight arrays
+    allocate(arfs_wt_tim(2560,1920))
+    allocate(arfs_wt_tb10h(2560,1920))
+    allocate(arfs_wt_tb10v(2560,1920))
+    allocate(arfs_wt_tb18h(2560,1920))
+    allocate(arfs_wt_tb18v(2560,1920))
+    allocate(arfs_wt_tb23h(2560,1920))
+    allocate(arfs_wt_tb23v(2560,1920))
+    allocate(arfs_wt_tb36h(2560,1920))
+    allocate(arfs_wt_tb36v(2560,1920))
+    allocate(arfs_wt_tb89h(2560,1920))
+    allocate(arfs_wt_tb89v(2560,1920))
+    allocate(arfs_wt_land_water_frac(2560,1920))
+    
+    ! Allocate counter arrays
+    allocate(snow_count(2560,1920))
+    allocate(precip_count(2560,1920))
+    allocate(ocean_count(2560,1920))
+    allocate(total_count(2560,1920))
+    allocate(excluded_snow_count(2560,1920))
+    allocate(excluded_precip_count(2560,1920))
+    
     write(LDT_logunit,*)'[INFO] WITH Snow/Precip filtering (CORRECTED to match AMSR_OPL)'
     write(LDT_logunit,*)'[INFO] Input dimensions: ', nscans_in, 'x', nfovs_in
     write(LDT_logunit,*)'[INFO] Output dimensions: ', size(ref_lon), 'x', size(ref_lat)
@@ -430,6 +451,16 @@ CONTAINS
     
     ! Cleanup
     deallocate(zerodistflag)
+    deallocate(arfs_wt_tim)
+    deallocate(arfs_wt_tb10h, arfs_wt_tb10v)
+    deallocate(arfs_wt_tb18h, arfs_wt_tb18v)
+    deallocate(arfs_wt_tb23h, arfs_wt_tb23v)
+    deallocate(arfs_wt_tb36h, arfs_wt_tb36v)
+    deallocate(arfs_wt_tb89h, arfs_wt_tb89v)
+    deallocate(arfs_wt_land_water_frac)
+    deallocate(snow_count, precip_count)
+    deallocate(ocean_count, total_count)
+    deallocate(excluded_snow_count, excluded_precip_count)
     
     write(LDT_logunit,*)'[INFO] Resampling complete with snow/precip filtering'
     

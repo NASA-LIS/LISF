@@ -11,7 +11,7 @@
 ! MODULE: TOOLSUBS_WSF
 !
 ! DESCRIPTION: Module for reading WSF NetCDF data with AMSR-style processing
-!              CORRECTED: Fixed variable declarations and nf90_close usage
+!              CORRECTED: Fixed dimensions for QualityFlag and earth_inc_angle
 !
 !-------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ CONTAINS
     real*4, allocatable, intent(out) :: lon(:,:)           ! (nscans, nfovs)
     real*4, allocatable, intent(out) :: land_frac_low(:,:) ! (nscans, nfovs)
     integer*1, allocatable, intent(out) :: quality_flag(:,:) ! (nscans, nfovs)
-    real*4, allocatable, intent(out) :: earth_inc_angle(:,:,:) ! (nchans, nscans, nfovs)
+    real*4, allocatable, intent(out) :: earth_inc_angle(:,:,:) ! (1, nscans, nfovs) - dummy
     integer*4, allocatable, intent(out) :: snow(:,:)       ! (nscans, nfovs)
     integer*4, allocatable, intent(out) :: precip(:,:)     ! (nscans, nfovs)
     real*4, allocatable, intent(out) :: chan_frequencies(:)
@@ -47,21 +47,24 @@ CONTAINS
     integer, intent(out) :: ierr
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-    ! Local variables - ALL DECLARATIONS MUST BE HERE
+    ! Local variables
     integer :: ncid, varid
-    integer :: nscanr_dimid, nfovr_dimid, nchan_dimid
+    integer :: nscanr_dimid, nfovr_dimid, nchan_dimid, nband_dimid
+    integer :: nband
     logical :: file_exists
     integer :: i, j, ichan
     real :: sil, tt18
     real*4, allocatable :: tb_18v(:,:), tb_18h(:,:)
     real*4, allocatable :: tb_23v(:,:), tb_36v(:,:), tb_89v(:,:)
-    real*4, allocatable :: chan_freq(:)      ! CORRECTED: Moved here
-    character*1, allocatable :: chan_pol(:)  ! CORRECTED: Moved here
+    real*4, allocatable :: chan_freq(:)
+    character*1, allocatable :: chan_pol(:)
+    integer*1, allocatable :: qf_from_file(:,:,:)  ! (nband, nscans, nfovs)
     
     ierr = 0
     nscans = 0
     nfovs = 0
     nchans = 0
+    nband = 0
     
     ! Check if file exists
     inquire(file=trim(filename), exist=file_exists)
@@ -86,7 +89,7 @@ CONTAINS
     ierr = nf90_inq_dimid(ncid, 'nScanR', nscanr_dimid)
     if (ierr /= NF90_NOERR) then
         write(LDT_logunit,*)'[ERR] Cannot find dimension nScanR'
-        ierr = nf90_close(ncid)  ! CORRECTED: Function, not subroutine
+        ierr = nf90_close(ncid)
         ierr = 1
         return
     end if
@@ -96,16 +99,19 @@ CONTAINS
     ierr = nf90_inquire_dimension(ncid, nfovr_dimid, len=nfovs)
     ierr = nf90_inq_dimid(ncid, 'nChan', nchan_dimid)
     ierr = nf90_inquire_dimension(ncid, nchan_dimid, len=nchans)
+    ierr = nf90_inq_dimid(ncid, 'nBand', nband_dimid)
+    ierr = nf90_inquire_dimension(ncid, nband_dimid, len=nband)
     
     write(LDT_logunit,*)'[INFO] Dimensions: nScanR=', nscans, &
-        ' nFOVR=', nfovs, ' nChan=', nchans
+        ' nFOVR=', nfovs, ' nChan=', nchans, ' nBand=', nband
     
-    ! Allocate all arrays
+    ! Allocate all arrays with correct dimensions
     allocate(tb_lowres(nchans, nscans, nfovs))
     allocate(lat(nscans, nfovs))
     allocate(lon(nscans, nfovs))
     allocate(land_frac_low(nscans, nfovs))
-    allocate(earth_inc_angle(nchans, nscans, nfovs))
+    allocate(qf_from_file(nband, nscans, nfovs))
+    allocate(earth_inc_angle(1, nscans, nfovs))  ! Dummy dimension
     allocate(snow(nscans, nfovs))
     allocate(precip(nscans, nfovs))
     allocate(quality_flag(nscans, nfovs))
@@ -128,7 +134,8 @@ CONTAINS
     lat = 0.0
     lon = 0.0
     land_frac_low = 0.0
-    earth_inc_angle = 0.0
+    qf_from_file = 0
+    earth_inc_angle = 52.0  ! Default value (not used)
     snow = 0
     precip = 0
     quality_flag = 0
@@ -155,9 +162,12 @@ CONTAINS
     ierr = nf90_inq_varid(ncid, 'TbLowRes', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, tb_lowres)
-        write(LDT_logunit,*)'[INFO] Read TbLowRes'
+        write(LDT_logunit,*)'[INFO] Read TbLowRes with shape (nChan, nScanR, nFOVR)'
     else
-        write(LDT_logunit,*)'[WARN] Could not read TbLowRes'
+        write(LDT_logunit,*)'[ERR] Could not read TbLowRes'
+        ierr = nf90_close(ncid)
+        ierr = 1
+        return
     end if
     
     ! Read LandFractionLowRes
@@ -169,21 +179,14 @@ CONTAINS
         write(LDT_logunit,*)'[WARN] Could not read LandFractionLowRes'
     end if
     
-    ! Read Earth Incidence Angle
-    ierr = nf90_inq_varid(ncid, 'EarthIncAngle', varid)
+    ! Read QualityFlag from file (nBand, nScanR, nFOVR)
+    ierr = nf90_inq_varid(ncid, 'QualityFlag', varid)
     if (ierr == NF90_NOERR) then
-        ierr = nf90_get_var(ncid, varid, earth_inc_angle)
-        write(LDT_logunit,*)'[INFO] Read EarthIncAngle'
+        ierr = nf90_get_var(ncid, varid, qf_from_file)
+        write(LDT_logunit,*)'[INFO] Read QualityFlag with shape (nBand, nScanR, nFOVR)'
     else
-        ! Try alternative name
-        ierr = nf90_inq_varid(ncid, 'earth_incidence_angle', varid)
-        if (ierr == NF90_NOERR) then
-            ierr = nf90_get_var(ncid, varid, earth_inc_angle)
-            write(LDT_logunit,*)'[INFO] Read earth_incidence_angle'
-        else
-            write(LDT_logunit,*)'[WARN] Could not read Earth Incidence Angle'
-            earth_inc_angle = 55.0  ! Default value
-        end if
+        write(LDT_logunit,*)'[WARN] Could not read QualityFlag, assuming good quality'
+        qf_from_file = 0
     end if
     
     ! Read channel frequencies
@@ -207,7 +210,7 @@ CONTAINS
     ! Read channel polarizations
     ierr = nf90_inq_varid(ncid, 'ChanPolarization', varid)
     if (ierr == NF90_NOERR) then
-        ! CORRECTED: Read as character array properly
+        ! Read as character array properly
         do i = 1, nchans
             ierr = nf90_get_var(ncid, varid, chan_pol(i:i), &
                 start=(/i/), count=(/1/))
@@ -232,7 +235,7 @@ CONTAINS
     end if
     
     ! Close file
-    ierr = nf90_close(ncid)  ! CORRECTED: Function, not subroutine
+    ierr = nf90_close(ncid)
     
     ! ==================================================================
     ! EXTRACT SPECIFIC CHANNELS FOR SNOW/PRECIP DETECTION
@@ -296,7 +299,6 @@ CONTAINS
     do j = 1, nfovs
         do i = 1, nscans
             ! Only process over land (land_frac >= 50%)
-            ! Note: WSF land_frac is 0-1, need to convert to percentage
             if (land_frac_low(i,j) >= 0.5) then
                 ! Ensure all needed values are valid
                 if (tb_18v(i,j) > 0 .and. tb_18h(i,j) > 0 .and. &
@@ -341,19 +343,19 @@ CONTAINS
     end do
     
     ! ==================================================================
-    ! CREATE AMSR-STYLE QUALITY FLAG
+    ! CREATE FINAL QUALITY FLAG
     ! Bit 0: Ocean (1 if land_frac < 20%)
     ! Bit 1: Precipitation 
     ! Bit 2: Snow
+    ! Bit 3: Sensor quality (if bits 0-4 of QualityFlag[band=0] are NOT all zero)
     ! ==================================================================
-    write(LDT_logunit,*)'[INFO] Packing quality flags at footprint level'
+    write(LDT_logunit,*)'[INFO] Creating final quality flags'
     
     quality_flag = 0
     
     do j = 1, nfovs
         do i = 1, nscans
             ! Bit 0: Ocean flag (land fraction < 20%)
-            ! WSF land_frac is 0-1, so 0.2 = 20%
             if (land_frac_low(i,j) < 0.2) then
                 quality_flag(i,j) = IOR(quality_flag(i,j), 1)
             endif
@@ -367,14 +369,27 @@ CONTAINS
             if (snow(i,j) == 1) then
                 quality_flag(i,j) = IOR(quality_flag(i,j), 4)
             endif
+            
+            ! Bit 3: Sensor quality flag
+            ! Python: (ds.QualityFlag.sel(nBand=0).astype(int) & 31) == 0
+            ! Check if bits 0-4 of band 0 QualityFlag are NOT all zero
+            ! Band 0 in Python = index 1 in Fortran
+            if (IAND(INT(qf_from_file(1,i,j)), 31) /= 0) then
+                quality_flag(i,j) = IOR(quality_flag(i,j), 8)  ! Set bit 3
+            endif
         end do
     end do
     
-    write(LDT_logunit,*)'[INFO] Quality flags packed successfully'
+    write(LDT_logunit,*)'[INFO] Quality flags created successfully'
+    write(LDT_logunit,*)'[INFO]   Bit 0: Ocean (land_frac < 20%)'
+    write(LDT_logunit,*)'[INFO]   Bit 1: Precipitation'
+    write(LDT_logunit,*)'[INFO]   Bit 2: Snow'
+    write(LDT_logunit,*)'[INFO]   Bit 3: Sensor quality (bits 0-4 check)'
     
     ! Cleanup temporary arrays
     deallocate(tb_18v, tb_18h, tb_23v, tb_36v, tb_89v)
     deallocate(chan_freq, chan_pol)
+    deallocate(qf_from_file)
     
     write(LDT_logunit,*)'[INFO] Successfully read all WSF data with flags'
     ierr = 0
@@ -388,57 +403,5 @@ CONTAINS
 #endif
     
     END SUBROUTINE get_wsf_data_with_flags
-
-    ! ==================================================================
-    ! Simplified version without snow/precip detection (for compatibility)
-    ! ==================================================================
-    SUBROUTINE get_wsf_data(filename, &
-        tb_lowres, lat, lon, land_frac_low, &
-        quality_flag, earth_inc_angle, &
-        nscans, nfovs, nchans, ierr)
-    
-    character(*), intent(in) :: filename
-    real*4, allocatable, intent(out) :: tb_lowres(:,:,:)
-    real*4, allocatable, intent(out) :: lat(:,:)
-    real*4, allocatable, intent(out) :: lon(:,:)
-    real*4, allocatable, intent(out) :: land_frac_low(:,:)
-    integer*1, allocatable, intent(out) :: quality_flag(:,:,:)
-    real*4, allocatable, intent(out) :: earth_inc_angle(:,:,:)
-    integer, intent(out) :: nscans, nfovs, nchans
-    integer, intent(out) :: ierr
-    
-    ! Local variables
-    integer*4, allocatable :: snow(:,:), precip(:,:)
-    integer*1, allocatable :: quality_flag_2d(:,:)
-    real*4, allocatable :: chan_freq(:)
-    character*1, allocatable :: chan_pol(:)
-    integer :: i, j, k
-    
-    ! Call the main routine
-    call get_wsf_data_with_flags(filename, &
-        tb_lowres, lat, lon, land_frac_low, quality_flag_2d, &
-        earth_inc_angle, snow, precip, &
-        nscans, nfovs, nchans, chan_freq, chan_pol, ierr)
-    
-    if (ierr == 0 .and. allocated(quality_flag_2d)) then
-        ! Expand 2D quality flag to 3D for compatibility
-        allocate(quality_flag(nchans, nscans, nfovs))
-        do k = 1, nchans
-            do j = 1, nfovs
-                do i = 1, nscans
-                    quality_flag(k,i,j) = quality_flag_2d(i,j)
-                end do
-            end do
-        end do
-        deallocate(quality_flag_2d)
-    end if
-    
-    ! Cleanup
-    if (allocated(snow)) deallocate(snow)
-    if (allocated(precip)) deallocate(precip)
-    if (allocated(chan_freq)) deallocate(chan_freq)
-    if (allocated(chan_pol)) deallocate(chan_pol)
-    
-    END SUBROUTINE get_wsf_data
 
 END MODULE TOOLSUBS_WSF
