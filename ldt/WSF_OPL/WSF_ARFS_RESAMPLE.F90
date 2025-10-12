@@ -166,23 +166,22 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filelist, nfiles, output_dir, n)
         do ichan = 1, nchans
             freq = chan_frequencies(ichan)
             pol = chan_polarizations(ichan)
-            
             ! Map to standard channels (approximate frequencies)
             if (abs(freq - 10.65) < 0.5) then
-                if (pol == 'V') tb_10v(:,:) = tb_lowres(:,:,ichan)
-                if (pol == 'H') tb_10h(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'V') tb_10v(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
+                if (pol == 'H') tb_10h(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
             else if (abs(freq - 18.7) < 0.5) then
-                if (pol == 'V') tb_18v(:,:) = tb_lowres(:,:,ichan)
-                if (pol == 'H') tb_18h(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'V') tb_18v(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
+                if (pol == 'H') tb_18h(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
             else if (abs(freq - 23.8) < 0.5) then
-                if (pol == 'V') tb_23v(:,:) = tb_lowres(:,:,ichan)
-                if (pol == 'H') tb_23h(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'V') tb_23v(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
+                if (pol == 'H') tb_23h(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
             else if (abs(freq - 36.5) < 1.0) then
-                if (pol == 'V') tb_36v(:,:) = tb_lowres(:,:,ichan)
-                if (pol == 'H') tb_36h(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'V') tb_36v(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
+                if (pol == 'H') tb_36h(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
             else if (abs(freq - 89.0) < 2.0) then
-                if (pol == 'V') tb_89v(:,:) = tb_lowres(:,:,ichan)
-                if (pol == 'H') tb_89h(:,:) = tb_lowres(:,:,ichan)
+                if (pol == 'V') tb_89v(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
+                if (pol == 'H') tb_89h(:,:) = tb_lowres(ichan,:,:)  ! FIX THIS
             end if
         end do
         
