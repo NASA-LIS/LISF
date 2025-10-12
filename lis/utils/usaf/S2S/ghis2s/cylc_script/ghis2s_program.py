@@ -279,7 +279,7 @@ class Ghis2sProgram():
         filedata = filedata.replace('YYYY-MM', self.forecast_date)
         filedata = filedata.replace('--output ', '--output=')
         filedata = filedata.replace('--error ', '--error=')
-        filedata = filedata.replace('--exclusive ', '--exclusive=')
+        filedata = filedata.replace('--exclusive', '--exclusive=')
         
         with config_file.open('w') as file:
             file.write(filedata)
