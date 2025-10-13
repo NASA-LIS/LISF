@@ -611,6 +611,10 @@ class S2Srun(DownloadForecasts):
 
     def write_cylc_snippet(self):
         """ writes Cylc runtime snippet """
+        if os.path.isfile(self.LISFDIR + 'env/discover/' + self.LISHMOD):
+            MODULEPATH = self.LISFDIR + 'env/discover/'
+        else:
+            MODULEPATH = self.config['SETUP']['supplementarydir'] + '/env/'
         def write_log_monitoring_script():
             """writes the shell script to run log monitoring"""   
             log_script_path = f"{self.SCRDIR}ghis2s_log.sh"
@@ -619,9 +623,8 @@ class S2Srun(DownloadForecasts):
                 f.write("set -eu\n")
                 f.write("export USE_CYLC_ENV=0\n")
                 f.write("source /etc/profile.d/modules.sh\n")
-                f.write("module purge\n")
-                f.write(f"module use -a {self.LISFDIR}env/discover/\n")
-                f.write(f"module --ignore-cache load {self.LISHMOD}\n")
+                f.write(f"module use -a {MODULEPATH}\n")
+                f.write(f"module --ignore-cache load {self.LISHMOD}\n")    
                 f.write("ulimit -s unlimited\n")
                 f.write(f"export PYTHONPATH={self.LISFDIR}lis/utils/usaf/S2S/\n")
                 f.write(f"cd {self.SCRDIR}\n")
@@ -789,11 +792,13 @@ class S2Srun(DownloadForecasts):
             # Write runtime section
             file.write("[runtime]\n")
             file.write("    [[root]]\n")
-            file.write("        platform = slurm-ghi\n")
-            #file.write("        [[[job]]]\n")
-            #file.write("            batch system = slurm\n")
+            file.write("        platform = slurm-ghi\n")                
+            file.write("        pre-script = \"\"\"\n")
+            file.write(f"            module load {self.LISHMOD}\n")
+            file.write("        \"\"\"\n")
             file.write("        [[[environment]]]\n")
-            file.write("            USE_CYLC_ENV = 1\n") 
+            file.write("            USE_CYLC_ENV = 1\n")
+            file.write(f"            MODULEPATH = {MODULEPATH}:$MODULEPATH\n")
             file.write(f"            PYTHONPATH = {self.LISFDIR}lis/utils/usaf/S2S/\n")
             
             # Add additional environment variables if provided
@@ -801,9 +806,10 @@ class S2Srun(DownloadForecasts):
                 for key, value in self.additional_env_vars.items():
                     file.write(f"            {key} = {value}\n")
                     
+            file.write("        [[[mail]]]\n")
+            file.write("            to = USEREMAIL\n")
             file.write("        [[[events]]]\n")
             file.write("            mail events = failed\n")            
-            file.write("            mail to = USEREMAIL\n")
             file.write("  \n")
 
             file.write("    [[log_monitor]]\n")
