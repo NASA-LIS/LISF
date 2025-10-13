@@ -794,6 +794,7 @@ class S2Srun(DownloadForecasts):
             file.write("    [[root]]\n")
             file.write("        platform = slurm-ghi\n")                
             file.write("        pre-script = \"\"\"\n")
+            file.write("            source /etc/profile.d/modules.sh\n")            
             file.write(f"            module load {self.LISHMOD}\n")
             file.write("        \"\"\"\n")
             file.write("        [[[environment]]]\n")
