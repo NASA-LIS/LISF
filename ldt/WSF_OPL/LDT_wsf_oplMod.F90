@@ -125,7 +125,7 @@ contains
     ! Make sure it's declared like this:
     character(len=255), allocatable :: wsf_filelist(:)   ! Modern syntax
     character*255 :: fname  ! INCREASED from 100 to 255 for long paths
-    integer :: ftn, ierr, fi
+    integer :: ftn, ierr, fi, i
     character*2 :: tmp
     character*8 :: yyyymmdd
     logical :: file_exists
@@ -234,13 +234,22 @@ contains
     
     write(LDT_logunit,*) '[INFO] Found ', fi, ' valid WSF files to process'
     
-    ! Process all files at once using existing WSF_ARFS_RESAMPLE
+    ! NEW CODE - Process one file at a time (like AMSR_OPL)
     if (fi >= 1) then
-      ! Call existing WSF_ARFS_RESAMPLE that processes ALL files
-      call WSF_ARFS_RESAMPLE(wsf_filelist, fi, WSFopl%WSFoutdir, n)
+      write(LDT_logunit,*) '[INFO] Processing ', fi, ' WSF files individually'
       
-      ! Results are stored in WSFopl module arrays by WSF_ARFS_RESAMPLE
-      write(LDT_logunit,*) '[INFO] All files processed successfully'
+      ! Loop through files and process one at a time
+      do i = 1, fi
+        write(LDT_logunit,*) '[INFO] Resampling file ', i, ' of ', fi
+        write(LDT_logunit,*) '[INFO] File: ', trim(wsf_filelist(i))
+        
+        ! Call WSF_ARFS_RESAMPLE with SINGLE filename
+        call WSF_ARFS_RESAMPLE(wsf_filelist(i), WSFopl%WSFoutdir, n)
+        
+        write(LDT_logunit,*) '[INFO] Finished processing file ', i
+      end do
+      
+      write(LDT_logunit,*) '[INFO] All ', fi, ' files processed successfully'
     else
       write(LDT_logunit,*) '[WARN] No WSF files found for date: ', WSFopl%date_curr
     endif
