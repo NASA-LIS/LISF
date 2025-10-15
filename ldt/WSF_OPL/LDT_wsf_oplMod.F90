@@ -122,7 +122,8 @@ contains
     
     implicit none
     integer, intent(in) :: n
-    character*255, allocatable :: wsf_filelist(:)
+    ! Make sure it's declared like this:
+    character(len=255), allocatable :: wsf_filelist(:)   ! Modern syntax
     character*255 :: fname  ! INCREASED from 100 to 255 for long paths
     integer :: ftn, ierr, fi
     character*2 :: tmp
@@ -236,7 +237,7 @@ contains
     ! Process all files at once using existing WSF_ARFS_RESAMPLE
     if (fi >= 1) then
       ! Call existing WSF_ARFS_RESAMPLE that processes ALL files
-      call WSF_ARFS_RESAMPLE(wsf_filelist(1:fi), fi, WSFopl%WSFoutdir, n)
+      call WSF_ARFS_RESAMPLE(wsf_filelist, fi, WSFopl%WSFoutdir, n)
       
       ! Results are stored in WSFopl module arrays by WSF_ARFS_RESAMPLE
       write(LDT_logunit,*) '[INFO] All files processed successfully'

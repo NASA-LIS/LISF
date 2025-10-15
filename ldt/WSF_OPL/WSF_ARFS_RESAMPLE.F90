@@ -30,7 +30,7 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filelist, nfiles, output_dir, n)
     IMPLICIT NONE
     
     ! Arguments
-    character(len=*), intent(in) :: wsf_filelist(:)
+    character(len=255), intent(in) :: wsf_filelist(:)  ! CHANGED from len=*
     integer, intent(in) :: nfiles
     character(len=*), intent(in) :: output_dir
     integer, intent(in) :: n
@@ -77,6 +77,9 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filelist, nfiles, output_dir, n)
     character*1 :: pol
     integer*1 :: qc_bits
     real, parameter :: LAND_FRAC_THRESHOLD = 0.8
+
+    ! Local variables
+    character(len=255) :: current_file
     
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Starting WSF ARFS Resampling (CORRECTED)'
@@ -117,15 +120,21 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filelist, nfiles, output_dir, n)
     allocate(ARFS_QUALITY_FLAG(2560,1920))
     allocate(ARFS_SAMPLE_V(2560,1920))
     allocate(ARFS_SAMPLE_H(2560,1920))
+
     
     ! Process each WSF file
     do ifile = 1, nfiles
-        write(LDT_logunit,*) '[INFO] ========================================'
-        write(LDT_logunit,*) '[INFO] Processing file ', ifile, ' of ', nfiles
-        write(LDT_logunit,*) '[INFO] File: ', trim(wsf_filelist(ifile))
+        ! Validate we're within array bounds
+        if (ifile > size(wsf_filelist)) then
+            write(LDT_logunit,*) '[ERR] ifile exceeds array size'
+            exit
+        endif
+        
+        current_file = wsf_filelist(ifile)
+        write(LDT_logunit,*) '[INFO] File ', ifile, ': ', trim(current_file)
         
         ! Read WSF data with quality flags
-        call get_wsf_data_with_flags(wsf_filelist(ifile), &
+        call get_wsf_data_with_flags(trim(current_file), &
             tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
             earth_inc_angle, snow_in, precip_in, &
             nscans, nfovs, nchans, chan_frequencies, chan_polarizations, ierr)
