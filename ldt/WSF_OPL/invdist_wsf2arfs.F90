@@ -172,10 +172,18 @@ CONTAINS
             lon1 = lon_in(jj,ii)
             
             ! Find grid cell bounds
-            rmin = MAX(1, FLOOR((lon1 + 180.0) / 0.140625 - search_radius/0.140625 + 1))
-            rmax = MIN(2560, CEILING((lon1 + 180.0) / 0.140625 + search_radius/0.140625 + 1))
-            cmin = MAX(1, FLOOR((90.0 - lat1) / 0.09375 - search_radius/0.09375 + 1))
-            cmax = MIN(1920, CEILING((90.0 - lat1) / 0.09375 + search_radius/0.09375 + 1))
+            c = MINLOC(ABS(lat_in(jj,ii) - ref_lat(:)), 1)  ! Lat direction
+            r = MINLOC(ABS(lon_in(jj,ii) - ref_lon(:)), 1)  ! Lon direction
+            
+            rmin = r - 5
+            IF (rmin < 1) rmin = 1
+            rmax = r + 5  
+            IF (rmax > size(ref_lon)) rmax = size(ref_lon)
+            
+            cmin = c - 5
+            IF (cmin < 1) cmin = 1
+            cmax = c + 5
+            IF (cmax > size(ref_lat)) cmax = size(ref_lat)
             
             ! Process each grid cell in search radius
             do rr = rmin, rmax
@@ -202,14 +210,14 @@ CONTAINS
                             snow_count(rr,cc) = snow_count(rr,cc) + 1
                         endif
                         
-                        ! CRITICAL FILTERING: Skip resampling if snow or precip detected
-                        if (has_snow .OR. has_precip) then
-                            ! Track excluded footprints
-                            if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
-                            if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
-                            ! SKIP THIS FOOTPRINT - DO NOT RESAMPLE
-                            cycle
-                        endif
+                        !! CRITICAL FILTERING: Skip resampling if snow or precip detected
+                        !if (has_snow .OR. has_precip) then
+                            !! Track excluded footprints
+                            !if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
+                            !if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
+                            !! SKIP THIS FOOTPRINT - DO NOT RESAMPLE
+                            !cycle
+                        !endif
                         
                         ! No snow/precip - proceed with resampling
                         if (gcdist < 0.0001D0) then
