@@ -13,23 +13,20 @@
 import os
 import subprocess
 import sys
-from datetime import datetime
 import calendar
 from time import ctime as t_ctime
 from time import time as t_time
+from concurrent.futures import ProcessPoolExecutor
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
-from concurrent.futures import ProcessPoolExecutor
-import concurrent.futures
-import yaml
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-# pylint: disable=import-error
 from ghis2s.shared.utils import load_ncdata, get_domain_info
 from ghis2s.shared.logging_utils import TaskLogger
-# pylint: enable=import-error
+
 
 def write_bc_netcdf(outfile, var, varname, description, source, var_units, \
 var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
@@ -92,7 +89,7 @@ resolution_x, resolution_y, time_increment):
     varname5.units = var_units[4]
     varname6.units = var_units[5]
     varname7.units = 'm/s'
-    
+
     ### Assigning standard names for each variables
     varname1.standard_name = var_standard_name[0]
     varname2.standard_name = var_standard_name[1]
@@ -101,7 +98,7 @@ resolution_x, resolution_y, time_increment):
     varname5.standard_name = var_standard_name[4]
     varname6.standard_name = var_standard_name[5]
     varname7.standard_name = 'V10M'
-    
+
     string_date = datetime.strftime(sdate, "%Y-%m-%d %H:%M:%S")
     times.units = 'minutes since ' + string_date
     times.time_increment = time_increment
@@ -143,26 +140,20 @@ MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON].lower
 #Directory and file addresses
 BASEDIR = str(sys.argv[6])
 CONFIG_FILE = str(sys.argv[7])
+INDIR_TEMPLATE = '{}/bcsd/6-Hourly/{}/{:04d}/ens{:01d}'
+INFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
+OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/ens{:01d}'
+OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
-lats, lons = get_domain_info(CONFIG_FILE, coord=True)
-resol = round((lats[1] - lats[0])*100.)/100.
-if MODEL_NAME == 'CFSv2':
-    FORCE_DT = 21600
+VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
+UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
 
-if MODEL_NAME == 'GEOSv3':
-    FORCE_DT = 10800
-    
-def process_ensemble(ens):
-    subtask = f'ens{ens:02d}'    
-    INDIR_TEMPLATE = '{}/bcsd/6-Hourly/{}/{:04d}/ens{:01d}'
-    #### Change the model name here for other models
-    INFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
+latsg, _ = get_domain_info(CONFIG_FILE, coord=True)
+resol = round((latsg[1] - latsg[0])*100.)/100.
 
-    OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/ens{:01d}'
-    OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
-
-    VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
-    UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
+def process_ensemble(_ens):
+    ''' process each ensemble member '''
+    subtask = f'ens{_ens:02d}'
 
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
@@ -170,46 +161,51 @@ def process_ensemble(ens):
     logger.info(f"Forecast Initialization month is {MONTH_NAME}", subtask=subtask)
     ## Shape of the above dataset time, Lead, Ens, latitude, longitude
     #for ens in range(ENS_NUM):
-    INDIR = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
-                                  INIT_FCST_YEAR, ens+1)
-    OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
-                                    INIT_FCST_YEAR, ens+1)
-    if os.path.isdir(OUTDIR):
+    indir = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
+                                  INIT_FCST_YEAR, _ens+1)
+    outdir = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
+                                    INIT_FCST_YEAR, _ens+1)
+    if os.path.isdir(outdir):
         pass
     else:
-        os.makedirs(OUTDIR, exist_ok=True)
+        os.makedirs(outdir, exist_ok=True)
 
-    for LEAD_NUM in range(0, LEAD_FINAL):
+    for lead_num in range(0, LEAD_FINAL):
         ## Loop from lead =0 to Final Lead
-        FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
-            relativedelta(months=LEAD_NUM)
-        FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
-        for VAR_NUM, VAR_VALUE in  enumerate(VAR_NAME_LIST):
-            VAR = VAR_NAME_LIST[VAR_NUM]
-            INFILE = INFILE_TEMPLATE.format(INDIR, VAR, FCST_YEAR, \
-                                            FCST_MONTH)
-            logger.info(f"Reading {INFILE}", subtask=subtask)
-            temp_da = load_ncdata(INFILE, [logger, subtask],  var_name=VAR, **dict(decode_cf=False))
-            TEMP = temp_da.values
-            
-            if VAR == VAR_NAME_LIST[0]:
-                LATS, LONS = temp_da.lat.values, temp_da.lon.values
-                IN_DATA = np.empty((len(VAR_NAME_LIST), TEMP.shape[0], \
-                                    len(LATS), len(LONS)))
-            IN_DATA[VAR_NUM, ] = TEMP
+        fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
+            relativedelta(months=lead_num)
+        fcst_year, fcst_month = fcst_date.year, fcst_date.month
+        for var_num, _ in  enumerate(VAR_NAME_LIST):
+            var = VAR_NAME_LIST[var_num]
+            infile = INFILE_TEMPLATE.format(indir, var, fcst_year, \
+                                            fcst_month)
+            logger.info(f"Reading {infile}", subtask=subtask)
+            temp_da = load_ncdata(infile, [logger, subtask],  var_name=var, decode_cf=False)
+            temp = temp_da.values
+
+            if var == VAR_NAME_LIST[0]:
+                lats, lons = temp_da.lat.values, temp_da.lon.values
+                in_data = np.empty((len(VAR_NAME_LIST), temp.shape[0], \
+                                    len(lats), len(lons)))
+            in_data[var_num, ] = temp
             temp_da.close()
             del temp_da
 
         ### Finished reading all files now writing combined output
-        OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, MODEL_NAME, FCST_YEAR, FCST_MONTH)
-        logger.info(f"Writing {OUTFILE}", subtask=subtask)
-        SDATE = datetime(FCST_YEAR, FCST_MONTH, 1, 6)
-        NUM_DAYS = TEMP.shape[0]
-        DATES = [SDATE+relativedelta(hours=n*6) for n in range(NUM_DAYS)]
-        write_bc_netcdf(OUTFILE, IN_DATA, VAR_NAME_LIST, \
+        outfile = OUTFILE_TEMPLATE.format(outdir, MODEL_NAME, fcst_year, fcst_month)
+        logger.info(f"Writing {outfile}", subtask=subtask)
+        sdate = datetime(fcst_year, fcst_month, 1, 6)
+        num_days = temp.shape[0]
+        dates = [sdate+relativedelta(hours=n*6) for n in range(num_days)]
+        force_dt = 21600
+        if MODEL_NAME == 'CFSv2':
+            force_dt = 21600
+        if MODEL_NAME == 'GEOSv3':
+            force_dt = 10800
+        write_bc_netcdf(outfile, in_data, VAR_NAME_LIST, \
                         'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \
-                        UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 8, LATS[-1], \
-                        LONS[-1], LATS[0], LONS[0], resol, resol, FORCE_DT)
+                        UNITS, VAR_NAME_LIST, lons, lats, sdate, dates, 8, lats[-1], \
+                        lons[-1], lats[0], lons[0], resol, resol, force_dt)
 
 logger.info("Starting parallel processing of ensembles")
 num_workers = int(sys.argv[4])
@@ -226,25 +222,16 @@ with ProcessPoolExecutor(max_workers=num_workers) as executor:
 
 # Create ens13, ens14, ens15 links
 OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/'
-INIT_FCST_YEAR = int(sys.argv[1])
-INIT_FCST_MON = int(sys.argv[2])
-MODEL_NAME = str(sys.argv[3])
-ENS_NUM = int(sys.argv[4])
-LEAD_FINAL = int(sys.argv[5])
-BASEDIR = str(sys.argv[6])
-CONFIGFILE = str(sys.argv[6])
-MONTH_NAME_TEMPLATE = '{}01'
-MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])    
 OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)
 
 os.chdir(OUTDIR)
 logger.info(f"Creating ens13, ens14, ens15 links in {OUTDIR}")
-cmd = f"ln -sfn ens1 ens13"
-returncode = subprocess.call(cmd, shell=True)
-cmd = f"ln -sfn ens2 ens14"
-returncode = subprocess.call(cmd, shell=True)
-cmd = f"ln -sfn ens3 ens15"
-returncode = subprocess.call(cmd, shell=True)
+CMD = "ln -sfn ens1 ens13"
+RC = subprocess.call(CMD, shell=True)
+CMD = "ln -sfn ens2 ens14"
+RC = subprocess.call(CMD, shell=True)
+CMD = "ln -sfn ens3 ens15"
+RC = subprocess.call(CMD, shell=True)
 
 logger.info(f"Creating symbolic links for month {LEAD_FINAL +1}")
 init_datetime = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1)
@@ -256,15 +243,15 @@ for mon in range(LEAD_FINAL):
 
 src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
 dst_yyyymm.append((init_datetime + relativedelta(months=mon+1)).strftime("%Y%m"))
-last_yyyymm = len(src_yyyymm) -1
+LAST_YYYYMM = len(src_yyyymm) -1
 for iens, ens_value in enumerate(range(ENS_NUM)):
     ens_nmme = iens + 1
     OUTDIR_ENS = OUTDIR + f'ens{ens_nmme}'
-    src_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{src_yyyymm[last_yyyymm]}.nc4"
-    dst_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{dst_yyyymm[last_yyyymm]}.nc4"
-    cmd = f"ln -sfn {src_file} {dst_file}"
-    returncode = subprocess.call(cmd, shell=True)
-    if returncode != 0:
-        logger.error(f"Problem calling creating last precip symbolic link to {dst_file}!")
+    src_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{src_yyyymm[LAST_YYYYMM]}.nc4"
+    dst_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{dst_yyyymm[LAST_YYYYMM]}.nc4"
+    CMD = f"ln -sfn {src_file} {dst_file}"
+    RC = subprocess.call(CMD, shell=True)
+    if RC != 0:
+        logger.error("Problem calling creating last precip symbolic link to {dst_file}!")
 
-logger.info(f"Ran SUCCESSFULLY !")
+logger.info("Ran SUCCESSFULLY !")

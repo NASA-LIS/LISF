@@ -53,26 +53,23 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd, projdir, py_call=False):
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
+         ntasks, hours, cwd, projdir, py_call=False):
     """Main driver."""
-    
+
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     # Base forecast model
     fcst_model = config['BCSD']['fcst_data_type']
-    
+
     # get resolution
-    lats, lons = utils.get_domain_info(config_file, coord=True)
+    lats, _ = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
-    srcdir2 = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/'
-
-    # Path of the directory where supplementary files are kept
-    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 
     # domain
     domain = config['EXP']['DOMAIN']
@@ -103,19 +100,10 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
 
     slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
-        cmd2 = '\n'
         for var_num, var_value in enumerate(obs_var_list):
             if var_num == 1:
                 var_type = "PRCP"
-                #cmd2 = "python"
-                #cmd2 += f" {srcdir2}/task_07.py"
-                #cmd2 += f" -s {year}"
-                #cmd2 += f" -m {month_abbr}"
-                #cmd2 += f" -w {projdir}"
-                #cmd2 += f" -r {resol}"
-                #slurm_commands.append(cmd2)
             else:
-                cmd2 = '\n'
                 var_type = "TEMP"
 
             obs_var = var_value
@@ -139,16 +127,16 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
             cmd += f" {monthly_bc_fcst_dir}"
             cmd += f" {monthly_raw_fcst_dir}"
             cmd += f" {subdaily_raw_fcst_dir}"
-            cmd += f" {outdir}"       
+            cmd += f" {outdir}"
             cmd += f" {domain}"
             jobfile = job_name + '_' + obs_var + '_run.j'
             jobname = job_name + '_' + obs_var + '_'
-                        
+
             if py_call:
                 slurm_commands.append(cmd)
             else:
-                utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd,
-                                 in_command=cmd)
+                utils.job_script(config_file, jobfile, jobname, ntasks, hours,
+                                 cwd, None, in_command=cmd)
 
     print(f"[INFO] Completed CFSv2 temporal disaggregation for: {(month_abbr)}")
     if py_call:

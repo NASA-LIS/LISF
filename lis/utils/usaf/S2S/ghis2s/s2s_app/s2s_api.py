@@ -8,30 +8,27 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-import os
+'''
+This script:
+ (1) writes Python/LIS job files
+ (2) writes JOB_SCHEDULE table
+ (3) runs CFSv2 file checker
+'''
+
 import sys
 import argparse
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
-import yaml
 from ghis2s.shared import utils
 from ghis2s.bcsd.bcsd_library import convert_forecast_data_to_netcdf as cfdn
-#pylint: disable=wrong-import-position
-#pylint: disable=import-error
 
-'''
-This script:
- (1) writes Python/LIS job files
- (2) writes JOB_SCHEDULE table
- (3) produces production status report
- (4) runs CFSv2 file checker
-'''
-def cfsv2_file_checker(CFSV2_FILE, YYYYMMDIR, py_call=False):
-    ds = cfdn.wgrib2_to_netcdf(CFSV2_FILE)
+def cfsv2_file_checker(cfsv2_file, yyyymmdir, py_call=False):
+    ''' calls CFSv2 file checker '''
+    ds = cfdn.wgrib2_to_netcdf(cfsv2_file)
     date_str = np.datetime_as_string(ds['valid_time'][-1].values, unit='s')
     grib_lastdate = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
-    fcst_lastdate = datetime.strptime(YYYYMMDIR, "%Y%m") + relativedelta(months=9)
+    fcst_lastdate = datetime.strptime(yyyymmdir, "%Y%m") + relativedelta(months=9)
     del ds
     if grib_lastdate >= fcst_lastdate:
         if py_call:
@@ -44,51 +41,45 @@ def cfsv2_file_checker(CFSV2_FILE, YYYYMMDIR, py_call=False):
         else:
             sys.exit(1)
     return
-        
-def print_status_report(CWD, YYYYMMDIR):
-    utils.print_status_report(CWD, YYYYMMDIR)
-    return
-    
-def lis_job_file(CONFIGFILE, JOBFILE, JOBNAME, CWD, HOURS):
-    utils.job_script_lis(CONFIGFILE, JOBFILE, JOBNAME, CWD, hours=HOURS)
-    return
 
-def python_job_file(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, group_jobs, parallel_run=None):
+def lis_job_file(configfile, jobfile, jobname, cwd, hours):
+    ''' calls LIS job script writer '''
+    utils.job_script_lis(configfile, jobfile, jobname, cwd, hours=hours)
+
+def python_job_file(configfile, jobfile, jobname, ntasks, hours, cwd,
+                    group_jobs, parallel_run=None):
+    ''' calls python job script writer '''
     if group_jobs is None:
-        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, parallel_run)
+        utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd, parallel_run)
     else:
-        with open(group_jobs, 'r') as file:
+        with open(group_jobs, 'r', encoding="utf-8") as file:
             commands = [line.strip() for line in file if line.strip()]
-        NTASKS = len(commands)
-        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, parallel_run, group_jobs=commands)
-    return
+        ntasks = len(commands)
+        utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd,
+                         parallel_run, group_jobs=commands)
 
-def update_job_schedule(SCHEDULE_FILE, MYID, JOBFILE, AFTERID):
-    utils.update_job_schedule(SCHEDULE_FILE, MYID, JOBFILE, AFTERID)
-    return
+def update_job_schedule(schedule_file, myid, jobfile, afterid):
+    ''' updates job schedule '''
+    utils.update_job_schedule(schedule_file, myid, jobfile, afterid)
 
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument('-f', '--JOBFILE', required=False, help='job file name')
     PARSER.add_argument('-t', '--NTASKS', required=False, help='NTASKS')
     PARSER.add_argument('-c', '--CONFIGFILE', required=False, help='config file name')
-    PARSER.add_argument('-C', '--group_jobs', required=False, help='list of commands for group jobs')
+    PARSER.add_argument('-C', '--group_jobs', required=False,
+                        help='list of commands for group jobs')
     PARSER.add_argument('-H', '--HOURS', required=False, help='time HOURS')
     PARSER.add_argument('-j', '--JOBNAME', required=False, help='job-name')
     PARSER.add_argument('-w', '--CWD', required=False, help='current working directory')
     PARSER.add_argument('-m', '--MYID', required=False, help='my job id')
     PARSER.add_argument('-a', '--AFTERID', required=False, help='after id')
     PARSER.add_argument('-s', '--SCHEDULE_FILE', required=False, help='schedule file')
-    PARSER.add_argument('-r', '--REPORT', required=False, help='print report')
     PARSER.add_argument('-d', '--YYYYMMDIR', required=False, help='yyyymm directory')
     PARSER.add_argument('-L', '--RUN_LIS', required=False, help='running LISF executables')
     PARSER.add_argument('-i', '--CFSV2_FILE', required=False, help='run CFSv2 file-checker')
 
     ARGS = PARSER.parse_args()
-
-    if ARGS.REPORT is not None:
-        print_status_report(ARGS.CWD, ARGS.YYYYMMDIR)
-        sys.exit()
 
     if ARGS.CFSV2_FILE is not None:
         cfsv2_file_checker(ARGS.CFSV2_FILE, ARGS.YYYYMMDIR)
@@ -102,4 +93,5 @@ if __name__ == "__main__":
         update_job_schedule(ARGS.SCHEDULE_FILE, ARGS.MYID, ARGS.JOBFILE, ARGS.AFTERID)
         sys.exit()
 
-    python_job_file(ARGS.CONFIGFILE, ARGS.JOBFILE, ARGS.JOBNAME, ARGS.NTASKS, str(ARGS.HOURS), ARGS.CWD, ARGS.group_jobs)
+    python_job_file(ARGS.CONFIGFILE, ARGS.JOBFILE, ARGS.JOBNAME, ARGS.NTASKS, str(ARGS.HOURS),
+                    ARGS.CWD, ARGS.group_jobs)

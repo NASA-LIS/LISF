@@ -66,20 +66,16 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     fcst_model = config['BCSD']['fcst_data_type']
 
     # get resolution
-    lats, lons = utils.get_domain_info(config_file, coord=True)
+    lats, _ = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
-    # Path of the directory where supplementary files are kept
-    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
-
     # domain
     domain = config['EXP']['DOMAIN']
 
     lead_months = config['EXP']['lead_months']
-    datatype = config['SETUP']['DATATYPE']
     ensemble_sizes = config['EXP']['ensemble_sizes'][0]
     ens_num = ensemble_sizes[nmme_model]
 
@@ -95,7 +91,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
 
     # Path for where forecast and bias corrected files are located:
     subdaily_raw_fcst_dir = f"{cfsv2dir}/raw/6-Hourly/{month_abbr}01"
-    monthly_raw_fcst_dir = f"{forcedir}/raw/Monthly/{month_abbr}01"
     monthly_bc_fcst_dir = f"{forcedir}/bcsd/Monthly/{month_abbr}01"
 
     outdir = f"{forcedir}/final/6-Hourly/{nmme_model}/{month_abbr}01/"
@@ -131,7 +126,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
         if py_call:
             slurm_commands.append(cmd)
         else:
-            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours,
+                             cwd, None, in_command=cmd)
 
     print(f"[INFO] Wrote NMME temporal disaggregation script for: {month_abbr}")
     if py_call:
@@ -156,4 +152,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
-         args.job_name, args.ntasks, args.hours, args.cwd, args.args.project_directory, nmme_model)
+         args.job_name, args.ntasks, args.hours, args.cwd, args.args.project_directory,
+         args.nmme_model)

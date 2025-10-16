@@ -5,56 +5,8 @@
 #Author: Shrad Shukla
 """
 
-from datetime import datetime
 import sys
 import math
-#from time import ctime as t_ctime
-#from time import time as t_time
-import numpy as np
-import yaml
-#import netCDF4 as nc
-# pylint: disable=no-name-in-module
-#from netCDF4 import Dataset as nc4_dataset
-#from netCDF4 import date2num as nc4_date2num
-#from netCDF4 import default_fillvals as nc4_default_fillvals
-#from ghis2s.shared import utils
-# pylint: enable=no-name-in-module
-
-#def write_4d_netcdf(infile, var, varname, description, source, var_units, sig_digit, lons, lats, \
-#                    ens_num, lead_num, sdate, dates):
-#    """ writes 4-dimensional netcdf file """
-#    rootgrp = nc4_dataset(infile, 'w', format='NETCDF4')
-#    longitude = rootgrp.createDimension('longitude', len(lons))
-#    latitude = rootgrp.createDimension('latitude', len(lats))
-#    lead = rootgrp.createDimension('Lead', lead_num)
-#    ens = rootgrp.createDimension('Ens', ens_num)
-#    time = rootgrp.createDimension('time', None)
-#    leads = rootgrp.createVariable('Lead','d',('Lead',))
-#    enss = rootgrp.createVariable('Ens','d',('Ens',))
-#    longitudes = rootgrp.createVariable('longitude','f4',('longitude',))
-#    latitudes = rootgrp.createVariable('latitude','f4',('latitude',))
-#    times = rootgrp.createVariable('time','f8',('time',))
-#
-#    varname = rootgrp.createVariable(varname,'f4',('time', 'Lead', 'Ens', 'latitude','longitude'), \
-#                                     fill_value=-9999., zlib=True, \
-#                                     complevel=6, shuffle=True)
-#    rootgrp.description = description
-#    rootgrp.history = 'Created ' + t_ctime(t_time())
-#    rootgrp.source = source
-#    latitudes.units = 'degrees_north'
-#    longitudes.units = 'degrees_east'
-#    enss.units = 'unitless'
-#    varname.units = var_units
-#    string_date = datetime.strftime(sdate, "%Y-%m-%d")
-#    times.units = 'days since ' + string_date
-#    times.calendar = 'gregorian'
-#    latitudes[:] = lats
-#    longitudes[:] = lons
-#    leads[:]=np.arange(0.5, lead_num+0.5)
-#    enss[:]=np.arange(0, ens_num)
-#    varname[:,:,:,:,:] = var
-#    times[:] = nc4_date2num(dates,units=times.units,calendar=times.calendar)
-#    rootgrp.close()
 
 def calc_stats(data, tiny): #,int n,float *mean,float *sd,float *skew)
     """ calculates statistics """

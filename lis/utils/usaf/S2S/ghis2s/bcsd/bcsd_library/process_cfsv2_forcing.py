@@ -30,21 +30,19 @@
 # Standard modules
 import os
 import sys
+import gc
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
 import xarray as xr
 import xesmf as xe
 import yaml
-import gc
-
-# pylint: disable=import-error
 from ghis2s.bcsd.bcsd_library.convert_forecast_data_to_netcdf import read_wgrib
 from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
-# pylint: enable=import-error
+
 limits = lim()
 # Internal functions
 def _usage():
@@ -98,6 +96,7 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
 
     # Up to apr1 2011 - Refor_HPS (dlwsfc, dswsfc, q2m, wnd10m), Refor_FL
     # (prate, pressfc, tmp2m)
+    subdir, file_pfx, file_sfx = '', '', ''
     if current_yyyymm <= cutoff_refor_yyyymm:
         if input_fcst_var in ["dlwsfc", "dswsfc", "q2m", "wnd10m"]:
             subdir = "Refor_HPS"
@@ -118,6 +117,7 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
     return subdir, file_pfx, file_sfx
 
 def write_monthly_files(this_6h1, file_6h, file_mon):
+    ''' writes monthly raw files'''
     this_6h2 = this_6h1.rename_vars({"time": "time_step"})
     this_6h = this_6h2.rename_dims({"step": "time"})
 
@@ -133,17 +133,20 @@ def write_monthly_files(this_6h1, file_6h, file_mon):
     this_6h.close()
     this_mon.close()
     del this_6h2, this_6h, this_mon
-    return
 
 def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, subtask):
+    ''' performs regridding '''
     regrid_method = {
         '25km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
-                 'QV2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear',
+                 'WIND10M':'bilinear'},
         '10km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
-                 'QV2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
-        '5km': {'PRECTOT':'conservative', 'SWGDN':'conservative', 'LWGAB':'conservative','PS':'conservative',
-                 'QV2M':'conservative', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},}
-    
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear',
+                 'WIND10M':'bilinear'},
+        '5km': {'PRECTOT':'conservative', 'SWGDN':'conservative', 'LWGAB':'conservative',
+                'PS':'conservative', 'QV2M':'conservative', 'T2M':'bilinear', 'U10M':'bilinear',
+                'V10M':'bilinear', 'WIND10M':'bilinear'},}
+
     outdir_6hourly = outdirs["outdir_6hourly"]
     outdir_monthly = outdirs["outdir_monthly"]
     final_name_pfx = f"{fcst_init['monthday']}.cfsv2."
@@ -154,23 +157,23 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
     # resample to the S2S grid
     # build regridder
     weightdir = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/'
-    target_land_mask = xr.open_dataset(args["config"]['SETUP']['supplementarydir'] + '/lis_darun/' + \
-                             args["config"]['SETUP']['ldtinputfile'])
+    target_land_mask = xr.open_dataset(args["config"]['SETUP']['supplementarydir'] + \
+                                       '/lis_darun/' + args["config"]['SETUP']['ldtinputfile'])
     target_land_mask = target_land_mask.rename({'north_south': 'lat', 'east_west': 'lon'})
-    
+
     lats, lons = get_domain_info(args["configfile"], coord=True)
     resol = round((lats[1] - lats[0])*100)
     resol = f'{resol}km'
     # read CFSv2 land mask
     cfsv2_land_mask = xr.open_dataset(weightdir + f'CFSv2_{resol}_landmask.nc4')
-    
+
     '''
     resol='25km': NY=720, NX=1440; 
     resol='10km': NY=1500, NX=3600; 
     resol='5km': NY=3000, NX=7200; 
     cfsv2 dimensions: step: ~1151, latitude: 190, longitude: 384
     '''
-    
+
     method = regrid_method.get(resol)
     ds_out = xr.Dataset(
         {
@@ -182,18 +185,20 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
     cfsv2_masked['mask'] = cfsv2_land_mask['LANDMASK']
 
     weight_file = weightdir + f'CFSv2_{resol}_bilinear_land.nc'
-    bil_regridder = xe.Regridder(cfsv2_masked, ds_out, "bilinear", periodic=True, 
+    bil_regridder = xe.Regridder(cfsv2_masked, ds_out, "bilinear", periodic=True,
                                  reuse_weights=True,
-                                 extrap_method='nearest_s2d', 
+                                 extrap_method='nearest_s2d',
                                  filename=weight_file)
 
     weight_file = weightdir + f'CFSv2_{resol}_conservative.nc'
-    con_regridder = xe.Regridder(cfsv2_in, ds_out, "conservative", periodic=True, 
-                                 reuse_weights=True, 
+    con_regridder = xe.Regridder(cfsv2_in, ds_out, "conservative", periodic=True,
+                                 reuse_weights=True,
                                  filename=weight_file)
-    
-    bilinear_vars = [var for var in cfsv2_in.data_vars if var in method and method[var] == 'bilinear']
-    conservative_vars = [var for var in cfsv2_in.data_vars if var in method and method[var] == 'conservative']
+
+    bilinear_vars = [var for var in cfsv2_in.data_vars
+                     if var in method and method[var] == 'bilinear']
+    conservative_vars = [var for var in cfsv2_in.data_vars
+                         if var in method and method[var] == 'conservative']
 
     if bilinear_vars:
         cfsv2_bilinear = cfsv2_masked[bilinear_vars]
@@ -208,9 +213,9 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
                                                          cfsv2_land_mask, None, 'conservative')
         for var in conservative_vars:
             ds_out[var] = result_conservative[var]
-            
+
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
-    dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
+    dt1 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
     # clip limits
     ds_out["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out["PRECTOT"].values[:]),
                                                      var_name = "PRECTOT", precip=True)
@@ -229,9 +234,9 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
 
     dt1 = dt1 + relativedelta(months=rank)
     file_6h = outdir_6hourly + '/' + \
-        final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
     file_mon = outdir_monthly + '/' + \
-        final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
 
     write_monthly_files(ds_out, file_6h, file_mon)
     logger.info(f"Writing: 6h CFSv2 file: {file_6h}", subtask = subtask)
@@ -240,7 +245,6 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
     cfsv2_masked.close()
     del ds_out, cfsv2_masked
     logger.info(f"Done processing CFSv2 forecast files for {rank}", subtask = subtask)
-    return
 
 def _print_reftime(fcst_init, ens_num):
     """Print reftime to standard out"""
@@ -268,7 +272,7 @@ def _driver(rank):
         fcst_init["year_cfsv2"] = year
 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
-    dt0 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
+    dt0 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
     dt1 = dt0 + relativedelta(months=rank)
     dt2 = dt1 + relativedelta(months=1)
     task_name = os.environ.get('SCRIPT_NAME')
@@ -328,9 +332,9 @@ def _driver(rank):
             sys.exit(1)  # Exit with an error code
 
         # Convert GRIB file to netCDF and handle missing/corrupted data
-        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], \
-                                 file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir'],
-                                 [logger,subtask]))
+        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'],
+                                 file_sfx, outdirs['outdir_6hourly'], temp_name,
+                                 varname, args['patchdir'], [logger,subtask]))
 
     cfsv2 = xr.merge (cfsv2, compat='override')
     _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
@@ -339,21 +343,19 @@ def _driver(rank):
     cfsv2.close()
     del cfsv2
     gc.collect()
-    return 
 
 if __name__ == "__main__":
     try:
-        rank = int(os.environ.get('SLURM_PROCID', '0'))
-        size = int(os.environ.get('SLURM_NTASKS', '1'))
+        RANK = int(os.environ.get('SLURM_PROCID', '0'))
+        SIZE = int(os.environ.get('SLURM_NTASKS', '1'))
     except (ValueError, TypeError):
-        rank = 0
-        size = 1
-    if size==1:
-        args = _read_cmd_args()
-        with open(sys.argv[5], 'r', encoding="utf-8") as file:
-            config = yaml.safe_load(file)
-            for rank in range(config["EXP"]["lead_months"]):
-                _driver(rank)
+        RANK = 0
+        SIZE = 1
+    if SIZE==1:
+        _args = _read_cmd_args()
+        with open(sys.argv[5], 'r', encoding="utf-8") as _file:
+            _config = yaml.safe_load(_file)
+            for _rank in range(_config["EXP"]["lead_months"]):
+                _driver(_rank)
     else:
-        _driver(rank)
-        
+        _driver(RANK)

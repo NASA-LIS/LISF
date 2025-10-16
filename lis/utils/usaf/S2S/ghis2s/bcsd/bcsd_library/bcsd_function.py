@@ -12,18 +12,11 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 import os
-import sys
-import xarray as xr
-import numpy as np
 import multiprocessing as mp
 from functools import partial
-#import calendar
-#import math
-#import time
-# pylint: disable=import-error
+import xarray as xr
+import numpy as np
 from ghis2s.bcsd.bcsd_library.bcsd_stats_functions import calc_stats, lookup
-# pylint: enable=import-error
-#
 
 class VarLimits:
     '''
@@ -97,7 +90,8 @@ def calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, target_fcst_val_arr, targ
               target_fcst_eyr, fcst_syr, ens_final, mon, bc_var, tiny):
 #pylint: enable=too-many-arguments
     """ calculates bias correction """
-    correct_fcst_coarse = np.ones(((target_fcst_eyr-target_fcst_syr)+1, lead_final, ens_final))*-9999.
+    correct_fcst_coarse = np.ones(((target_fcst_eyr-target_fcst_syr)+1,
+                                   lead_final, ens_final))*-9999.
 
     for lead_num in range(0, lead_final): ## Loop from lead =0 to Final Lead
         target_month = mon + lead_num ## This is the target forecast month
@@ -145,30 +139,30 @@ def calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, target_fcst_val_arr, targ
 
     return correct_fcst_coarse
 
-def process_land_points_chunk(chunk_indices, ilat_min, ilon_min, 
-                             np_obs_clim_array, np_fcst_clim_array, 
+def process_land_points_chunk(chunk_indices, ilat_min, ilon_min,
+                             np_obs_clim_array, np_fcst_clim_array,
                              fcst_coarse, lead_final, target_fcst_syr,
                              target_fcst_eyr, fcst_syr, ens_final, mon,
                              bc_var, tiny):
     """Process a chunk of land points"""
     results = []
-    
+
     for idx in chunk_indices:
         ilat, ilon = idx
         lat_num = ilat_min + ilat
         lon_num = ilon_min + ilon
-        
+
         obs_clim_all = np_obs_clim_array[:, :, ilat, ilon]
         fcst_clim_all = np_fcst_clim_array[:, :, ilat, ilon]
         target_fcst_val_arr = fcst_coarse[:, :, :, lat_num, lon_num]
-        
+
         result = calc_bcsd(obs_clim_all, fcst_clim_all, lead_final,
                           target_fcst_val_arr, target_fcst_syr,
                           target_fcst_eyr, fcst_syr, ens_final, mon,
                           bc_var, tiny)
-        
+
         results.append((lat_num, lon_num, result))
-    
+
     return results
 
 def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons,
@@ -176,7 +170,7 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons,
                         lead_final, target_fcst_eyr, target_fcst_syr, fcst_syr, ens_final, mon,
                         bc_var, tiny, fcst_coarse, land_mask):
     """Lat-lon calculations with parallel processing for land points only"""
-    
+
     # Pre-allocate output array
     year_count = (target_fcst_eyr - target_fcst_syr) + 1
     correct_fcst_coarse = np.ones((year_count, lead_final, ens_final, nlats, nlons)) * -9999.0
@@ -186,23 +180,21 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons,
     y_indices, x_indices = np.where(domain_mask)
     land_points = list(zip(y_indices, x_indices))
     land_points_count = len(land_points)
-    
-    print(f"Land points to process: {land_points_count} out of {(ilat_max-ilat_min+1)*(ilon_max-ilon_min+1)} grid cells")
-    
+
     if land_points_count == 0:
         print("No land points to process in domain!")
         return correct_fcst_coarse
-    
-    # Get the number of workers from environment variable 
+
+    # Get the number of workers from environment variable
     num_workers = int(os.environ.get('NUM_WORKERS', 1))
     print(f"Using {num_workers} workers for parallel processing")
-    
+
     # Split land points into chunks for each worker
     chunk_size = max(1, land_points_count // num_workers)
     chunks = [land_points[i:i + chunk_size] for i in range(0, land_points_count, chunk_size)]
-    
+
     print(f"Created {len(chunks)} chunks of ~{chunk_size} points each")
-    
+
     # Create a partial function with fixed parameters
     process_chunk_partial = partial(
         process_land_points_chunk,
@@ -220,7 +212,7 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons,
         bc_var=bc_var,
         tiny=tiny
     )
-    
+
     # Process chunks in parallel
     all_results = []
     if num_workers > 1:
@@ -231,17 +223,18 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons,
     else:
         # Process serially if only one worker
         all_results = process_chunk_partial(land_points)
-    
+
     # Fill in results
     for lat_num, lon_num, result in all_results:
         correct_fcst_coarse[:, :, :, lat_num, lon_num] = result
-    
+
     return correct_fcst_coarse
 
-def apply_regridding_with_mask(data, regridder, source_land_mask, target_land_mask=None, method_type='conservative'):
+def apply_regridding_with_mask(data, regridder, source_land_mask,
+                               target_land_mask=None, method_type='conservative'):
     """
     Apply land mask and regrid the data.
-    
+
     Parameters:
     -----------
     data : xarray.DataArray or xarray.Dataset
@@ -271,8 +264,8 @@ def apply_regridding_with_mask(data, regridder, source_land_mask, target_land_ma
 
     # Apply target land mask for bilinear interpolation to remove ocean extrapolation
     if method_type == 'bilinear' and target_land_mask is not None:
-        target_mask = target_land_mask.LANDMASK > 0  
-        
+        target_mask = target_land_mask.LANDMASK > 0
+
         if isinstance(result, xr.DataArray):
             result = result.where(target_mask)
         elif isinstance(result, xr.Dataset):

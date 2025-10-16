@@ -18,11 +18,8 @@ import numpy as np
 import xarray as xr
 import yaml
 from dateutil.relativedelta import relativedelta
-# pylint: disable=import-error
 from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.shared.logging_utils import TaskLogger
-
-# pylint: enable=import-error
 
 # This function takes in a time series as input and provides sorted times series of values
 # and qunatiles in return
@@ -65,7 +62,8 @@ INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 OUTFILE_TEMPLATE = '{}/{}_fcst_clim.nc'
 
 os.makedirs(OUTDIR, exist_ok=True)
-subtask = MODEL_NAME
+task_name = os.environ.get('SCRIPT_NAME')
+SUBTASK = MODEL_NAME
 logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'bcsd/bcsd_library/calc_and_write_nmme_forecast_climatology.py: {VAR}')
@@ -82,24 +80,25 @@ for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
             FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
             INFILE = INFILE_TEMPLATE.format(INDIR, INIT_FCST_YEAR, ens1, MONTH_NAME, \
                                             FCST_YEAR, FCST_MONTH)
-            logger.info(f"Reading: {INFILE}", subtask=subtask)
-            FCST_TS[LEAD_NUM, COUNT_DATA, ] = load_ncdata(INFILE, [logger,subtask], var_name=VAR).values
+            logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
+            FCST_TS[LEAD_NUM, COUNT_DATA, ] = load_ncdata(INFILE, [logger,SUBTASK], var_name=VAR).values
             COUNT_DATA+=1
 
 CLIM_ARRAY = np.empty((LEAD_FINAL+1, ((CLIM_EYR-CLIM_SYR)+1)*ENS_NUM, len(LATS), len(LONS)))
 ## Now generating forecast climatology for all grid cells in the mask
 for lat_num in range(0, len(LATS)):
-	for lon_num in range(0, len(LONS)):
-		## Only work with grid cells that are within the given mask
-		if ((lat1<=LATS[lat_num]) and (LATS[lat_num]<=lat2) and (lon1<=LONS[lon_num]) and
-                         (LONS[lon_num]<=lon2)):
-			## 1st column is for sorted quantile array
-			## and then rest tweleve columns have sorted climatology values for all year
-			for LEAD_NUM in range(0, LEAD_FINAL):
-				## Now sorting climtology time series for the given lead time
-				CLIM_ARRAY[LEAD_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :,
-                                 lat_num, lon_num] = create_sorted_ts(FCST_TS[LEAD_NUM, :,
-                                                     lat_num, lon_num])
+    for lon_num in range(0, len(LONS)):
+        ## Only work with grid cells that are within the given mask
+        if ((lat1<=LATS[lat_num]) and
+            (LATS[lat_num]<=lat2) and
+            (lon1<=LONS[lon_num]) and
+            (LONS[lon_num]<=lon2)):
+            ## 1st column is for sorted quantile array
+            ## and then rest tweleve columns have sorted climatology values for all year
+            for LEAD_NUM in range(0, LEAD_FINAL):
+                ## Now sorting climtology time series for the given lead time
+                CLIM_ARRAY[LEAD_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :, lat_num, lon_num] = \
+                    create_sorted_ts(FCST_TS[LEAD_NUM, :, lat_num, lon_num])
 
 ## finished storing climatology for all months
 OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, VAR)

@@ -50,7 +50,8 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd, py_call=False):
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
+         ntasks, hours, cwd, py_call=False):
     """Main driver."""
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
@@ -58,18 +59,15 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
 
     # Base forecast model
     fcst_model = config['BCSD']['fcst_data_type']
-    
-    lats, lons = utils.get_domain_info(config_file, coord=True)
+
+    lats, _ = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
-    
+
     # Path of the main project directory
     projdir = cwd
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
-
-    # Path of the directory where supplementary files are kept
-    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
@@ -128,8 +126,9 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
 
         if py_call:
             slurm_commands.append(cmd)
-        else:            
-            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+        else:
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours,
+                             cwd, None, in_command=cmd)
 
     print(f"[INFO] Completed writing forecast bias correction scripts for: {month_abbr}")
     if py_call:
