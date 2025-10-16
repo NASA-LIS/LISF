@@ -210,8 +210,8 @@ CONTAINS
                             snow_count(rr,cc) = snow_count(rr,cc) + 1
                         endif
                         
-                        !! CRITICAL FILTERING: Skip resampling if snow or precip detected
-                        !if (has_snow .OR. has_precip) then
+                        ! CRITICAL FILTERING: Skip resampling if snow or precip detected
+                        if (has_snow .OR. has_precip) then
                             !! Track excluded footprints
                             !if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
                             !if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
