@@ -18,7 +18,8 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filename, output_dir, n)
     USE invdist_wsf2arfs
     USE LDT_logMod
     USE LDT_coreMod, only: LDT_rc
-    
+    USE LDT_WSF_ARFS_netcdfMod, only: LDT_WSF_ARFS_write_netcdf
+
     IMPLICIT NONE
     
     ! Arguments
@@ -67,6 +68,9 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filename, output_dir, n)
     integer :: ierr, ichan, c, r, ifov, iscan
     real :: freq
     character*1 :: pol
+    character(len=255) :: output_filename
+    character(len=255) :: basename
+    integer :: filename_start_pos
     
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] WSF ARFS Resampling - ALL CHANNELS'
@@ -263,11 +267,36 @@ subroutine WSF_ARFS_RESAMPLE(wsf_filename, output_dir, n)
         ARFS_TB_89H, ARFS_TB_89V, &
         ARFS_QUALITY_FLAG, &
         ARFS_SAMPLE_V, ARFS_SAMPLE_H)
-    
+
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] ✓ Resampling complete'
-    write(LDT_logunit,*)'[INFO] Output will be written by calling routine'
+    write(LDT_logunit,*)'[INFO] Writing NetCDF output file...'
     write(LDT_logunit,*)'[INFO] ========================================='
+    
+    ! =====================================================================
+    ! WRITE OUTPUT TO NETCDF FILE
+    ! =====================================================================
+    
+    ! Extract basename from input filename to construct output filename
+    filename_start_pos = index(wsf_filename, '/', back=.true.) + 1
+    basename = wsf_filename(filename_start_pos:)
+    
+    ! Construct output filename: WSF_resampled_YYYYMMDD_tHHMMSS.nc
+    ! Input format: WSFM_01_d20250601_t002900_e004059_gCOOK-B_r05899_c02_i0_v0522_res_sdr.nc
+    ! Extract: d20250601 (positions 9-16) and t002900 (positions 18-24)
+    output_filename = trim(output_dir)//'/WSF_resampled_'// &
+                     basename(9:17)//'_'//basename(19:25)//'.nc'
+    
+    write(LDT_logunit,*)'[INFO] Calling NetCDF writer...'
+    
+    ! Call the NetCDF writing subroutine from the module
+    call LDT_WSF_ARFS_write_netcdf(2560, 1920, &
+        ARFS_TB_10H, ARFS_TB_10V, ARFS_TB_18H, ARFS_TB_18V, &
+        ARFS_TB_23H, ARFS_TB_23V, ARFS_TB_36H, ARFS_TB_36V, &
+        ARFS_TB_89H, ARFS_TB_89V, ARFS_LAND_FRAC, &
+        ARFS_QUALITY_FLAG, ARFS_SAMPLE_V, ARFS_SAMPLE_H, &
+        ARFS_LAT, ARFS_LON, output_filename)
+
     
     ! Cleanup
     deallocate(ARFS_LAT, ARFS_LON)
