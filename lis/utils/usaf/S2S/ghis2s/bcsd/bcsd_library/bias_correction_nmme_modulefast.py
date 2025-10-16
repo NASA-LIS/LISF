@@ -12,20 +12,17 @@
 import os
 import sys
 import calendar
+from time import ctime as t_ctime
+from time import time as t_time
 from datetime import datetime
 import numpy as np
 from dateutil.relativedelta import relativedelta
-from time import ctime as t_ctime
-from time import time as t_time
 import xarray as xr
-import yaml
-# pylint: disable=import-error
 import yaml
 from ghis2s.bcsd.bcsd_library import bcsd_function
 from ghis2s.shared.utils import get_domain_info, load_ncdata, write_ncfile
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
-# pylint: enable=import-error
 
 limits = lim()
 
@@ -59,13 +56,6 @@ def slice_latlon(lat, lon, lat_range: list, lon_range: list):
     indexlon = np.nonzero((lon[:] >= lon_range[0]) & (lon[:] <= lon_range[-1]))[0]
     return indexlat, indexlon
 
-# Small number
-#EPS = 1.0e-5
-
-## Usage: <Name of variable in observed climatology>
-## <Name of variable in reforecast climatology
-## (same as the name in target forecast> <forecast model number>
-
 CMDARGS = str(sys.argv)
 OBS_VAR = str(sys.argv[1])
 FCST_VAR = str(sys.argv[2])
@@ -81,7 +71,7 @@ LEAD_FINAL = int(sys.argv[7])
 ENS_NUM = int(sys.argv[8])
 
 task_name = os.environ.get('SCRIPT_NAME')
-subtask = f'{MODEL_NAME}'
+SUBTASK = f'{MODEL_NAME}'
 logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'bcsd/bcsd_library/bias_correction_nmme_modulefast.py processing {MODEL_NAME} for month {INIT_FCST_MON:02d}')
@@ -137,130 +127,124 @@ mask_exp = land_mask[np.newaxis, np.newaxis, np.newaxis,:,:]
 
 # First read observed climatology for the given variable
 OBS_CLIM_FILE = OBS_CLIM_FILE_TEMPLATE.format(OBS_CLIM_INDIR, OBS_VAR)
-logger.info(f"Reading observed climatology {OBS_CLIM_FILE}", subtask=subtask)
-OBS_CLIM_ARRAY =  load_ncdata(OBS_CLIM_FILE, [logger, subtask])
+logger.info(f"Reading observed climatology {OBS_CLIM_FILE}", subtask=SUBTASK)
+OBS_CLIM_ARRAY =  load_ncdata(OBS_CLIM_FILE, [logger, SUBTASK])
+MONTH_NAME = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[INIT_FCST_MON]).lower())
 
-# Then for forecast files:
-for MON in [INIT_FCST_MON]:
-    MONTH_NAME = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[MON]).lower())
-    ## This provides abbrevated version of the name of a month:
-    ## (e.g. for January (i.e. Month number = 1) it will return "Jan").
-    ## The abbrevated name is used in the forecasts file name
-    print(f"Forecast Initialization month is {MONTH_NAME}")
-    #First read forecast climatology for the given variable and forecast
-    #initialzation month
-    FCST_CLIM_INFILE = FCST_CLIM_FILE_TEMPLATE.format(FCST_CLIM_INDIR, \
-    MODEL_NAME, FCST_VAR)
-    logger.info(f"Reading forecast climatology {FCST_CLIM_INFILE}", subtask=subtask)
-    FCST_CLIM_ARRAY = load_ncdata(FCST_CLIM_INFILE, [logger, subtask])
-    
-    #First read raw forecasts
-    FCST_COARSE = np.empty(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
-    LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))
-    for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
-        for ens in range(ENS_NUM):
-            ens1 = ens+1
-            for INIT_FCST_YEAR in range(TARGET_FCST_SYR, TARGET_FCST_EYR+1):
-                ## Reading forecast file
-                FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
-                relativedelta(months=LEAD_NUM)
-                FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
-                INFILE = FCST_INFILE_TEMPLATE.format(FCST_INDIR, MODEL_NAME, \
-                INIT_FCST_YEAR, ens1, MONTH_NAME, FCST_YEAR, FCST_MONTH)
-                logger.info(f"Reading forecast file {INFILE}", subtask=subtask)
-                FCST_COARSE[INIT_FCST_YEAR-TARGET_FCST_SYR, LEAD_NUM, ens, ] = \
-                load_ncdata(INFILE, [logger, subtask], var_name=FCST_VAR)
-    LAT_RANGE = [LAT1, LAT2]
-    LON_RANGE = [LON1, LON2]
-    indexLat, indexLon = slice_latlon(LATS, LONS, LAT_RANGE, LON_RANGE)
+#First read forecast climatology for the given variable and forecast
+#initialzation month
+FCST_CLIM_INFILE = FCST_CLIM_FILE_TEMPLATE.format(FCST_CLIM_INDIR, \
+MODEL_NAME, FCST_VAR)
+logger.info(f"Reading forecast climatology {FCST_CLIM_INFILE}", subtask=SUBTASK)
+FCST_CLIM_ARRAY = load_ncdata(FCST_CLIM_INFILE, [logger, SUBTASK])
 
-    ilat_min, ilat_max = indexLat[0], indexLat[-1]
-    ilon_min, ilon_max = indexLon[0], indexLon[-1]
+#First read raw forecasts
+FCST_COARSE = np.empty(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
+LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))
+for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
+    for ens in range(ENS_NUM):
+        ens1 = ens+1
+        for INIT_FCST_YEAR in range(TARGET_FCST_SYR, TARGET_FCST_EYR+1):
+            ## Reading forecast file
+            FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
+            relativedelta(months=LEAD_NUM)
+            FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
+            INFILE = FCST_INFILE_TEMPLATE.format(FCST_INDIR, MODEL_NAME, \
+            INIT_FCST_YEAR, ens1, MONTH_NAME, FCST_YEAR, FCST_MONTH)
+            logger.info(f"Reading forecast file {INFILE}", subtask=SUBTASK)
+            FCST_COARSE[INIT_FCST_YEAR-TARGET_FCST_SYR, LEAD_NUM, ens, ] = \
+            load_ncdata(INFILE, [logger, SUBTASK], var_name=FCST_VAR)
+LAT_RANGE = [LAT1, LAT2]
+LON_RANGE = [LON1, LON2]
+indexLat, indexLon = slice_latlon(LATS, LONS, LAT_RANGE, LON_RANGE)
 
-    nlats = len(LATS)
-    nlons = len(LONS)
+ilat_min, ilat_max = indexLat[0], indexLat[-1]
+ilon_min, ilon_max = indexLon[0], indexLon[-1]
 
-    # Get the values (Numpy array) for the lat/lon ranges
-    np_OBS_CLIM_ARRAY = OBS_CLIM_ARRAY.clim.sel(longitude=slice(LON1, LON2), \
-    latitude=slice(LAT1, LAT2)).values
-    np_FCST_CLIM_ARRAY = FCST_CLIM_ARRAY.clim.sel(longitude=slice(LON1, LON2), \
-    latitude=slice(LAT1, LAT2)).values
-    logger.info(f"Calling bcsd_function.latlon_calculations", subtask=subtask)
+nlats = len(LATS)
+nlons = len(LONS)
 
-    CORRECT_FCST_COARSE = \
-        bcsd_function.latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max,
-                                          nlats, nlons, np_OBS_CLIM_ARRAY, np_FCST_CLIM_ARRAY,
-                                          LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, FCST_SYR,
-                                          ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE, land_mask)
+# Get the values (Numpy array) for the lat/lon ranges
+np_OBS_CLIM_ARRAY = OBS_CLIM_ARRAY.clim.sel(longitude=slice(LON1, LON2), \
+latitude=slice(LAT1, LAT2)).values
+np_FCST_CLIM_ARRAY = FCST_CLIM_ARRAY.clim.sel(longitude=slice(LON1, LON2), \
+latitude=slice(LAT1, LAT2)).values
+logger.info("Calling bcsd_function.latlon_calculations", subtask=SUBTASK)
 
-    mask = np.broadcast_to(mask_exp, CORRECT_FCST_COARSE.shape)
-    CORRECT_FCST_COARSE[mask == 0] = -9999.
+CORRECT_FCST_COARSE = \
+    bcsd_function.latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max,
+                                      nlats, nlons, np_OBS_CLIM_ARRAY, np_FCST_CLIM_ARRAY,
+                                      LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, FCST_SYR,
+                                      ENS_NUM, INIT_FCST_MON, BC_VAR, TINY, FCST_COARSE, land_mask)
 
-    CORRECT_FCST_COARSE = np.ma.masked_array(CORRECT_FCST_COARSE, \
-                                             mask=CORRECT_FCST_COARSE == -9999.)
+mask = np.broadcast_to(mask_exp, CORRECT_FCST_COARSE.shape)
+CORRECT_FCST_COARSE[mask == 0] = -9999.
 
-   # clip limits - monthly BC NMME precip:
-    CORRECT_FCST_COARSE = limits.clip_array(CORRECT_FCST_COARSE, var_name="PRECTOT", \
-                                             max_val=0.004, precip=True)
+CORRECT_FCST_COARSE = np.ma.masked_array(CORRECT_FCST_COARSE, \
+                                         mask=CORRECT_FCST_COARSE == -9999.)
 
-    OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, MODEL_NAME, \
-    MONTH_NAME, TARGET_FCST_SYR, TARGET_FCST_EYR)
-    logger.info(f"Writing {OUTFILE}", subtask = subtask)
-    SDATE = datetime(TARGET_FCST_SYR, MON, 1)
-    dates = [SDATE+relativedelta(years=n) for n in range(CORRECT_FCST_COARSE.shape[0])]
+# clip limits - monthly BC NMME precip:
+CORRECT_FCST_COARSE = limits.clip_array(CORRECT_FCST_COARSE, var_name="PRECTOT", \
+                                         max_val=0.004, precip=True)
 
-    # Create coordinate arrays
-    leads_coord = np.arange(0.5, LEAD_FINAL+0.5)
-    ens_coord = np.arange(0, ENS_NUM)
+OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, MODEL_NAME, \
+MONTH_NAME, TARGET_FCST_SYR, TARGET_FCST_EYR)
+logger.info(f"Writing {OUTFILE}", subtask=SUBTASK)
+SDATE = datetime(TARGET_FCST_SYR, INIT_FCST_MON, 1)
+dates = [SDATE+relativedelta(years=n) for n in range(CORRECT_FCST_COARSE.shape[0])]
 
-    # Convert dates to days since SDATE
-    string_date = datetime.strftime(SDATE, "%Y-%m-%d")
-    time_coord = [(d - SDATE).days for d in dates]
+# Create coordinate arrays
+leads_coord = np.arange(0.5, LEAD_FINAL+0.5)
+ens_coord = np.arange(0, ENS_NUM)
 
-    # Create the Dataset
-    out_xr = xr.Dataset(
-        {
-            FCST_VAR: (['time', 'Lead', 'Ens', 'latitude', 'longitude'], 
-                       CORRECT_FCST_COARSE)
-        },
-        coords={
-            'time': time_coord,
-            'Lead': leads_coord,
-            'Ens': ens_coord,
-            'latitude': LATS,
-            'longitude': LONS
-        }
-    )
-    
-    # Set global attributes
-    out_xr.attrs['description'] = 'Bias corrected'
-    out_xr.attrs['history'] = 'Created ' + t_ctime(t_time())
-    out_xr.attrs['source'] = MODEL_NAME
+# Convert dates to days since SDATE
+string_date = datetime.strftime(SDATE, "%Y-%m-%d")
+time_coord = [(d - SDATE).days for d in dates]
 
-    # Set coordinate attributes
-    out_xr['latitude'].attrs['units'] = 'degrees_north'
-    out_xr['longitude'].attrs['units'] = 'degrees_east'
-    out_xr['Ens'].attrs['units'] = 'unitless'
-    out_xr['time'].attrs['units'] = f'days since {string_date}'
-    out_xr['time'].attrs['calendar'] = 'gregorian'
-    
-    # Set variable attributes
-    out_xr[FCST_VAR].attrs['units'] = UNIT
-    
-    # Set up encoding
-    encoding = {
-        FCST_VAR: {
-            'dtype': 'float32',
-            'zlib': True,
-            'complevel': 6,
-            'shuffle': True,
-            '_FillValue': -9999.0
-        },
-        'longitude': {'dtype': 'float32'},
-        'latitude': {'dtype': 'float32'},
-        'Lead': {'dtype': 'float64'},
-        'Ens': {'dtype': 'float64'},
-        'time': {'dtype': 'float64'}
+# Create the Dataset
+out_xr = xr.Dataset(
+    {
+        FCST_VAR: (['time', 'Lead', 'Ens', 'latitude', 'longitude'],
+                   CORRECT_FCST_COARSE)
+    },
+    coords={
+        'time': time_coord,
+        'Lead': leads_coord,
+        'Ens': ens_coord,
+        'latitude': LATS,
+        'longitude': LONS
     }
+)
 
-    write_ncfile(out_xr, OUTFILE, encoding, logger)    
+# Set global attributes
+out_xr.attrs['description'] = 'Bias corrected'
+out_xr.attrs['history'] = 'Created ' + t_ctime(t_time())
+out_xr.attrs['source'] = MODEL_NAME
+
+# Set coordinate attributes
+out_xr['latitude'].attrs['units'] = 'degrees_north'
+out_xr['longitude'].attrs['units'] = 'degrees_east'
+out_xr['Ens'].attrs['units'] = 'unitless'
+out_xr['time'].attrs['units'] = f'days since {string_date}'
+out_xr['time'].attrs['calendar'] = 'gregorian'
+
+# Set variable attributes
+out_xr[FCST_VAR].attrs['units'] = UNIT
+
+# Set up encoding
+encoding = {
+    FCST_VAR: {
+        'dtype': 'float32',
+        'zlib': True,
+        'complevel': 6,
+        'shuffle': True,
+        '_FillValue': -9999.0
+    },
+    'longitude': {'dtype': 'float32'},
+    'latitude': {'dtype': 'float32'},
+    'Lead': {'dtype': 'float64'},
+    'Ens': {'dtype': 'float64'},
+    'time': {'dtype': 'float64'}
+}
+
+write_ncfile(out_xr, OUTFILE, encoding, logger)

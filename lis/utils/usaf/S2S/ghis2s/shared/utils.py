@@ -13,7 +13,7 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: job_script
+# SCRIPT: utils.py
 #
 # PURPOSE: writes batch job script
 #
@@ -28,17 +28,17 @@ import glob
 import os
 import sys
 import platform
-import re
-import datetime
 import math
-import numpy as np
 import shutil
+import rasterio
+import numpy as np
 import xarray as xr
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
 
-def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_run, in_command = None,
+def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
+               parallel_run, in_command = None,
                command2 = None, command_list = None, group_jobs=None):
     ''' writes SLURM job script '''
     if in_command is None:
@@ -58,7 +58,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
     lisf_module = cfg['SETUP']['LISFMOD']
     supd = cfg['SETUP']['supplementarydir']
     pythonpath = cfg['SETUP']['LISFDIR'] + 'lis/utils/usaf/S2S/'
-    
+
     with open(jobfile, 'w', encoding="utf-8") as _f:
 
         _f.write('#!/bin/bash' + '\n')
@@ -86,7 +86,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
             _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-            if group_jobs:   
+            if group_jobs:
                 mpc = min(math.ceil(240 / ntasks), 100)
                 if parallel_run is not None:
                     if parallel_run['MP']:
@@ -152,7 +152,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
             if group_jobs:
                 for cmd in group_jobs:
                     if parallel_run is not None:
-                        _f.write(f"srun --exclusive --cpus-per-task={parallel_run['CPT']} --ntasks {parallel_run['NT']} {cmd} &\n")
+                        _f.write(f"srun --exclusive --cpus-per-task={parallel_run['CPT']}" +
+                                 f" --ntasks {parallel_run['NT']} {cmd} &\n")
                         _f.write("PIDS+=($!)\n")
                         _f.write("\n")
                     else:
@@ -176,24 +177,25 @@ done
     _f.close()
 
 def remove_sbatch_lines(filename):
-    with open(filename, 'r') as file:
+    ''' the function removes SBATCH lines from the input *.j file'''
+    with open(filename, 'r', encoding="utf-8") as file:
         lines = file.readlines()
-    
+
     filtered_lines = [line for line in lines if not line.strip().startswith('#SBATCH')]
-    with open(filename, 'w') as file:
+    with open(filename, 'w', encoding="utf-8") as file:
         file.writelines(filtered_lines)
 
-def cylc_job_scripts(job_file, hours, cwd, command_list=None, loop_list=None, command2=None):
-    with open(job_file, 'w') as f:
+def cylc_job_scripts(job_file, hours, command_list=None, loop_list=None, command2=None):
+    ''' writes Cylc specific .sh files without srun'''
+    with open(job_file, 'w', encoding="utf-8") as f:
         f.write("#!/bin/bash\n\n")
-        # Set ITEMS to loop_list
         f.write("# Run tasks in parallel\n")
         f.write("PIDS=()\n")
         if command2 is not None:
             f.write(f"{command2} &\n")
             f.write("PIDS+=($!)\n")
             f.write("\n")
-            
+
         if loop_list is None:
             # If loop_list is not provided, loop through command_list
             for cmd in command_list:
@@ -215,12 +217,12 @@ def cylc_job_scripts(job_file, hours, cwd, command_list=None, loop_list=None, co
                 f.write(f"    {command_list[1]} &\n")
                 f.write("    PIDS+=($!)\n")
                 f.write("done\n\n")
-        
+
         # Set runtime
         f.write("# Set runtime\n")
         f.write("START_TIME=$(date +%s)\n")
         f.write(f"TIME_LIMIT_SECONDS=$(({hours} * 60 * 60))  \n\n")
-        
+
         # While loop for time limit and process checking
         f.write("""while true; do
 sleep 60
@@ -253,67 +255,12 @@ done
         f.write(f"echo [INFO] Completed {job_file} ! \n\n")
         f.write("""
 exit 0
-        """)    
+        """)
 
 def update_job_schedule (filename, myid, jobname, afterid):
     ''' writes the SLURM_JOB_SCHEDULE file '''
     with open(filename, "a", encoding="utf-8") as sch_file:
         sch_file.write('{:<10}{:<30}{}\n'.format(myid, jobname, afterid))
-
-def print_status_report (e2es, yyyymm):
-    ''' prints status report on the screen '''
-
-    def read_out (this_no, nfiles, ofile, job_file):
-        with open(ofile, "r", encoding="utf-8") as file:
-            pattern_walltime = "Walltime Used"
-            pattern_sbu =  "Estimated SBUs"
-            pattern_not1 = "Pct Walltime Used"
-            pattern_not2 = "Total CPU-Time Allocated"
-
-            for line in file:
-                if re.search(pattern_walltime, line):
-                    if (not re.search(pattern_not1, line)) and (not re.search(pattern_not2, line)):
-                        _l2 = [int(x) for x in line.split(":")[1:4]]
-                if re.search(pattern_sbu, line):
-                    sbu = float (line.split(":")[1])
-        file.close()
-        print ('{:>3}/{:>3}  {:<35}{:>2}h {:>2}m {:>2}s'.format
-               (this_no,nfiles,job_file,_l2[0],_l2[1],_l2[2]))
-        return sbu
-
-    os.chdir(e2es)
-    jfiles = glob.glob("scratch/" + yyyymm + "/*/*.j")
-    jfiles.sort(key=os.path.getmtime)
-
-    print ("  ")
-    print ("#######################################################################")
-    print ("                          STATUS OF SLURM JOBS                         ")
-    print ("#######################################################################")
-    print ("  ")
-    print ("            JOB FILE                          WALLTIME ")
-    print ("  ")
-    total_sbu = 0.
-
-    for file_no, jfile in enumerate(jfiles):
-        job_file = jfile.split("/")[3]
-        jcut = jfile[:-(len('run.j'))]
-        ofile = glob.glob(jcut + "logs/*.out")
-        if len(ofile) == 1:
-            if file_no == 0:
-                efile = ofile[0][:-(len('out'))]+'err'
-                time_begin = datetime.datetime.fromtimestamp(os.path.getctime(efile))
-            sbu = read_out (file_no + 1, len(jfiles), ofile[0], job_file)
-            total_sbu = total_sbu + sbu
-            time_end = datetime.datetime.fromtimestamp(os.path.getmtime(ofile[0]))
-
-    print ("  ")
-    timedt = time_end - time_begin
-
-    str1 = ' TOTAL SBUs        : {0:.2f}'.format (total_sbu)
-    str2 = ' ELAPSED TIME      : {0:.2f} hours'.format (timedt.total_seconds() / 3600.)
-    print (str1)
-    print (str2)
-
 
 def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_command=None):
     ''' writes SLURM job scripts for LISF '''
@@ -395,8 +342,6 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             _f.write('source /etc/profile.d/modules.sh' + '\n')
             _f.write('module purge' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
-# KRA TESTING:
-#            _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
             _f.write('unset LD_LIBRARY_PATH' + '\n')
             _f.write('module use --append ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
@@ -409,7 +354,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         if 'mil' in cfg['SETUP']['CONSTRAINT']:
             _f.write('export I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so' + '\n')
             _f.write('export I_MPI_PMI_VALUE_LENGTH_MAX=' + ntasks + '\n')
-            _f.write('cd ' + cwd + '\n')           
+            _f.write('cd ' + cwd + '\n')
             _f.write('srun --mpi=pmi2 --ntasks=$SLURM_NTASKS \\' + '\n')
             _f.write('     --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \\' + '\n')
             _f.write('     --ntasks-per-core=$SLURM_NTASKS_PER_CORE \\' + '\n')
@@ -417,7 +362,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             # Separate out LIS DA run from LIS fcst run:
             if job_name == "lisda_":
                 _f.write('     ' + this_command + ' || exit 1' + '\n')
-                cylc_command = cylc_command + './LIS' 
+                cylc_command = cylc_command + './LIS'
             else:
                 _f.write('     ./LIS -f ' + this_command + ' || exit 1' + '\n')
                 cylc_command = cylc_command + './LIS -f ' + this_command.split()[-1]
@@ -432,7 +377,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
     _f.close()
     shutil.copy(jobfile, job_name + 'run.sh')
     remove_sbatch_lines(job_name + 'run.sh')
-    #cylc_job_scripts(job_name + 'run.sh', int(thours.split(':')[0]), cwd, command_list=[cylc_command])
+    #cylc_job_scripts(job_name + 'run.sh', int(thours.split(':')[0]), command_list=[cylc_command])
 
 def get_domain_info (s2s_configfile, extent=None, coord=None):
     ''' get domain infor from LDTINPUT file'''
@@ -455,7 +400,7 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
     return None
 
 def tiff_to_da(file):
-    import rasterio
+    ''' converts TIF files to xarray DataArray'''
     dataset = rasterio.open(file)
     # Read the data from the GeoTIFF using rasterio
     data = dataset.read(1)  # Read the first band, adjust if necessary
@@ -469,8 +414,9 @@ def tiff_to_da(file):
     # Create an xarray DataArray
     da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
     return da
-    
+
 def load_ncdata(infile, logger,  var_name=None, **kwargs):
+    ''' generic function to load letcdf file[s] as a xarray dataset/datarray'''
     try:
         if isinstance(infile, str) and ('*' in infile or '?' in infile):
             matching_files = glob.glob(infile)
@@ -482,31 +428,30 @@ def load_ncdata(infile, logger,  var_name=None, **kwargs):
                 multi_file_kwargs = ['combine', 'concat_dim', 'data_vars', 'coords', 'compat', 'join']
                 kwargs = {k: v for k, v in kwargs.items() if k not in multi_file_kwargs}
             else:
-                infile = matching_file
+                infile = matching_files
         if var_name is not None:
             if isinstance(infile, str):
                 dataset = xr.open_dataset(infile, **kwargs)
             else:
-                dataset = xr.open_mfdataset(infile, **kwargs)      
+                dataset = xr.open_mfdataset(infile, **kwargs)
             data = dataset[var_name]
-            dataset.close()  
+            dataset.close()
             del dataset
             return data
-        elif isinstance(infile, str):
+        if isinstance(infile, str):
             return xr.open_dataset(infile, **kwargs)
-        else:
-            return xr.open_mfdataset(infile, **kwargs)
+        return xr.open_mfdataset(infile, **kwargs)
+
     except Exception as e:
         logger[0].error(f"Couldn't open {infile}", subtask=logger[1])
         logger[0].error(f"xarray error {e}", subtask=logger[1])
         sys.exit(1)
 
 def write_ncfile(out_xr, outfile, encoding, logger):
+    ''' generic function to write netcdf4 files from xarray datasets'''
     try:
         out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding)
         return
     except Exception as e:
         logger[0].error(f"Error saving file: {e}", subtask=logger[1])
         sys.exit(1)
-    
-    

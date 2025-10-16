@@ -26,7 +26,6 @@
 
 
 # Standard modules
-import os
 import sys
 import argparse
 import yaml
@@ -97,7 +96,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
         sys.exit(1)
 
     # get resolution
-    lats, lons = utils.get_domain_info(config_file, coord=True)
+    lats, _ = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
 
     # Path of the main project directory
@@ -117,8 +116,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     nof_raw_ens = config['BCSD']['nof_raw_ens']
 
     # if the call came from s2s_run.py the method returns 3 lists
- 
-    slurm_commands = []     
+
+    slurm_commands = []
     for ens_num in range(1, nof_raw_ens + 1):
         if eyear is not None:
             cmd_list = []
@@ -142,7 +141,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
             if not py_call:
                 utils.job_script(config_file, jobfile, jobname, len(cmd_list),
-                                 hours, cwd, group_jobs=cmd_list)
+                                 hours, cwd, None, group_jobs=cmd_list)
 
         else:
             cmd = "python"
@@ -157,14 +156,15 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
             cmd += f" {config_file}"
             if fcst_model == 'CFSv2':
                 for ic_date in ic_dates:
-                    cmd += f" {ic_date}"                
+                    cmd += f" {ic_date}"
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            
+
             if py_call:
                 slurm_commands.append(cmd)
             else:
-                utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+                utils.job_script(config_file, jobfile, jobname, ntasks,
+                                 hours, cwd, None, in_command=cmd)
 
     print(f"[INFO] Write command to process CFSv2 files for {imon}")
     if py_call:
@@ -183,4 +183,5 @@ if __name__ == "__main__":
     parser.add_argument('-H', '--hours', required=True, help='hours')
 
     args = parser.parse_args()
-    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.cwd, args.job_name, args.ntasks, args.hours)
+    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr,
+         args.cwd, args.job_name, args.ntasks, args.hours)

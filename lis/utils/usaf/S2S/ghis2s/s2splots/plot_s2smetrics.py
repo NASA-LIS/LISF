@@ -153,6 +153,8 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
                              ncols, plot_arr, load_table, titles, domain, figure, under_over,
                              fscale=0.8, stitle=stitle, clabel=clabel, levels=levels,
                              cartopy_datadir=cartopy_dir)
+        anom.close()
+        anom_crop.close()
         del anom
         del anom_crop
         gc.collect()

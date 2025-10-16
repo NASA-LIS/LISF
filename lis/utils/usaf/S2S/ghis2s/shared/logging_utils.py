@@ -6,10 +6,8 @@ Logging utilities for GHIS2S with 16WS compatibility.
 import os
 import glob
 import json
-import logging
 from pathlib import Path
 from datetime import datetime
-import threading
 import re
 
 # 16WS compatible formats
@@ -18,8 +16,8 @@ LOG_FORMAT = "%(asctime)s [%(levelname)s]: %(message)s"
 
 class TaskLogger:
     """Logger for individual S2S tasks with 16WS compatibility"""
-    
-    def __init__(self, task_name, log_dir, description, subtask=None):
+
+    def __init__(self, task_name, log_dir, description):
         """
         Initialize task logger
         
@@ -31,10 +29,10 @@ class TaskLogger:
         # Clean task name (remove .j if present)
         self.task_name = task_name.replace('.j', '') if task_name.endswith('.j') else task_name
         pid = os.getpid()
-        self.log_file = f"{log_dir}/logs/{self.task_name}_{pid}.log"  
+        self.log_file = f"{log_dir}/logs/{self.task_name}_{pid}.log"
 
         # Create file and write header
-        with open(self.log_file, 'w') as f:
+        with open(self.log_file, 'w', encoding="utf-8") as f:
             f.write("[HEADER]\n")
             f.write(f"Script: {self.task_name}\n")
             if "\n" in description:
@@ -46,27 +44,27 @@ class TaskLogger:
                 f.write(f"Description: {description}\n")
             f.write(f"Process ID: {pid}\n")
             f.write("\n")
-    
+
     def _write_log(self, level, message, subtask=None):
         """Write a log entry with 16WS log formatting"""
         timestamp = datetime.now().strftime(DATE_FORMAT)
         subtask_tag = f"[{subtask}] " if subtask else ""
-        
-        with open(self.log_file, 'a') as f:
+
+        with open(self.log_file, 'a', encoding="utf-8") as f:
             f.write(f"[{timestamp}] [{level}] {subtask_tag}{message}\n")
-    
+
     def info(self, message, subtask=None):
         """Log info level message"""
         self._write_log("INFO", message, subtask)
-    
+
     def warning(self, message, subtask=None):
         """Log warning level message"""
         self._write_log("WARNING", message, subtask)
-    
+
     def error(self, message, subtask=None):
         """Log error level message"""
         self._write_log("ERROR", message, subtask)
-    
+
     def debug(self, message, subtask=None):
         """Log debug level message"""
         self._write_log("DEBUG", message, subtask)
@@ -94,13 +92,13 @@ class GHIS2SLogger:
         """Load schedule dictionary from disk"""
         try:
             if self.schedule_path.exists():
-                with open(self.schedule_path, 'r') as f:
+                with open(self.schedule_path, 'r', encoding="utf-8") as f:
                     return json.load(f)
             return {}
         except Exception as e:
             print(f"Error loading schedule from {self.schedule_path}: {e}")
             return {}
-        
+
     def group_log_by_subtask(self, log_content):
         """
         Group log entries by subtask while maintaining chronological order within groups
@@ -112,59 +110,58 @@ class GHIS2SLogger:
         4. Final general entries
         """
         lines = log_content.split('\n')
-        
+
         header_lines = []
         general_entries = []
         subtask_groups = {}
-        final_entries = []
-        
+
         current_section = 'header'
-    
+
         for line in lines:
             if current_section == 'header' and re.match(r'\[20\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]', line):
                 current_section = 'body'
-        
+
             if current_section == 'header':
                 header_lines.append(line)
             else:
                 # Check for subtask pattern: [timestamp] [LEVEL] [subtask] message
                 subtask_match = re.search(r'\[20\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] \[(INFO|WARNING|ERROR|DEBUG)\] \[([^\]]+)\] (.+)', line)
-            
+
                 if subtask_match:
-                    timestamp_level = line[:line.find('] [', line.find('] [') + 1) + 1]  
+                    timestamp_level = line[:line.find('] [', line.find('] [') + 1) + 1]
                     subtask = subtask_match.group(2)
                     message = subtask_match.group(3)
-                
+
                     if subtask not in subtask_groups:
                         subtask_groups[subtask] = []
                     subtask_groups[subtask].append(f"{timestamp_level} {message}")
                 else:
-                    if line.strip():  
+                    if line.strip():
                         general_entries.append(line)
-    
+
         # Reconstruct the log after grouping to subtasks
         result_lines = []
-    
+
         # 1. Add header
         result_lines.extend(header_lines)
-        result_lines.append('')  
-    
+        result_lines.append('')
+
         # 2. Add initial general entries (like "Starting parallel processing")
         if general_entries:
-            result_lines.extend(general_entries[:1])  
+            result_lines.extend(general_entries[:1])
             result_lines.append('')
-    
+
         # 3. Add grouped subtask entries
         if subtask_groups:
-            for subtask in sorted(subtask_groups.keys()):  
+            for subtask in sorted(subtask_groups.keys()):
                 result_lines.append(f"--- {subtask} Processing ---")
                 result_lines.extend(subtask_groups[subtask])
-                result_lines.append('') 
-    
+                result_lines.append('')
+
         # 4. Add remaining general entries
         if len(general_entries) > 1:
             result_lines.extend(general_entries[1:])
-    
+
         return '\n'.join(result_lines)
 
     def update_centralized_log(self):
@@ -172,12 +169,12 @@ class GHIS2SLogger:
         Create/overwrite centralized log by copying all task logs entirely with optional grouping
         """
         log_files = self.find_log_files()
-    
+
         if not log_files:
             print("No log files found to process")
             return 0
 
-        with open(self.central_log_path, 'w') as central:
+        with open(self.central_log_path, 'w', encoding="utf-8") as central:
             # Write main header with creation time
             timestamp = datetime.now().strftime(DATE_FORMAT)
             central.write(f"=== GHIS2S Centralized Log - Created {timestamp} ===\n\n")
@@ -185,24 +182,24 @@ class GHIS2SLogger:
             # Copy each log file entirely in schedule order
             for log_file_path in log_files:
                 log_file = Path(log_file_path)
-                
+
                 try:
                     # Add separator for each log file
                     central.write(f"\n{'='*80}\n")
                     central.write(f"LOG FILE: {log_file.name}\n")
                     central.write(f"{'='*80}\n\n")
-                
+
                     # Read and group log file content
-                    with open(log_file, 'r') as task_log:
+                    with open(log_file, 'r', encoding="utf-8") as task_log:
                         content = task_log.read()
-                    
+
                     # Apply subtask grouping
                     grouped_content = self.group_log_by_subtask(content)
                     central.write(grouped_content)
-                
+
                     # Add spacing between log files
-                    central.write(f"\n\n")
-                
+                    central.write("\n\n")
+
                 except Exception as e:
                     central.write(f"ERROR: Could not read log file {log_file}: {e}\n\n")
 
@@ -250,7 +247,7 @@ def save_schedule(scratch_path, schedule_dict):
     """
     try:
         schedule_path = Path(scratch_path) / 'ghis2s_schedule.json'
-        with open(schedule_path, 'w') as f:
+        with open(schedule_path, 'w', encoding="utf-8") as f:
             json.dump(schedule_dict, f, indent=2)
         print(f"Schedule saved to {schedule_path}")
     except Exception as e:
@@ -269,4 +266,3 @@ def write_centralized_logging(scratch_path):
     entry_count = logger.update_centralized_log()
     print(f"Updated centralized log with {entry_count} new entries")
     return f"Updated centralized log with {entry_count} new entries"
-

@@ -24,7 +24,6 @@
 #------------------------------------------------------------------------------
 """
 
-
 # Standard modules
 import sys
 import argparse
@@ -74,9 +73,10 @@ def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd, py_
         jobfile = job_name + '_' + nmme_model + '_run.j'
         jobname = job_name + '_' + nmme_model + '_'
         if py_call:
-                slurm_commands.append(cmd)
+            slurm_commands.append(cmd)
         else:
-            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours,
+                             cwd, None, in_command=cmd)
 
     if py_call:
         return slurm_commands
@@ -91,6 +91,6 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
     parser.add_argument('-H', '--hours', required=True, help='hours')
     args = parser.parse_args()
-    
-    main(args.config_file, args.current_year, args.month_num, args.job_name, args.ntasks,
-         args.hours, args.cwd)
+
+    main(args.config_file, args.current_year, args.month_num, args.job_name,
+         args.ntasks, args.hours, args.cwd)

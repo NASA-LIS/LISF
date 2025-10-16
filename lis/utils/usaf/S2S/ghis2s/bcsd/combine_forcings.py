@@ -62,17 +62,16 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     # Base forecast model
     fcst_model = config['BCSD']['fcst_data_type']
-    
+
     # get resolution
-    lats, lons = utils.get_domain_info(config_file, coord=True)
+    lats, _ = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
-        
+
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
 
     # Path of the directory where all the BC codes are kept:
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
-    srcdir2 = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/'
 
     # Path for the final 6-hourly forcing data:
     forcedir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}"
@@ -95,7 +94,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         if py_call:
             slurm_9_10.append(cmd)
         else:
-            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+            utils.job_script(config_file, jobfile, jobname, ntasks,
+                             hours, cwd, None, in_command=cmd)
 
     print(f"[INFO] Wrote  CFSv2 combination script for: {month_abbr}")
 
@@ -119,6 +119,7 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--project_directory', required=True, help='Project (E2ES) directory')
 
     args = parser.parse_args()
-    
-    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num, args.job_name,
-         args.ntasks, args.hours, args.cwd, args.project_directory, args.fcst_type)
+
+    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr,
+         args.month_num, args.job_name, args.ntasks, args.hours, args.cwd,
+         args.project_directory, args.fcst_type)

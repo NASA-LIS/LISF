@@ -29,7 +29,6 @@
 #
 
 import os
-import sys
 import argparse
 import yaml
 from ghis2s.shared import utils
@@ -68,20 +67,15 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
-    # Path of the directory where supplementary files are kept
-    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
-
     lead_months = config['EXP']['lead_months']
     clim_syr = config['BCSD']['clim_start_year']
     clim_eyr = config['BCSD']['clim_end_year']
-    datatype = config['SETUP']['DATATYPE']
 
     # Path for where observational files are located:
     forcedir = f"{projdir}/bcsd_fcst"
     obs_clim_indir = f"{forcedir}/USAF-LIS7.3rc8_25km/raw/Climatology"
 
     #  Calculate bias correction for different variables separately:
-    #obs_var = "Rainf_f_tavg"
     obs_var = "PRECTOT"
     fcst_var = "PRECTOT"
     unit = "kg/m^2/s"
@@ -115,7 +109,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         cmd += f" {year}"
         cmd += f" {year}"
         cmd += f" {clim_syr}"
-        cmd += f" {clim_eyr}"     
+        cmd += f" {clim_eyr}"
         cmd += f" {fcst_clim_indir}"
         cmd += f" {obs_clim_indir}"
         cmd += f" {fcst_indir}"
@@ -127,7 +121,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         if py_call:
             slurm_commands.append(cmd)
         else:
-            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours,
+                             cwd, None, in_command=cmd)
 
     print(f"[INFO] Completed writing NMME bias correction scripts for: {(month_abbr)}")
     if py_call:
@@ -150,5 +145,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num, args.job_name,
-         args.ntasks, args.hours, args.cwd, args.nmme_model)
+    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
+         args.job_name, args.ntasks, args.hours, args.cwd, args.nmme_model)

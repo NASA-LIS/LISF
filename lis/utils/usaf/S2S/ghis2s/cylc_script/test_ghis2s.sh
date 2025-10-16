@@ -2,26 +2,38 @@
 
 # Set required environment variables
 #export CONFIG_FILE="s2s_config_global_par"
-export CONFIG_FILE="s2s_config_global_par"
+export CONFIG_FILE="s2s_config_global_fcast"
 export FORECAST_YEAR=2025
 export FORECAST_MONTH=3
 #export USER_EMAIL="kristi.r.arsenault@nasa.gov"
 export USER_EMAIL="sarith.p.mahanama@nasa.gov"
-export E2ESDIR="/discover/nobackup/projects/ghilis/S2S/GLOBAL/cylc_e2e/"
+export E2ESDIR="/discover/nobackup/projects/ghilis/smahanam/Cylc_7.7/"
 export LISFDIR=`grep LISFDIR $E2ESDIR/$CONFIG_FILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LISFMOD=`grep LISFMOD $E2ESDIR/$CONFIG_FILE | cut -d':' -f2 | tr -d "[:space:]"`
+export SUPDIR=`grep supplementarydir $E2ESDIR/$CONFIG_FILE | cut -d':' -f2 | tr -d "[:space:]"`
 export PYTHONPATH="${LISFDIR}/lis/utils/usaf/S2S/"
+export NODE_NAME=`uname -n`
 
 # Optional variables
 export S2S_STEP="BCSD"
 export ONE_STEP=true
 export SUBMIT_JOB=false
 
-source /etc/profile.d/modules.sh
-module purge
 USE_CYLC_ENV=0
-module use -a "${LISFDIR}/env/discover/"
-module --ignore-cache load $LISFMOD
+if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    unset LD_LIBRARY_PATH
+    source /etc/profile.d/modules.sh
+fi
+
+if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    module purge
+    module use -a "${LISFDIR}/env/discover/"
+    module --ignore-cache load $LISFMOD
+else
+    # non-Discover: LISFMOD is in ${supplementary}/env/
+    module use -a $SUPDIR/env/
+    module load $LISFMOD
+fi
 
 # Run S2S Python program
 cd /discover/nobackup/projects/ghilis/S2S/GHI-repos/ghi-apps/bin/
@@ -31,18 +43,24 @@ python ghis2s_program.py
 [ "$SUBMIT_JOB" = "true" ] && exit
 
 # Run Cylc
-module purge
-module use -a "${LISFDIR}/env/discover/"
 export USE_CYLC_ENV=1
-module --ignore-cache load $LISFMOD
+if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    module purge
+    module use -a "${LISFDIR}/env/discover/"
+    module --ignore-cache load $LISFMOD
+else
+    # non-Discover: LISFMOD is in ${supplementary}/env/
+    module use -a $SUPDIR/env/
+    module load $LISFMOD
+fi
 
 if [ $FORECAST_MONTH -lt 10 ]; then
     MM="0${FORECAST_MONTH}"
 else
     MM="${FORECAST_MONTH}"
 fi
-
-WORKFLOW_NAME="CYLC-${FORECAST_YEAR}${MM}"
+s2s_step=$(echo "$S2S_STEP" | tr '[:upper:]' '[:lower:]')
+WORKFLOW_NAME="cylc_${s2s_step}_${FORECAST_YEAR}${MM}"
 LOGDIR="${E2ESDIR}/scratch/${FORECAST_YEAR}${MM}/${WORKFLOW_NAME}"
 
 # Install CYLC workflow

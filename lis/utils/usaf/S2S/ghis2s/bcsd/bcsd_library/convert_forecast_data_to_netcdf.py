@@ -59,14 +59,15 @@ def _make_settings_dict(patched_timestring,
     return settings
 
 def wgrib2_to_netcdf(grib2_file):
+    '''  reads CFSv2 grib data in to xarray dataset '''
     new_name = {
         'prate':'PRECTOT','sp':'PS','t2m':'T2M',
         'dlwrf':'LWGAB','dswrf':'SWGDN','sh2':'QV2M',
         'u10':'U10M','v10':'V10M','q':'QV2M',
         'sdlwrf':'LWGAB','sdswrf':'SWGDN',}
-    
+
     ds_ = cfgrib.open_dataset(grib2_file, indexpath ="", decode_timedelta=True)
-    for varname, da_ in ds_.data_vars.items():
+    for varname, _ in ds_.data_vars.items():
         ds_ = ds_.rename({varname : new_name.get(varname)})
     return ds_
 
@@ -92,7 +93,7 @@ def _check_replace_missing (args):
     this_time = datetime.strptime(fcst_timestring, '%Y%m%d%H')
     df_sub = df_sort[(df_sort.Time == this_time)]
     if not df_sub.empty:
-        for index, row in df_sub.iterrows():
+        for _, row in df_sub.iterrows():
             if check_file in row['Bad']:
                 replace_file = row['Replace']
 
@@ -133,7 +134,7 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8, logger):
     if ds_ is None:
         # If we reach this point, we assume the file is fine.
         logger[0].info(f"{args['subdaily_file']}", subtask=logger[1])
-        logger[0].info(f"File is normal.", subtask=logger[1])
+        logger[0].info("File is normal.", subtask=logger[1])
         ds_ = wgrib2_to_netcdf(args['subdaily_file'])
 
     if args["varname"] == "wnd10m":
