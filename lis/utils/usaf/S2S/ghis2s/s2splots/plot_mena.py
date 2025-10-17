@@ -65,8 +65,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
 
     # READ ANOMALIES
     logger.info(f"Plotting {var_name} SANOM", subtask=region)
-    anom = get_anom(data_dir, var_name, metric, [logger, region])
-    anom_crop = plot_utils.crop(boundary, anom)
+    anom_crop = get_anom(data_dir, var_name, metric, boundary, [logger, region])
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
     plot_arr = median_anom[lead_month, ]
@@ -91,7 +90,6 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
                           ncols, plot_arr, 'CB11W_', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
-    del anom
     del anom_crop
 
 def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
@@ -127,9 +125,20 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
-            ldt = xr.open_dataset(ldtfile)
+            ldt_ds = xr.open_dataset(ldtfile)
+            lat_2d = ldt_ds['lat']  
+            lon_2d = ldt_ds['lon']  
+            ldt = ldt_ds['HYMAP_drain_area']
+            ldt = ldt.assign_coords({
+                'lat': (['north_south', 'east_west'], lat_2d.values),
+                'lon': (['north_south', 'east_west'], lon_2d.values)
+            })
+            ldt = ldt.load()
             ldt_crop = plot_utils.crop(domain, ldt)
-            mask = ldt_crop.HYMAP_drain_area.values
+            ldt_ds.close()
+            ldt.close()
+            del ldt_ds, ldt
+            mask = ldt_crop.values
 
         levels = plot_utils.dicts('anom_levels', var_name)
         if standardized_anomaly == 'Y':
@@ -149,8 +158,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
-        anom = get_anom(data_dir, var_name, metric, [logger, region])
-        anom_crop = plot_utils.crop(domain, anom)
+        anom_crop = get_anom(data_dir, var_name, metric, domain, [logger, region])
         median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
         if (var_name in {'AirT', 'Air-T', 'Air_T'}) and \
@@ -192,7 +200,6 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
                              ncols, plot_arr, load_table, titles, domain, figure, under_over,
                              fscale=0.8, stitle=stitle, clabel=clabel, levels=levels,
                              cartopy_datadir=cartopy_dir)
-        del anom
         del anom_crop
 
 def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, region):
@@ -211,9 +218,20 @@ def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, region):
 
     ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
         config['SETUP']['ldtinputfile']
-    ldt = xr.open_dataset(ldtfile)
+    ldt_ds = xr.open_dataset(ldtfile)
+    lat_2d = ldt_ds['lat']  
+    lon_2d = ldt_ds['lon']  
+    ldt = ldt_ds['HYMAP_drain_area']
+    ldt = ldt.assign_coords({
+        'lat': (['north_south', 'east_west'], lat_2d.values),
+        'lon': (['north_south', 'east_west'], lon_2d.values)
+    })
+    ldt = ldt.load()
     ldt_crop = plot_utils.crop(boundary, ldt)
-    hymap_mask = ldt_crop.HYMAP_drain_area.values
+    ldt_ds.close()
+    ldt.close()
+    del ldt_ds, ldt
+    hymap_mask = ldt_crop.values
 
     plot_anoms_basin(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
                downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],

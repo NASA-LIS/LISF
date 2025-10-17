@@ -69,8 +69,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         levels = plot_utils.dicts('anom_levels', 'standardized')
 
     # READ ANOMALIES
-    anom = get_anom(data_dir, var_name, metric, [logger,''])
-    anom_crop = plot_utils.crop(boundary, anom)
+    anom_crop = get_anom(data_dir, var_name, metric, boundary, [logger, None])
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
     plot_arr = median_anom[lead_month, ]
@@ -98,7 +97,6 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
                           ncols, plot_arr, 'CB11W', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
-    del anom
     del anom_crop
 
 def process_domain (fcst_year, fcst_mon, cwd, config, plot_domain):

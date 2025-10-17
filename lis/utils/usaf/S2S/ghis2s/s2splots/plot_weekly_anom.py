@@ -69,8 +69,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
 
         under_over = plot_utils.dicts('lowhigh', load_table)
         # READ ANOMALIES
-        anom = get_anom(data_dir, var_name, anom_type, [logger, subtask], weekly=True)
-        anom_crop = plot_utils.crop(domain, anom)
+        anom_crop = get_anom(data_dir, var_name, anom_type, domain, [logger, subtask], weekly=True)
         median_anom = np.median(anom_crop.anom.values, axis=0)
         plot_arr = median_anom[lead_week, ]
         if anom_type == 'SANOM':

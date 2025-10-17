@@ -752,6 +752,7 @@ class S2Srun(DownloadForecasts):
 
         ''' the main function '''
         cylc_file = f"{self.scrdir}CYLC_workflow.rc"
+
         # Build dependency graph based on schedule structure
         dependency_map = {}
         for jfile in self.schedule.keys():
@@ -767,6 +768,7 @@ class S2Srun(DownloadForecasts):
         write_log_monitoring_script()
 
         # write flow.cylc
+        has_dependencies = any(dependencies for dependencies in dependency_map.values())
         with open(cylc_file, 'w', encoding="utf-8") as file:
             # Write header
             file.write("#!jinja2\n")
@@ -797,11 +799,17 @@ class S2Srun(DownloadForecasts):
             file.write("        R1 = \"\"\"\n")
 
             # Generate dependency graph from dependency_map
-            for task, dependencies in dependency_map.items():
-                if dependencies:
-                    dep_str = " & ".join(dependencies)
-                    file.write(f"                {dep_str} => {task}\n")
-
+            if has_dependencies:
+                for task, dependencies in dependency_map.items():
+                    if dependencies:
+                        dep_str = " & ".join(dependencies)
+                        file.write(f"                {dep_str} => {task}\n")
+            else:
+                # Single task run: write all tasks as standalone
+                for jfile in self.schedule.keys():
+                    task_name = jfile.removesuffix('.j')
+                    file.write(f"                {task_name}\n")
+                    dependency_map[task_name] = task_name
             # Find terminal tasks for final log collection
             all_tasks = set(dependency_map.keys())
             dependency_tasks = set()
@@ -1317,6 +1325,42 @@ class S2Srun(DownloadForecasts):
 
     def lis_fcst(self):
         """ LIS forecast """
+        def check_recommend_nseg(lead_mons, nseg):
+            """Check validity and print recommendation if invalid"""
+            def check_jobseg(lead_mons, nseg):
+                """Check if nseg is valid """
+                if lead_mons % nseg == 0:
+                    return True
+                else:
+                    base_length = lead_mons // nseg + 1
+                    remainder = base_length * nseg - lead_mons
+                    return remainder < base_length
+
+            def try_these_nseg(lead_mons):
+                """Find all valid nseg values"""
+                good_nseg = []
+                for i in range(1, lead_mons + 1):
+                    if check_jobseg(lead_mons, i):  
+                        good_nseg.append(i)
+                return good_nseg
+
+            is_valid = check_jobseg(lead_mons, nseg)
+            good_nseg = []
+            if not is_valid:
+                good_nseg = try_these_nseg(lead_mons)
+            return is_valid, good_nseg
+
+
+        # checks validity of JOB_SEGMENTS
+        for model in self.models:
+            is_valid, good_nseg = check_recommend_nseg(self.config["EXP"]["lead_months"],
+                                                       self.config['FCST']['JOB_SEGMENTS'][0].get(model)) 
+            if not is_valid:
+                print(f"[ERROR] {model} Unsupported nof job segments: "
+                      f"{self.config['FCST']['JOB_SEGMENTS'][0].get(model)}")
+                print(f'Try these instead: {good_nseg}')
+                sys.exit()
+        
         prev = [job for job in ['ldtics_run.j', 'combine_files_run.j']
                 if job in self.schedule] or None
         prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key])
@@ -1717,6 +1761,10 @@ class S2Srun(DownloadForecasts):
         finally:
             tfile.close()
             os.unlink(tfile.name)
+            
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 2, cwd, command_list=slurm_commands)
 
        # 3rd job
         jobname='s2splots_03_'
