@@ -28,11 +28,9 @@ from concurrent.futures import ProcessPoolExecutor
 import xarray as xr
 import numpy as np
 import yaml
-# pylint: disable=import-error
 from ghis2s.s2smetric.metricslib import get_anom
 from ghis2s.shared.logging_utils import TaskLogger
 import plot_utils
-# pylint: enable=import-error
 
 USAF_COLORS = True
 task_name = os.environ.get('SCRIPT_NAME')
@@ -74,9 +72,20 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
-            ldt = xr.open_dataset(ldtfile)
+            ldt_ds = xr.open_dataset(ldtfile)
+            lat_2d = ldt_ds['lat']  
+            lon_2d = ldt_ds['lon']  
+            ldt = ldt_ds['HYMAP_drain_area']
+            ldt = ldt.assign_coords({
+                'lat': (['north_south', 'east_west'], lat_2d.values),
+                'lon': (['north_south', 'east_west'], lon_2d.values)
+            })
+            ldt = ldt.load()
             ldt_crop = plot_utils.crop(domain, ldt)
-            mask = ldt_crop.HYMAP_drain_area.values
+            ldt_ds.close()
+            ldt.close()
+            del ldt_ds, ldt
+            mask = ldt_crop.values
 
         # levels defaults
         if standardized_anomaly  == 'Y':
@@ -100,9 +109,8 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
-        anom = get_anom(data_dir, var_name, metric, [logger, subtask])
-        anom_crop = plot_utils.crop(domain, anom)
-        median_anom = np.median(anom_crop.anom.values, axis=0)
+        anom = get_anom(data_dir, var_name, metric, domain, [logger, subtask])
+        median_anom = np.median(anom.anom.values, axis=0)
 
         if (var_name in {'AirT'}) and \
            USAF_COLORS and standardized_anomaly is None:
@@ -149,14 +157,12 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
             clabel = 'Standardized Anomaly'
 
         cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
-        plot_utils.contours (anom_crop.lon.values, anom_crop.lat.values, nrows,
+        plot_utils.contours (anom.lon.values, anom.lat.values, nrows,
                              ncols, plot_arr, load_table, titles, domain, figure, under_over,
                              fscale=0.8, stitle=stitle, clabel=clabel, levels=levels,
                              cartopy_datadir=cartopy_dir)
         anom.close()
-        anom_crop.close()
         del anom
-        del anom_crop
         gc.collect()
 
 if __name__ == '__main__':
@@ -180,27 +186,17 @@ if __name__ == '__main__':
 
     num_calls = 7
     num_workers = int(os.environ.get('NUM_WORKERS', num_calls))
+    regions = ['GLOBAL', 'AFRICA', 'EUROPE', 'CENTRAL_ASIA', 'SOUTH_EAST_ASIA', 'NORTH_AMERICA', 'SOUTH_AMERICA']
 
-    # from concurrent.futures import ProcessPoolExecutor
     with ProcessPoolExecutor(max_workers=7) as executor:
         futures = []
         if args.metric == "ANOM":
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA'))
+            for region in regions:
+                futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, region))
 
         if args.metric == "SANOM":
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly='Y'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly='Y'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly='Y'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA', standardized_anomaly='Y'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA', standardized_anomaly='Y'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly='Y'))
-            futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly='Y'))
+            for region in regions:
+                futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, region, standardized_anomaly='Y'))
 
         for future in futures:
             result = future.result()

@@ -29,10 +29,8 @@ from netCDF4 import Dataset
 # pylint: enable=no-name-in-module
 import numpy as np
 import yaml
-# pylint: disable=import-error
 from ghis2s.s2smetric.metricslib import get_anom
 import plot_utils
-# pylint: enable=import-error
 
 def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None):
     '''
@@ -71,8 +69,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     under_over = ['gray', 'blue']
 
     # READ ANOMALIES
-    anom = get_anom(data_dir, var_name, metric)
-    anom_crop = plot_utils.crop(boundary, anom)
+    anom_crop = get_anom(data_dir, var_name, metric, boundary)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
     plot_arr = median_anom[lead_month, ]
     figure = figure_template.format(plotdir, region, var_name)
@@ -93,7 +90,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
                           ncols, plot_arr, 'DROUGHT_INV', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels)
-    del anom
+
     del anom_crop
 
 if __name__ == '__main__':

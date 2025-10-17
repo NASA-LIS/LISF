@@ -21,7 +21,7 @@ for task in $TASK_NAMES; do
             cycle=$(basename $(dirname $(dirname $jobdir)))
             submit_num=$(basename $jobdir)
 
-            if [ "$task" != "log_monitor" ]; then
+            if [ "$task" != "log_monitor" ] && [ "$task" != "final_log_collect" ] && [ "$task" != "stop_log_monitor" ]; then
                 # Extract timing info
                 init_time=$(grep "CYLC_JOB_INIT_TIME=" "$jobdir/job.status" 2>/dev/null | cut -d'=' -f2)
                 exit_time=$(grep "CYLC_JOB_EXIT_TIME=" "$jobdir/job.status" 2>/dev/null | cut -d'=' -f2)

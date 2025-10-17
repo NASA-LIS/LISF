@@ -21,6 +21,7 @@ import xarray as xr
 import numpy as np
 import gc
 from ghis2s.shared.utils import load_ncdata
+from ghis2s.s2splots import plot_utils
 
 def _get_snow_cover(sel_cim_data):
     """Return snow cover [%]."""
@@ -242,9 +243,8 @@ def merged_metric_filename(output_dir, startdate, enddate,
     _check_filename_size(name)
     return name
 
-def get_anom(path, var_name, metric, logger, weekly=False):
+def get_anom(path, var_name, metric, domain, logger, weekly=False):
     def preproc(ds_):
-        ''' select only the 1st ensemble for streamflow '''
         ds_ = ds_.isel(ens=0)
         return ds_
 
@@ -261,12 +261,15 @@ def get_anom(path, var_name, metric, logger, weekly=False):
             'combine': 'nested',
             'preprocess': preproc
         }
-        anom_ds = xr.open_mfdataset(files, concat_dim='ens', combine='nested', preprocess=preproc)
     else:
-        anom_ds = xr.open_mfdataset(files, concat_dim='ens', combine='nested')
-    anom_ds = anom_ds.rename({'latitude': 'lat', 'longitude': 'lon'})
-    anom = anom_ds[var_name + '_' + metric]
-    del anom_ds
+        kwargs = {
+            'concat_dim': 'ens', 
+            'combine': 'nested'
+        }
+    anom = load_ncdata(files, logger,  var_name= thisvar, **kwargs)
+    anom = anom.rename({'latitude': 'lat', 'longitude': 'lon'})
+    anom_crop = plot_utils.crop(domain, anom)
+    del anom
     gc.collect()
 
-    return anom.to_dataset(name='anom')
+    return anom_crop.to_dataset(name='anom')

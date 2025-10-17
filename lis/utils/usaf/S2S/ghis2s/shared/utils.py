@@ -127,6 +127,9 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
             _f.write('source /etc/profile.d/modules.sh' + '\n')
             _f.write('module purge' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
+            _f.write('unset LD_LIBRARY_PATH' + '\n')
+            _f.write('unset PROJ_DATA' + '\n')
+            _f.write('unset PROJ_LIB' + '\n')
             _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
         else:
