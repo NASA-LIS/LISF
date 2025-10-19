@@ -30,6 +30,7 @@ import sys
 import platform
 import math
 import shutil
+import psutil
 import rasterio
 import numpy as np
 import xarray as xr
@@ -458,3 +459,18 @@ def write_ncfile(out_xr, outfile, encoding, logger):
     except Exception as e:
         logger[0].error(f"Error saving file: {e}", subtask=logger[1])
         sys.exit(1)
+
+def log_memory_usage(message, logger):
+    """
+    Log current program memory usage with a custom message.
+    Args:
+        message (str): Custom message describing where/when memory is being checked
+        logger (list): List containing (logger_object, subtask_name)
+    """
+    try:
+        process = psutil.Process()
+        memory_mb = process.memory_info().rss / 1024 / 1024
+        full_message = f"{message} - Memory usage: {memory_mb:.2f} MB"
+        logger[0].info(full_message, subtask=logger[1])
+    except Exception as e:
+        logger[0].error(f"Error logging memory usage: {e}", subtask=logger[1])

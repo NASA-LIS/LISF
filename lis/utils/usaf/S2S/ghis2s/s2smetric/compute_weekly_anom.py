@@ -182,8 +182,8 @@ def process_variable(var_name, ANOM):
                                              ENDDATE.month, ENDDATE.day)
     logger.info(f"Reading forecast climatological mean {mean_file}", subtask=var_name)
     logger.info(f"Reading forecast climatological std {std_file}", subtask=var_name)
-    mean_xr = xr.open_dataset(mean_file)
-    std_xr = xr.open_dataset(std_file)
+    mean_xr = load_ncdata(mean_file, [logger, var_name])
+    std_xr = load_ncdata(std_file, [logger, var_name])
 
     for lead in range(LEAD_WEEKS):
         logger.info(f"Processing var_name: {var_name}, lead: {lead}", subtask=var_name)
