@@ -23,6 +23,8 @@ module LDT_ensRstMod
 !   1 Nov 2017 Augusto Getirana: Add HyMAP2 parameters
 !  21 Jun 2024 Yeosang Yoon: Add an additional sampling strategy for ensemble restart generation.         
 !  23 Apr 2025 Yeosang Yoon: Support RAPID
+!  20 Oct 2025 Eric Kemp: Removed check for duplicates for unperturbed
+!    sampling.
 ! 
   use ESMF
   use LDT_coreMod
@@ -195,7 +197,6 @@ module LDT_ensRstMod
       logical               :: file_exists
       integer               :: seed(NRANDSEED)
       real                  :: rand
-      real   ,     allocatable  :: var1d(:)
       integer,     allocatable  :: var_map(:)
       !RAPID
       integer               :: time_id,rivid_id,time_len,rivid_len
@@ -362,9 +363,9 @@ module LDT_ensRstMod
          elseif(LDT_rc%ensrstsampling.eq."unperturbed sampling") then
             allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
             do i=1,dims(1)/LDT_rc%nens_in
+               t1 = (i-1)*LDT_rc%nens_in  + LDT_rc%nens_in
                do m=1,LDT_rc%nens_out
                   t2 = (i-1)*LDT_rc%nens_out + m
-                  t1 = (i-1)*LDT_rc%nens_in  + LDT_rc%nens_in
                   var_map(t2) = t1
                enddo
             enddo
@@ -872,7 +873,6 @@ module LDT_ensRstMod
    integer,     allocatable  :: n_dimids(:)
    integer               :: nvardims
    integer,     allocatable  :: nvardimIDs(:)
-   real   ,     allocatable  :: var1d(:)
    real   ,     allocatable  :: var(:,:)
    real   ,     allocatable  :: var3d(:,:,:)
    real   ,     allocatable  :: var_new(:,:)
@@ -1092,34 +1092,13 @@ module LDT_ensRstMod
          allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
          var_map = -1
          do i=1,dims(1)/LDT_rc%nens_in
-            st = (i-1)*LDT_rc%nens_out+1
-            en = (i-1)*LDT_rc%nens_out+LDT_rc%nens_out
-
+            t1 = (i-1)*LDT_rc%nens_in + LDT_rc%nens_in
             do m=1,LDT_rc%nens_out
                t2 = (i-1)*LDT_rc%nens_out+m
-               cycl_check = .true.
-
-               do while(cycl_check)
-                  t1 = (i-1)*LDT_rc%nens_in + LDT_rc%nens_in
-
-                  dupl_check =.false.
-                  do p=st,en
-                     if(t1.eq.var_map(p)) then
-                        dupl_check = .true.
-                     endif
-                  enddo
-                  if(dupl_check) then
-                     cycl_check = .true.
-                  else
-                     cycl_check = .false.
-                  endif
-               enddo
-
                var_map(t2) = t1
             enddo
          enddo
       endif
-
 
       do k=1,nVars
          call LDT_verify(nf90_inquire_variable(ftn,k,ndims=nvardims),&
