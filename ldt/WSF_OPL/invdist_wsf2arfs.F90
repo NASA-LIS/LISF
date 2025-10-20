@@ -212,12 +212,12 @@ CONTAINS
                         
                         ! CRITICAL FILTERING: Skip resampling if snow or precip detected
                         if (has_snow .OR. has_precip) then
-                            !! Track excluded footprints
-                            !if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
-                            !if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
-                            !! SKIP THIS FOOTPRINT - DO NOT RESAMPLE
-                            !cycle
-                        !endif
+                            ! Track excluded footprints
+                            if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
+                            if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
+                            ! SKIP THIS FOOTPRINT - DO NOT RESAMPLE
+                            cycle
+                        endif
                         
                         ! No snow/precip - proceed with resampling
                         if (gcdist < 0.0001D0) then
