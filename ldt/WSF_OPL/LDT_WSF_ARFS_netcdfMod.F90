@@ -7,7 +7,7 @@
 ! MODULE: LDT_WSF_ARFS_netcdfMod
 !
 ! DESCRIPTION: NetCDF writer for WSF hourly stitched data on ARFS grid
-!              Includes metadata for tracking number of files and samples
+!              FIXED: Proper time format with hour, quality flag documentation
 !
 !-------------------------------------------------------------------------
 
@@ -51,10 +51,13 @@ contains
     character(len=2), intent(in) :: hour_str
     integer, intent(in) :: n_files
     
+    ! Fill value constant
+    real*4, parameter :: FILL_VALUE = -9999.0
+    
     ! Local variables
     integer :: ncid, dimids(2)
     integer :: lat_dimid, lon_dimid, time_dimid
-    integer :: lat_varid, lon_varid, time_varid
+    integer :: lat_varid, lon_varid, time_varid, hour_varid
     integer :: tb_10h_varid, tb_10v_varid
     integer :: tb_18h_varid, tb_18v_varid
     integer :: tb_23h_varid, tb_23v_varid
@@ -69,13 +72,15 @@ contains
     type(ESMF_Time) :: file_time, reference_time
     type(ESMF_TimeInterval) :: time_diff
     integer :: rc_time
-    character(len=19) :: time_str
+    character(len=50) :: time_units_str, time_long_name
     character(len=100) :: history_str
+    character(len=200) :: qf_desc_str
+    integer :: hour_value
     
     ! Only master process writes the file
     if (LDT_masterproc) then
        write(LDT_logunit,*)'[INFO] Creating NetCDF file: ', trim(output_fname)
-       
+       write(LDT_logunit,*)'[INFO] Using fill value: ', FILL_VALUE
        
        ! Create the output file
 #if(defined USE_NETCDF4)
@@ -95,217 +100,340 @@ contains
        call LDT_verify(nf90_def_dim(ncid, 'time', 1, time_dimid), &
             '[ERR] nf90_def_dim failed for time')
        
-       ! Define coordinate variables
+       ! =====================================================================
+       ! COORDINATE VARIABLES
+       ! =====================================================================
+       
+       ! Longitude
        call LDT_verify(nf90_def_var(ncid, 'lon', NF90_FLOAT, &
             lon_dimid, lon_varid), &
             '[ERR] nf90_def_var failed for lon')
        call LDT_verify(nf90_put_att(ncid, lon_varid, 'long_name', &
             'longitude'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, lon_varid, 'standard_name', &
+            'longitude'), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, lon_varid, 'units', &
             'degrees_east'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, lon_varid, 'axis', &
+            'X'), '[ERR] nf90_put_att failed')
        
+       ! Latitude
        call LDT_verify(nf90_def_var(ncid, 'lat', NF90_FLOAT, &
             lat_dimid, lat_varid), &
             '[ERR] nf90_def_var failed for lat')
        call LDT_verify(nf90_put_att(ncid, lat_varid, 'long_name', &
             'latitude'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, lat_varid, 'standard_name', &
+            'latitude'), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, lat_varid, 'units', &
             'degrees_north'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, lat_varid, 'axis', &
+            'Y'), '[ERR] nf90_put_att failed')
        
+       ! Time (seconds since epoch)
        call LDT_verify(nf90_def_var(ncid, 'time', NF90_DOUBLE, &
             time_dimid, time_varid), &
             '[ERR] nf90_def_var failed for time')
+       
+       ! Build time description with date and hour
+       write(time_long_name, '(A,A8,A,A2,A)') 'time for ', yyyymmdd, ' hour ', hour_str, ':00'
        call LDT_verify(nf90_put_att(ncid, time_varid, 'long_name', &
+            trim(time_long_name)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, time_varid, 'standard_name', &
             'time'), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, time_varid, 'units', &
             'seconds since 1970-01-01 00:00:00'), &
             '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, time_varid, 'calendar', &
+            'gregorian'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, time_varid, 'axis', &
+            'T'), '[ERR] nf90_put_att failed')
        
-       ! Define TB variables with compression
+       ! Build readable time string
+       write(time_units_str, '(A,A2,A)') yyyymmdd, hour_str, ':00:00'
+       call LDT_verify(nf90_put_att(ncid, time_varid, 'time_coverage_start', &
+            trim(time_units_str)), '[ERR] nf90_put_att failed')
+       
+       ! Hour variable (for easy reference)
+       call LDT_verify(nf90_def_var(ncid, 'hour', NF90_INT, &
+            time_dimid, hour_varid), &
+            '[ERR] nf90_def_var failed for hour')
+       call LDT_verify(nf90_put_att(ncid, hour_varid, 'long_name', &
+            'hour of day'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, hour_varid, 'units', &
+            'hours'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, hour_varid, 'valid_range', &
+            (/0, 23/)), '[ERR] nf90_put_att failed')
+       
+       ! =====================================================================
+       ! DATA VARIABLES
+       ! =====================================================================
+       
        dimids = (/lon_dimid, lat_dimid/)
        
        ! TB_10H
        call LDT_verify(nf90_def_var(ncid, 'TB_10H', NF90_FLOAT, &
             dimids, tb_10h_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_10h_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_10h_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_10h_varid, 'long_name', &
             'Brightness Temperature at 10.65 GHz H-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_10h_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_10h_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_10h_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_10V
        call LDT_verify(nf90_def_var(ncid, 'TB_10V', NF90_FLOAT, &
             dimids, tb_10v_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_10v_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_10v_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_10v_varid, 'long_name', &
             'Brightness Temperature at 10.65 GHz V-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_10v_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_10v_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_10v_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_18H
        call LDT_verify(nf90_def_var(ncid, 'TB_18H', NF90_FLOAT, &
             dimids, tb_18h_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_18h_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_18h_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_18h_varid, 'long_name', &
             'Brightness Temperature at 18.7 GHz H-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_18h_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_18h_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_18h_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_18V
        call LDT_verify(nf90_def_var(ncid, 'TB_18V', NF90_FLOAT, &
             dimids, tb_18v_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_18v_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_18v_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_18v_varid, 'long_name', &
             'Brightness Temperature at 18.7 GHz V-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_18v_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_18v_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_18v_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_23H
        call LDT_verify(nf90_def_var(ncid, 'TB_23H', NF90_FLOAT, &
             dimids, tb_23h_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_23h_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_23h_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_23h_varid, 'long_name', &
             'Brightness Temperature at 23.8 GHz H-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_23h_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_23h_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_23h_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_23V
        call LDT_verify(nf90_def_var(ncid, 'TB_23V', NF90_FLOAT, &
             dimids, tb_23v_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_23v_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_23v_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_23v_varid, 'long_name', &
             'Brightness Temperature at 23.8 GHz V-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_23v_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_23v_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_23v_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_36H
        call LDT_verify(nf90_def_var(ncid, 'TB_36H', NF90_FLOAT, &
             dimids, tb_36h_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_36h_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_36h_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_36h_varid, 'long_name', &
             'Brightness Temperature at 36.5 GHz H-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_36h_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_36h_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_36h_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_36V
        call LDT_verify(nf90_def_var(ncid, 'TB_36V', NF90_FLOAT, &
             dimids, tb_36v_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_36v_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_36v_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_36v_varid, 'long_name', &
             'Brightness Temperature at 36.5 GHz V-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_36v_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_36v_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_36v_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_89H
        call LDT_verify(nf90_def_var(ncid, 'TB_89H', NF90_FLOAT, &
             dimids, tb_89h_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_89h_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_89h_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_89h_varid, 'long_name', &
             'Brightness Temperature at 89.0 GHz H-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_89h_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_89h_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_89h_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! TB_89V
        call LDT_verify(nf90_def_var(ncid, 'TB_89V', NF90_FLOAT, &
             dimids, tb_89v_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, tb_89v_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, tb_89v_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, tb_89v_varid, 'long_name', &
             'Brightness Temperature at 89.0 GHz V-pol'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, tb_89v_varid, 'units', 'K'), &
             '[ERR] nf90_put_att failed')
-
+       call LDT_verify(nf90_put_att(ncid, tb_89v_varid, 'valid_range', &
+            (/100.0, 350.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, tb_89v_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
        ! Land fraction
        call LDT_verify(nf90_def_var(ncid, 'LAND_FRAC', NF90_FLOAT, &
             dimids, land_frac_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_def_var_fill(ncid, land_frac_varid, 0, -9999.0), &
+       call LDT_verify(nf90_def_var_fill(ncid, land_frac_varid, 0, FILL_VALUE), &
             '[ERR] nf90_def_var_fill failed')
        call LDT_verify(nf90_put_att(ncid, land_frac_varid, 'long_name', &
             'Land Fraction'), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, land_frac_varid, 'units', &
-            'fraction'), '[ERR] nf90_put_att failed')
-
+            '1'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, land_frac_varid, 'valid_range', &
+            (/0.0, 1.0/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, land_frac_varid, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
        
-       ! Quality flag
+       ! =====================================================================
+       ! QUALITY FLAG with proper documentation
+       ! =====================================================================
+       
        call LDT_verify(nf90_def_var(ncid, 'QUALITY_FLAG', NF90_BYTE, &
             dimids, qf_varid), '[ERR] nf90_def_var failed')
        call LDT_verify(nf90_put_att(ncid, qf_varid, 'long_name', &
-            'Quality Flag'), '[ERR] nf90_put_att failed')
-       call LDT_verify(nf90_put_att(ncid, qf_varid, 'description', &
-            'Bit-packed quality indicators'), &
-            '[ERR] nf90_put_att failed')
+            'Quality Flag (4-bit packed)'), '[ERR] nf90_put_att failed')
        
-       ! Sample counts
+       ! Detailed description
+       qf_desc_str = 'Bit-packed quality indicators: ' // &
+                     'Bit 0 = Ocean (1=ocean/water, 0=land); ' // &
+                     'Bit 1 = Precipitation (1=precip detected); ' // &
+                     'Bit 2 = Snow (1=snow detected); ' // &
+                     'Bit 3 = Sensor quality issue (1=bad data)'
+       call LDT_verify(nf90_put_att(ncid, qf_varid, 'description', &
+            trim(qf_desc_str)), '[ERR] nf90_put_att failed')
+       
+       call LDT_verify(nf90_put_att(ncid, qf_varid, 'flag_masks', &
+            (/1, 2, 4, 8/)), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, qf_varid, 'flag_meanings', &
+            'ocean precipitation snow sensor_quality_issue'), &
+            '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, qf_varid, 'valid_range', &
+            (/0, 15/)), '[ERR] nf90_put_att failed')
+       
+       ! =====================================================================
+       ! SAMPLE COUNT VARIABLES
+       ! =====================================================================
+       
        call LDT_verify(nf90_def_var(ncid, 'SAMPLE_V', NF90_INT, &
             dimids, sample_v_varid), '[ERR] nf90_def_var failed')
        call LDT_verify(nf90_put_att(ncid, sample_v_varid, 'long_name', &
-            'Number of V-pol samples'), '[ERR] nf90_put_att failed')
+            'Number of V-pol samples averaged'), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, sample_v_varid, 'description', &
-            'Number of observations averaged for V-pol channels'), &
+            'Number of observations averaged for V-pol channels in hourly stitching'), &
             '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, sample_v_varid, 'units', &
+            'count'), '[ERR] nf90_put_att failed')
        
        call LDT_verify(nf90_def_var(ncid, 'SAMPLE_H', NF90_INT, &
             dimids, sample_h_varid), '[ERR] nf90_def_var failed')
        call LDT_verify(nf90_put_att(ncid, sample_h_varid, 'long_name', &
-            'Number of H-pol samples'), '[ERR] nf90_put_att failed')
+            'Number of H-pol samples averaged'), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, sample_h_varid, 'description', &
-            'Number of observations averaged for H-pol channels'), &
+            'Number of observations averaged for H-pol channels in hourly stitching'), &
             '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, sample_h_varid, 'units', &
+            'count'), '[ERR] nf90_put_att failed')
        
-       ! Global attributes
+       ! =====================================================================
+       ! GLOBAL ATTRIBUTES
+       ! =====================================================================
+       
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'title', &
             'WSF Brightness Temperature Data Resampled to ARFS Grid (Hourly Stitched)'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'institution', &
             'NASA GSFC'), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'source', &
-            'WSF L1R Data'), '[ERR] nf90_put_att failed')
+            'WSF L1R SDR Data'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'sensor', &
+            'WSF Microwave Radiometer'), '[ERR] nf90_put_att failed')
+       
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'grid_resolution', &
             '0.09375 x 0.140625 degrees'), '[ERR] nf90_put_att failed')
+       call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'grid_type', &
+            'ARFS (Air Force) Grid'), '[ERR] nf90_put_att failed')
+       
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'processing_date', &
             yyyymmdd), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'processing_hour', &
             hour_str), '[ERR] nf90_put_att failed')
+       
+       ! Build time coverage string
+       write(time_units_str, '(A,A2,A)') yyyymmdd, hour_str, ':00:00'
+       call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'time_coverage', &
+            trim(time_units_str)), '[ERR] nf90_put_att failed')
+       
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'number_of_input_files', &
             n_files), '[ERR] nf90_put_att failed')
        
        write(history_str, '(A,I3,A)') 'Stitched from ', n_files, &
-            ' WSF files with mean averaging for overlapping regions'
+            ' WSF files with mean averaging for overlapping regions and snow/precip filtering'
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'history', &
             trim(history_str)), '[ERR] nf90_put_att failed')
        
+       call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, '_FillValue', &
+            FILL_VALUE), '[ERR] nf90_put_att failed')
+       
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', &
-            'CF-1.6'), '[ERR] nf90_put_att failed')
+            'CF-1.8'), '[ERR] nf90_put_att failed')
        
        ! End definition mode
        call LDT_verify(nf90_enddef(ncid), '[ERR] nf90_enddef failed')
+       
+       ! =====================================================================
+       ! WRITE DATA
+       ! =====================================================================
        
        ! Write coordinate data
        allocate(lats(nr))
@@ -335,6 +463,15 @@ contains
        
        call LDT_verify(nf90_put_var(ncid, time_varid, time_seconds), &
             '[ERR] nf90_put_var failed for time')
+       
+       ! Write hour value
+       hour_value = hour
+       call LDT_verify(nf90_put_var(ncid, hour_varid, hour_value), &
+            '[ERR] nf90_put_var failed for hour')
+       
+       write(LDT_logunit,*)'[INFO] Writing data for: ', trim(time_units_str)
+       write(LDT_logunit,*)'[INFO] Time (seconds since epoch): ', time_seconds
+       write(LDT_logunit,*)'[INFO] Hour: ', hour_value
        
        ! Write TB data
        call LDT_verify(nf90_put_var(ncid, tb_10h_varid, tb_10h), &
@@ -376,6 +513,7 @@ contains
        
        write(LDT_logunit,*)'[INFO] Successfully wrote hourly stitched file: ', &
                           trim(output_fname)
+       write(LDT_logunit,*)'[INFO] Time coverage: ', trim(time_units_str)
     endif
     
   end subroutine LDT_WSF_ARFS_write_netcdf_hourly
