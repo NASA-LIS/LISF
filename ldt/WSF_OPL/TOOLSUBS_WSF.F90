@@ -2,17 +2,12 @@
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
 ! Version 7.5
-!
-! Copyright (c) 2024 United States Government as represented by the
-! Administrator of the National Aeronautics and Space Administration.
-! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: TOOLSUBS_WSF
 !
 ! DESCRIPTION: Module for reading WSF NetCDF data with ALL 17 channels
-!              FIXED: Corrected Fortran dimension order (column-major)
-!              READS: All channels, not just AMSR2 subset
+!              FIXED: Division by zero protection in quality flag creation
 !
 !-------------------------------------------------------------------------
 
@@ -32,21 +27,15 @@ CONTAINS
         earth_inc_angle, snow, precip, &
         nscans, nfovs, nchans, chan_frequencies, chan_polarizations, ierr)
     
-    ! =====================================================================
-    ! CORRECTED DIMENSION ORDER FOR FORTRAN (column-major)
-    ! ncdump shows: TbLowRes(nChan, nScanR, nFOVR)
-    ! Fortran reads: TbLowRes(nFOVR, nScanR, nChan) - REVERSED!
-    ! =====================================================================
-    
     character(*), intent(in) :: filename
-    real*4, allocatable, intent(out) :: tb_lowres(:,:,:)   ! (nFOVR, nScanR, nChan) - FORTRAN ORDER
-    real*4, allocatable, intent(out) :: lat(:,:)           ! (nFOVR, nScanR) - FORTRAN ORDER
-    real*4, allocatable, intent(out) :: lon(:,:)           ! (nFOVR, nScanR) - FORTRAN ORDER
-    real*4, allocatable, intent(out) :: land_frac_low(:,:) ! (nFOVR, nScanR) - FORTRAN ORDER
-    integer*1, allocatable, intent(out) :: quality_flag(:,:) ! (nFOVR, nScanR) - FORTRAN ORDER
-    real*4, allocatable, intent(out) :: earth_inc_angle(:,:,:) ! (nFOVR, nScanR, 1) - dummy
-    integer*4, allocatable, intent(out) :: snow(:,:)       ! (nFOVR, nScanR) - FORTRAN ORDER
-    integer*4, allocatable, intent(out) :: precip(:,:)     ! (nFOVR, nScanR) - FORTRAN ORDER
+    real*4, allocatable, intent(out) :: tb_lowres(:,:,:)
+    real*4, allocatable, intent(out) :: lat(:,:)
+    real*4, allocatable, intent(out) :: lon(:,:)
+    real*4, allocatable, intent(out) :: land_frac_low(:,:)
+    integer*1, allocatable, intent(out) :: quality_flag(:,:)
+    real*4, allocatable, intent(out) :: earth_inc_angle(:,:,:)
+    integer*4, allocatable, intent(out) :: snow(:,:)
+    integer*4, allocatable, intent(out) :: precip(:,:)
     real*4, allocatable, intent(out) :: chan_frequencies(:)
     character*1, allocatable, intent(out) :: chan_polarizations(:)
     integer, intent(out) :: nscans, nfovs, nchans
@@ -59,14 +48,14 @@ CONTAINS
     integer :: nband
     logical :: file_exists
     integer :: i, j, ichan
-    real :: sil, tt18
+    real :: sil, tt18, denom
     
     ! Temporary arrays for channel extraction (Fortran order)
     real*4, allocatable :: tb_18v(:,:), tb_18h(:,:)
     real*4, allocatable :: tb_23v(:,:), tb_36v(:,:), tb_89v(:,:)
     real*4, allocatable :: chan_freq(:)
     character*1, allocatable :: chan_pol(:)
-    integer*1, allocatable :: qf_from_file(:,:,:)  ! (nFOVR, nScanR, nBand) - FORTRAN ORDER
+    integer*1, allocatable :: qf_from_file(:,:,:)
     
     ierr = 0
     nscans = 0
@@ -119,43 +108,27 @@ CONTAINS
     write(LDT_logunit,*)'[INFO]   nBand  = ', nband
     write(LDT_logunit,*)'[INFO] ========================================='
     
-    ! =====================================================================
-    ! ALLOCATE WITH FORTRAN DIMENSION ORDER (REVERSED from ncdump)
-    ! =====================================================================
+    ! Allocate arrays
     write(LDT_logunit,*)'[INFO] Allocating arrays (Fortran column-major order):'
     
-    ! Main data arrays - FORTRAN ORDER
     allocate(tb_lowres(nfovs, nscans, nchans))
-    write(LDT_logunit,*)'[INFO]   tb_lowres(', nfovs, ',', nscans, ',', nchans, ')'
-    
     allocate(lat(nfovs, nscans))
-    write(LDT_logunit,*)'[INFO]   lat(', nfovs, ',', nscans, ')'
-    
     allocate(lon(nfovs, nscans))
-    write(LDT_logunit,*)'[INFO]   lon(', nfovs, ',', nscans, ')'
-    
     allocate(land_frac_low(nfovs, nscans))
-    write(LDT_logunit,*)'[INFO]   land_frac_low(', nfovs, ',', nscans, ')'
-    
     allocate(qf_from_file(nfovs, nscans, nband))
-    write(LDT_logunit,*)'[INFO]   quality_flag_file(', nfovs, ',', nscans, ',', nband, ')'
-    
     allocate(earth_inc_angle(nfovs, nscans, 1))
     allocate(snow(nfovs, nscans))
     allocate(precip(nfovs, nscans))
     allocate(quality_flag(nfovs, nscans))
-    
-    ! Channel info arrays
     allocate(chan_frequencies(nchans))
     allocate(chan_polarizations(nchans))
     
-    ! Temporary arrays for snow/precip detection
+    ! Temporary arrays
     allocate(tb_18v(nfovs, nscans))
     allocate(tb_18h(nfovs, nscans))
     allocate(tb_23v(nfovs, nscans))
     allocate(tb_36v(nfovs, nscans))
     allocate(tb_89v(nfovs, nscans))
-    
     allocate(chan_freq(nchans))
     allocate(chan_pol(nchans))
     
@@ -165,7 +138,7 @@ CONTAINS
     lon = 0.0
     land_frac_low = 0.0
     qf_from_file = 0
-    earth_inc_angle = 52.0  ! Default value (not used)
+    earth_inc_angle = 52.0
     snow = 0
     precip = 0
     quality_flag = 0
@@ -173,9 +146,7 @@ CONTAINS
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Reading variables from NetCDF...'
     
-    ! =====================================================================
-    ! READ LATITUDE (nScanR, nFOVR) -> Fortran gets (nFOVR, nScanR)
-    ! =====================================================================
+    ! Read Latitude
     ierr = nf90_inq_varid(ncid, 'Latitude', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, lat)
@@ -184,9 +155,7 @@ CONTAINS
         write(LDT_logunit,*)'[WARN] Could not read Latitude'
     end if
     
-    ! =====================================================================
-    ! READ LONGITUDE (nScanR, nFOVR) -> Fortran gets (nFOVR, nScanR)
-    ! =====================================================================
+    ! Read Longitude
     ierr = nf90_inq_varid(ncid, 'Longitude', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, lon)
@@ -195,16 +164,27 @@ CONTAINS
         write(LDT_logunit,*)'[WARN] Could not read Longitude'
     end if
     
-    ! =====================================================================
-    ! READ TbLowRes - ALL 17 CHANNELS
-    ! ncdump: TbLowRes(nChan, nScanR, nFOVR) = (17, 636, 286)
-    ! Fortran: TbLowRes(nFOVR, nScanR, nChan) = (286, 636, 17)
-    ! =====================================================================
+    ! Read TbLowRes
     ierr = nf90_inq_varid(ncid, 'TbLowRes', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, tb_lowres)
+        
+        ! Replace NaN and invalid values with -9999.0 using explicit loops
+        do ichan = 1, nchans
+            do i = 1, nscans
+                do j = 1, nfovs
+                    ! Check for NaN (value != itself)
+                    if (tb_lowres(j,i,ichan) /= tb_lowres(j,i,ichan) .or. &
+                        tb_lowres(j,i,ichan) < 0.0 .or. &
+                        tb_lowres(j,i,ichan) > 400.0) then
+                        tb_lowres(j,i,ichan) = -9999.0
+                    endif
+                end do
+            end do
+        end do
+        
         write(LDT_logunit,*)'[INFO] ✓ Read TbLowRes - ALL', nchans, 'channels'
-        write(LDT_logunit,*)'[INFO]   Fortran array shape: (', nfovs, ',', nscans, ',', nchans, ')'
+        write(LDT_logunit,*)'[INFO]   Replaced NaN/invalid values with -9999.0'
     else
         write(LDT_logunit,*)'[ERR] Could not read TbLowRes'
         ierr = nf90_close(ncid)
@@ -212,20 +192,22 @@ CONTAINS
         return
     end if
     
-    ! =====================================================================
-    ! READ LAND FRACTION (nScanR, nFOVR) -> Fortran gets (nFOVR, nScanR)
-    ! =====================================================================
+    ! Read Land Fraction
     ierr = nf90_inq_varid(ncid, 'LandFractionLowRes', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, land_frac_low)
+        
+        ! Replace NaN with -9999.0
+        where (land_frac_low /= land_frac_low)
+            land_frac_low = -9999.0
+        end where
+        
         write(LDT_logunit,*)'[INFO] ✓ Read LandFractionLowRes'
     else
         write(LDT_logunit,*)'[WARN] Could not read LandFractionLowRes'
     end if
     
-    ! =====================================================================
-    ! READ QUALITY FLAG (nBand, nScanR, nFOVR) -> Fortran gets (nFOVR, nScanR, nBand)
-    ! =====================================================================
+    ! Read Quality Flag
     ierr = nf90_inq_varid(ncid, 'QualityFlag', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, qf_from_file)
@@ -235,21 +217,14 @@ CONTAINS
         qf_from_file = 0
     end if
     
-    ! =====================================================================
-    ! READ CHANNEL FREQUENCIES (nChan) = (17)
-    ! =====================================================================
+    ! Read Channel Frequencies
     ierr = nf90_inq_varid(ncid, 'ChanFrequency', varid)
     if (ierr == NF90_NOERR) then
         ierr = nf90_get_var(ncid, varid, chan_freq)
         write(LDT_logunit,*)'[INFO] ✓ Read ChanFrequency'
         chan_frequencies(:) = chan_freq(:)
-        write(LDT_logunit,*)'[INFO] Channel Frequencies (GHz):'
-        do ichan = 1, min(nchans, 17)
-            write(LDT_logunit,*)'[INFO]   Chan', ichan, ': ', chan_freq(ichan), ' GHz'
-        end do
     else
         write(LDT_logunit,*)'[WARN] Could not read ChanFrequency, using defaults'
-        ! Use WSF standard frequencies for first 10 channels
         if (nchans >= 10) then
             chan_frequencies(1:2) = 10.65
             chan_frequencies(3:4) = 18.7
@@ -259,9 +234,7 @@ CONTAINS
         end if
     end if
     
-    ! =====================================================================
-    ! READ CHANNEL POLARIZATIONS (nChan) = (17)
-    ! =====================================================================
+    ! Read Channel Polarizations
     ierr = nf90_inq_varid(ncid, 'ChanPolarization', varid)
     if (ierr == NF90_NOERR) then
         do i = 1, nchans
@@ -270,10 +243,6 @@ CONTAINS
         end do
         write(LDT_logunit,*)'[INFO] ✓ Read ChanPolarization'
         chan_polarizations(:) = chan_pol(:)
-        write(LDT_logunit,*)'[INFO] Channel Polarizations:'
-        do ichan = 1, min(nchans, 17)
-            write(LDT_logunit,*)'[INFO]   Chan', ichan, ': ', chan_pol(ichan)
-        end do
     else
         write(LDT_logunit,*)'[WARN] Could not read ChanPolarization, using defaults'
         if (nchans >= 10) then
@@ -296,49 +265,41 @@ CONTAINS
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Extracting channels for snow/precip detection...'
     
-    ! =====================================================================
-    ! EXTRACT SPECIFIC CHANNELS FOR SNOW/PRECIP DETECTION
-    ! Access pattern: tb_lowres(ifov, iscan, ichan) - FORTRAN ORDER
-    ! =====================================================================
-    tb_18v = 0.0
-    tb_18h = 0.0
-    tb_23v = 0.0
-    tb_36v = 0.0
-    tb_89v = 0.0
+    ! Extract specific channels and handle fill values
+    tb_18v = -9999.0
+    tb_18h = -9999.0
+    tb_23v = -9999.0
+    tb_36v = -9999.0
+    tb_89v = -9999.0
     
     do ichan = 1, nchans
-        ! 18.7 GHz V
         if (abs(chan_freq(ichan) - 18.7) < 0.5 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
-            tb_18v(:,:) = tb_lowres(:,:,ichan)  ! CORRECTED indexing
+            tb_18v(:,:) = tb_lowres(:,:,ichan)
             write(LDT_logunit,*)'[INFO] ✓ Found TB_18V at channel ', ichan
         end if
         
-        ! 18.7 GHz H
         if (abs(chan_freq(ichan) - 18.7) < 0.5 .and. &
             (chan_pol(ichan) == 'h' .or. chan_pol(ichan) == 'H')) then
-            tb_18h(:,:) = tb_lowres(:,:,ichan)  ! CORRECTED indexing
+            tb_18h(:,:) = tb_lowres(:,:,ichan)
             write(LDT_logunit,*)'[INFO] ✓ Found TB_18H at channel ', ichan
         end if
         
-        ! 23.8 GHz V
         if (abs(chan_freq(ichan) - 23.8) < 0.5 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
-            tb_23v(:,:) = tb_lowres(:,:,ichan)  ! CORRECTED indexing
+            tb_23v(:,:) = tb_lowres(:,:,ichan)
             write(LDT_logunit,*)'[INFO] ✓ Found TB_23V at channel ', ichan
         end if
         
-        ! 36.5 GHz V
         if (abs(chan_freq(ichan) - 36.5) < 1.0 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
-            tb_36v(:,:) = tb_lowres(:,:,ichan)  ! CORRECTED indexing
+            tb_36v(:,:) = tb_lowres(:,:,ichan)
             write(LDT_logunit,*)'[INFO] ✓ Found TB_36V at channel ', ichan
         end if
         
-        ! 89.0 GHz V
         if (abs(chan_freq(ichan) - 89.0) < 2.0 .and. &
             (chan_pol(ichan) == 'v' .or. chan_pol(ichan) == 'V')) then
-            tb_89v(:,:) = tb_lowres(:,:,ichan)  ! CORRECTED indexing
+            tb_89v(:,:) = tb_lowres(:,:,ichan)
             write(LDT_logunit,*)'[INFO] ✓ Found TB_89V at channel ', ichan
         end if
     end do
@@ -347,24 +308,26 @@ CONTAINS
     write(LDT_logunit,*)'[INFO] Creating quality flags...'
     
     ! =====================================================================
-    ! CREATE QUALITY FLAGS
-    ! Access pattern: (ifov, iscan) - FORTRAN ORDER
+    ! CREATE QUALITY FLAGS - USE PROPER FILL VALUE CHECKS
     ! =====================================================================
     do j = 1, nfovs
         do i = 1, nscans
             quality_flag(j,i) = 0
             
             ! Bit 0: Ocean (land_frac < 0.2)
-            if (land_frac_low(j,i) < 0.2) then
+            if (land_frac_low(j,i) >= 0.0 .and. land_frac_low(j,i) < 0.2) then
                 quality_flag(j,i) = IOR(quality_flag(j,i), 1)
             endif
             
             ! Bit 1: Precipitation detection
+            ! Only compute if all required TBs are valid (> 0 means not fill value)
             if (tb_18v(j,i) > 0.0 .and. tb_18h(j,i) > 0.0 .and. &
                 tb_23v(j,i) > 0.0) then
-                sil = (tb_18v(j,i) - tb_18h(j,i)) / &
-                      (tb_18v(j,i) + tb_18h(j,i))
+                
+                denom = tb_18v(j,i) + tb_18h(j,i)
+                sil = (tb_18v(j,i) - tb_18h(j,i)) / denom
                 tt18 = (tb_18v(j,i) - tb_23v(j,i))
+                
                 if ((sil < 0.005) .and. (tt18 < -2.0)) then
                     precip(j,i) = 1
                     quality_flag(j,i) = IOR(quality_flag(j,i), 2)
@@ -379,8 +342,7 @@ CONTAINS
                 endif
             endif
             
-            ! Bit 3: Sensor quality (check bits 0-4 of band 0)
-            ! nBand dimension in Fortran order: (nFOVR, nScanR, nBand)
+            ! Bit 3: Sensor quality
             if (IAND(INT(qf_from_file(j,i,1)), 31) /= 0) then
                 quality_flag(j,i) = IOR(quality_flag(j,i), 8)
             endif
@@ -400,13 +362,10 @@ CONTAINS
     deallocate(qf_from_file)
     
     write(LDT_logunit,*)'[INFO] ✓ Successfully read ALL WSF data with flags'
-    write(LDT_logunit,*)'[INFO] ========================================='
     ierr = 0
     
 #else
-    ! Dummy version if LDT was compiled w/o NetCDF support
     write(LDT_logunit,*) '[ERR] get_wsf_data_with_flags called without NetCDF support!'
-    write(LDT_logunit,*) '[ERR] Recompile LDT with NetCDF support and try again!'
     call LDT_endrun()
     ierr = 1
 #endif

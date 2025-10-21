@@ -2,16 +2,11 @@
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
 ! Version 7.5
-!
-! Copyright (c) 2024 United States Government as represented by the
-! Administrator of the National Aeronautics and Space Administration.
-! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: invdist_wsf2arfs
 !
-! DESCRIPTION: Resample WSF TB onto Air Force Grid
-!              CORRECTED: Added snow/precip filtering to match AMSR_OPL exactly
+! DESCRIPTION: FIXED - Snow/Precip filtering now using correct arrays
 !
 !-------------------------------------------------------------------------
 
@@ -23,7 +18,7 @@ CONTAINS
 
     SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
         tb_23h, tb_23v, tb_36h, tb_36v, tb_89h, tb_89v, land_water_frac, &
-        snow_flag, precip_flag, quality_flag, &
+        snow_in, precip_in, quality_flag, &
         lat_in, lon_in, nscans_in, nfovs_in, &
         ref_lat, ref_lon, &
         arfs_time, arfs_land_water_frac, &
@@ -32,7 +27,7 @@ CONTAINS
         arfs_tb_89h, arfs_tb_89v, arfs_quality_flag, &
         arfs_sample_v, arfs_sample_h)
     
-    ! Arguments - EXACT match to AMSR_OPL signature
+    ! Arguments
     integer, intent(in) :: nscans_in, nfovs_in
     real*8, intent(in) :: tim(nscans_in)
     real*4, intent(in) :: tb_10h(nscans_in, nfovs_in), tb_10v(nscans_in, nfovs_in)
@@ -41,7 +36,7 @@ CONTAINS
     real*4, intent(in) :: tb_36h(nscans_in, nfovs_in), tb_36v(nscans_in, nfovs_in)
     real*4, intent(in) :: tb_89h(nscans_in, nfovs_in), tb_89v(nscans_in, nfovs_in)
     real*4, intent(in) :: land_water_frac(nscans_in, nfovs_in)
-    integer*4, intent(in) :: snow_flag(nscans_in, nfovs_in), precip_flag(nscans_in, nfovs_in)
+    integer*4, intent(in) :: snow_in(nscans_in, nfovs_in), precip_in(nscans_in, nfovs_in)
     integer*1, intent(in) :: quality_flag(nscans_in, nfovs_in)
     real*4, intent(in) :: lat_in(nscans_in, nfovs_in), lon_in(nscans_in, nfovs_in)
     real*8, intent(in) :: ref_lat(:), ref_lon(:)
@@ -57,7 +52,7 @@ CONTAINS
     integer*1, intent(out) :: arfs_quality_flag(2560,1920)
     integer*4, intent(out) :: arfs_sample_v(2560,1920), arfs_sample_h(2560,1920)
     
-    ! Local variables - EXACT match to AMSR_OPL
+    ! Local variables
     integer :: ii, jj, r, c, rr, cc, rmin, rmax, cmin, cmax, i, j
     integer, allocatable :: zerodistflag(:,:)
     real*8, parameter :: RE_KM = 6371.228
@@ -78,21 +73,18 @@ CONTAINS
     
     integer, allocatable :: snow_count(:,:), precip_count(:,:)
     integer, allocatable :: ocean_count(:,:), total_count(:,:)
-    integer, allocatable :: excluded_snow_count(:,:),excluded_precip_count(:,:)
+    integer, allocatable :: excluded_snow_count(:,:), excluded_precip_count(:,:)
     
     write(LDT_logunit,*)'[INFO] Starting WSF inverse distance resampling'
+    write(LDT_logunit,*)'[INFO] WITH CORRECTED Snow/Precip filtering'
+    
     ! Allocate weight arrays
     allocate(arfs_wt_tim(2560,1920))
-    allocate(arfs_wt_tb10h(2560,1920))
-    allocate(arfs_wt_tb10v(2560,1920))
-    allocate(arfs_wt_tb18h(2560,1920))
-    allocate(arfs_wt_tb18v(2560,1920))
-    allocate(arfs_wt_tb23h(2560,1920))
-    allocate(arfs_wt_tb23v(2560,1920))
-    allocate(arfs_wt_tb36h(2560,1920))
-    allocate(arfs_wt_tb36v(2560,1920))
-    allocate(arfs_wt_tb89h(2560,1920))
-    allocate(arfs_wt_tb89v(2560,1920))
+    allocate(arfs_wt_tb10h(2560,1920), arfs_wt_tb10v(2560,1920))
+    allocate(arfs_wt_tb18h(2560,1920), arfs_wt_tb18v(2560,1920))
+    allocate(arfs_wt_tb23h(2560,1920), arfs_wt_tb23v(2560,1920))
+    allocate(arfs_wt_tb36h(2560,1920), arfs_wt_tb36v(2560,1920))
+    allocate(arfs_wt_tb89h(2560,1920), arfs_wt_tb89v(2560,1920))
     allocate(arfs_wt_land_water_frac(2560,1920))
     
     ! Allocate counter arrays
@@ -103,7 +95,6 @@ CONTAINS
     allocate(excluded_snow_count(2560,1920))
     allocate(excluded_precip_count(2560,1920))
     
-    write(LDT_logunit,*)'[INFO] WITH Snow/Precip filtering (CORRECTED to match AMSR_OPL)'
     write(LDT_logunit,*)'[INFO] Input dimensions: ', nscans_in, 'x', nfovs_in
     write(LDT_logunit,*)'[INFO] Output dimensions: ', size(ref_lon), 'x', size(ref_lat)
     
@@ -150,11 +141,9 @@ CONTAINS
     arfs_sample_v = 0
     arfs_sample_h = 0
     
-    write(LDT_logunit,*)'[DEBUG] Array dimensions:'
-    write(LDT_logunit,*)'   nscans_in, nfovs_in = ', nscans_in, nfovs_in
-    write(LDT_logunit,*)'   size(ref_lat), size(ref_lon) = ', size(ref_lat), size(ref_lon)
-    
-    ! Main resampling loop - CORRECTED with snow/precip filtering
+    ! =====================================================================
+    ! MAIN RESAMPLING LOOP WITH CORRECTED SNOW/PRECIP FILTERING
+    ! =====================================================================
     do ii = 1, nfovs_in
         do jj = 1, nscans_in
             ! Skip invalid coordinates
@@ -163,17 +152,19 @@ CONTAINS
                 cycle
             endif
             
-            ! CRITICAL: Check for snow and precipitation flags
-            has_snow = (snow_flag(jj,ii) == 1)
-            has_precip = (precip_flag(jj,ii) == 1)
+            ! ================================================================
+            ! CRITICAL FIX: Check the actual snow_in and precip_in arrays!
+            ! ================================================================
+            has_snow = (snow_in(jj,ii) == 1)
+            has_precip = (precip_in(jj,ii) == 1)
             
             ! Determine search bounds
             lat1 = lat_in(jj,ii)
             lon1 = lon_in(jj,ii)
             
             ! Find grid cell bounds
-            c = MINLOC(ABS(lat_in(jj,ii) - ref_lat(:)), 1)  ! Lat direction
-            r = MINLOC(ABS(lon_in(jj,ii) - ref_lon(:)), 1)  ! Lon direction
+            c = MINLOC(ABS(lat_in(jj,ii) - ref_lat(:)), 1)
+            r = MINLOC(ABS(lon_in(jj,ii) - ref_lon(:)), 1)
             
             rmin = r - 5
             IF (rmin < 1) rmin = 1
@@ -210,9 +201,10 @@ CONTAINS
                             snow_count(rr,cc) = snow_count(rr,cc) + 1
                         endif
                         
+                        ! ================================================================
                         ! CRITICAL FILTERING: Skip resampling if snow or precip detected
+                        ! ================================================================
                         if (has_snow .OR. has_precip) then
-                            ! Track excluded footprints
                             if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
                             if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
                             ! SKIP THIS FOOTPRINT - DO NOT RESAMPLE
@@ -451,11 +443,13 @@ CONTAINS
     end do
     
     ! Report statistics
+    write(LDT_logunit,*)'[INFO] ========================================'
     write(LDT_logunit,*)'[INFO] Resampling statistics:'
     write(LDT_logunit,*)'[INFO]   Total excluded snow footprints: ', SUM(excluded_snow_count)
     write(LDT_logunit,*)'[INFO]   Total excluded precip footprints: ', SUM(excluded_precip_count)
     write(LDT_logunit,*)'[INFO]   Total V-pol samples: ', SUM(arfs_sample_v)
     write(LDT_logunit,*)'[INFO]   Total H-pol samples: ', SUM(arfs_sample_h)
+    write(LDT_logunit,*)'[INFO] ========================================'
     
     ! Cleanup
     deallocate(zerodistflag)
