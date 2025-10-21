@@ -25,6 +25,8 @@ module LDT_wsf_oplMod
 
   public :: LDT_wsf_oplInit
   public :: LDT_wsf_oplRun
+  public :: wsf_file_info  
+
 
   type, public :: wsf_opl_dec
     character*100 :: WSFdir          ! Input directory
@@ -278,16 +280,16 @@ contains
     basename = filename(pos:)
     
     ! Extract date (d20250601 -> positions 9-16)
-    file_info%date_str = basename(9:16)
+    file_info%date_str = basename(10:17)
     
     ! Extract start time (t002900 -> positions 18-23)
-    file_info%start_time = basename(18:23)
+    file_info%start_time = basename(19:25)
     
     ! Extract hour from start time
-    file_info%hour_str = basename(18:19)
+    file_info%hour_str = basename(20:21)
     
-    ! Extract end time (e004059 -> positions 25-30)
-    file_info%end_time = basename(25:30)
+    ! Extract end time (e004059 -> positions 27-33)
+    file_info%end_time = basename(27:33)
     
     ! Extract copy number (find _c## pattern)
     pos = index(basename, '_c')

@@ -218,8 +218,9 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         call get_wsf_data_with_flags(hour_files(ifile)%filename, &
             tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
             earth_inc_angle, snow_in, precip_in, &
-            chan_frequencies, chan_polarizations, &
-            nscans, nfovs, nchans, ierr)
+            nscans, nfovs, nchans, &  ! Reorder: dimensions come first
+            chan_frequencies, chan_polarizations, &  
+            ierr)
         
         if (ierr /= 0) then
             write(LDT_logunit,*)'[WARN] Failed to read file, skipping'
