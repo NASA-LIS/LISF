@@ -43,6 +43,7 @@ import datetime
 import glob
 from dateutil.relativedelta import relativedelta
 import yaml
+from ghis2s.shared.logging_utils import TaskLogger
 
 # Third party modules
 # NOTE: pylint cannot see the Dataset class in netCDF4 since that latter is not
@@ -59,11 +60,12 @@ gdal.UseExceptions()
 class _MetricGeoTiff:
     """Class for building GeoTIFF files from medians of S2S metrics."""
 
-    def __init__(self, topdir, metric, config, weekly=False):
+    def __init__(self, topdir, metric, config, logger, weekly=False):
         """Constructor"""
         self.topdir = topdir
         self.metric = metric
         self.config = config
+        self.logger = logger
         self.weekly = weekly
         self.nmme_metric_files = {}
         self.filename_elements = {}
@@ -188,7 +190,7 @@ class _MetricGeoTiff:
             newdate = datetime.datetime(year=date.year,
                                         month=(date.month + 1),
                                         day=1)
-            return newdate
+        return newdate
 
     def set_startdates_enddates_by_month(self):
         """Set the startdates and enddates by month."""
@@ -257,12 +259,14 @@ class _MetricGeoTiff:
         variable = metric.split("_")[0]
         filename += f"_PA.{variable.upper()}"
         filename += f"_DD.{filename_elements['DD']}"
+
         filename += \
             f"_FP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
         filename += \
             f"-{enddate.year:4d}{enddate.month:02d}{enddate.day:02d}"
 
         filename += "_DF.TIF"
+        self.logger[0].info(f"Writing: {filename}", subtask=self.logger[1])
         return filename
 
     def create_output_raster(self, outfile):
@@ -358,13 +362,19 @@ def _get_first_startdate(filename_elements):
 def _driver():
     """Main driver."""
     topdir, metric, configfile = _read_cmd_args()
+    task_name = os.environ.get('SCRIPT_NAME')
+    subtask=metric
+    logger = TaskLogger(task_name,
+                                os.getcwd(),
+                                's2smetric/make_s2s_median_metric_geotiff.py inside')
+
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     if len(sys.argv) == 4:
-        mgt = _MetricGeoTiff(topdir, metric, config)
+        mgt = _MetricGeoTiff(topdir, metric, config, [logger, subtask])
     else:
-        mgt = _MetricGeoTiff(topdir, metric, config, weekly=True)
+        mgt = _MetricGeoTiff(topdir, metric, config, [logger, subtask], weekly=True)
     mgt.save_nmme_metric_filenames()
     mgt.save_filename_elements()
     mgt.calc_medians()

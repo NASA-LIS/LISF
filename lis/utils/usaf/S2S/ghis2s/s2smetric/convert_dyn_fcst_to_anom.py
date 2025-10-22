@@ -82,9 +82,9 @@ elif DOMAIN_NAME == 'GLOBAL':
         '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
 
 TARGET_INFILE_TEMPLATE2 = \
-    'PA.ALL_DD.{:04d}{:02d}01_DT.0000_FP.{:04d}{:02d}??-{:04d}{:02d}01_DF.NC'
+    'PA.ALL_DD.{:04d}{:02d}01_DT.0000_FP.{:04d}{:02d}{:02d}-{:04d}{:02d}01_DF.NC'
 
-CLIM_INFILE_TEMPLATE2 = 'PA.ALL_DD.*{:02d}01_DT.0000_FP.*{:02d}??-*{:02d}01_DF.NC'
+CLIM_INFILE_TEMPLATE2 = 'PA.ALL_DD.*{:02d}01_DT.0000_FP.*{:02d}{:02d}-*{:02d}01_DF.NC'
 
 TARGET_INFILE_TEMPLATE = TARGET_INFILE_TEMPLATE1 + TARGET_INFILE_TEMPLATE2
 CLIM_INFILE_TEMPLATE = CLIM_INFILE_TEMPLATE1 + CLIM_INFILE_TEMPLATE2
@@ -121,12 +121,35 @@ def process_variable(var_name, METRIC_NAME):
         emon = datetime(CLIM_SYR, FCST_INIT_MON, FCST_INIT_DAY) + \
                     relativedelta(months=lead+1)
         ## Adding 1 to lead to make sure the file read is from the month after
+        smon1 = datetime(TARGET_YEAR, FCST_INIT_MON, FCST_INIT_DAY) + \
+            relativedelta(months=lead)
+        emon1 = datetime(TARGET_YEAR, FCST_INIT_MON, FCST_INIT_DAY) + \
+            relativedelta(months=lead+1)
 
-        INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS, \
-                                             FCST_INIT_MON, NMME_MODEL, \
-                                             NMME_MODEL.upper(), \
-                                             FCST_INIT_MON, \
-                                             smon.month, emon.month)
+        if lead == 0:
+            INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
+                                                 FCST_INIT_MON, NMME_MODEL,
+                                                 NMME_MODEL.upper(),
+                                                 FCST_INIT_MON,
+                                                 smon.month, 2, emon.month)
+            TINFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS,
+                                                    TARGET_YEAR, FCST_INIT_MON, NMME_MODEL,
+                                                    NMME_MODEL.upper(),
+                                                    TARGET_YEAR, FCST_INIT_MON,
+                                                    smon1.year, smon1.month, 2,
+                                                    emon1.year, emon1.month)
+        else:
+            INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
+                                                 FCST_INIT_MON, NMME_MODEL,
+                                                 NMME_MODEL.upper(),
+                                                 FCST_INIT_MON,
+                                                 smon.month, 1, emon.month)
+            TINFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS,
+                                                    TARGET_YEAR, FCST_INIT_MON, NMME_MODEL,
+                                                    NMME_MODEL.upper(),
+                                                    TARGET_YEAR, FCST_INIT_MON,
+                                                    smon1.year, smon1.month, 1,
+                                                    emon1.year, emon1.month)
 
         logger.info(f"Reading forecast climatology {INFILE}", subtask=var_name)
         infile1 = glob.glob(INFILE)
@@ -150,22 +173,11 @@ def process_variable(var_name, METRIC_NAME):
 
         ####### Step-2: Read the target forecast which needs to be converted
         ## into anomaly
-        smon1 = datetime(TARGET_YEAR, FCST_INIT_MON, FCST_INIT_DAY) + \
-            relativedelta(months=lead)
-        emon1 = datetime(TARGET_YEAR, FCST_INIT_MON, FCST_INIT_DAY) + \
-            relativedelta(months=lead+1)
 
-        INFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS, \
-                                               TARGET_YEAR, FCST_INIT_MON, NMME_MODEL, \
-                                               NMME_MODEL.upper(), \
-                                               TARGET_YEAR, FCST_INIT_MON, \
-                                               smon1.year, smon1.month, \
-                                               emon1.year, emon1.month)
-
-        logger.info(f"Reading target {INFILE}", subtask=var_name)
+        logger.info(f"Reading target {TINFILE}", subtask=var_name)
 
         # Note target will always have only one time step
-        target_data = load_ncdata(INFILE, [logger, var_name], **dict(combine='by_coords'))
+        target_data = load_ncdata(TINFILE, [logger, var_name])
 
         ## Now selecting the desired variable
         target_fcst_data = sel_var(target_data, var_name, HYD_MODEL)
