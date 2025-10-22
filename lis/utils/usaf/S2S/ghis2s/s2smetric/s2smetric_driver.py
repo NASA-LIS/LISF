@@ -119,12 +119,12 @@ if __name__ == "__main__":
                                 's2smetric/postprocess_nmme_job.py-> '
                                 'make_s2s_median_metric_geotiff.py to generate monthly TIF files.')
 
-        def run_tiff_py(cmd):
+        def run_tiff_py(cmd, logger):
             """
             Run *TIF format processing script
             """
             if subprocess.call(cmd, shell=True) != 0:
-                print("[ERR] Problem running make_s2s_median_metric_geotiff.py")
+                logger[0].error("Problem running make_s2s_median_metric_geotiff.py", subtask=logger[1])
                 sys.exit(1)
 
         baseoutdir = (args.cwd + '/s2smetric/' +
@@ -157,7 +157,7 @@ if __name__ == "__main__":
                 cmd += f" {input_dir} {metric} {args.configfile}"
                 if args.weekly:
                     cmd += f" weekly"
-                future = executor.submit(run_tiff_py, cmd)
+                future = executor.submit(run_tiff_py, cmd, [logger, metric])
                 futures.append(future)
 
             for future in futures:
