@@ -285,6 +285,7 @@ class Ghis2sProgram():
         filedata = filedata.replace('--output ', '--output=')
         filedata = filedata.replace('--error ', '--error=')
         filedata = filedata.replace('--exclusive', '--exclusive=')
+        filedata = filedata.replace('-N ', '-N = ')
 
         with config_file.open('w', encoding="utf-8") as file:
             file.write(filedata)

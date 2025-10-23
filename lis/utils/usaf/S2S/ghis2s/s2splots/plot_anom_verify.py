@@ -329,15 +329,15 @@ if __name__ == "__main__":
     for var in OUT_VARS:
         logger.info(f"Plotting {var}", subtask=f"Lag {lag}")
         # read USAF-LIS7.3rc8_25km 30-year climatology
-        var = ""
         if var == 'AirT':
-            usaf_clim_file = (cfg["SETUP"]["E2ESDIR"] +
-                              '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/T2M_obs_clim.nc')
+            usaf_clim_file = cfg["SETUP"]["E2ESDIR"] + \
+                '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/T2M_obs_clim.nc'
 
         if var == 'Precip':
-            usaf_clim_file = (cfg["SETUP"]["E2ESDIR"] +
-                             '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/PRECTOT_obs_clim.nc')
+            usaf_clim_file = cfg["SETUP"]["E2ESDIR"] + \
+                '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/PRECTOT_obs_clim.nc'
 
+        logger.info(f"Reading: {usaf_clim_file}", subtask=f"Lag {lag}")
         usaf_clim_xr = load_ncdata(usaf_clim_file, [logger, f"Lag {lag}"])
         usaf_clim_var = np.mean(usaf_clim_xr['clim'].values[clim_month,:], axis=0)
         usaf_clim_xr.close()
@@ -347,9 +347,9 @@ if __name__ == "__main__":
         under_over = plot_utils.dicts('lowhigh', load_table)
         convf = conv_factors.get(var)
         clabel = clabels.get(var)
-        figure = (plotdir + var + '_verification_F' + fdate.strftime("%Y%m%d") +
-                  '_V' + vdate_beg.strftime("%Y%m%d") + '-' +
-                  vdate_end.strftime("%Y%m%d") + '.png')
+        figure = plotdir + var + '_verification_F' + fdate.strftime("%Y%m%d") + \
+            '_V' + vdate_beg.strftime("%Y%m%d") + '-' + \
+            vdate_end.strftime("%Y%m%d") + '.png'
         logger.info(f"Generating: {figure}", subtask=f"Lag {lag}")
 
         nafpa_anom = None
@@ -364,14 +364,10 @@ if __name__ == "__main__":
         tmp_arr = np.zeros([nafpa_anom.shape[0], nafpa_anom.shape[1]],dtype=float)
         # read NC files
         anoms = []
-        #logger.info(f"Reading:  PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{year:04d}{month:02d}01_FP.{year:04d}{month:02d}01-{end_date.strftime('%Y%m%d')}_DF.NC", subtask=f"Lag {lag}")
-        #print (s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(year, month, year, month, end_date.strftime("%Y%m%d")))
+
         for model in cfg["EXP"]["NMME_models"]:
-            ncfile = (s2smdir +
-                      'PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
-                      'PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'
-                      .format(model.upper(), year, month, year, month,
-                              end_date.strftime("%Y%m%d")))
+            ncfile = f"{s2smdir}PS.557WW_SC.U_DI.C_GP.LIS-S2S-{model.upper()}_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD." \
+                f"{year:04d}{month:02d}01_FP.{year:04d}{month:02d}01-{end_date.strftime('%Y%m%d')}_DF.NC"
             logger.info(f"Reading: {ncfile}", subtask=f"Lag {lag}")
             ncdata = load_ncdata(ncfile, [logger, f"Lag {lag}"])
             anoms.append(ncdata[var + '_ANOM'])
