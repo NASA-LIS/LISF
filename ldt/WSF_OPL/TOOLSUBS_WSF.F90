@@ -23,9 +23,10 @@ MODULE TOOLSUBS_WSF
 CONTAINS
 
     SUBROUTINE get_wsf_data_with_flags(filename, &
-        tb_lowres, lat, lon, land_frac_low, quality_flag, &
+        tb_lowres, lat, lon, land_frac_low, quality_flag, &  ! This should be 3D output
         earth_inc_angle, snow, precip, &
-        nscans, nfovs, nchans, chan_frequencies, chan_polarizations, ierr)
+        nscans, nfovs, nchans, nband, &  ! Add nband as output
+        chan_frequencies, chan_polarizations, ierr)
     
     character(*), intent(in) :: filename
     real*4, allocatable, intent(out) :: tb_lowres(:,:,:)
@@ -342,18 +343,57 @@ CONTAINS
                 endif
             endif
             
-            ! Bit 3: Sensor quality
-            if (IAND(INT(qf_from_file(j,i,1)), 31) /= 0) then
-                quality_flag(j,i) = IOR(quality_flag(j,i), 8)
+            ! ================================================================
+            ! BAND-SPECIFIC SENSOR QUALITY FLAGS (Bits 3-7)
+            ! Check bits 0-4 of sensor quality flag for each band
+            ! ================================================================
+            
+            ! Bit 3: Band 1 (10 GHz) sensor quality
+            if (nband >= 1) then
+                if (IAND(INT(qf_from_file(j,i,1)), 15) /= 0) then
+                    quality_flag(j,i) = IOR(quality_flag(j,i), 8)  ! 2^3 = 8
+                endif
+            endif
+            
+            ! Bit 4: Band 2 (18 GHz) sensor quality
+            if (nband >= 2) then
+                if (IAND(INT(qf_from_file(j,i,2)), 15) /= 0) then
+                    quality_flag(j,i) = IOR(quality_flag(j,i), 16)  ! 2^4 = 16
+                endif
+            endif
+            
+            ! Bit 5: Band 3 (23 GHz) sensor quality
+            if (nband >= 3) then
+                if (IAND(INT(qf_from_file(j,i,3)), 15) /= 0) then
+                    quality_flag(j,i) = IOR(quality_flag(j,i), 32)  ! 2^5 = 32
+                endif
+            endif
+            
+            ! Bit 6: Band 4 (36 GHz) sensor quality
+            if (nband >= 4) then
+                if (IAND(INT(qf_from_file(j,i,4)), 15) /= 0) then
+                    quality_flag(j,i) = IOR(quality_flag(j,i), 64)  ! 2^6 = 64
+                endif
+            endif
+            
+            ! Bit 7: Band 5 (89 GHz) sensor quality
+            if (nband >= 5) then
+                if (IAND(INT(qf_from_file(j,i,5)), 15) /= 0) then
+                    quality_flag(j,i) = IOR(quality_flag(j,i), 128)  ! 2^7 = 128
+                endif
             endif
         end do
     end do
     
-    write(LDT_logunit,*)'[INFO] ✓ Quality flags created'
+    write(LDT_logunit,*)'[INFO] ✓ 8-bit combined quality flags created'
     write(LDT_logunit,*)'[INFO]   Bit 0: Ocean (land_frac < 20%)'
     write(LDT_logunit,*)'[INFO]   Bit 1: Precipitation'
     write(LDT_logunit,*)'[INFO]   Bit 2: Snow'
-    write(LDT_logunit,*)'[INFO]   Bit 3: Sensor quality (bits 0-4 check)'
+    write(LDT_logunit,*)'[INFO]   Bit 3: Sensor quality for 10GHz (Band 1)'
+    write(LDT_logunit,*)'[INFO]   Bit 4: Sensor quality for 18GHz (Band 2)'
+    write(LDT_logunit,*)'[INFO]   Bit 5: Sensor quality for 23GHz (Band 3)'
+    write(LDT_logunit,*)'[INFO]   Bit 6: Sensor quality for 36GHz (Band 4)'
+    write(LDT_logunit,*)'[INFO]   Bit 7: Sensor quality for 89GHz (Band 5)'
     write(LDT_logunit,*)'[INFO] ========================================='
     
     ! Cleanup temporary arrays

@@ -341,25 +341,34 @@ contains
        
        call LDT_verify(nf90_def_var(ncid, 'QUALITY_FLAG', NF90_BYTE, &
             dimids, qf_varid), '[ERR] nf90_def_var failed')
-       call LDT_verify(nf90_put_att(ncid, qf_varid, 'long_name', &
-            'Quality Flag (4-bit packed)'), '[ERR] nf90_put_att failed')
        
-       ! Detailed description
+      call LDT_verify(nf90_put_att(ncid, qf_varid, 'long_name', &
+            'Quality Flag (8-bit packed)'), '[ERR] nf90_put_att failed')
+       
+       ! Detailed description for 8-bit quality flag
        qf_desc_str = 'Bit-packed quality indicators: ' // &
                      'Bit 0 = Ocean (1=ocean/water, 0=land); ' // &
                      'Bit 1 = Precipitation (1=precip detected); ' // &
                      'Bit 2 = Snow (1=snow detected); ' // &
-                     'Bit 3 = Sensor quality issue (1=bad data)'
+                     'Bit 3 = Sensor quality 10GHz (1=bad); ' // &
+                     'Bit 4 = Sensor quality 18GHz (1=bad); ' // &
+                     'Bit 5 = Sensor quality 23GHz (1=bad); ' // &
+                     'Bit 6 = Sensor quality 36GHz (1=bad); ' // &
+                     'Bit 7 = Sensor quality 89GHz (1=bad)'
        call LDT_verify(nf90_put_att(ncid, qf_varid, 'description', &
             trim(qf_desc_str)), '[ERR] nf90_put_att failed')
        
        call LDT_verify(nf90_put_att(ncid, qf_varid, 'flag_masks', &
-            (/1, 2, 4, 8/)), '[ERR] nf90_put_att failed')
+            (/1, 2, 4, 8, 16, 32, 64, 128/)), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, qf_varid, 'flag_meanings', &
-            'ocean precipitation snow sensor_quality_issue'), &
+            'ocean precipitation snow sensor_10ghz sensor_18ghz ' // &
+            'sensor_23ghz sensor_36ghz sensor_89ghz'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, qf_varid, 'valid_range', &
-            (/0, 15/)), '[ERR] nf90_put_att failed')
+            (/0, 255/)), '[ERR] nf90_put_att failed')
+       
+       call LDT_verify(nf90_put_att(ncid, qf_varid, '_FillValue', &
+            int(-1,kind=1)), '[ERR] nf90_put_att failed')
        
        ! =====================================================================
        ! SAMPLE COUNT VARIABLES

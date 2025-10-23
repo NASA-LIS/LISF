@@ -99,6 +99,9 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     character*1 :: pol
     character(len=255) :: output_filename
     
+    integer*4, allocatable :: ARFS_COUNT_QF(:,:)
+    integer*4, allocatable :: ARFS_QUALITY_FLAG_SUM(:,:,:)  ! (2560, 1920, 4) for each bit
+    
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] WSF HOURLY GROUP PROCESSING'
     write(LDT_logunit,*)'[INFO] Hour: ', hour_str, 'H'
@@ -143,6 +146,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     allocate(TEMP_LAND_FRAC(2560,1920))
     allocate(TEMP_QUALITY_FLAG(2560,1920))
     allocate(TEMP_SAMPLE_V(2560,1920), TEMP_SAMPLE_H(2560,1920))
+    allocate(ARFS_COUNT_QF(2560,1920))
+    allocate(ARFS_QUALITY_FLAG_SUM(2560,1920,4))  ! Track each bit separately
     
     ! Initialize accumulation arrays
     ARFS_TIME_SUM = 0.0
@@ -170,7 +175,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ARFS_COUNT_89H = 0
     ARFS_COUNT_89V = 0
     ARFS_COUNT_LAND = 0
-    
+    ARFS_COUNT_QF = 0
+    ARFS_QUALITY_FLAG_SUM = 0
     ! =====================================================================
     ! PROCESS EACH FILE
     ! =====================================================================
@@ -398,6 +404,31 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
                     ARFS_LAND_FRAC_SUM(c,r) = ARFS_LAND_FRAC_SUM(c,r) + TEMP_LAND_FRAC(c,r)
                     ARFS_COUNT_LAND(c,r) = ARFS_COUNT_LAND(c,r) + 1
                 endif
+                ! Only accumulate if we have valid data
+                if (TEMP_TB_10V(c,r) > 0.0 .OR. TEMP_TB_10H(c,r) > 0.0) then
+                    ARFS_COUNT_QF(c,r) = ARFS_COUNT_QF(c,r) + 1
+                    
+                    ! Accumulate each bit separately for majority voting
+                    ! Bit 0: Ocean
+                    if (IBITS(TEMP_QUALITY_FLAG(c,r), 0, 1) == 1) then
+                        ARFS_QUALITY_FLAG_SUM(c,r,1) = ARFS_QUALITY_FLAG_SUM(c,r,1) + 1
+                    endif
+                    
+                    ! Bit 1: Precipitation
+                    if (IBITS(TEMP_QUALITY_FLAG(c,r), 1, 1) == 1) then
+                        ARFS_QUALITY_FLAG_SUM(c,r,2) = ARFS_QUALITY_FLAG_SUM(c,r,2) + 1
+                    endif
+                    
+                    ! Bit 2: Snow
+                    if (IBITS(TEMP_QUALITY_FLAG(c,r), 2, 1) == 1) then
+                        ARFS_QUALITY_FLAG_SUM(c,r,3) = ARFS_QUALITY_FLAG_SUM(c,r,3) + 1
+                    endif
+                    
+                    ! Bit 3: Sensor quality
+                    if (IBITS(TEMP_QUALITY_FLAG(c,r), 3, 1) == 1) then
+                        ARFS_QUALITY_FLAG_SUM(c,r,4) = ARFS_QUALITY_FLAG_SUM(c,r,4) + 1
+                    endif
+                endif
             end do
         end do
         
@@ -446,37 +477,85 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
             if (ARFS_COUNT_10H(c,r) > 0) then
                 ARFS_TB_10H(c,r) = ARFS_TB_10H_SUM(c,r) / real(ARFS_COUNT_10H(c,r))
                 ARFS_SAMPLE_H(c,r) = ARFS_COUNT_10H(c,r)
+            else
+                ARFS_TB_10H(c,r) = -9999.0
             endif
             if (ARFS_COUNT_10V(c,r) > 0) then
                 ARFS_TB_10V(c,r) = ARFS_TB_10V_SUM(c,r) / real(ARFS_COUNT_10V(c,r))
                 ARFS_SAMPLE_V(c,r) = ARFS_COUNT_10V(c,r)
+            else
+                ARFS_TB_10V(c,r) = -9999.0
             endif
             if (ARFS_COUNT_18H(c,r) > 0) then
                 ARFS_TB_18H(c,r) = ARFS_TB_18H_SUM(c,r) / real(ARFS_COUNT_18H(c,r))
+            else
+                ARFS_TB_18H(c,r) = -9999.0
             endif
             if (ARFS_COUNT_18V(c,r) > 0) then
                 ARFS_TB_18V(c,r) = ARFS_TB_18V_SUM(c,r) / real(ARFS_COUNT_18V(c,r))
+            else
+                ARFS_TB_18V(c,r) = -9999.0
             endif
             if (ARFS_COUNT_23H(c,r) > 0) then
                 ARFS_TB_23H(c,r) = ARFS_TB_23H_SUM(c,r) / real(ARFS_COUNT_23H(c,r))
+            else
+                ARFS_TB_23H(c,r) = -9999.0
             endif
             if (ARFS_COUNT_23V(c,r) > 0) then
                 ARFS_TB_23V(c,r) = ARFS_TB_23V_SUM(c,r) / real(ARFS_COUNT_23V(c,r))
+            else
+                ARFS_TB_23V(c,r) = -9999.0
             endif
             if (ARFS_COUNT_36H(c,r) > 0) then
                 ARFS_TB_36H(c,r) = ARFS_TB_36H_SUM(c,r) / real(ARFS_COUNT_36H(c,r))
+            else
+                ARFS_TB_36H(c,r) = -9999.0
             endif
             if (ARFS_COUNT_36V(c,r) > 0) then
                 ARFS_TB_36V(c,r) = ARFS_TB_36V_SUM(c,r) / real(ARFS_COUNT_36V(c,r))
+            else
+                ARFS_TB_36V(c,r) = -9999.0
             endif
             if (ARFS_COUNT_89H(c,r) > 0) then
                 ARFS_TB_89H(c,r) = ARFS_TB_89H_SUM(c,r) / real(ARFS_COUNT_89H(c,r))
+            else
+                ARFS_TB_89H(c,r) = -9999.0
             endif
             if (ARFS_COUNT_89V(c,r) > 0) then
                 ARFS_TB_89V(c,r) = ARFS_TB_89V_SUM(c,r) / real(ARFS_COUNT_89V(c,r))
+            else
+                ARFS_TB_89V(c,r) = -9999.0
             endif
             if (ARFS_COUNT_LAND(c,r) > 0) then
                 ARFS_LAND_FRAC(c,r) = ARFS_LAND_FRAC_SUM(c,r) / real(ARFS_COUNT_LAND(c,r))
+            else
+                ARFS_LAND_FRAC(c,r) = -9999.0
+            endif
+            ! Quality flag via majority voting on each bit
+            if (ARFS_COUNT_QF(c,r) > 0) then
+                ARFS_QUALITY_FLAG(c,r) = 0
+                
+                ! Set bit 0 (Ocean) if majority vote
+                if (ARFS_QUALITY_FLAG_SUM(c,r,1) > ARFS_COUNT_QF(c,r)/2) then
+                    ARFS_QUALITY_FLAG(c,r) = IOR(ARFS_QUALITY_FLAG(c,r), 1)
+                endif
+                
+                ! Set bit 1 (Precipitation) if majority vote
+                if (ARFS_QUALITY_FLAG_SUM(c,r,2) > ARFS_COUNT_QF(c,r)/2) then
+                    ARFS_QUALITY_FLAG(c,r) = IOR(ARFS_QUALITY_FLAG(c,r), 2)
+                endif
+                
+                ! Set bit 2 (Snow) if majority vote
+                if (ARFS_QUALITY_FLAG_SUM(c,r,3) > ARFS_COUNT_QF(c,r)/2) then
+                    ARFS_QUALITY_FLAG(c,r) = IOR(ARFS_QUALITY_FLAG(c,r), 4)
+                endif
+                
+                ! Set bit 3 (Sensor quality) if majority vote
+                if (ARFS_QUALITY_FLAG_SUM(c,r,4) > ARFS_COUNT_QF(c,r)/2) then
+                    ARFS_QUALITY_FLAG(c,r) = IOR(ARFS_QUALITY_FLAG(c,r), 8)
+                endif
+            else
+                ARFS_QUALITY_FLAG(c,r) = -1  ! No data
             endif
         end do
     end do
@@ -484,7 +563,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ! =====================================================================
     ! WRITE OUTPUT
     ! =====================================================================
-    output_filename = trim(output_dir)//'/WSF_stitched_'//yyyymmdd//'_'//hour_str//'00.nc'
+    output_filename = trim(output_dir)//'/WSF_SDR_resampled_'//yyyymmdd//'_t'//hour_str//'00.nc'
     
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Writing stitched hourly output'
@@ -538,5 +617,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     deallocate(ARFS_TB_89H, ARFS_TB_89V)
     deallocate(ARFS_LAND_FRAC, ARFS_QUALITY_FLAG)
     deallocate(ARFS_SAMPLE_V, ARFS_SAMPLE_H)
+    deallocate(ARFS_COUNT_QF)
+    deallocate(ARFS_QUALITY_FLAG_SUM)
 
 end subroutine WSF_ARFS_RESAMPLE_HOURLY
