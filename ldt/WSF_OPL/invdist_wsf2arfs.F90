@@ -530,12 +530,6 @@ CONTAINS
     write(LDT_logunit,*)'[INFO]   Total V-pol samples: ', SUM(arfs_sample_v)
     write(LDT_logunit,*)'[INFO]   Total H-pol samples: ', SUM(arfs_sample_h)
     write(LDT_logunit,*)'[INFO] ========================================'
-    write(LDT_logunit,*)'[DEBUG] Sensor quality flags set:'
-    write(LDT_logunit,*)'  10 GHz (bit 3): ', count(IBITS(arfs_quality_flag, 3, 1) == 1)
-    write(LDT_logunit,*)'  18 GHz (bit 4): ', count(IBITS(arfs_quality_flag, 4, 1) == 1)
-    write(LDT_logunit,*)'  23 GHz (bit 5): ', count(IBITS(arfs_quality_flag, 5, 1) == 1)
-    write(LDT_logunit,*)'  36 GHz (bit 6): ', count(IBITS(arfs_quality_flag, 6, 1) == 1)
-    write(LDT_logunit,*)'  89 GHz (bit 7): ', count(IBITS(arfs_quality_flag, 7, 1) == 1)
     
     ! Cleanup
     deallocate(zerodistflag)
