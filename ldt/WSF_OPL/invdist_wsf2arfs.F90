@@ -60,7 +60,7 @@ CONTAINS
     real*8, parameter :: PI = 3.141592653589793238
     real*8, parameter :: d2r = PI/180.0
     real*8 :: gcdist, lat1, lon1, lat2, lon2
-    logical :: has_snow, has_precip
+    logical :: has_snow, has_precip, has_water
     
     
     ! Weight arrays
@@ -79,6 +79,7 @@ CONTAINS
     INTEGER, ALLOCATABLE :: total_count(:,:)
     INTEGER, ALLOCATABLE :: excluded_snow_count(:,:)
     INTEGER, ALLOCATABLE :: excluded_precip_count(:,:)
+    INTEGER, ALLOCATABLE :: excluded_water_count(:,:)
     
     ! Band-specific sensor quality counters (NEW - one per band)
     INTEGER, ALLOCATABLE :: sensor_10ghz_count(:,:)
@@ -106,6 +107,7 @@ CONTAINS
     allocate(total_count(2560,1920))
     allocate(excluded_snow_count(2560,1920))
     allocate(excluded_precip_count(2560,1920))
+    allocate(excluded_water_count(2560,1920))
     allocate(sensor_10ghz_count(2560,1920))
     allocate(sensor_18ghz_count(2560,1920))
     allocate(sensor_23ghz_count(2560,1920))
@@ -155,6 +157,8 @@ CONTAINS
     total_count = 0
     excluded_snow_count = 0
     excluded_precip_count = 0
+    excluded_water_count = 0
+    
     
     ! Initialize band-specific sensor quality counters
     sensor_10ghz_count = 0
@@ -181,6 +185,7 @@ CONTAINS
             ! ================================================================
             has_snow = (snow_in(jj,ii) == 1)
             has_precip = (precip_in(jj,ii) == 1)
+            has_water = (IBITS(quality_flag(jj,ii), 0, 1) == 1)
             
             ! Determine search bounds
             lat1 = lat_in(jj,ii)
@@ -245,9 +250,10 @@ CONTAINS
                         ! ================================================================
                         ! CRITICAL FILTERING: Skip resampling if snow or precip detected
                         ! ================================================================
-                        if (has_snow .OR. has_precip) then
+                        if (has_snow .OR. has_precip .OR. has_water) then
                             if (has_snow) excluded_snow_count(rr,cc) = excluded_snow_count(rr,cc) + 1
                             if (has_precip) excluded_precip_count(rr,cc) = excluded_precip_count(rr,cc) + 1
+                            if (has_water) excluded_water_count(rr,cc) = excluded_water_count(rr,cc) + 1
                             ! SKIP THIS FOOTPRINT - DO NOT RESAMPLE
                             cycle
                         endif
@@ -528,15 +534,10 @@ CONTAINS
     write(LDT_logunit,*)'[INFO] Resampling statistics:'
     write(LDT_logunit,*)'[INFO]   Total excluded snow footprints: ', SUM(excluded_snow_count)
     write(LDT_logunit,*)'[INFO]   Total excluded precip footprints: ', SUM(excluded_precip_count)
+    write(LDT_logunit,*)'[INFO]   Total excluded water body footprints: ', SUM(excluded_water_count)
     write(LDT_logunit,*)'[INFO]   Total V-pol samples: ', SUM(arfs_sample_v)
     write(LDT_logunit,*)'[INFO]   Total H-pol samples: ', SUM(arfs_sample_h)
     write(LDT_logunit,*)'[INFO] ========================================'
-    write(LDT_logunit,*)'[DEBUG] Sensor quality flags set:'
-    write(LDT_logunit,*)'  10 GHz (bit 3): ', count(IBITS(arfs_quality_flag, 3, 1) == 1)
-    write(LDT_logunit,*)'  18 GHz (bit 4): ', count(IBITS(arfs_quality_flag, 4, 1) == 1)
-    write(LDT_logunit,*)'  23 GHz (bit 5): ', count(IBITS(arfs_quality_flag, 5, 1) == 1)
-    write(LDT_logunit,*)'  36 GHz (bit 6): ', count(IBITS(arfs_quality_flag, 6, 1) == 1)
-    write(LDT_logunit,*)'  89 GHz (bit 7): ', count(IBITS(arfs_quality_flag, 7, 1) == 1)
     
     ! Cleanup
     deallocate(zerodistflag)
@@ -549,7 +550,7 @@ CONTAINS
     deallocate(arfs_wt_land_water_frac)
     deallocate(snow_count, precip_count)
     deallocate(ocean_count, total_count)
-    deallocate(excluded_snow_count, excluded_precip_count)
+    deallocate(excluded_snow_count, excluded_precip_count, excluded_water_count)
     deallocate(sensor_10ghz_count, sensor_18ghz_count)
     deallocate(sensor_23ghz_count, sensor_36ghz_count, sensor_89ghz_count)
     
