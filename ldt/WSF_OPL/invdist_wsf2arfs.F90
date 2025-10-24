@@ -73,15 +73,19 @@ CONTAINS
     real*4, allocatable :: arfs_wt_land_water_frac(:,:)
     
     ! Counters for majority vote
-    INTEGER, DIMENSION(2560,1920) :: snow_count, precip_count, ocean_count, total_count
-    INTEGER, DIMENSION(2560,1920) :: excluded_snow_count, excluded_precip_count
+    INTEGER, ALLOCATABLE :: snow_count(:,:)
+    INTEGER, ALLOCATABLE :: precip_count(:,:)
+    INTEGER, ALLOCATABLE :: ocean_count(:,:)
+    INTEGER, ALLOCATABLE :: total_count(:,:)
+    INTEGER, ALLOCATABLE :: excluded_snow_count(:,:)
+    INTEGER, ALLOCATABLE :: excluded_precip_count(:,:)
     
     ! Band-specific sensor quality counters (NEW - one per band)
-    INTEGER, DIMENSION(2560,1920) :: sensor_10ghz_count
-    INTEGER, DIMENSION(2560,1920) :: sensor_18ghz_count
-    INTEGER, DIMENSION(2560,1920) :: sensor_23ghz_count
-    INTEGER, DIMENSION(2560,1920) :: sensor_36ghz_count
-    INTEGER, DIMENSION(2560,1920) :: sensor_89ghz_count
+    INTEGER, ALLOCATABLE :: sensor_10ghz_count(:,:)
+    INTEGER, ALLOCATABLE :: sensor_18ghz_count(:,:)
+    INTEGER, ALLOCATABLE :: sensor_23ghz_count(:,:)
+    INTEGER, ALLOCATABLE :: sensor_36ghz_count(:,:)
+    INTEGER, ALLOCATABLE :: sensor_89ghz_count(:,:)
     
     write(LDT_logunit,*)'[INFO] Starting WSF inverse distance resampling'
     write(LDT_logunit,*)'[INFO] WITH CORRECTED Snow/Precip filtering'
@@ -102,7 +106,11 @@ CONTAINS
     allocate(total_count(2560,1920))
     allocate(excluded_snow_count(2560,1920))
     allocate(excluded_precip_count(2560,1920))
-    allocate(sensor_quality_count(2560,1920))
+    allocate(sensor_10ghz_count(2560,1920))
+    allocate(sensor_18ghz_count(2560,1920))
+    allocate(sensor_23ghz_count(2560,1920))
+    allocate(sensor_36ghz_count(2560,1920))
+    allocate(sensor_89ghz_count(2560,1920))
 
     write(LDT_logunit,*)'[INFO] Input dimensions: ', nscans_in, 'x', nfovs_in
     write(LDT_logunit,*)'[INFO] Output dimensions: ', size(ref_lon), 'x', size(ref_lat)
@@ -264,45 +272,45 @@ CONTAINS
                             !   Band 4: 36.5 GHz (TB_36H, TB_36V)
                             !   Band 5: 89.0 GHz (TB_89H, TB_89V)
                             ! TB channels
-                            if (IAND(quality_flag(i,j), 8) == 0 .AND. ABS(tb_10h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 3: 10.85 GHz (TB_10H, TB_10V)
+                            if (IAND(quality_flag(jj,ii), 8) == 0 .AND. ABS(tb_10h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 3: 10.85 GHz (TB_10H, TB_10V)
                                 arfs_tb_10h(rr,cc) = tb_10h(jj,ii)
                                 arfs_wt_tb10h(rr,cc) = 1.0
                                 arfs_sample_h(rr,cc) = arfs_sample_h(rr,cc) + 1
                             endif
-                            if (IAND(quality_flag(i,j), 8) == 0 .AND. ABS(tb_10v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 3: 10.85 GHz (TB_10H, TB_10V)
+                            if (IAND(quality_flag(jj,ii), 8) == 0 .AND. ABS(tb_10v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 3: 10.85 GHz (TB_10H, TB_10V)
                                 arfs_tb_10v(rr,cc) = tb_10v(jj,ii)
                                 arfs_wt_tb10v(rr,cc) = 1.0
                                 arfs_sample_v(rr,cc) = arfs_sample_v(rr,cc) + 1
                             endif
-                            if (IAND(quality_flag(i,j), 16) == 0 .AND. ABS(tb_18h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 4: 18 GHz
+                            if (IAND(quality_flag(jj,ii), 16) == 0 .AND. ABS(tb_18h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 4: 18 GHz
                                 arfs_tb_18h(rr,cc) = tb_18h(jj,ii)
                                 arfs_wt_tb18h(rr,cc) = 1.0
                             endif
-                            if (IAND(quality_flag(i,j), 16) == 0 .AND. ABS(tb_18v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 4: 18 GHz
+                            if (IAND(quality_flag(jj,ii), 16) == 0 .AND. ABS(tb_18v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 4: 18 GHz
                                 arfs_tb_18v(rr,cc) = tb_18v(jj,ii)
                                 arfs_wt_tb18v(rr,cc) = 1.0
                             endif
-                            if (IAND(quality_flag(i,j), 32) == 0 .AND. ABS(tb_23h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 5: 23 GHz
+                            if (IAND(quality_flag(jj,ii), 32) == 0 .AND. ABS(tb_23h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 5: 23 GHz
                                 arfs_tb_23h(rr,cc) = tb_23h(jj,ii)
                                 arfs_wt_tb23h(rr,cc) = 1.0
                             endif
-                            if (IAND(quality_flag(i,j), 32) == 0 .AND. ABS(tb_23v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 5: 23 GHz
+                            if (IAND(quality_flag(jj,ii), 32) == 0 .AND. ABS(tb_23v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 5: 23 GHz
                                 arfs_tb_23v(rr,cc) = tb_23v(jj,ii)
                                 arfs_wt_tb23v(rr,cc) = 1.0
                             endif
-                            if (IAND(quality_flag(i,j), 64) == 0 .AND. ABS(tb_36h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 6: 36 GHz
+                            if (IAND(quality_flag(jj,ii), 64) == 0 .AND. ABS(tb_36h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 6: 36 GHz
                                 arfs_tb_36h(rr,cc) = tb_36h(jj,ii)
                                 arfs_wt_tb36h(rr,cc) = 1.0
                             endif
-                            if (IAND(quality_flag(i,j), 64) == 0 .AND. ABS(tb_36v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 6: 36 GHz
+                            if (IAND(quality_flag(jj,ii), 64) == 0 .AND. ABS(tb_36v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 6: 36 GHz
                                 arfs_tb_36v(rr,cc) = tb_36v(jj,ii)
                                 arfs_wt_tb36v(rr,cc) = 1.0
                             endif
-                            if (IAND(quality_flag(i,j), 128) == 0 .AND. ABS(tb_89h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 7: 89 GHz
+                            if (IAND(quality_flag(jj,ii), 128) == 0 .AND. ABS(tb_89h(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 7: 89 GHz
                                 arfs_tb_89h(rr,cc) = tb_89h(jj,ii)
                                 arfs_wt_tb89h(rr,cc) = 1.0
                             endif
-                            if (IAND(quality_flag(i,j), 128) == 0 .AND. ABS(tb_89v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 7: 89 GHz
+                            if (IAND(quality_flag(jj,ii), 128) == 0 .AND. ABS(tb_89v(jj,ii) - (-9999.0)) > 1.0E-6) then ! quality_flag bit 7: 89 GHz
                                 arfs_tb_89v(rr,cc) = tb_89v(jj,ii)
                                 arfs_wt_tb89v(rr,cc) = 1.0
                             endif
@@ -325,45 +333,45 @@ CONTAINS
                             endif
                             
                             ! TB channels
-                            if (IAND(quality_flag(i,j), 8) == 0 .AND. ABS(tb_10h(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 8) == 0 .AND. ABS(tb_10h(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_10h(rr,cc) = arfs_tb_10h(rr,cc) + tb_10h(jj,ii) / gcdist
                                 arfs_wt_tb10h(rr,cc) = arfs_wt_tb10h(rr,cc) + 1.0 / gcdist
                                 arfs_sample_h(rr,cc) = arfs_sample_h(rr,cc) + 1
                             endif
-                            if (IAND(quality_flag(i,j), 8) == 0 .AND. ABS(tb_10v(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 8) == 0 .AND. ABS(tb_10v(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_10v(rr,cc) = arfs_tb_10v(rr,cc) + tb_10v(jj,ii) / gcdist
                                 arfs_wt_tb10v(rr,cc) = arfs_wt_tb10v(rr,cc) + 1.0 / gcdist
                                 arfs_sample_v(rr,cc) = arfs_sample_v(rr,cc) + 1
                             endif
-                            if (IAND(quality_flag(i,j), 16) == 0 .AND. ABS(tb_18h(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 16) == 0 .AND. ABS(tb_18h(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_18h(rr,cc) = arfs_tb_18h(rr,cc) + tb_18h(jj,ii) / gcdist
                                 arfs_wt_tb18h(rr,cc) = arfs_wt_tb18h(rr,cc) + 1.0 / gcdist
                             endif
-                            if (IAND(quality_flag(i,j), 16) == 0 .AND. ABS(tb_18v(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 16) == 0 .AND. ABS(tb_18v(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_18v(rr,cc) = arfs_tb_18v(rr,cc) + tb_18v(jj,ii) / gcdist
                                 arfs_wt_tb18v(rr,cc) = arfs_wt_tb18v(rr,cc) + 1.0 / gcdist
                             endif
-                            if (IAND(quality_flag(i,j), 32) == 0 .AND. ABS(tb_23h(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 32) == 0 .AND. ABS(tb_23h(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_23h(rr,cc) = arfs_tb_23h(rr,cc) + tb_23h(jj,ii) / gcdist
                                 arfs_wt_tb23h(rr,cc) = arfs_wt_tb23h(rr,cc) + 1.0 / gcdist
                             endif
-                            if (IAND(quality_flag(i,j), 32) == 0 .AND. ABS(tb_23v(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 32) == 0 .AND. ABS(tb_23v(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_23v(rr,cc) = arfs_tb_23v(rr,cc) + tb_23v(jj,ii) / gcdist
                                 arfs_wt_tb23v(rr,cc) = arfs_wt_tb23v(rr,cc) + 1.0 / gcdist
                             endif
-                            if (IAND(quality_flag(i,j), 64) == 0 .AND. ABS(tb_36h(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 64) == 0 .AND. ABS(tb_36h(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_36h(rr,cc) = arfs_tb_36h(rr,cc) + tb_36h(jj,ii) / gcdist
                                 arfs_wt_tb36h(rr,cc) = arfs_wt_tb36h(rr,cc) + 1.0 / gcdist
                             endif
-                            if (IAND(quality_flag(i,j), 64) == 0 .AND. ABS(tb_36v(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 64) == 0 .AND. ABS(tb_36v(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_36v(rr,cc) = arfs_tb_36v(rr,cc) + tb_36v(jj,ii) / gcdist
                                 arfs_wt_tb36v(rr,cc) = arfs_wt_tb36v(rr,cc) + 1.0 / gcdist
                             endif
-                            if (IAND(quality_flag(i,j), 128) == 0 .AND. ABS(tb_89h(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 128) == 0 .AND. ABS(tb_89h(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_89h(rr,cc) = arfs_tb_89h(rr,cc) + tb_89h(jj,ii) / gcdist
                                 arfs_wt_tb89h(rr,cc) = arfs_wt_tb89h(rr,cc) + 1.0 / gcdist
                             endif
-                            if (IAND(quality_flag(i,j), 128) == 0 .AND. ABS(tb_89v(jj,ii) - (-9999.0)) > 1.0E-6) then
+                            if (IAND(quality_flag(jj,ii), 128) == 0 .AND. ABS(tb_89v(jj,ii) - (-9999.0)) > 1.0E-6) then
                                 arfs_tb_89v(rr,cc) = arfs_tb_89v(rr,cc) + tb_89v(jj,ii) / gcdist
                                 arfs_wt_tb89v(rr,cc) = arfs_wt_tb89v(rr,cc) + 1.0 / gcdist
                             endif
@@ -536,8 +544,8 @@ CONTAINS
     deallocate(snow_count, precip_count)
     deallocate(ocean_count, total_count)
     deallocate(excluded_snow_count, excluded_precip_count)
-    deallocate(sensor_quality_count)
-
+    deallocate(sensor_10ghz_count, sensor_18ghz_count)
+    deallocate(sensor_23ghz_count, sensor_36ghz_count, sensor_89ghz_count)
     
     write(LDT_logunit,*)'[INFO] Resampling complete with snow/precip filtering'
     

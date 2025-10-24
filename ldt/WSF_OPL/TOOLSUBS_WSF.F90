@@ -25,7 +25,7 @@ CONTAINS
     SUBROUTINE get_wsf_data_with_flags(filename, &
         tb_lowres, lat, lon, land_frac_low, quality_flag, &  ! This should be 3D output
         earth_inc_angle, snow, precip, &
-        nscans, nfovs, nchans, nband, &  ! Add nband as output
+        nscans, nfovs, nchans, & 
         chan_frequencies, chan_polarizations, ierr)
     
     character(*), intent(in) :: filename
@@ -316,7 +316,7 @@ CONTAINS
             quality_flag(j,i) = 0
             
             ! Bit 0: Ocean (land_frac < 0.2)
-            if (land_frac_low(j,i) >= 0.0 .and. land_frac_low(j,i) < 0.2) then
+            if (land_frac_low(j,i) < 0.2) then
                 quality_flag(j,i) = IOR(quality_flag(j,i), 1)
             endif
             
@@ -395,6 +395,10 @@ CONTAINS
     write(LDT_logunit,*)'[INFO]   Bit 6: Sensor quality for 36GHz (Band 4)'
     write(LDT_logunit,*)'[INFO]   Bit 7: Sensor quality for 89GHz (Band 5)'
     write(LDT_logunit,*)'[INFO] ========================================='
+    write(LDT_logunit,*)'[DEBUG] Ocean flags set: ', count(IBITS(quality_flag, 0, 1) == 1)
+    write(LDT_logunit,*)'[DEBUG] Precip flags set: ', count(IBITS(quality_flag, 1, 1) == 1)
+    write(LDT_logunit,*)'[DEBUG] Snow flags set: ', count(IBITS(quality_flag, 2, 1) == 1)
+    write(LDT_logunit,*)'[DEBUG] Land frac range: ', minval(land_frac_low), maxval(land_frac_low)
     
     ! Cleanup temporary arrays
     deallocate(tb_18v, tb_18h, tb_23v, tb_36v, tb_89v)

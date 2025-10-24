@@ -405,7 +405,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
                     ARFS_COUNT_LAND(c,r) = ARFS_COUNT_LAND(c,r) + 1
                 endif
                 ! Only accumulate if we have valid data
-                if (TEMP_TB_10V(c,r) > 0.0 .OR. TEMP_TB_10H(c,r) > 0.0) then
+                if (TEMP_QUALITY_FLAG(c,r) /= 0) then
                     ARFS_COUNT_QF(c,r) = ARFS_COUNT_QF(c,r) + 1
                     
                     ! Accumulate each bit separately for majority voting
