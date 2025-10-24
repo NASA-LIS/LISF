@@ -316,72 +316,75 @@ CONTAINS
             quality_flag(j,i) = 0
             
             ! Bit 0: Ocean (land_frac < 0.2)
-            if (land_frac_low(j,i) < 0.2) then
+            if (land_frac_low(j,i) < 0.2) then 
                 quality_flag(j,i) = IOR(quality_flag(j,i), 1)
             endif
             
-            ! Bit 1: Precipitation detection
-            ! Only compute if all required TBs are valid (> 0 means not fill value)
-            if (tb_18v(j,i) > 0.0 .and. tb_18h(j,i) > 0.0 .and. &
-                tb_23v(j,i) > 0.0) then
+            if (land_frac_low(j,i) >= 0.2) then ! calculate the rest of the flags only over land
+
+                ! Bit 1: Precipitation detection
+                ! Only compute if all required TBs are valid (> 0 means not fill value)
+                if (tb_18v(j,i) > 0.0 .and. tb_18h(j,i) > 0.0 .and. &
+                    tb_23v(j,i) > 0.0) then
+                    
+                    denom = tb_18v(j,i) + tb_18h(j,i)
+                    sil = (tb_18v(j,i) - tb_18h(j,i)) / denom
+                    tt18 = (tb_18v(j,i) - tb_23v(j,i))
+                    
+                    if ((sil < 0.005) .and. (tt18 < -2.0)) then
+                        precip(j,i) = 1
+                        quality_flag(j,i) = IOR(quality_flag(j,i), 2)
+                    endif
+                endif
                 
-                denom = tb_18v(j,i) + tb_18h(j,i)
-                sil = (tb_18v(j,i) - tb_18h(j,i)) / denom
-                tt18 = (tb_18v(j,i) - tb_23v(j,i))
+                ! Bit 2: Snow detection
+                if (tb_36v(j,i) > 0.0 .and. tb_89v(j,i) > 0.0) then
+                    if (tb_36v(j,i) - tb_89v(j,i) < -5.0) then
+                        snow(j,i) = 1
+                        quality_flag(j,i) = IOR(quality_flag(j,i), 4)
+                    endif
+                endif
                 
-                if ((sil < 0.005) .and. (tt18 < -2.0)) then
-                    precip(j,i) = 1
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 2)
+                ! ================================================================
+                ! BAND-SPECIFIC SENSOR QUALITY FLAGS (Bits 3-7)
+                ! Check bits 0-4 of sensor quality flag for each band
+                ! ================================================================
+                
+                ! Bit 3: Band 1 (10 GHz) sensor quality
+                if (nband >= 1) then
+                    if (IAND(INT(qf_from_file(j,i,1)), 15) /= 0) then
+                        quality_flag(j,i) = IOR(quality_flag(j,i), 8)  ! 2^3 = 8
+                    endif
                 endif
-            endif
-            
-            ! Bit 2: Snow detection
-            if (tb_36v(j,i) > 0.0 .and. tb_89v(j,i) > 0.0) then
-                if (tb_36v(j,i) - tb_89v(j,i) < -5.0) then
-                    snow(j,i) = 1
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 4)
+                
+                ! Bit 4: Band 2 (18 GHz) sensor quality
+                if (nband >= 2) then
+                    if (IAND(INT(qf_from_file(j,i,2)), 15) /= 0) then
+                        quality_flag(j,i) = IOR(quality_flag(j,i), 16)  ! 2^4 = 16
+                    endif
                 endif
-            endif
-            
-            ! ================================================================
-            ! BAND-SPECIFIC SENSOR QUALITY FLAGS (Bits 3-7)
-            ! Check bits 0-4 of sensor quality flag for each band
-            ! ================================================================
-            
-            ! Bit 3: Band 1 (10 GHz) sensor quality
-            if (nband >= 1) then
-                if (IAND(INT(qf_from_file(j,i,1)), 15) /= 0) then
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 8)  ! 2^3 = 8
+                
+                ! Bit 5: Band 3 (23 GHz) sensor quality
+                if (nband >= 3) then
+                    if (IAND(INT(qf_from_file(j,i,3)), 15) /= 0) then
+                        quality_flag(j,i) = IOR(quality_flag(j,i), 32)  ! 2^5 = 32
+                    endif
                 endif
-            endif
-            
-            ! Bit 4: Band 2 (18 GHz) sensor quality
-            if (nband >= 2) then
-                if (IAND(INT(qf_from_file(j,i,2)), 15) /= 0) then
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 16)  ! 2^4 = 16
+                
+                ! Bit 6: Band 4 (36 GHz) sensor quality
+                if (nband >= 4) then
+                    if (IAND(INT(qf_from_file(j,i,4)), 15) /= 0) then
+                        quality_flag(j,i) = IOR(quality_flag(j,i), 64)  ! 2^6 = 64
+                    endif
                 endif
-            endif
-            
-            ! Bit 5: Band 3 (23 GHz) sensor quality
-            if (nband >= 3) then
-                if (IAND(INT(qf_from_file(j,i,3)), 15) /= 0) then
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 32)  ! 2^5 = 32
+                
+                ! Bit 7: Band 5 (89 GHz) sensor quality
+                if (nband >= 5) then
+                    if (IAND(INT(qf_from_file(j,i,5)), 15) /= 0) then
+                        quality_flag(j,i) = IOR(quality_flag(j,i), 128)  ! 2^7 = 128
+                    endif
                 endif
-            endif
-            
-            ! Bit 6: Band 4 (36 GHz) sensor quality
-            if (nband >= 4) then
-                if (IAND(INT(qf_from_file(j,i,4)), 15) /= 0) then
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 64)  ! 2^6 = 64
-                endif
-            endif
-            
-            ! Bit 7: Band 5 (89 GHz) sensor quality
-            if (nband >= 5) then
-                if (IAND(INT(qf_from_file(j,i,5)), 15) /= 0) then
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 128)  ! 2^7 = 128
-                endif
-            endif
+            endif ! close the land check here
         end do
     end do
     
