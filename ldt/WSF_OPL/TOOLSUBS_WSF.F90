@@ -350,35 +350,35 @@ CONTAINS
                 
                 ! Bit 3: Band 1 (10 GHz) sensor quality
                 if (nband >= 1) then
-                    if (IAND(INT(qf_from_file(i,j,1)), 15) /= 0) then
+                    if (IAND(INT(qf_from_file(j,i,1)), 7) /= 0) then
                         quality_flag(j,i) = IOR(quality_flag(j,i), 8)  ! 2^3 = 8
                     endif
                 endif
                 
                 ! Bit 4: Band 2 (18 GHz) sensor quality
                 if (nband >= 2) then
-                    if (IAND(INT(qf_from_file(i,j,2)), 15) /= 0) then
+                    if (IAND(INT(qf_from_file(j,i,2)), 7) /= 0) then
                         quality_flag(j,i) = IOR(quality_flag(j,i), 16)  ! 2^4 = 16
                     endif
                 endif
                 
                 ! Bit 5: Band 3 (23 GHz) sensor quality
                 if (nband >= 3) then
-                    if (IAND(INT(qf_from_file(i,j,3)), 15) /= 0) then
+                    if (IAND(INT(qf_from_file(j,i,3)), 7) /= 0) then
                         quality_flag(j,i) = IOR(quality_flag(j,i), 32)  ! 2^5 = 32
                     endif
                 endif
                 
                 ! Bit 6: Band 4 (36 GHz) sensor quality
                 if (nband >= 4) then
-                    if (IAND(INT(qf_from_file(i,j,4)), 15) /= 0) then
+                    if (IAND(INT(qf_from_file(j,i,4)), 7) /= 0) then
                         quality_flag(j,i) = IOR(quality_flag(j,i), 64)  ! 2^6 = 64
                     endif
                 endif
                 
                 ! Bit 7: Band 5 (89 GHz) sensor quality
                 if (nband >= 5) then
-                    if (IAND(INT(qf_from_file(i,j,5)), 15) /= 0) then
+                    if (IAND(INT(qf_from_file(j,i,5)), 7) /= 0) then
                         quality_flag(j,i) = IOR(quality_flag(j,i), 128)  ! 2^7 = 128
                     endif
                 endif
@@ -387,7 +387,7 @@ CONTAINS
     end do
     
     write(LDT_logunit,*)'[INFO] ✓ 8-bit combined quality flags created'
-    write(LDT_logunit,*)'[INFO]   Bit 0: Ocean (land_frac < 20%)'
+    write(LDT_logunit,*)'[INFO]   Bit 0: Ocean (land_frac < 50%)'
     write(LDT_logunit,*)'[INFO]   Bit 1: Precipitation'
     write(LDT_logunit,*)'[INFO]   Bit 2: Snow'
     write(LDT_logunit,*)'[INFO]   Bit 3: Sensor quality for 10GHz (Band 1)'
