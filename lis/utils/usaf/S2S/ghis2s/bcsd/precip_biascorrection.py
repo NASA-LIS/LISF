@@ -32,6 +32,7 @@ import os
 import argparse
 import yaml
 from ghis2s.shared import utils
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 #
 # Local methods
 #
@@ -92,8 +93,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     print(f"[INFO] Processing forecast bias correction of NMME-{nmme_model} precip")
 
-    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
-    ens_num = ensemble_sizes[nmme_model]
+    ens_num = NMMEParams(nmme_model).ens_num
     slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
