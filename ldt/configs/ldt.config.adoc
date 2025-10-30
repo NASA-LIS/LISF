@@ -27,6 +27,7 @@ Not all options described here are available in the public version of LDT.
 |"`Statistical downscaling of met forcing`" |Statistical options to downscale or generate forcing climatologies
 |"`OPTUE parameter processing`" |Process the OPT/UE output to generate optimized parameters
 |"`USAFSI analysis`" |USAF Snow and Ice analysis
+|"`SNIP analysis`"   |USAF SNow and Ice Product
 |"`LISHydro preprocessing for WRFHydro`" |Preprocessing Option for WRFHydro
 |"`OPL E SMAP soil moisture retrieval`" |Operational 9-km enhanced SMAP soil moisture retrieval
 |===
@@ -4852,6 +4853,189 @@ USAFSI GALWEM subdirectory: GALWEM
 USAFSI GALWEM use timestamp directories: 1
 USAFSI GALWEM nominal resolution (km): 17
 ....
+
+[[ssec-snip]]
+=== USAF SNow and Ice Product
+
+`SNIP valid date (YYYYMMDDHH):` valid date and hour (UTC) of analysis
+`SNIP netcdf data directory for SNIP:` directory for SNIP netCDF files
+`SNIP netcdf filename prefix for SNIP:` prefix used in constructing SNIP netcdf filenames
+`SNIP netcdf data directory for USAFSI:` directory for USAFSI netCDF files
+`SNIP netcdf filename prefix for USAFSI:` prefix used in constructing USAFSI netcdf filenames
+`SNIP data directory for modified SNODEP:` directory with legacy SNODEP "`modified`" data
+`SNIP data directory for unmodified SNODEP:` directory with legacy SNODEP "`unmodified`" data
+`SNIP static data directory:` directory with legacy SNODEP static data
+
+.Example _ldt.config_ entry
+....
+SNIP valid date (YYYYMMDDHH):                    2025012006
+SNIP netcdf data directory for SNIP:       ./input/snip
+SNIP netcdf filename prefix for SNIP:      SNIP
+SNIP netcdf data directory for USAFSI:     ./input/usafsi
+SNIP netcdf filename prefix for USAFSI:    USAFSI
+SNIP data directory for modified SNODEP:   ./input/snodep_modified/
+SNIP data directory for unmodified SNODEP: ./input/snodep_unmodified/
+SNIP static data directory:                ./input/static/
+....
+
+`SNIP AMSR2 snowdepth data directory:` directory with AMSR2 retrievals
+`SNIP AMSR2 shallow snow depth threshold (m):` threshold to reject AMSR2 retrieval if smaller than first guess
+
+.Example _ldt.config_ entry
+....
+SNIP AMSR2 snowdepth data directory:        ./input/AMSR2_retrievals/
+SNIP AMSR2 shallow snow depth threshold (m): 0.05
+....
+
+`SNIP VIIRS data directory:` directory with VIIRS TIFF files
+`SNIP max age of VIIRS pixels to use:` used to ignore old VIIRS data
+`SNIP min VIIRS fraction to mark point as bare ground:` fraction of no-snow VIIRS pixels in LDT grid box required to mark as "`no-snow`"
+`SNIP use VIIRS snow mask:` self-explanatory
+`SNIP default snow depth (m) when actual depth unknown:` bogus value for when snow detected but depth unknown
+
+.Example _ldt.config_ entry
+....
+SNIP VIIRS data directory:                      ./input/viirs/
+SNIP max age of VIIRS pixels to use: 3
+SNIP min VIIRS fraction to mark point as bare ground:  0.6
+SNIP min VIIRS fraction to mark point as snow: 0.4
+SNIP use VIIRS snow mask: .true.
+SNIP default snow depth (m) when actual depth unknown: 0.1
+....
+
+`SNIP GALWEM root directory:` root directory for GALWEM data
+`SNIP GALWEM subdirectory:` subdirectory for GALWEM data
+`SNIP GALWEM use timestamp directories:` option to use YYYYMMDD in constructing full GALWEM directory; 1 is yes, 0 is no
+`SNIP GALWEM nominal resolution (km):` 17 or 10 (17 currently used in operations)
+`SNIP LIS GRIB2 data directory:` directory with LIS GRIB2 2-m temperature analyses
+`SNIP LIS GRIB2 security class:` used for constructing LIS GRIB2 filename
+`SNIP LIS GRIB2 data category:` used for constructing LIS GRIB2 filename
+`SNIP LIS GRIB2 data resolution:` used for constructing LIS GRIB2 filename
+`SNIP LIS GRIB2 area of data:` used for constructing LIS GRIB2 filename
+`SNIP degribbed LIS 0.25 deg sfc temperature data directory:` directory with legacy 0.25 deg LIS ungribbed surface temperatures
+
+.Example _ldt.config_ entry
+....
+SNIP GALWEM root directory: ./input/GALWEM
+SNIP GALWEM subdirectory: GALWEM
+SNIP GALWEM use timestamp directories: 1
+SNIP GALWEM nominal resolution (km): 17
+SNIP LIS GRIB2 data directory:  ./input/LIS_T2/
+SNIP LIS GRIB2 security class:  U
+SNIP LIS GRIB2 data category:   C
+SNIP LIS GRIB2 data resolution: C0P09DEG
+SNIP LIS GRIB2 area of data:    GLOBAL
+SNIP degribbed LIS 0.25 deg sfc temperature data directory: ./input/sfctmps/
+....
+
+
+`SNIP surface obs data directory:` directory with surface snow reports
+`SNIP surface obs data format:` specifies format of surface observation files
+[cols="<,<",]
+|===
+|Value |Description
+|1 |Legacy
+|2 |WIGOS
+|===
+`SNIP maximum number of surface observations allowed:` self-explanatory
+`SNIP minimum snow depth (m) for which to print a diagnostic:` threshold for printing surface ob report
+`SNIP latitudes (deg * 100) for summer climo check:` three latitude bands used for sanity checking snow reports
+`SNIP elevations (m) for summer climo check:` four elevations used for sanity checking snow reports
+`SNIP temperature (deg K * 10) above which no snow is allowed:` used to adjust snow analysis
+`SNIP max reported temperature (deg K * 10) allowed around poles:` used to reject snow ground reports that are too warm
+`SNIP observation error variance (m^2):` error variance assigned to surface snow reports
+`SNIP background error variance (m^2):` error variance assigned to first-guess field
+`SNIP background error horizontal correlation length (m):` correlation length for spreading snow depth corrections horizontally
+`SNIP background error vertical correlation length (m):` correlation length for spreading snow depth corrections vertically
+`SNIP elevQC difference threshold (m):` threshold for sanity checking snow report elevation against LDT
+`SNIP skewed backQC snow depth threshold (m):` threshold for rejecting abnormally small snow depth reports
+
+.Example _ldt.config_ entry
+....
+SNIP surface obs data directory:                ./input/sfcobs/
+SNIP surface obs data format:                   1 # Legacy format
+SNIP maximum number of surface observations allowed: 200000
+SNIP minimum snow depth (m) for which to print a diagnostic: 0.025
+# There should be three latitudes listed below, defining three bands
+# for sanity checking snow reports in different seasons.
+# Strongly recommend 4000 3000 2000
+SNIP latitudes (deg * 100) for summer climo check: 4000 3000 2000
+# There should be four elevations listed below, defining four elevation
+# levels for sanity checking snow reports in different seasons.
+# Strongly recommend 1000 1500 1000 1000
+SNIP elevations (m) for summer climo check: 1000 1500 1000 1000
+SNIP temperature (deg K * 10) above which no snow is allowed: 2820
+SNIP max reported temperature (deg K * 10) allowed around poles: 3030
+SNIP observation error variance (m^2):  0.0006
+SNIP background error variance (m^2):   0.0010
+SNIP background error horizontal correlation length (m):  55555.
+SNIP background error vertical correlation length (m):      800.
+SNIP elevQC difference threshold (m): 400.
+SNIP skewed backQC snow depth threshold (m):  0.4
+....
+
+`SNIP Snow Climatology:` specifies snow climatology data. Acceptable values are:
+[cols="<,<",]
+|===
+|Value |Description
+
+|1 |legacy
+|2 |updated 10-km climo
+|===
+`SNIP decimal fraction adjustment of snow depth towards climo:` controls drift to climo in data void region
+`SNIP bogus climatology snow depth value (m):` bogus value for climatology if not available
+
+.Example _ldt.config_ entry
+....
+SNIP Snow Climatology:                1  # 1: legacy 2: updated 10-km climo
+SNIP decimal fraction adjustment of snow depth towards climo: 0.1
+SNIP bogus climatology snow depth value (m): 0.2
+....
+
+`SNIP source of ocean data:` specifies the source of the USAFSI ocean data.  Acceptable values are:
+[cols="<,<",]
+|===
+|Value |Description
+|ESPC-D | Earth System Prediction Capability - Deterministic
+|GOFS   | Global Ocean Forecast System
+|===
+`SNIP ESPC-D SST data directory:` directory with ESPC-D sea surface temperature netCDF files
+`SNIP ESPC-D CICE data directory:` directory with ESPC-D sea ice netCDF files
+`SNIP GOFS SST data directory:` directory with GOFS sea surface temperature netCDF files
+`SNIP GOFS CICE data directory:` directory with GOFS sea ice netCDF files
+`SNIP FNMOC SST GRIB1 data directory:` directory with legacy 0.25 deg FNMOC SST GRIB1 files (used only as emergency backup to GOFS or ESPC-D netCDF data)
+`SNIP minimum ice concentration (%) needed to set ice flag:` used when constructing binary sea ice field
+`SNIP high latitude thresholds (deg) for sea ice::` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "`high latitudes`" in sea ice analysis.
+`SNIP low latitude thresholds (deg) for sea ice:` 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define "`low latitudes`" in sea ice analysis.
+
+.Example _ldt.config_ entry
+....
+SNIP source of ocean data: "ESPC-D"
+SNIP ESPC-D SST data directory:  ./input/ESPC-D/
+SNIP ESPC-D CICE data directory: ./input/ESPC-D/
+SNIP GOFS SST data directory:   ./input/GOFS/
+SNIP GOFS CICE data directory:  ./input/GOFS/
+# Backup for when no ESPC-D or GOFS data found
+SNIP FNMOC SST GRIB1 data directory: ./input/FNMOC_SST/
+SNIP minimum ice concentration (%) needed to set ice flag: 15
+# There should 24 latitudes defined below, each row definining a
+# hemisphere (NH first row, SH second row), and each column defining a
+# month (J F M A M J J A S O N D).  These are used to define high
+# latitudes in the sea ice analysis.
+SNIP high latitude thresholds (deg) for sea ice::
+       81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0
+       90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0
+::
+# There should 24 latitudes defined below, each row definining a
+# hemisphere (NH first row, SH second row), and each column defining a
+# month (J F M A M J J A S O N D).  These are used to define low
+# latitudes in the sea ice analysis.
+SNIP low latitude thresholds (deg) for sea ice::
+       45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0
+       60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0
+::
+....
+
 
 `LIS OPT/UE output file:` name of the OPT/UE output file generated from a LIS simulation
 
