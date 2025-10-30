@@ -18,7 +18,7 @@ import argparse
 import xarray as xr
 import numpy as np
 import yaml
-#pylint: disable=import-error
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 
 lis_name = {
         'PRECTOT': 'TotalPrecip_acc','PS': 'Psurf_f_tavg','T2M': 'Tair_f_tavg',
@@ -82,7 +82,6 @@ if __name__ == "__main__":
             [0,0.5,1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,7,9,11,13,15,17,20,25,30,50]
         CLABEL2 = 'Monthly Precip (units mm/d)'
         STITLE = 'PRECTOT'
-        NENS = cfg['EXP']['ensemble_sizes'][0]
         for nmme_model in  cfg['EXP']['NMME_models']:
             plot_dir = OUT_PATH + nmme_model + '/'
             if not os.path.exists(plot_dir):
@@ -101,7 +100,7 @@ if __name__ == "__main__":
                 if fcast_month > 12:
                     fcast_month -= 12
                     year = year+1
-                for ens in range (1, NENS.get(nmme_model) +1):
+                for ens in range (1, NMMEParams(nmme_model).ens_num +1):
                     plot_arr = np.zeros([2,720,1440],dtype=float)
                     mon_arr = monthly_xr['PRECTOT'].isel(Lead=lead_month, Ens = ens -1, time =0)
                     EEE = 'ens' + str(ens)

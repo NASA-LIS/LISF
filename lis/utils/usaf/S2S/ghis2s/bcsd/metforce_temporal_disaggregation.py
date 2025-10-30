@@ -62,7 +62,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         config = yaml.safe_load(file)
 
     # Base forecast model
-    fcst_model = config['BCSD']['fcst_data_type']
+    fcst_model = config['BCSD']['metforce_source']
 
     # get resolution
     lats, _ = utils.get_domain_info(config_file, coord=True)
@@ -76,7 +76,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
-    model_name = config['BCSD']['fcst_data_type']
+    model_name = config['BCSD']['metforce_source']
 
     # Path for where forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}"

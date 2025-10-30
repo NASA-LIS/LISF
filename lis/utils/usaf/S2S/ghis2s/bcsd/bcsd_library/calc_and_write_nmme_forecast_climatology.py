@@ -20,6 +20,7 @@ import yaml
 from dateutil.relativedelta import relativedelta
 from ghis2s.shared.utils import get_domain_info, load_ncdata
 from ghis2s.shared.logging_utils import TaskLogger
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 
 # This function takes in a time series as input and provides sorted times series of values
 # and qunatiles in return
@@ -54,8 +55,7 @@ CLIM_SYR = config['BCSD']['clim_start_year']
 CLIM_EYR = config['BCSD']['clim_end_year']
 LEAD_FINAL = config['EXP']['lead_months']
 MASK_FILE = config['SETUP']['supplementarydir'] + '/bcsd_fcst/ex_raw_nmme_download.nc'
-ensemble_sizes = config['EXP']['ensemble_sizes'][0]
-ENS_NUM = ensemble_sizes[MODEL_NAME]
+ENS_NUM = NMMEParams(MODEL_NAME).ens_num
 
 MONTH_NAME = calendar.month_abbr[INIT_FCST_MON].lower() + "01"
 INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'

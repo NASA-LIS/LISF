@@ -79,7 +79,7 @@ LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
 LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
-fcst_model = config['BCSD']['fcst_data_type']
+fcst_model = config['BCSD']['metforce_source']
 ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
         config['SETUP']['ldtinputfile'])
 land_mask = np.array(ldt_xr['LANDMASK'].values)

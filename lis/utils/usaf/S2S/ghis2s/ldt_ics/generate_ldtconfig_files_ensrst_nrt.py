@@ -42,7 +42,7 @@ import datetime
 import shutil
 import subprocess
 import yaml
-
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 
 # Private constants
 _LDT_EXEC = "./LDT"
@@ -54,11 +54,6 @@ _LDT_INPUT_FILE = ""
 # NMME model names
 _NMME_MODELS = []
 
-# Ensemble members per NMME model
-_ENSEMBLE_SIZES = {}
-
-# Options for scaling to 0.25 deg
-_NMME_SCALINGS = {}
 #
 INPUTDIR = ''
 WORKDIR = ''
@@ -107,8 +102,8 @@ def _customize_ldt_config(ldtconfig_lsm_target, lsm_rstdir, currentdate,
     """Customize new ldt.config file."""
     shutil.copy(_LDTCONFIG_LSM_TEMPLATE, ldtconfig_lsm_target)
 
-    num_ensmems = _ENSEMBLE_SIZES[nmme_model]
-    ldt_rstgen = _NMME_SCALINGS[nmme_model]
+    num_ensmems = NMMEParams(nmme_model).ens_num
+    ldt_rstgen = NMMEParams(nmme_model).scaling
 
     # Build customized settings for target ldt.config file
     input_fname = f"{lsm_rstdir}/LIS_RST_NOAHMP401_" + \
@@ -163,10 +158,10 @@ def _driver():
         #if not os.path.exists('./' + nmme_model):
         #    os.makedirs('./' + nmme_model, exist_ok = False)
 
-        num_ensmems = _ENSEMBLE_SIZES[nmme_model]
+        num_ensmems = NMMEParams(nmme_model).ens_num
         print(f"[INFO] Number of members: {num_ensmems:d}" + \
               f" for model {nmme_model}")
-        ldt_rstgen = _NMME_SCALINGS[nmme_model]
+        ldt_rstgen = NMMEParams(nmme_model).scaling
         print("[INFO] LDT ensemble restart generation: " + \
               f"{ldt_rstgen} for model {nmme_model}")
 
@@ -226,12 +221,10 @@ if __name__ == "__main__":
         CONFIG = yaml.safe_load(file)
 
     # update global params
-    _ENSEMBLE_SIZES = CONFIG['EXP']['ensemble_sizes'][0]
     _INPUT_NUMFCSTMONS = CONFIG['EXP']['lead_months']
     _LSM_NAME = CONFIG['EXP']['lsm']
     _ROUTING_NAME = CONFIG['EXP']['routing_name']
     _NMME_MODELS = CONFIG['EXP']['NMME_models']
-    _NMME_SCALINGS = CONFIG['EXP']['NMME_scalings'][0]
     _LDTCONFIG_LSM_TEMPLATE = f"{_TEMPLATE_DIR}/ldt.config_{_LSM_NAME}_nmme_TEMPLATE"
     _LDT_INPUT_FILE = './input/' + CONFIG['SETUP']['ldtinputfile']
 

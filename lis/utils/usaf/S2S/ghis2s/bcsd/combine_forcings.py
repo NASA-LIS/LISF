@@ -61,7 +61,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         config = yaml.safe_load(file)
 
     # Base forecast model
-    fcst_model = config['BCSD']['fcst_data_type']
+    fcst_model = config['BCSD']['metforce_source']
 
     # get resolution
     lats, _ = utils.get_domain_info(config_file, coord=True)

@@ -24,6 +24,7 @@ from ghis2s.s2spost import s2spost_driver
 from ghis2s.s2smetric import s2smetric_driver
 from ghis2s import bcsd
 from ghis2s.shared.logging_utils import TaskLogger
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 # pylint: disable=too-many-lines
 
 class DownloadForecasts():
@@ -369,7 +370,7 @@ class S2Srun(DownloadForecasts):
         self.scrdir = self.e2esdir + 'scratch/' + self.yyyy + self.mm + '/'
         self.models = self.config["EXP"]["NMME_models"]
         self.constraint = self.config['SETUP']['CONSTRAINT']
-        self.fcst_model = self.config['BCSD']['fcst_data_type']
+        self.fcst_model = self.config['BCSD']['metforce_source']
         self.schedule = {}
         self.additional_env_vars = additional_env_vars
 
@@ -932,7 +933,7 @@ class S2Srun(DownloadForecasts):
 
         # write lisda_run.j
         # -----------------
-        s2s_api.lis_job_file(self.e2esdir +'/' + self.config_file, 'lisda_run.j',
+        s2s_api.lis_job_file(self.e2esroot +'/' + self.config_file, 'lisda_run.j',
                              'lisda_', cwd, str(5))
 
         if 'discover' in platform.node() or 'borg' in platform.node():
@@ -1031,7 +1032,7 @@ class S2Srun(DownloadForecasts):
         # configure batch script
         # ----------------------
 
-        s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, 'ldtics_run.j', 'ldtics_',
+        s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, 'ldtics_run.j', 'ldtics_',
                                 str(1), str(2), cwd, None)
 
         command=(f"python {self.lishdir}/ghis2s/ldt_ics/generate_ldtconfig_files_ensrst_nrt.py -y"
@@ -1101,7 +1102,7 @@ class S2Srun(DownloadForecasts):
                     'HOURS': str(self.config["EXP"]["lead_months"])},
         }
         info = resol_info[resol]
-        slurm_commands = bcsd.metforce_regridding.main(self.e2esdir +'/' + self.config_file, self.year, None,
+        slurm_commands = bcsd.metforce_regridding.main(self.e2esroot +'/' + self.config_file, self.year, None,
                                            mmm, cwd, jobname, 1, 2, py_call=True)
 
         # multi tasks per job
@@ -1116,7 +1117,7 @@ class S2Srun(DownloadForecasts):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file,
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j', jobname+ f'{i+1:02d}_',
                                         info['TPN'], info['HOURS'], cwd,
                                         tfile.name, parallel_run=par_info)
@@ -1133,12 +1134,12 @@ class S2Srun(DownloadForecasts):
         # (3) precip_regridding (formerly bcsd03) regridding precipitation (NMME)
         # ---------------------------------------
         jobname='pr_regrid_'
-        slurm_commands = bcsd.precip_regridding.main(self.e2esdir +'/' + self.config_file,
+        slurm_commands = bcsd.precip_regridding.main(self.e2esroot +'/' + self.config_file,
                                                      self.year, self.month, jobname, 1, str(2),
                                                      cwd, py_call=True)
         tfile = self.sublist_to_file(slurm_commands, cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(3), cwd, tfile.name)
             self.create_dict(jobname+ 'run.j', 'bcsd_fcst')
         finally:
@@ -1160,7 +1161,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
-        slurm_commands = bcsd.metforce_biascorrection.main(self.e2esdir +'/' + self.config_file,
+        slurm_commands = bcsd.metforce_biascorrection.main(self.e2esroot +'/' + self.config_file,
                                                            self.year, self.year, mmm, self.mm, jobname,
                                                            1, 3, cwd, py_call=True)
         # multi tasks per job
@@ -1169,7 +1170,7 @@ class S2Srun(DownloadForecasts):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file,
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_',
                                         1, str(4), cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
@@ -1188,22 +1189,21 @@ class S2Srun(DownloadForecasts):
         prev = [f"{key}" for key in self.schedule.keys() if 'pr_regrid_' in key]
         slurm_commands = []
         for nmme_model in self.models:
-            var1 = bcsd.precip_biascorrection.main(self.e2esdir +'/' + self.config_file,
+            var1 = bcsd.precip_biascorrection.main(self.e2esroot +'/' + self.config_file,
                                                    self.year, self.year, mmm, self.mm, jobname,
                                                    1, 3, cwd, nmme_model, py_call=True)
             slurm_commands.extend(var1)
 
         # multi tasks per job
         l_sub = 1
-        ensemble_sizes = self.config['EXP']['ensemble_sizes'][0]
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             nmme_model = sub_val[0].split()[7]
-            ens_num = ensemble_sizes[nmme_model]
+            ens_num = NMMEParams(nmme_model).ens_num
             par_info['CPT'] = str(max(10,ens_num))
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file,
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1,
                                         str(4), cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
@@ -1226,7 +1226,7 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         prev = [f"{key}" for key in self.schedule.keys() if 'mf_biascorr_' in key]
-        slurm_commands = bcsd.metforce_temporal_disaggregation.main(self.e2esdir +'/' + \
+        slurm_commands = bcsd.metforce_temporal_disaggregation.main(self.e2esroot +'/' + \
                                                                     self.config_file, self.year,
                                                                     self.year, mmm, self.mm,
                                                                     jobname, 1, 3, cwd,
@@ -1238,7 +1238,7 @@ class S2Srun(DownloadForecasts):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file,
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j',
                                         jobname + f'{i+1:02d}_', 1, str(4), cwd, tfile.name,
                                         parallel_run=par_info)
@@ -1265,7 +1265,7 @@ class S2Srun(DownloadForecasts):
         prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
         prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_biascorr_' in key])
         for nmme_model in self.models:
-            var1 = bcsd.precip_temporal_disaggregation.main(self.e2esdir +'/' + self.config_file,
+            var1 = bcsd.precip_temporal_disaggregation.main(self.e2esroot +'/' + self.config_file,
                                                             self.year, self.year, mmm, self.mm,
                                                             jobname, 1, 3, cwd, self.e2esdir,
                                                             nmme_model, py_call=True)
@@ -1277,7 +1277,7 @@ class S2Srun(DownloadForecasts):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file,
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j',
                                         jobname + f'{i+1:02d}_', 1, str(2), cwd, tfile.name,
                                         parallel_run=par_info)
@@ -1296,7 +1296,7 @@ class S2Srun(DownloadForecasts):
         #          and symbolically link to the reusable CFSv2 met forcings
         # ---------------------------------------------------------------------------
         prev = [f"{key}" for key in self.schedule.keys() if 'mf_tempdis_' in key]
-        slurm_9_10 = bcsd.combine_forcings.main(self.e2esdir +'/' + self.config_file, self.year,
+        slurm_9_10 = bcsd.combine_forcings.main(self.e2esroot +'/' + self.config_file, self.year,
                                                 self.year, mmm, self.mm, jobname,1, 4, cwd,
                                                 self.e2esdir, self.fcst_model, py_call=True)
         # bcsd09
@@ -1310,7 +1310,7 @@ class S2Srun(DownloadForecasts):
 
         tfile = self.sublist_to_file([slurm_9_10[0]], cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(1), cwd, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
         finally:
@@ -1399,7 +1399,7 @@ class S2Srun(DownloadForecasts):
         self.create_symlink(self.e2esdir + 'lis_fcst/' + self.yyyy + self.mm, self.yyyy + self.mm)
         self.create_symlink(self.e2esdir + 'bcsd_fcst', 'bcsd_fcst')
 
-        generate_lis_config_scriptfiles_fcst.main(self.e2esdir + self.config_file, self.year,
+        generate_lis_config_scriptfiles_fcst.main(self.e2esroot + self.config_file, self.year,
                                                   self.month, cwd, jobname)
 
         for model in self.models:
@@ -1457,7 +1457,7 @@ class S2Srun(DownloadForecasts):
             else:
                 self.create_symlink(self.e2esdir + 's2spost/' + self.yyyy + self.mm + '/' + model,
                                     model)
-            var1, var2, var3 = s2spost_driver.main(self.e2esdir +'/' + self.config_file, self.year,
+            var1, var2, var3 = s2spost_driver.main(self.e2esroot +'/' + self.config_file, self.year,
                                                    self.month, jobname, 1, str(3), cwd, model,
                                                    py_call=True)
             slurm_commands.extend(var1)
@@ -1472,7 +1472,7 @@ class S2Srun(DownloadForecasts):
             for i, sub_val in enumerate(slurm_sub):
                 tfile = self.sublist_to_file(sub_val, cwd)
                 try:
-                    s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + \
+                    s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                             f'{i+1:02d}_run.j',
                                             jobname + f'{i+1:02d}_', 1, str(30), cwd, tfile.name)
                     self.create_dict(jobname + f'{i+1:02d}_run.j', 's2spost', prev=prev)
@@ -1493,7 +1493,7 @@ class S2Srun(DownloadForecasts):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + \
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                         f'{i+1:02d}_run.j',
                                         jobname + f'{i+1:02d}_', 1, str(4), cwd, tfile.name)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2spost', prev=prev)
@@ -1514,7 +1514,7 @@ class S2Srun(DownloadForecasts):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + \
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                         f'{i+1:02d}_run.j',
                                         jobname + f'{i+1:02d}_', 1, str(3), cwd, tfile.name)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2spost', prev=prev)
@@ -1534,7 +1534,7 @@ class S2Srun(DownloadForecasts):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + \
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                         f'{i+1:02d}_run.j',
                                         jobname + f'{i+1:02d}_', 1, str(1), cwd, tfile.name)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2spost', prev=prev)
@@ -1572,14 +1572,14 @@ class S2Srun(DownloadForecasts):
             par_info['TPN'] = None
             par_info['MP'] = True
             slurm_commands = []
-            var1 = s2smetric_driver.main(self.e2esdir +'/' + self.config_file, self.year,
+            var1 = s2smetric_driver.main(self.e2esroot +'/' + self.config_file, self.year,
                                          self.month, cwd, jobname=jobname, ntasks=1,
                                          hours=str(1), nmme_model= 'all_models', py_call=True,
                                          weekly=True)
             slurm_commands.extend(var1)
             tfile = self.sublist_to_file(slurm_commands, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + 'run.j',
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
                                         jobname, 1, str(6), cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname+ 'run.j', 's2smetric')
             finally:
@@ -1600,13 +1600,13 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         for i, model in enumerate(self.models):
-            slurm_commands = s2smetric_driver.main(self.e2esdir +'/' + self.config_file, self.year,
+            slurm_commands = s2smetric_driver.main(self.e2esroot +'/' + self.config_file, self.year,
                                                    self.month, cwd, jobname=jobname, ntasks=1,
                                              hours=str(1), nmme_model= model, py_call=True)
 
             tfile = self.sublist_to_file(slurm_commands, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + \
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                         f'{i+1:02d}_run.j',
                                         jobname + f'{i+1:02d}_', 1, str(1), cwd, tfile.name,
                                         parallel_run=par_info)
@@ -1632,14 +1632,14 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
         for i, model in enumerate(self.models):
-            slurm_commands = s2smetric_driver.main(self.e2esdir +'/' + self.config_file, self.year,
+            slurm_commands = s2smetric_driver.main(self.e2esroot +'/' + self.config_file, self.year,
                                                    self.month, cwd, jobname=jobname, ntasks=1,
                                                    hours=str(4), nmme_model= model, py_call=True,
                                                    weekly=True)
 
             tfile = self.sublist_to_file(slurm_commands, cwd)
             try:
-                s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + \
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                         f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1, str(1),
                                         cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2smetric', prev=prev)
@@ -1662,10 +1662,10 @@ class S2Srun(DownloadForecasts):
         par_info['MP'] = True
 
         command = [f"python {self.lishdir}/ghis2s/s2smetric/s2smetric_driver.py -y {self.yyyy}"
-                   f" -m {self.mm} -w {cwd} -c {self.e2esdir}{self.config_file}"]
+                   f" -m {self.mm} -w {cwd} -c {self.e2esroot}{self.config_file}"]
         tfile = self.sublist_to_file(command, cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, 's2smetric_tiff_run.j',
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, 's2smetric_tiff_run.j',
                                     's2smetric_tiff_', 1, str(1), cwd, tfile.name, parallel_run=par_info)
             self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev=prev)
         finally:
@@ -1687,10 +1687,10 @@ class S2Srun(DownloadForecasts):
         par_info['MP'] = True
 
         command = [f"python {self.lishdir}/ghis2s/s2smetric/s2smetric_driver.py -y {self.yyyy}"
-                   f" -m {self.mm} -w {cwd} -c {self.e2esdir}{self.config_file} -W"]
+                   f" -m {self.mm} -w {cwd} -c {self.e2esroot}{self.config_file} -W"]
         tfile = self.sublist_to_file(command, cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file,
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                     's2smetric_weekly_tiff_run.j', 's2smetric_weekly_tiff_', 1,
                                     str(1), cwd, tfile.name, parallel_run=par_info)
             self.create_dict('s2smetric_weekly_tiff_run.j', 's2smetric', prev=prev)
@@ -1721,18 +1721,18 @@ class S2Srun(DownloadForecasts):
         jobname='s2splots_01_'
         slurm_commands = []
         slurm_commands.append(f"python {self.lishdir}/ghis2s/s2splots/plot_mena.py -y {self.yyyy}"
-                              f" -m {self.mm} -w {self.e2esdir} -c {self.e2esdir}{self.config_file}")
+                              f" -m {self.mm} -w {self.e2esdir} -c {self.e2esroot}{self.config_file}")
         slurm_commands.append(f"python {self.lishdir}/ghis2s/s2splots/plot_anom_verify.py -y {self.yyyy}"
-                              f" -m {self.month} -w {self.e2esdir} -c {self.e2esdir}{self.config_file} -l 1")
+                              f" -m {self.month} -w {self.e2esdir} -c {self.e2esroot}{self.config_file} -l 1")
         slurm_commands.append(f"python {self.lishdir}/ghis2s/s2splots/plot_anom_verify.py"
                               f" -y {self.yyyy} -m {self.month} -w {self.e2esdir}"
-                              f" -c {self.e2esdir}{self.config_file} -l 2")
+                              f" -c {self.e2esroot}{self.config_file} -l 2")
         slurm_commands.append(f"python {self.lishdir}/ghis2s/s2splots/plot_weekly_anom.py -y {self.yyyy}"
-                              f" -m {self.month} -w {self.e2esdir} -c {self.e2esdir}{self.config_file}")
+                              f" -m {self.month} -w {self.e2esdir} -c {self.e2esroot}{self.config_file}")
 
         tfile = self.sublist_to_file(slurm_commands, cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(2), cwd, tfile.name)
             self.create_dict('s2splots_01_run.j', 's2splots', prev=prev)
         finally:
@@ -1746,7 +1746,7 @@ class S2Srun(DownloadForecasts):
         # 2nd job
         jobname='s2splots_02_'
         slurm_commands = [f"python {self.lishdir}/ghis2s/s2splots/plot_s2smetrics.py -y {self.yyyy}"
-                          f" -m {self.mm} -w {self.e2esdir} -c {self.e2esdir}{self.config_file} -M ANOM"]
+                          f" -m {self.mm} -w {self.e2esdir} -c {self.e2esroot}{self.config_file} -M ANOM"]
         par_info = {}
         par_info['CPT'] = str(7)
         par_info['MEM']= '240GB'
@@ -1755,7 +1755,7 @@ class S2Srun(DownloadForecasts):
         par_info['MP'] = True
         tfile = self.sublist_to_file(slurm_commands, cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(2), cwd, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
         finally:
@@ -1769,7 +1769,7 @@ class S2Srun(DownloadForecasts):
        # 3rd job
         jobname='s2splots_03_'
         slurm_commands = [f"python {self.lishdir}/ghis2s/s2splots/plot_s2smetrics.py -y {self.yyyy}"
-                          f" -m {self.mm} -w {self.e2esdir} -c {self.e2esdir}{self.config_file} -M SANOM"]
+                          f" -m {self.mm} -w {self.e2esdir} -c {self.e2esroot}{self.config_file} -M SANOM"]
         par_info = {}
         par_info['CPT'] = str(7)
         par_info['MEM']= '240GB'
@@ -1778,7 +1778,7 @@ class S2Srun(DownloadForecasts):
         par_info['MP'] = True
         tfile = self.sublist_to_file(slurm_commands, cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(2), cwd, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
         finally:
@@ -1792,7 +1792,7 @@ class S2Srun(DownloadForecasts):
         # 4th job
         jobname='s2splots_04_'
         slurm_commands = [f"python {self.lishdir}/ghis2s/s2splots/plot_hybas.py -y {self.yyyy}"
-                          f" -m {self.month} -w {self.e2esdir} -c {self.e2esdir}{self.config_file}"]
+                          f" -m {self.month} -w {self.e2esdir} -c {self.e2esroot}{self.config_file}"]
         par_info = {}
         par_info['CPT'] = str(5)
         par_info['MEM']= '240GB'
@@ -1801,7 +1801,7 @@ class S2Srun(DownloadForecasts):
         par_info['MP'] = True
         tfile = self.sublist_to_file(slurm_commands, cwd)
         try:
-            s2s_api.python_job_file(self.e2esdir +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(2), cwd, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
         finally:
