@@ -45,7 +45,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
 
     figure_template = '{}/NMME_plot_{}_{}_weeks1-6_{}.png'
 
-    lead_week = list(range(min(6, config_["EXP"]["lead_months"])))
+    lead_week = list(range(min(6, config["EXP"]["lead_months"])))
     # Universal setup of plots:
     nrows = 2
     ncols = 3
