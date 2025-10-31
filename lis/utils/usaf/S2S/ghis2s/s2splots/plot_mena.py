@@ -55,7 +55,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         os.makedirs(plotdir, exist_ok=True)
 
     data_dir = cwd_ + f'/s2smetric/{syear:04d}{smonth:02d}/'
-    lead_month = [0, 1, 2, 3, 4, 5]
+    lead_month = list(range(min(6, config_["EXP"]["lead_months"])))
     nrows = 2
     ncols = 3
 
@@ -112,7 +112,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     # Where input data files are located ("s2smetric dir - CF-convention nc files):
     data_dir = cwd + f'/s2smetric/{syear:04d}{smonth:02d}/'
 
-    lead_month = [0, 1, 2, 3, 4, 5]
+    lead_month = list(range(min(6, config_["EXP"]["lead_months"])))
 
     # Universal setup of plots:
     nrows = 2

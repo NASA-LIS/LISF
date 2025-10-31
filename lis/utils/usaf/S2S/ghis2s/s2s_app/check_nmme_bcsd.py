@@ -20,7 +20,7 @@ import argparse
 import xarray as xr
 import numpy as np
 import yaml
-#pylint: disable=import-error
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 
 NAFPA_PATH = '/discover/nobackup/projects/ghilis/S2S/GLOBAL/DA_Run_Hist/output/SURFACEMODEL/'
 NAFPA_FILE_TEMPLATE = '{}/{:04d}{:02d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
-    NENS = cfg['EXP']['ensemble_sizes'][0]
+    NENS = NMMEParams(model).ens_num
     clim_syr = int(cfg["BCSD"]["clim_start_year"])
     clim_eyr = int(cfg["BCSD"]["clim_end_year"])
     sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
     clabel2 = 'Monthly Precip (units mm/d)'
 
-    for ens in range (1, NENS.get(model) +1):
+    for ens in range (1, NENS +1):
         plot_arr = np.zeros([3,720,1440],dtype=float)
         eee = 'ens' + str(ens)
         nmme_monthly_file_raw = \

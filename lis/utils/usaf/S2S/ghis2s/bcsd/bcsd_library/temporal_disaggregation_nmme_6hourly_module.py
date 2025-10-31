@@ -215,7 +215,7 @@ LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
 LAT_LDT, LON_LDT = get_domain_info(CONFIG_FILE, coord=True)
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
-FCST_MODEL = config['BCSD']['fcst_data_type']
+FCST_MODEL = config['BCSD']['metforce_source']
 MONTHLY_BC_FCST_DIR = str(sys.argv[13])
 SUBDAILY_RAW_FCST_DIR = str(sys.argv[14])
 BASE_OUTDIR = str(sys.argv[15])
