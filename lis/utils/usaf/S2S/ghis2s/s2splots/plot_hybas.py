@@ -60,7 +60,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         os.makedirs(plotdir, exist_ok=True)
     data_dir = cwd + f'/s2smetric/{syear:04d}{smonth:02d}/'
 
-    lead_month = [0, 1, 2]
+    lead_month = list(range(min(3, config_["EXP"]["lead_months"])))
     nrows = 1
     ncols = 3
 

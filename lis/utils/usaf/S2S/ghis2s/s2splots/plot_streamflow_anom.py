@@ -48,7 +48,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         os.makedirs(plotdir, exist_ok=True)
     data_dir = cwd_ + f'/s2smetric/{syear:04d}{smonth:02d}/'
 
-    lead_month = [0, 1, 2, 3, 4, 5]
+    lead_month = list(range(min(6, config_["EXP"]["lead_months"])))
 
     nrows = 2
     ncols = 3
