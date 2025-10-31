@@ -1363,7 +1363,13 @@ class S2Srun(DownloadForecasts):
         
         prev = [job for job in ['ldtics_run.j', 'combine_files_run.j']
                 if job in self.schedule] or None
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key])
+
+        if prev is not None:
+            prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key])
+        else:
+            temp_keys = [f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key]
+            prev = temp_keys or None
+
         jobname='lis_fcst'
         os.makedirs(self.e2esdir + 'lis_fcst/', exist_ok=True)
         os.makedirs(self.e2esdir + 'lis_fcst/input/LDT_ICs/', exist_ok=True)
