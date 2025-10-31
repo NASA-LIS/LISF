@@ -59,7 +59,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     # Where input data files are located ("s2smetric dir - CF-convention nc files):
     data_dir = cwd_ + f'/s2smetric/{syear:04d}{smonth:02d}/'
 
-    lead_month = [0, 1, 2, 3, 4, 5]
+    lead_month = list(range(min(6, config_["EXP"]["lead_months"])))
 
     # Universal setup of plots:
     nrows = 2

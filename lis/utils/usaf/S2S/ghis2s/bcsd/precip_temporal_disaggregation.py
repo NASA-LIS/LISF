@@ -34,6 +34,7 @@ import sys
 import argparse
 import yaml
 from ghis2s.shared import utils
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 #
 # Local methods
 #
@@ -63,7 +64,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
         config = yaml.safe_load(file)
 
     # Base forecast model
-    fcst_model = config['BCSD']['fcst_data_type']
+    fcst_model = config['BCSD']['metforce_source']
 
     # get resolution
     lats, _ = utils.get_domain_info(config_file, coord=True)
@@ -76,8 +77,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     domain = config['EXP']['DOMAIN']
 
     lead_months = config['EXP']['lead_months']
-    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
-    ens_num = ensemble_sizes[nmme_model]
+    ens_num = NMMEParams(nmme_model).ens_num
 
     # Path for where forecast files are located:
     cfsv2dir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}/"

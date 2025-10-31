@@ -27,20 +27,6 @@ EXP:
   pertmode: restart
   lead_months: 9
   NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]
-  ensemble_sizes:
-  - CanESM5: 10
-    CESM1: 10
-    GNEMO52: 10
-    GEOSv2: 4
-    CFSv2: 12
-    GFDL: 15
-  NMME_scalings:
-  - CanESM5: downscale
-    CESM1: downscale
-    GNEMO52: downscale
-    GEOSv2: downscale
-    CFSv2: upscale
-    GFDL: upscale
 
 #######################################################################
 #              Bias Correction and Spatial Downscaling (BCSD)
@@ -52,12 +38,10 @@ BCSD:
   clim_start_year: 1991
   clim_end_year: 2020
   nof_raw_ens: 12
-  fcst_data_type: CFSv2
-  nmme_data_type: nmme
+  metforce_source: CFSv2
   
 #######################################################################
 #                            LIS Forecast
-# Note: Acceptable JOB_SEGMENTS for 9-month forecasts are 1,2,3,5,and 9
 #######################################################################
 
 FCST:

@@ -89,7 +89,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
         config = yaml.safe_load(file)
 
     # Base forecast model
-    fcst_model = config['BCSD']['fcst_data_type']
+    fcst_model = config['BCSD']['metforce_source']
 
     if fcst_model.upper() not in ['CFSV2', 'GEOSV3']:
         print(f'Unsupported forecast data {fcst_model}')

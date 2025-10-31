@@ -34,9 +34,9 @@ import shutil
 import numpy as np
 import yaml
 from ghis2s.shared import utils
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 # pylint: disable=consider-using-f-string, too-many-arguments, too-many-locals, import-outside-toplevel
 # Local constants
-_NUM_ENSMEMBERS = {}
 _NMME_MODELS = []
 
 def _usage():
@@ -83,7 +83,7 @@ def _handle_dates(year, month, input_numfcstmons):
 def _customize_lisconfig(lisconfig_target, config, dates, \
                          nmme_model, fcstdir, ic_date = None, jobid = None):
     """Create customized lis.config file"""
-    global _NMME_MODELS, _NUM_ENSMEMBERS
+    global _NMME_MODELS
     with open(lisconfig_target, "rt", encoding='ascii') as file_obj:
         data = file_obj.read()
     data = data.replace("NUMPROCX", f"{config['FCST']['numprocx']}")
@@ -114,7 +114,7 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
         lis_rstfile = \
             f"{lis_rstdir}/LIS_RST_{config['EXP']['lsm'].upper()}_{rst_date}" + \
             f"2345.ICS_{rst_monname}{dates['start'].year:04d}." + \
-            f"ens{_NUM_ENSMEMBERS[nmme_model]}.nc"
+            f"ens{NMMEParams(nmme_model).ens_num}.nc"
 
         hymap_rstdir = f"./input/LDT_ICs/{nmme_model}"
         hymap_rstfile = \
@@ -156,7 +156,7 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
                             f"{ic_date['start'].year:04d}{ic_date['start'].month:02d}01")
 
     data = data.replace("NUMENSMEMBERS", \
-                        f"{_NUM_ENSMEMBERS[nmme_model]}")
+                        f"{NMMEParams(nmme_model).ens_num}")
     data = data.replace("LISRSTFILE", f"{lis_rstfile}")
     data = data.replace("HYMAPRSTFILE", f"{hymap_rstfile}")
     data = data.replace("FCSTDIR", f"{fcstdir}")
@@ -167,13 +167,12 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
 
 def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
     """Main driver."""
-    global _NMME_MODELS, _NUM_ENSMEMBERS
+    global _NMME_MODELS
     # Load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     _NMME_MODELS = config['EXP']['NMME_models']
-    _NUM_ENSMEMBERS = config['EXP']['ensemble_sizes'][0]
 
     domlabel=''
     if config['EXP']['DOMAIN'] == 'AFRICOM':
