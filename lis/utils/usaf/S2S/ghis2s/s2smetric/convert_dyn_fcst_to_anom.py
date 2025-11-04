@@ -21,7 +21,8 @@ from datetime import datetime, date
 import glob
 import os
 import sys
-from concurrent.futures import ProcessPoolExecutor
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import yaml
 
 # Third-party modules
@@ -29,14 +30,13 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 import xarray as xr
 # Local modules
-# pylint: disable=import-error
 from ghis2s.shared.utils import write_ncfile, load_ncdata
 from ghis2s.shared.logging_utils import TaskLogger
-from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
-                        LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
-# pylint: enable=import-error
-# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
-# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
+from ghis2s.s2smetric.metricslib import (sel_var, compute_anomaly, compute_sanomaly,
+                                         merged_metric_filename, LONG_NAMES_ANOM,
+                                         LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals
 
 # Start reading from command line.
 FCST_INIT_MON = int(sys.argv[1])
@@ -54,7 +54,7 @@ DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
 METRIC_VARS = CONFIG["POST"]["metric_vars"]
-HINDCASTS = CONFIG["SETUP"]["E2ESDIR"] + '/hindcast/s2spost/' + '{:02d}/'.format(FCST_INIT_MON)
+HINDCASTS = CONFIG["SETUP"]["E2ESDIR"] + '/hindcast/s2spost/' + f'{FCST_INIT_MON:02d}/'
 FORECASTS = "./s2spost/"
 CURRENTDATE = date(TARGET_YEAR, FCST_INIT_MON, 1)
 ENDDATE = CURRENTDATE
@@ -99,17 +99,17 @@ logger = TaskLogger(task_name,
                     os.getcwd(),
                     f'{NMME_MODEL} running s2smetric/convert_dyn_fcast_to_anom.py')
 
-def process_variable(var_name, METRIC_NAME):
+def process_variable(var_name, metric_name):
     """
     This routine processes each variable and metric (e.g., anomalies).
     """
-    logger.info(f"Starting processing {var_name} for metric {METRIC_NAME}", subtask=var_name)
-    if METRIC_NAME == "ANOM":
-        LONG_NAMES = LONG_NAMES_ANOM
-        UNITS = UNITS_ANOM
+    logger.info(f"Starting processing {var_name} for metric {metric_name}", subtask=var_name)
+    if metric_name == "ANOM":
+        long_names = LONG_NAMES_ANOM
+        units = UNITS_ANOM
     else:
-        LONG_NAMES = LONG_NAMES_SANOM
-        UNITS = UNITS_SANOM
+        long_names = LONG_NAMES_SANOM
+        units = UNITS_SANOM
 
     for lead in range(LEAD_NUM):
         logger.info(f"Reading output from Hindcast runs - lead: {lead}", subtask=var_name)
@@ -127,36 +127,36 @@ def process_variable(var_name, METRIC_NAME):
             relativedelta(months=lead+1)
 
         if lead == 0:
-            INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
+            infile = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
                                                  FCST_INIT_MON, NMME_MODEL,
                                                  NMME_MODEL.upper(),
                                                  FCST_INIT_MON,
                                                  smon.month, 2, emon.month)
-            TINFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS,
+            tinfile = TARGET_INFILE_TEMPLATE.format(FORECASTS,
                                                     TARGET_YEAR, FCST_INIT_MON, NMME_MODEL,
                                                     NMME_MODEL.upper(),
                                                     TARGET_YEAR, FCST_INIT_MON,
                                                     smon1.year, smon1.month, 2,
                                                     emon1.year, emon1.month)
         else:
-            INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
+            infile = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
                                                  FCST_INIT_MON, NMME_MODEL,
                                                  NMME_MODEL.upper(),
                                                  FCST_INIT_MON,
                                                  smon.month, 1, emon.month)
-            TINFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS,
+            tinfile = TARGET_INFILE_TEMPLATE.format(FORECASTS,
                                                     TARGET_YEAR, FCST_INIT_MON, NMME_MODEL,
                                                     NMME_MODEL.upper(),
                                                     TARGET_YEAR, FCST_INIT_MON,
                                                     smon1.year, smon1.month, 1,
                                                     emon1.year, emon1.month)
 
-        logger.info(f"Reading forecast climatology {INFILE}", subtask=var_name)
-        infile1 = glob.glob(INFILE)
+        logger.info(f"Reading forecast climatology {infile}", subtask=var_name)
+        infile1 = glob.glob(infile)
 
         # First reading all available years for the given
         # forecast initialization month
-        all_clim_data1 = load_ncdata(infile1, [logger, var_name], **dict(combine='by_coords'))
+        all_clim_data1 = load_ncdata(infile1, [logger, var_name], combine='by_coords')
 
         # Now selecting only the years that are within the climatology
         sel_cim_data = all_clim_data1.sel(time= \
@@ -174,10 +174,10 @@ def process_variable(var_name, METRIC_NAME):
         ####### Step-2: Read the target forecast which needs to be converted
         ## into anomaly
 
-        logger.info(f"Reading target {TINFILE}", subtask=var_name)
+        logger.info(f"Reading target {tinfile}", subtask=var_name)
 
         # Note target will always have only one time step
-        target_data = load_ncdata(TINFILE, [logger, var_name])
+        target_data = load_ncdata(tinfile, [logger, var_name])
 
         ## Now selecting the desired variable
         target_fcst_data = sel_var(target_data, var_name, HYD_MODEL)
@@ -200,18 +200,18 @@ def process_variable(var_name, METRIC_NAME):
         logger.info('Converting data into anomaly', subtask=var_name)
         all_clim_mean = all_clim_data.mean (dim = ['time','ensemble'], skipna = True)
 
-        if METRIC_NAME == "SANOM":
+        if metric_name == "SANOM":
             all_clim_std  = all_clim_data.std (dim = ['time','ensemble'], skipna = True)
 
         if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or \
            (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
             all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
                                                          "lat": target_fcst_data.lat.values})
-            if METRIC_NAME == "SANOM":
+            if metric_name == "SANOM":
                 all_clim_std = \
                     all_clim_std.assign_coords({"lon": target_fcst_data.lon.values,
                                                 "lat": target_fcst_data.lat.values})
-        if METRIC_NAME == "ANOM":
+        if metric_name == "ANOM":
             this_anom = xr.apply_ufunc(
                 compute_anomaly,
                 target_fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
@@ -241,7 +241,7 @@ def process_variable(var_name, METRIC_NAME):
         del all_clim_data, target_fcst_data, all_clim_mean
 
     ### Step-4 Writing output file
-    all_anom = np.ma.masked_array(all_anom, mask=(all_anom == -9999.))
+    all_anom = np.ma.masked_array(all_anom, mask=all_anom == -9999.)
 
     ## Creating an latitude and longitude array based on locations of corners
     lats = np.arange(target_data.attrs['SOUTH_WEST_CORNER_LAT'], \
@@ -252,7 +252,7 @@ def process_variable(var_name, METRIC_NAME):
                      (lon_count*0.25), 0.25)
 
     anom_xr = xr.Dataset()
-    anom_xr[var_name.replace('-','_') + '_' + METRIC_NAME] = \
+    anom_xr[var_name.replace('-','_') + '_' + metric_name] = \
         (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
@@ -282,42 +282,84 @@ def process_variable(var_name, METRIC_NAME):
         'long_name': 'Forecast month',
         'units': 'months'
     }
-    anom_xr[var_name + '_' + METRIC_NAME].attrs = {
-        'long_name': LONG_NAMES[var_name],
-        'units': UNITS[var_name]
+    anom_xr[var_name + '_' + metric_name].attrs = {
+        'long_name': long_names[var_name],
+        'units': units[var_name]
     }
-    logger.info(f"Processed variable: {var_name} for metric {METRIC_NAME}", subtask=var_name)
+    logger.info(f"Processed variable: {var_name} for metric {metric_name}", subtask=var_name)
     return anom_xr
 
 logger.info("Starting parallel processing of variables")
+
 # ProcessPoolExecutor parallel processing
-with ProcessPoolExecutor(max_workers=num_workers) as executor:
-    futures = []
-    for var_name in METRIC_VARS:
-        logger.info(f"Submitting ANOM processing job for {var_name}", subtask=var_name)
-        future = executor.submit(process_variable, var_name, "ANOM")
-        futures.append(future)
+# ---------------------------------------
+MAX_RETRIES = 3
+datasets = []
 
-        logger.info(f"Submitting SANOM processing job for {var_name}", subtask=var_name)
-        future = executor.submit(process_variable, var_name, "SANOM")
-        futures.append(future)
+# Track job queue
+job_queue = []
+for _var_name in METRIC_VARS:
+    job_queue.append((_var_name, "ANOM"))
+    job_queue.append((_var_name, "SANOM"))
 
-    # Collect all anom_xr data sets
-    datasets = []
-    for future in futures:
-        try:
-            result = future.result()
-            datasets.append(result)
-        except (ValueError, TypeError, IOError, RuntimeError) as e:
-            logger.error(f"Failed processing for: {str(e)}")
-        except Exception as e:
-            logger.error(f"Unexpected error processing: {str(e)}")
-            raise
+RETRY_COUNT = 0
+
+while job_queue and RETRY_COUNT <= MAX_RETRIES:
+    logger.info(f"Processing batch (attempt {RETRY_COUNT + 1}), {len(job_queue)} jobs remaining")
+
+    # Process current batch
+    current_batch = job_queue.copy()
+    job_queue.clear()
+    failed_jobs = []
+
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        future_to_job = {}
+        for _var_name, proc_type in current_batch:
+            logger.info(f"Submitting {proc_type} processing job for {_var_name}", subtask=_var_name)
+            future = executor.submit(process_variable, _var_name, proc_type)
+            future_to_job[future] = (_var_name, proc_type)
+
+        start_time = time.time()
+        COMPLETED_COUNT = 0
+
+        for future in as_completed(future_to_job, timeout=20*60):
+            _var_name, proc_type = future_to_job[future]
+            try:
+                result = future.result(timeout=1)
+                datasets.append(result)
+                COMPLETED_COUNT += 1
+                logger.info(f"✓ ({COMPLETED_COUNT}/{len(current_batch)}) {proc_type}",
+                            subtask=_var_name)
+
+            except Exception as e:
+                logger.error(f"✗ Failed {proc_type} - {e}", subtask=_var_name)
+                failed_jobs.append((_var_name, proc_type))
+
+        # Handle any remaining futures
+        for future, job in future_to_job.items():
+            if not future.done():
+                _var_name, proc_type = job
+                logger.warning(f"Canceling hung job: {proc_type}", subtask=_var_name)
+                future.cancel()
+                failed_jobs.append((_var_name, proc_type))
+
+    # Add failed jobs back to queue for retry
+    if failed_jobs and RETRY_COUNT < MAX_RETRIES:
+        job_queue.extend(failed_jobs)
+        RETRY_COUNT += 1
+        logger.info(f"Retrying {len(failed_jobs)} failed jobs (attempt {RETRY_COUNT + 1})")
+        time.sleep(5)
+    elif failed_jobs:
+        logger.error(f"Max retries reached. {len(failed_jobs)} jobs permanently failed: "
+                     f"{failed_jobs}")
+    else:
+        logger.info("All jobs completed successfully")
+        break
 
 # Merge all datasets
 logger.info("Merging all datasets")
 merged_dataset = xr.merge(datasets)
-comp = dict(zlib=True, complevel=6, shuffle=True, _FillValue= -9999.)
+comp = {'zlib':True, 'complevel':6, 'shuffle':True, '_FillValue': -9999.}
 encoding = {var: comp for var in merged_dataset.data_vars}
 
 # Write the merged dataset to a single file

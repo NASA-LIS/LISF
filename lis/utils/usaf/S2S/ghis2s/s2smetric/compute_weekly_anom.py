@@ -23,22 +23,20 @@
 """
 
 from datetime import date
+import time
 import os
 import sys
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dateutil.relativedelta import relativedelta
 import yaml
 import numpy as np
 import xarray as xr
-
-# pylint: disable=import-error
 from ghis2s.shared.logging_utils import TaskLogger
 from ghis2s.shared.utils import write_ncfile, load_ncdata
-from metricslib import (sel_var, compute_anomaly, compute_sanomaly, merged_metric_filename,
-                        LONG_NAMES_ANOM, LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
-# pylint: enable=import-error
-# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
-# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
+from ghis2s.s2smetric.metricslib import (sel_var, compute_anomaly, compute_sanomaly,
+                                         merged_metric_filename, LONG_NAMES_ANOM,
+                                         LONG_NAMES_SANOM, UNITS_ANOM, UNITS_SANOM)
+# pylint: disable=too-many-arguments,too-many-locals
 
 LEAD_WEEKS = 6
 FCST_INIT_MON = int(sys.argv[1])
@@ -55,7 +53,7 @@ HYD_MODEL = CONFIG["EXP"]["lsmdir"]
 DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
-HINDCASTS = CONFIG["SETUP"]["E2ESDIR"] + '/hindcast/s2spost/' + '{:02d}/'.format(FCST_INIT_MON)
+HINDCASTS = CONFIG["SETUP"]["E2ESDIR"] + '/hindcast/s2spost/' + f'{FCST_INIT_MON:02d}/'
 FORECASTS = "./s2spost/"
 CURRENTDATE = date(TARGET_YEAR, FCST_INIT_MON, 2)
 CLIM_STATFILE_TEMPLATE = \
@@ -69,7 +67,7 @@ ENDDATE = CURRENTDATE
 for _ in range(LEAD_WEEKS):
     ENDDATE += relativedelta(days=7)
 ENDDATE -= relativedelta(days=1)
-comp = dict(zlib=True, complevel=6, shuffle=True, missing_value= -9999., _FillValue= -9999.)
+comp = {'zlib':True, 'complevel':6, 'shuffle':True, 'missing_value': -9999., '_FillValue': -9999.}
 
 if CONFIG['SETUP']['DATATYPE'] == 'hindcast':
     CLIM_INFILE_TEMPLATE = \
@@ -96,15 +94,14 @@ if CONFIG['SETUP']['DATATYPE'] == 'hindcast':
         mean_xr = []
         std_xr = []
         for _ in range(LEAD_WEEKS):
-            INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS, FCST_INIT_MON,
+            infile = CLIM_INFILE_TEMPLATE.format(HINDCASTS, FCST_INIT_MON,
                                                  nmme_model,nmme_model.upper(),
                                                  DOMAIN_NAME, FCST_INIT_MON,
                                                  curdate.month, curdate.day,
                                                  enddate.month, enddate.day)
             curdate += relativedelta(days=7)
             enddate += relativedelta(days=7)
-            print(INFILE)
-            week_xr = xr.open_mfdataset(INFILE, combine='by_coords')
+            week_xr = xr.open_mfdataset(infile, combine='by_coords')
             mean_xr.append(week_xr.mean(dim = ['time','ensemble']))
             std_xr.append(week_xr.std(dim = ['time','ensemble']))
 
@@ -154,24 +151,24 @@ logger = TaskLogger(task_name,
 num_vars = 2*len(WEEKLY_VARS)
 num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
 
-def process_variable(var_name, ANOM):
+def process_variable(var_name, anom):
     """
     Function to process each variable and metric (e.g., anomalies)
     """
-    logger.info(f"Starting processing {var_name} for metric {ANOM}", subtask=var_name)
-    if ANOM == "ANOM":
-        LONG_NAMES = LONG_NAMES_ANOM
-        UNITS = UNITS_ANOM
+    logger.info(f"Starting processing {var_name} for metric {anom}", subtask=var_name)
+    if anom == "ANOM":
+        long_names = LONG_NAMES_ANOM
+        units = UNITS_ANOM
     else:
-        LONG_NAMES = LONG_NAMES_SANOM
-        UNITS = UNITS_SANOM
+        long_names = LONG_NAMES_SANOM
+        units = UNITS_SANOM
 
     # Create array to store anomaly data (initialized here for each variable)
     all_anom = None
     curdate = CURRENTDATE
     enddate = curdate
     enddate += relativedelta(days=6)
-    logger.info(f"Reading Hindcast statistics", subtask=var_name)
+    logger.info("Reading Hindcast statistics", subtask=var_name)
     mean_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "MEAN", NMME_MODEL.upper(),
                                               DOMAIN_NAME, FCST_INIT_MON,
                                               CURRENTDATE.month, CURRENTDATE.day,
@@ -209,7 +206,7 @@ def process_variable(var_name, ANOM):
             lon_count = fcst_xr.sizes['lon']
             all_anom = np.ones((ens_count, LEAD_WEEKS, lat_count, lon_count))*-9999.
 
-        if ANOM == 'ANOM':
+        if anom == 'ANOM':
             this_anom = xr.apply_ufunc(
                 compute_anomaly,
                 fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
@@ -221,7 +218,7 @@ def process_variable(var_name, ANOM):
                 dask="forbidden",
                 output_dtypes=[np.float64])
 
-        if ANOM == 'SANOM':
+        if anom == 'SANOM':
             this_anom = xr.apply_ufunc(
                 compute_sanomaly,
                 fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
@@ -241,11 +238,11 @@ def process_variable(var_name, ANOM):
         del fcst_xr
 
     ### Step-4 Writing output file
-    all_anom = np.ma.masked_array(all_anom, mask=(all_anom == -9999.))
+    all_anom = np.ma.masked_array(all_anom, mask=all_anom == -9999.)
 
     ## Creating latitude and longitude arrays
     anom_xr = xr.Dataset()
-    anom_xr[var_name.replace('-','_') + '_' + ANOM] = \
+    anom_xr[var_name.replace('-','_') + '_' + anom] = \
         (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
@@ -274,42 +271,83 @@ def process_variable(var_name, ANOM):
         'long_name': 'Forecast month',
         'units': 'months'
     }
-    anom_xr[var_name + '_' + ANOM].attrs = {
-        'long_name': LONG_NAMES[var_name],
-        'units': UNITS[var_name]
+    anom_xr[var_name + '_' + anom].attrs = {
+        'long_name': long_names[var_name],
+        'units': units[var_name]
     }
-    logger.info(f"Processed variable: {var_name} for metric {ANOM}", subtask=var_name)
+    logger.info(f"Processed variable: {var_name} for metric {anom}", subtask=var_name)
     return anom_xr
 
 logger.info("Starting parallel processing of variables")
 # ProcessPoolExecutor parallel processing
-with ProcessPoolExecutor(max_workers=num_workers) as executor:
-    futures = []
-    for var_name in WEEKLY_VARS:
-        logger.info(f"Submitting ANOM processing job for {var_name}", subtask=var_name)
-        future = executor.submit(process_variable, var_name, "ANOM")
-        futures.append(future)
+# ---------------------------------------
+MAX_RETRIES = 3
+datasets = []
 
-        logger.info(f"Submitting SANOM processing job for {var_name}", subtask=var_name)
-        future = executor.submit(process_variable, var_name, "SANOM")
-        futures.append(future)
+# Track job queue
+job_queue = []
+for _var_name in WEEKLY_VARS:
+    job_queue.append((_var_name, "ANOM"))
+    job_queue.append((_var_name, "SANOM"))
 
-    # Collect all anom_xr data sets
-    datasets = []
-    for future in futures:
-        try:
-            result = future.result()
-            datasets.append(result)
-        except (ValueError, TypeError, IOError, RuntimeError) as e:
-            logger.error(f"Failed processing for {var_name}: {str(e)}")
-        except Exception as e:
-            logger.error(f"Unexpected error processing {var_name}: {str(e)}")
-            raise
+RETRY_COUNT = 0
+
+while job_queue and RETRY_COUNT <= MAX_RETRIES:
+    logger.info(f"Processing batch (attempt {RETRY_COUNT + 1}), {len(job_queue)} jobs remaining")
+
+    # Process current batch
+    current_batch = job_queue.copy()
+    job_queue.clear()
+    failed_jobs = []
+
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        future_to_job = {}
+        for _var_name, proc_type in current_batch:
+            logger.info(f"Submitting {proc_type} processing job for {_var_name}", subtask=_var_name)
+            future = executor.submit(process_variable, _var_name, proc_type)
+            future_to_job[future] = (_var_name, proc_type)
+
+        start_time = time.time()
+        COMPLETED_COUNT = 0
+
+        for future in as_completed(future_to_job, timeout=20*60):
+            _var_name, proc_type = future_to_job[future]
+            try:
+                result = future.result(timeout=1)
+                datasets.append(result)
+                COMPLETED_COUNT += 1
+                logger.info(f"✓ ({COMPLETED_COUNT}/{len(current_batch)}) {proc_type}",
+                            subtask=_var_name)
+
+            except Exception as e:
+                logger.error(f"✗ Failed {proc_type} - {e}", subtask=_var_name)
+                failed_jobs.append((_var_name, proc_type))
+
+        # Handle any remaining futures
+        for future, job in future_to_job.items():
+            if not future.done():
+                _var_name, proc_type = job
+                logger.warning(f"Canceling hung job: {proc_type}", subtask=_var_name)
+                future.cancel()
+                failed_jobs.append((_var_name, proc_type))
+
+    # Add failed jobs back to queue for retry
+    if failed_jobs and RETRY_COUNT < MAX_RETRIES:
+        job_queue.extend(failed_jobs)
+        RETRY_COUNT += 1
+        logger.info(f"Retrying {len(failed_jobs)} failed jobs (attempt {RETRY_COUNT + 1})")
+        time.sleep(5)
+    elif failed_jobs:
+        logger.error(f"Max retries reached. {len(failed_jobs)} jobs permanently failed: "
+                     f"{failed_jobs}")
+    else:
+        logger.info("All jobs completed successfully")
+        break
 
 # Merge all datasets
 merged_dataset = xr.merge(datasets)
-encoding = {var: comp for var in merged_dataset.data_vars}
+ENCODING = {var: comp for var in merged_dataset.data_vars}
 
 # Write the merged dataset to a single file
 logger.info(f"Writing merged output to {OUTFILE}")
-write_ncfile(merged_dataset, OUTFILE, encoding, [logger, ''])
+write_ncfile(merged_dataset, OUTFILE, ENCODING, [logger, ''])

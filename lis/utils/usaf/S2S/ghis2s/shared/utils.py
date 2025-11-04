@@ -170,10 +170,10 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
                     _f.write(f"{cmd} \n")
                     _f.write("PIDS+=($!)\n")
                     _f.write("\n")
-        _f.write("""for pid in "${PIDS[@]}"; do
-    wait $pid || { echo "[ERROR] Process failed. Exiting."; exit 1; }
+        _f.write(f"""for pid in "${{PIDS[@]}}"; do
+    wait $pid || {{ echo "[ERROR] Process failed. Exiting."; touch logs/{job_name}_FAILED; exit 1; }}
 done
-       """)
+        """)
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
