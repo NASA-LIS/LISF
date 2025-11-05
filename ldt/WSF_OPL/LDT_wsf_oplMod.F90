@@ -6,7 +6,9 @@
 !
 ! MODULE: LDT_wsf_oplMod
 !
-! DESCRIPTION: FIXED hour filtering based on actual file time ranges
+! DESCRIPTION: IMPROVED hour filtering with integrity-based file prioritization
+!              Prioritizes complete files (i0) over incomplete (i1) and uses
+!              file size as tiebreaker
 !
 !-------------------------------------------------------------------------
 
@@ -52,6 +54,9 @@ module LDT_wsf_oplMod
     character*6   :: end_time
     character*2   :: copy_num
     integer       :: copy_int
+    character*1   :: integrity     ! NEW: 'i0' = complete, 'i1' = incomplete
+    integer       :: integrity_int  ! NEW: 0 = complete, 1 = incomplete
+    integer*8     :: file_size     ! NEW: file size in bytes
     character*2   :: hour_str
     integer       :: start_hour
     integer       :: end_hour
@@ -70,7 +75,7 @@ contains
     
     write(LDT_logunit,*) '[INFO] ========================================='
     write(LDT_logunit,*) '[INFO] Initializing WSF low resolution resampling'
-    write(LDT_logunit,*) '[INFO] WITH FIXED hour filtering'
+    write(LDT_logunit,*) '[INFO] WITH IMPROVED integrity-based filtering'
     write(LDT_logunit,*) '[INFO] ========================================='
     
     cfg_entry = "WSF valid date (YYYYMMDDHH):"
@@ -169,7 +174,7 @@ contains
       
       fi = fi + 1
       if (fi <= 1000) then
-        call parse_wsf_filename(fname, wsf_files(fi))
+        call parse_wsf_filename_improved(fname, wsf_files(fi))
       endif
     end do
     call LDT_releaseUnitNumber(ftn)
@@ -182,9 +187,9 @@ contains
       return
     endif
     
-    ! Filter duplicates
+    ! Filter duplicates with improved logic
     allocate(filtered_files(fi))
-    call filter_duplicate_files(wsf_files(1:fi), fi, filtered_files, n_filtered)
+    call filter_duplicate_files_improved(wsf_files(1:fi), fi, filtered_files, n_filtered)
     
     write(LDT_logunit,*) '[INFO] After duplicate filtering: ', n_filtered, ' files'
     
@@ -200,6 +205,8 @@ contains
         write(LDT_logunit,*) '[INFO] Including file: ', trim(hour_group(n_hour_group)%filename)
         write(LDT_logunit,*) '[INFO]   Time range: ', &
                            filtered_files(i)%start_time, ' to ', filtered_files(i)%end_time
+        write(LDT_logunit,*) '[INFO]   Copy: c', filtered_files(i)%copy_num, &
+                           ', Integrity: i', filtered_files(i)%integrity_int
       endif
     end do
     
@@ -253,7 +260,7 @@ contains
     
   end function file_overlaps_hour
 
-  subroutine parse_wsf_filename(filename, file_info)
+  subroutine parse_wsf_filename_improved(filename, file_info)
     use LDT_logMod, only: LDT_logunit
     
     implicit none
@@ -261,16 +268,22 @@ contains
     type(wsf_file_info), intent(out) :: file_info
     
     character*255 :: basename
-    integer :: pos
+    integer :: pos, pos_i
+    integer*4 :: istat, unit_size
+    integer*8 :: file_size_bytes
     
     file_info%filename = filename
+    
+    ! Get file size
+    inquire(file=trim(filename), size=file_size_bytes)
+    file_info%file_size = file_size_bytes
     
     ! Extract basename
     pos = index(filename, '/', back=.true.) + 1
     if (pos == 1) pos = 1
     basename = filename(pos:)
     
-    ! Example: WSFM_01_d20250601_t002900_e004059_gREEF-A_r05898_c02_...
+    ! Example: WSFM_01_d20250601_t002900_e004059_gREEF-A_r05898_c02_i0_v0522_res_sdr.nc
     
     ! Extract date (d20250601)
     file_info%date_str = basename(10:17)
@@ -298,9 +311,20 @@ contains
       file_info%copy_int = 0
     endif
     
-  end subroutine parse_wsf_filename
+    ! Extract integrity indicator (i0 or i1)
+    pos_i = index(basename, '_i')
+    if (pos_i > 0 .and. pos_i > pos) then  ! Make sure it's after copy number
+      file_info%integrity = basename(pos_i+2:pos_i+2)
+      read(file_info%integrity, '(I1)') file_info%integrity_int
+    else
+      ! Default to incomplete if not found
+      file_info%integrity = '1'
+      file_info%integrity_int = 1
+    endif
+    
+  end subroutine parse_wsf_filename_improved
 
-  subroutine filter_duplicate_files(all_files, n_files, filtered, n_filtered)
+  subroutine filter_duplicate_files_improved(all_files, n_files, filtered, n_filtered)
     use LDT_logMod, only: LDT_logunit
     
     implicit none
@@ -310,7 +334,7 @@ contains
     integer, intent(out) :: n_filtered
     
     character*50 :: unique_key
-    logical :: is_duplicate
+    logical :: is_duplicate, should_replace
     integer :: i, j
     
     n_filtered = 0
@@ -326,10 +350,45 @@ contains
             trim(filtered(j)%start_time)//'_'// &
             trim(filtered(j)%end_time) == unique_key) then
           is_duplicate = .true.
-          if (all_files(i)%copy_int > filtered(j)%copy_int) then
-            write(LDT_logunit,*) '[INFO] Replacing c', filtered(j)%copy_num, &
-                                ' with c', all_files(i)%copy_num, &
+          
+          ! Improved selection logic
+          should_replace = .false.
+          
+          ! Rule 1: If c01 has i0 (complete), keep it
+          if (filtered(j)%copy_int == 1 .and. filtered(j)%integrity_int == 0) then
+            should_replace = .false.
+            write(LDT_logunit,*) '[INFO] Keeping c01_i0 for ', trim(unique_key)
+            
+          ! Rule 2: Prefer complete files (i0) over incomplete (i1)
+          else if (all_files(i)%integrity_int < filtered(j)%integrity_int) then
+            should_replace = .true.
+            write(LDT_logunit,*) '[INFO] Replacing i', filtered(j)%integrity_int, &
+                                ' with i', all_files(i)%integrity_int, &
                                 ' for time ', trim(unique_key)
+                                
+          ! Rule 3: If both have same integrity, prefer lower copy number for complete files
+          else if (all_files(i)%integrity_int == 0 .and. &
+                  filtered(j)%integrity_int == 0) then
+            ! Both complete - prefer lower copy number (c01 over c02)
+            if (all_files(i)%copy_int < filtered(j)%copy_int) then
+              should_replace = .true.
+              write(LDT_logunit,*) '[INFO] Replacing c', filtered(j)%copy_num, &
+                                  ' with c', all_files(i)%copy_num, &
+                                  ' (both i0) for ', trim(unique_key)
+            endif
+            
+          ! Rule 4: If all are incomplete (i1), select largest file size
+          else if (all_files(i)%integrity_int == 1 .and. &
+                  filtered(j)%integrity_int == 1) then
+            if (all_files(i)%file_size > filtered(j)%file_size) then
+              should_replace = .true.
+              write(LDT_logunit,*) '[INFO] Replacing with larger file size: ', &
+                                  all_files(i)%file_size, ' > ', filtered(j)%file_size, &
+                                  ' bytes for ', trim(unique_key)
+            endif
+          endif
+          
+          if (should_replace) then
             filtered(j) = all_files(i)
           endif
           exit
@@ -339,10 +398,27 @@ contains
       if (.not. is_duplicate) then
         n_filtered = n_filtered + 1
         filtered(n_filtered) = all_files(i)
+        write(LDT_logunit,*) '[INFO] Adding file: c', all_files(i)%copy_num, &
+                            '_i', all_files(i)%integrity_int, &
+                            ', size=', all_files(i)%file_size, ' bytes'
       endif
     end do
     
-  end subroutine filter_duplicate_files
+    ! Final report on selected files
+    write(LDT_logunit,*) '[INFO] ========================================='
+    write(LDT_logunit,*) '[INFO] Final file selection summary:'
+    write(LDT_logunit,*) '[INFO] Total unique time slots: ', n_filtered
+    
+    do i = 1, n_filtered
+      write(LDT_logunit,*) '[INFO] Selected: ', &
+                          filtered(i)%start_time, '-', filtered(i)%end_time, &
+                          ' c', filtered(i)%copy_num, &
+                          ' i', filtered(i)%integrity_int, &
+                          ' size=', filtered(i)%file_size
+    end do
+    write(LDT_logunit,*) '[INFO] ========================================='
+    
+  end subroutine filter_duplicate_files_improved
 
   subroutine search_WSF_files(ndir, date_curr, suffix)
     use LDT_logMod, only: LDT_logunit
