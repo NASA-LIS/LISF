@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.23">
+<meta name="generator" content="Asciidoctor 2.0.26">
 <title>Land Information System (LIS): LIS 7.5 Users Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -116,7 +116,6 @@ h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title str
 :not(pre):not([class^=L])>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background:#f7f7f8;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
 pre{color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;line-height:1.45;text-rendering:optimizeSpeed}
 pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
-pre>code{display:block}
 pre.nowrap,pre.nowrap pre{white-space:pre;word-wrap:normal}
 em em{font-style:normal}
 strong strong{font-weight:400}
@@ -219,6 +218,7 @@ table.tableblock.fit-content>caption.title{white-space:nowrap;width:0}
 .literalblock pre,.listingblock>.content>pre:not(.highlight),.listingblock>.content>pre[class=highlight],.listingblock>.content>pre[class^="highlight "]{background:#f7f7f8}
 .literalblock.output pre{color:#f7f7f8;background:rgba(0,0,0,.9)}
 .listingblock>.content{position:relative}
+.listingblock pre>code{display:block}
 .listingblock code[data-lang]::before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:inherit;opacity:.5}
 .listingblock:hover code[data-lang]::before{display:block}
 .listingblock.terminal pre .command::before{content:attr(data-prompt);padding-right:.5em;color:inherit;opacity:.5}
@@ -7344,6 +7344,10 @@ Acceptable values are:</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;HYMAP2 router&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">use the HyMAP2 router</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;HYMAP3 router&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use the HyMAP3 router</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;RAPID router&#8221;</p></td>
@@ -22561,12 +22565,383 @@ HYMAP2 routing model start mode: "coldstart"
 HYMAP2 routing model restart interval: "1mo"
 HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
 HYMAP2 enable 2-way coupling: 0
-HYMAP2 2-way coupling flooded fraction threshold: 2.0</pre>
+HYMAP2 2-way coupling flooded fraction threshold: 0.1</pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_nldasrouting">9.17.3. NLDAS routing</h4>
+<h4 id="sssec_hymap3routing">9.17.3. HYMAP3 routing</h4>
+<div class="paragraph">
+<p><code>HYMAP3 routing model time step:</code> specifies the timestep for
+the HyMAP3 router.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 routing model output interval:</code> defines the output
+writing interval for the HyMAP3 router.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 run in ensemble mode:</code> specifies whether to run the HyMAP3 router in ensemble mode.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not run in ensemble mode</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Run in ensemble mode</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 routing method:</code> specifies the HyMAP3 routing method to use.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kinematic</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use kinematic method</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">diffusive</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use diffusive method</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;local inertia&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use local inertia method</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hybrid</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use hybrid method (requires a river flow map from LDT)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">urban</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use urban hydrology method (requires river flow and urban drainage outlet maps from LDT, and an additional lis.config_ entry)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 urban drainage parameter file:</code> specifies the text file name containing gutter and drainage network parameters. This config entry is only used when ` HYMAP3 routing method:` is set to <code>urban</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 routing model time step method:</code> specifies the HyMAP3
+routing model time step method to use. This option is elective. If not defined,  HYMAP3 adopts <code>adaptive</code> by default.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">constant</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use constant timestep</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">adaptive</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use adaptive (time-varying) timesteps (must provide an alfa coefficient value)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 routing model adaptive time step alfa coefficient:</code>
+specifies the adaptive time step alfa coefficient (a real number)
+for the HyMAP3 router.  This option is elective. If not defined,  HYMAP3 adopts 0.5 by default. This coefficient is not needed if using the <code>constant</code> time step method.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 floodplain dynamics:</code> specifies whether simulate
+floodplain dynamics in the HyMAP3 router.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 reservoir operation option:</code> specifies whether to use reservoir operations in the HyMAP3 router.  This option is elective. If not defined,  HYMAP3 does not use reservoir operation.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use data-driven model (additional <em>lis.config</em> entries required)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use parameter-based model (additional <em>lis.config</em> entries required)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use beaver dam module (additional <em>lis.config</em> entries required)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>additional <em>lis.config</em> entries for  data-driven model</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 reservoir operation input directory:</code> specifies the input
+directory for the reservoir operation files to be used when using
+reservoir operations with the HyMAP3 router.  This config entry is
+only used when <code>HYMAP3 reservoir operation option:</code> is set to 1.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 reservoir operation header filename:</code> specifies the filename
+header for the reservoir operation files to be used when using
+reservoir operations with the HyMAP3 router.  This config entry is
+only used when <code>HYMAP3 reservoir operation option:</code> is set to 1.</p>
+</div>
+<div class="paragraph">
+<p>additional <em>lis.config</em> entries for parameter-based model
+<code>HYMAP3 reservoir operation input file:</code> specifies NetCDF file containing reservoir parameters. This config entry is only used when <code>HYMAP3 reservoir operation option:</code> is set to 2.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 reservoir list:</code> specifies text file containing the list of reservoirs. This config entry is only used when <code>HYMAP3 reservoir operation option:</code> is set to 2.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 levee:</code> specifies whether to account for levees. This option is elective. If not defined,  HYMAP3 does not account for levees.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use (requires a levee map from LDT)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 sea level:</code> specifies whether to account for sea levels as downstream boundary condition. This option is elective. If not defined,  HYMAP3 does not account for sea levels.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use (requires additional lis.config_ entries)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 sea level input directory:</code> specifies the directory where data is found when using sea levels as downstream boundary condition with the HyMAP3 router.  This config entry is only used when <code>HYMAP3 sea level:</code> is set to 1.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 sea level header filename:</code> specifies the filename header for the sea level files to be used when using sea levels as downstream boundary condition with the HyMAP3 router. This config entry is only used when <code>HYMAP3 sea level:</code> is set to 1.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 sea level outlet list:</code> specifies the text filename listing the outlet grid cells using sea level data as downstream boundary conditions with the HyMAP3 router. This config entry is only used when <code>HYMAP3 sea level:</code> is set to 1.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 routing model start mode:</code> specifies the restart mode
+to be used for the HyMAP3 router.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">restart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A restart mode is being used; read a HyMAP3 restart file</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">coldstart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A cold start mode is being used; no restart file read</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 routing model restart interval:</code> defines the restart writing
+interval for the HyMAP3 router.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 routing model restart file:</code> specifies the HyMAP3 router
+active restart file.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 enable 2-way coupling:</code> specifies whether to enable 2-way coupling.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 2-way coupling flooded fraction threshold:</code> specifies the flooded fraction
+threshold used in the 2-way coupling mode.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>HYMAP3 routing model time step: "30mn"
+HYMAP3 routing model output interval: "1da"
+HYMAP3 run in ensemble mode: 0
+HYMAP3 routing method: "kinematic"
+HYMAP3 routing model time step method: "constant"
+HYMAP3 routing model adaptive time step alfa coefficient: 0.7
+HYMAP3 floodplain dynamics: 1
+HYMAP3 reservoir operation option: 1
+HYMAP3 reservoir operation input directory: "./reservoir_data"
+HYMAP3 reservoir operation header filename: "RESDATA"
+HYMAP3 levees: 1
+HYMAP3 sea level: 1
+HYMAP3 sea level input directory: “./sea_level_data”
+HYMAP3 sea level header filename: “SEALEVDATA”_
+HYMAP3 sea level outlet list: “OUTLETLIST”
+HYMAP3 routing model start mode: "coldstart"
+HYMAP3 routing model restart interval: "1mo"
+HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_197901030000.d01.nc
+HYMAP3 enable 2-way coupling: 0
+HYMAP3 2-way coupling flooded fraction threshold: 0.1</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="sssec_nldasrouting">9.17.4. NLDAS routing</h4>
 <div class="paragraph">
 <p><code>NLDAS routing model output interval:</code> defines the output
 writing interval for the NLDAS router.</p>
@@ -22650,7 +23025,7 @@ NLDAS routing model restart file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_rapidrouting">9.17.4. RAPID routing</h4>
+<h4 id="sssec_rapidrouting">9.17.5. RAPID routing</h4>
 <div class="paragraph">
 <p><code>RAPID routing model time step:</code> specifies the timestep for
 the RAPID router.</p>
@@ -22835,7 +23210,7 @@ RAPID namelist file: ./rapid_params/rapid_namelist</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_lsm_Crocus8.1">9.17.5. Crocus8.1</h4>
+<h4 id="sssec_lsm_Crocus8.1">9.17.6. Crocus8.1</h4>
 <div class="paragraph">
 <p><code>CROCUS81 model timestep:</code> specifies the timestep for the run.</p>
 </div>
@@ -24868,7 +25243,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 3.1<br>
-Last updated 2025-06-17 17:55:01 UTC
+Last updated 2025-11-05 20:01:56 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
@@ -24894,6 +25269,6 @@ MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
   })
 })
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>

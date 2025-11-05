@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.23">
+<meta name="generator" content="Asciidoctor 2.0.26">
 <title>Land Data Toolkit (LDT): LDT 7.5 Users Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -116,7 +116,6 @@ h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title str
 :not(pre):not([class^=L])>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background:#f7f7f8;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
 pre{color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;line-height:1.45;text-rendering:optimizeSpeed}
 pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
-pre>code{display:block}
 pre.nowrap,pre.nowrap pre{white-space:pre;word-wrap:normal}
 em em{font-style:normal}
 strong strong{font-weight:400}
@@ -219,6 +218,7 @@ table.tableblock.fit-content>caption.title{white-space:nowrap;width:0}
 .literalblock pre,.listingblock>.content>pre:not(.highlight),.listingblock>.content>pre[class=highlight],.listingblock>.content>pre[class^="highlight "]{background:#f7f7f8}
 .literalblock.output pre{color:#f7f7f8;background:rgba(0,0,0,.9)}
 .listingblock>.content{position:relative}
+.listingblock pre>code{display:block}
 .listingblock code[data-lang]::before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:inherit;opacity:.5}
 .listingblock:hover code[data-lang]::before{display:block}
 .listingblock.terminal pre .command::before{content:attr(data-prompt);padding-right:.5em;color:inherit;opacity:.5}
@@ -1928,7 +1928,7 @@ LIBGEOTIFF means GeoTIFF support provided by the GeoTIFF library.</p>
 </div>
 </div>
 <div class="paragraph">
-<p><code>Routing model:</code> specifies the river routing model used in a LIS run.  Both HYMAP and HYMAP2 routing scheme parameters are supported in LDT.</p>
+<p><code>Routing model:</code> specifies the river routing model used in a LIS run.  HYMAP, HYMAP2 and HYMAP3 routing scheme parameters are supported in LDT.</p>
 </div>
 <div class="literalblock">
 <div class="title">Example <em>ldt.config</em> entry</div>
@@ -8897,7 +8897,7 @@ MCD15A2H LAI apply QC flags: 1</pre>
 <p><code>LIS TWS output map projection:</code> specifies the map projection used in the LIS model output.</p>
 </div>
 <div class="paragraph">
-<p><code>LIS SWS output processing:</code> specifies whether to take surface water storage (SWS) computed by LIS with the HyMAP2 routing model into account when processing GRACE data. For more information about generating SWS inputs, please refer to Sections &#8220;HYMAP2 Routing&#8221; and &#8220;Model Output Specifications&#8221; in the <em>LIS Users' Guide</em>. When this setting is enabled, LDT looks for the LIS-generated SWS data in <code>./OUTPUT/ROUTING</code>. For more information about this feature, please refer to <a href="https://doi.org/10.1002/2017GL074684" class="bare">https://doi.org/10.1002/2017GL074684</a> and <a href="https://doi.org/10.1029/2019WR026259" class="bare">https://doi.org/10.1029/2019WR026259</a>. Default value is 0. Acceptable values are:</p>
+<p><code>LIS SWS output processing:</code> specifies whether to take surface water storage (SWS) computed by LIS with the HYMAP2 and HYMAP3 routing models into account when processing GRACE data. For more information about generating SWS inputs, please refer to Sections &#8220;HYMAP2 Routing&#8221;, &#8220;HYMAP3 Routing&#8221; and &#8220;Model Output Specifications&#8221; in the <em>LIS Users' Guide</em>. When this setting is enabled, LDT looks for the LIS-generated SWS data in <code>./OUTPUT/ROUTING</code>. For more information about this feature, please refer to <a href="https://doi.org/10.1002/2017GL074684" class="bare">https://doi.org/10.1002/2017GL074684</a> and <a href="https://doi.org/10.1029/2019WR026259" class="bare">https://doi.org/10.1029/2019WR026259</a>. Default value is 0. Acceptable values are:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -9324,7 +9324,7 @@ LPRM vegetation optical depth data designation:      'X-band'</pre>
 <div class="sect2">
 <h3 id="ssec-hymapopts">7.15. HYMAP routing options</h3>
 <div class="paragraph">
-<p>This section describes the parameters needed for the HYMAP and the HYMAP2 routing models.  The config entries only have &#8220;HYMAP&#8221; within them, as they apply to both HYMAP versions.</p>
+<p>This section describes the parameters needed for the HYMAP, HYMAP2 and HYMAP3 routing models.  The config entries only have &#8220;HYMAP&#8221; within them, as they apply to all HYMAP versions.</p>
 </div>
 <div class="paragraph">
 <p><code>HYMAP river width map:</code> specifies the name of the HYMAP river width data file.</p>
@@ -9363,10 +9363,10 @@ LPRM vegetation optical depth data designation:      'X-band'</pre>
 <p><code>HYMAP grid area map:</code> specifies the name of the grid area data file.</p>
 </div>
 <div class="paragraph">
-<p><code>HYMAP drainage area map:</code> specifies the name of the drainage area data file.</p>
+<p><code>HYMAP drainage area map:</code> specifies the name of the drainage area data file. This parameter is not used in HYMAP. But it is a "good-to-have" for post-processing purposes.</p>
 </div>
 <div class="paragraph">
-<p><code>HYMAP basin map:</code> specifies the name of the basin map data file.</p>
+<p><code>HYMAP basin map:</code> specifies the name of the basin map data file. This parameter is not used in HYMAP. But it is a "good-to-have" for post-processing purposes.</p>
 </div>
 <div class="paragraph">
 <p><code>HYMAP basin mask map:</code> specifies the name of the basin mask data file.</p>
@@ -9381,13 +9381,28 @@ LPRM vegetation optical depth data designation:      'X-band'</pre>
 <p><code>HYMAP baseflow time delay map:</code> specifies the name of the baseflow time delay data file.</p>
 </div>
 <div class="paragraph">
-<p><code>HYMAP baseflow dwi ratio map:</code> specifies the name of the baseflow dwi ratio data file.  This is an optional parameter that is required only when &#8220;HYMAP2 routing model dwi flag&#8221; is set to 1 (turned on) in LIS in the <em>lis.config</em> file.  If this flag is set to 0 in the <em>lis.config</em> file, the baseflow dwi ratio map is not required.</p>
+<p><code>HYMAP baseflow dwi ratio map:</code> specifies the name of the baseflow dwi ratio data file.  This is an optional parameter that is required only when &#8220;HYMAP2 routing model dwi flag&#8221; or &#8220;HYMAP3 routing model dwi flag&#8221; are set to 1 (turned on) in LIS in the <em>lis.config</em> file.  If this flag is set to 0 in the <em>lis.config</em> file, the baseflow dwi ratio map is not required.</p>
 </div>
 <div class="paragraph">
-<p><code>HYMAP runoff dwi ratio map:</code> specifies the name of the runoff dwi ratio data file.  This is an optional parameter that is required only when &#8220;HYMAP2 routing model dwi flag&#8221; is set to 1 (turned on) in LIS in the <em>lis.config</em> file.  If this flag is set to 0 in the <em>lis.config</em> file, the runoff dwi ratio map is not required.</p>
+<p><code>HYMAP runoff dwi ratio map:</code> specifies the name of the runoff dwi ratio data file.  This is an optional parameter that is required only when &#8220;HYMAP2 routing model dwi flag&#8221; or &#8220;HYMAP3 routing model dwi flag&#8221; are set to 1 (turned on) in LIS in the <em>lis.config</em> file.  If this flag is set to 0 in the <em>lis.config</em> file, the runoff dwi ratio map is not required.</p>
 </div>
 <div class="paragraph">
-<p><code>HYMAP river flow type map:</code> specifies the name of the river flow type data file.  This is an optional parameter that is required only when &#8220;HYMAP2 routing method&#8221; is set to &#8220;hybrid&#8221; in LIS in the <em>lis.config</em> file.  If the routing method is set to a different option, the river flow type map is not required.</p>
+<p><code>HYMAP river flow type map:</code> specifies the name of the river flow type data file.  This is an optional parameter that is required only when &#8220;HYMAP2 routing method&#8221; or &#8220;HYMAP3 routing method&#8221; are set to &#8220;hybrid&#8221; in LIS in the <em>lis.config</em> file.  If the routing method is set to a different option, the river flow type map is not required.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP urban drainage outlet map:</code> specifies the name of the baseflow time delay data file. This is an optional parameter that is required only when &#8220;HYMAP2 routing method&#8221; or &#8220;HYMAP3 routing method&#8221; are set to &#8220;urban&#8221;. If the routing method is set to a different option, the urban drainage outlet map is not required.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP levee height map:</code> specifies the name of the baseflow time delay data file. This is an optional parameter that is required only when &#8220;HYMAP2 levee&#8221; or &#8220;HYMAP3 levee:&#8221; are set to &#8220;1&#8221;. If the levee option is set to &#8220;0&#8221; or is not specified, the levee map is not required.</p>
+</div>
+<div class="paragraph">
+<p><code>Land grid area map:</code> specifies the name of the baseflow time delay data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP node lon:</code> specifies the name of the grid node longitude data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP node lat:</code> specifies the name of the grid node latitude data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.</p>
 </div>
 <div class="literalblock">
 <div class="title">Example <em>ldt.config</em> entry</div>
@@ -9412,7 +9427,12 @@ HYMAP runoff time delay multiplier map:  ../HYMAP_parms/lis_trunoff_0125.bin
 HYMAP baseflow time delay map:           ../HYMAP_parms/lis_tbasflw_0125.bin
 HYMAP baseflow dwi ratio map:            ../HYMAP_parms/lis_basdwi_0125.bin
 HYMAP runoff dwi ratio map:              ../HYMAP_parms/lis_rundwi_0125.bin
-HYMAP river flow type map:               ../HYMAP_parms/lis_rivflw_0125.bin</pre>
+HYMAP river flow type map:               ../HYMAP_parms/lis_rivflw_0125.bin
+HYMAP urban drainage outlet map:         ../HYMAP_parms/lis_urban_0125.bin
+HYMAP levee height map:                  ../HYMAP_parms/lis_levee_0125.bin
+Land grid area map:                      ../HYMAP_parms/lis_lgrdare_0125.bin
+HYMAP node lon:                          ../HYMAP_parms/lis_nodelon_0125.bin
+HYMAP node lat:                          ../HYMAP_parms/lis_nodelat_0125.bin</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -18040,7 +18060,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 3.1<br>
-Last updated 2025-06-17 17:55:01 UTC
+Last updated 2025-11-05 20:01:56 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
@@ -18066,6 +18086,6 @@ MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
   })
 })
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 </body>
 </html>
