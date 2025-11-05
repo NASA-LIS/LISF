@@ -404,10 +404,13 @@ class S2Srun(DownloadForecasts):
     def delete_forecast(self):
         ''' deletes a forecast from the E2ES directory '''
         e2es, yyyy, yyyymm = self.e2esroot, self.yyyy, self.yyyymm
+        lats, _ = utils.get_domain_info(self.config_file, coord=True)
+        resol = f'{round((lats[1] - lats[0])*100)}km'
+        met_dir = f'{self.fcst_model}_{resol}'
         mm = yyyymm[4:6]
         date_obj = datetime.strptime(f"{yyyy}-{mm}-01", "%Y-%m-%d")
         mmm01 = date_obj.strftime("%b").lower() + '01'
-        Umm = date_obj.strftime("%b")
+        umm = date_obj.strftime("%b")
         previous_month_date = date_obj - relativedelta(months=1)
         yyyymmp = previous_month_date.strftime("%Y%m")
 
@@ -417,24 +420,24 @@ class S2Srun(DownloadForecasts):
             f'{e2es}/lis_darun/output/SURFACEMODEL/{yyyymmp}/LIS_HIST_*.nc',
             f'{e2es}/lis_darun/output/lis.config_files/lis.config_darun_{yyyymmp}']
         dirs.extend([
-            f'{e2es}/ldt_ics/{model}/ldtlog_noahmp401_{Umm}{yyyy}.0000' for model in self.models])
+            f'{e2es}/ldt_ics/{model}/ldtlog_noahmp401_{umm}{yyyy}.0000' for model in self.models])
         dirs.extend([
-            f'{e2es}/ldt_ics/{model}/LIS_RST_HYMAP2_router_*{Umm}{yyyy}*nc' for model in self.models
+            f'{e2es}/ldt_ics/{model}/LIS_RST_HYMAP2_router_*{umm}{yyyy}*nc' for model in self.models
         ])
         dirs.extend([
-            f'{e2es}/ldt_ics/{model}/LIS_RST_NOAHMP401_*{Umm}{yyyy}*nc' for model in self.models])
+            f'{e2es}/ldt_ics/{model}/LIS_RST_NOAHMP401_*{umm}{yyyy}*nc' for model in self.models])
         dirs.extend([
-            f'{e2es}/bcsd_fcst/CFSv2_25km/raw/6-Hourly/{mmm01}/{yyyy}',
-            f'{e2es}/bcsd_fcst/CFSv2_25km/raw/Monthly/{mmm01}/{yyyy}',
-            f'{e2es}/bcsd_fcst/CFSv2_25km/bcsd/6-Hourly/{mmm01}/{yyyy}',
-            f'{e2es}/bcsd_fcst/CFSv2_25km/bcsd/Monthly/{mmm01}/*{yyyy}_{yyyy}.nc',
-            f'{e2es}/bcsd_fcst/CFSv2_25km/final/6-Hourly/{mmm01}/{yyyy}',
+            f'{e2es}/bcsd_fcst/{met_dir}/raw/6-Hourly/{mmm01}/{yyyy}',
+            f'{e2es}/bcsd_fcst/{met_dir}/raw/Monthly/{mmm01}/{yyyy}',
+            f'{e2es}/bcsd_fcst/{met_dir}/bcsd/6-Hourly/{mmm01}/{yyyy}',
+            f'{e2es}/bcsd_fcst/{met_dir}/bcsd/Monthly/{mmm01}/*{yyyy}_{yyyy}.nc',
+            f'{e2es}/bcsd_fcst/{met_dir}/final/6-Hourly/{mmm01}/{yyyy}',
             f'{e2es}/bcsd_fcst/NMME/bcsd/Monthly/{mmm01}/PRECTOT.*{yyyy}_{yyyy}.nc'])
+        dirs.extend([
+            f'{e2es}/bcsd_fcst/NMME/raw/Monthly/{mmm01}/{model}/{yyyy}/' for model in self.models])
         dirs.extend([
             f'{e2es}/bcsd_fcst/NMME/final/6-Hourly/{model}/{mmm01}/{yyyy}' for model in self.models
         ])
-        dirs.extend([
-            f'{e2es}/bcsd_fcst/NMME/raw/Monthly/{mmm01}/{model}/{yyyy}/' for model in self.models])
         dirs.extend([f'{e2es}/lis_fcst/{yyyymm}',
                      f'{e2es}/s2spost/{yyyymm}',
                      f'{e2es}/s2smetric/{yyyymm}',
