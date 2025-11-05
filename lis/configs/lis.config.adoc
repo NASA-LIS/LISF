@@ -10934,6 +10934,7 @@ HYMAP2 enable 2-way coupling: 0
 HYMAP2 2-way coupling flooded fraction threshold: 0.1
 ....
 
+
 [[sssec_hymap3routing,HYMAP3 routing]]
 ==== HYMAP3 routing
 
@@ -10949,8 +10950,8 @@ writing interval for the HyMAP3 router.
 See Section <<ssec_timeinterval>> for a description
 of how to specify a time interval.
 
-`HYMAP3 run in ensemble mode:` specifies whether to run the
-HyMAP3 router in ensemble mode.
+`HYMAP3 run in ensemble mode:` specifies whether to run the HyMAP3 router in ensemble mode.
+
 Acceptable values are:
 
 |====
@@ -10960,8 +10961,8 @@ Acceptable values are:
 |1     | Run in ensemble mode
 |====
 
-`HYMAP3 routing method:` specifies the HyMAP3 routing method
-to use.
+`HYMAP3 routing method:` specifies the HyMAP3 routing method to use.
+
 Acceptable values are:
 
 |====
@@ -10974,9 +10975,9 @@ Acceptable values are:
 |urban             | use urban hydrology method (requires river flow and urban drainage outlet maps from LDT, and an additional lis.config_ entry)
 |====
 `HYMAP3 urban drainage parameter file:` specifies the text file name containing gutter and drainage network parameters. This config entry is only used when ` HYMAP3 routing method:` is set to `urban`.
-|====
+
 `HYMAP3 routing model time step method:` specifies the HyMAP3
-routing model time step method to use. This option is elective. If not defined,  HYMAP3 adopts `adaptive` by default.
+routing model time step method to use. This option is elective. If not defined,  HYMAP3 adopts `adaptive` by default. 
 
 Acceptable values are:
 
@@ -10993,6 +10994,7 @@ for the HyMAP3 router.  This option is elective. If not defined,  HYMAP3 adopts 
 
 `HYMAP3 floodplain dynamics:` specifies whether simulate
 floodplain dynamics in the HyMAP3 router.
+
 Acceptable values are:
 
 |====
@@ -11026,14 +11028,12 @@ header for the reservoir operation files to be used when using
 reservoir operations with the HyMAP3 router.  This config entry is
 only used when `HYMAP3 reservoir operation option:` is set to 1.
 
-|====
 additional _lis.config_ entries for parameter-based model 
 `HYMAP3 reservoir operation input file:` specifies NetCDF file containing reservoir parameters. This config entry is only used when `HYMAP3 reservoir operation option:` is set to 2.
 
 `HYMAP3 reservoir list:` specifies text file containing the list of reservoirs. This config entry is only used when `HYMAP3 reservoir operation option:` is set to 2.
 
-|====
-` HYMAP3 levee:` specifies whether to account for levees. This option is elective. If not defined,  HYMAP3 does not account for levees.
+`HYMAP3 levee:` specifies whether to account for levees. This option is elective. If not defined,  HYMAP3 does not account for levees.
 
 Acceptable values are:
 
@@ -11042,9 +11042,9 @@ Acceptable values are:
 
 |0     | Do not use
 |1     | Use (requires a levee map from LDT)
-
 |====
-` HYMAP3 sea level:` specifies whether to account for sea levels as downstream boundary condition. This option is elective. If not defined,  HYMAP3 does not account for sea levels. 
+
+`HYMAP3 sea level:` specifies whether to account for sea levels as downstream boundary condition. This option is elective. If not defined,  HYMAP3 does not account for sea levels. 
 
 Acceptable values are:
 
@@ -11053,20 +11053,18 @@ Acceptable values are:
 
 |0     | Do not use
 |1     | Use (requires additional lis.config_ entries)
-
 |====
+
 `HYMAP3 sea level input directory:` specifies the directory where data is found when using sea levels as downstream boundary condition with the HyMAP3 router.  This config entry is only used when `HYMAP3 sea level:` is set to 1.
 
-|====
 `HYMAP3 sea level header filename:` specifies the filename header for the sea level files to be used when using sea levels as downstream boundary condition with the HyMAP3 router. This config entry is only used when `HYMAP3 sea level:` is set to 1.
 
-|====
 `HYMAP3 sea level outlet list:` specifies the text filename listing the outlet grid cells using sea level data as downstream boundary conditions with the HyMAP3 router. This config entry is only used when `HYMAP3 sea level:` is set to 1.
 
-|====
 
 `HYMAP3 routing model start mode:` specifies the restart mode
 to be used for the HyMAP3 router.
+
 Acceptable values are:
 
 |====
