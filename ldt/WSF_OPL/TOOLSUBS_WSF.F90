@@ -308,8 +308,10 @@ CONTAINS
             quality_flag(j,i) = 0
             
             ! Bit 0: Ocean (land_frac < 0.5)
-            if (land_frac_low(j,i) >= 0.0 .and. land_frac_low(j,i) < 0.5) then
-                quality_flag(j,i) = IOR(quality_flag(j,i), 1)
+            if (land_frac_low(j,i) >= 0.0) then
+                if (land_frac_low(j,i) < 0.5) then
+                    quality_flag(j,i) = IOR(quality_flag(j,i), 1)  ! Ocean
+                endif
             endif
             
             ! Only check precip/snow over land
@@ -351,6 +353,8 @@ CONTAINS
                 
                 if (IBITS(INT(qf_from_file(j,i,iband)), 0, 1) == 1 .or. &  ! IsNotValid
                     IBITS(INT(qf_from_file(j,i,iband)), 1, 1) == 1 .or. &  ! IsExclusionCondition
+                    !IBITS(INT(qf_from_file(j,i,iband)), 4, 1) == 1 .or. &   ! IsOverlap
+                    !IBITS(INT(qf_from_file(j,i,iband)), 3, 1) == 1 .or. &   ! IsLimitedUtilityValidationCondition
                     IBITS(INT(qf_from_file(j,i,iband)), 2, 1) == 1) then   ! IsDegradationCondition
                     band_quality_flags(j,i,iband) = 1  ! Mark band as bad
                 else

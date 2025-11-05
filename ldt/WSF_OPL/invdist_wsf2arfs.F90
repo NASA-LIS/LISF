@@ -198,11 +198,11 @@ CONTAINS
                         if (has_water) ocean_count(rr,cc) = ocean_count(rr,cc) + 1
                         if (has_precip) precip_count(rr,cc) = precip_count(rr,cc) + 1
                         if (has_snow) snow_count(rr,cc) = snow_count(rr,cc) + 1
-                        if (band1_bad) band1_bad_count(rr,cc) = band1_bad_count(rr,cc) + 1
-                        if (band2_bad) band2_bad_count(rr,cc) = band2_bad_count(rr,cc) + 1
-                        if (band3_bad) band3_bad_count(rr,cc) = band3_bad_count(rr,cc) + 1
-                        if (band4_bad) band4_bad_count(rr,cc) = band4_bad_count(rr,cc) + 1
-                        if (band5_bad) band5_bad_count(rr,cc) = band5_bad_count(rr,cc) + 1
+                        if (band1_bad .and. .not. has_water) band1_bad_count(rr,cc) = band1_bad_count(rr,cc) + 1
+                        if (band2_bad .and. .not. has_water) band2_bad_count(rr,cc) = band2_bad_count(rr,cc) + 1
+                        if (band3_bad .and. .not. has_water) band3_bad_count(rr,cc) = band3_bad_count(rr,cc) + 1
+                        if (band4_bad .and. .not. has_water) band4_bad_count(rr,cc) = band4_bad_count(rr,cc) + 1
+                        if (band5_bad .and. .not. has_water) band5_bad_count(rr,cc) = band5_bad_count(rr,cc) + 1
                         
                         ! Calculate weight (inverse distance or 1.0 for exact match)
                         if (gcdist < 0.0001D0) then
@@ -216,7 +216,7 @@ CONTAINS
                         ! ============================================================
                         
                         ! 10 GHz channels (Band 1)
-                        if (.not. band1_bad .and. .not. has_snow .and. .not. has_precip .and. .not. has_water) then
+                        if (.not. band1_bad .and. .not. has_snow .and. .not. has_precip) then
                             if (ABS(tb_10h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_10h(jj,ii) > 0.0) then
                                 arfs_tb_10h(rr,cc) = arfs_tb_10h(rr,cc) + tb_10h(jj,ii) * weight
                                 arfs_wt_tb10h(rr,cc) = arfs_wt_tb10h(rr,cc) + weight
@@ -232,7 +232,7 @@ CONTAINS
                         endif
                         
                         ! 18 GHz channels (Band 2)
-                        if (.not. band2_bad .and. .not. has_snow .and. .not. has_precip .and. .not. has_water) then
+                        if (.not. band2_bad .and. .not. has_snow .and. .not. has_precip) then
                             if (ABS(tb_18h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_18h(jj,ii) > 0.0) then
                                 arfs_tb_18h(rr,cc) = arfs_tb_18h(rr,cc) + tb_18h(jj,ii) * weight
                                 arfs_wt_tb18h(rr,cc) = arfs_wt_tb18h(rr,cc) + weight
@@ -246,7 +246,7 @@ CONTAINS
                         endif
                         
                         ! 23 GHz channels (Band 3)
-                        if (.not. band3_bad .and. .not. has_snow .and. .not. has_precip .and. .not. has_water) then
+                        if (.not. band3_bad .and. .not. has_snow .and. .not. has_precip) then
                             if (ABS(tb_23h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_23h(jj,ii) > 0.0) then
                                 arfs_tb_23h(rr,cc) = arfs_tb_23h(rr,cc) + tb_23h(jj,ii) * weight
                                 arfs_wt_tb23h(rr,cc) = arfs_wt_tb23h(rr,cc) + weight
@@ -260,7 +260,7 @@ CONTAINS
                         endif
                         
                         ! 36 GHz channels (Band 4)
-                        if (.not. band4_bad .and. .not. has_snow .and. .not. has_precip .and. .not. has_water) then
+                        if (.not. band4_bad .and. .not. has_snow .and. .not. has_precip) then
                             if (ABS(tb_36h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_36h(jj,ii) > 0.0) then
                                 arfs_tb_36h(rr,cc) = arfs_tb_36h(rr,cc) + tb_36h(jj,ii) * weight
                                 arfs_wt_tb36h(rr,cc) = arfs_wt_tb36h(rr,cc) + weight
@@ -274,7 +274,7 @@ CONTAINS
                         endif
                         
                         ! 89 GHz channels (Band 5)
-                        if (.not. band5_bad .and. .not. has_snow .and. .not. has_precip .and. .not. has_water) then
+                        if (.not. band5_bad .and. .not. has_snow .and. .not. has_precip) then
                             if (ABS(tb_89h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_89h(jj,ii) > 0.0) then
                                 arfs_tb_89h(rr,cc) = arfs_tb_89h(rr,cc) + tb_89h(jj,ii) * weight
                                 arfs_wt_tb89h(rr,cc) = arfs_wt_tb89h(rr,cc) + weight
