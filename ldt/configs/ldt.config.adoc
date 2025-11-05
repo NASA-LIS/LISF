@@ -121,7 +121,7 @@ Land surface model:       Noah.3.3
 Lake model:               none
 ....
 
-`Routing model:` specifies the river routing model used in a LIS run.  Both HYMAP and HYMAP2 routing scheme parameters are supported in LDT.
+`Routing model:` specifies the river routing model used in a LIS run.  HYMAP, HYMAP2 and HYMAP3 routing scheme parameters are supported in LDT.
 
 .Example _ldt.config_ entry
 ....
@@ -4164,7 +4164,7 @@ MCD15A2H LAI apply QC flags: 1
 
 `LIS TWS output map projection:` specifies the map projection used in the LIS model output.
 
-`LIS SWS output processing:` specifies whether to take surface water storage (SWS) computed by LIS with the HyMAP2 routing model into account when processing GRACE data. For more information about generating SWS inputs, please refer to Sections "`HYMAP2 Routing`" and "`Model Output Specifications`" in the _LIS Users' Guide_. When this setting is enabled, LDT looks for the LIS-generated SWS data in `./OUTPUT/ROUTING`. For more information about this feature, please refer to https://doi.org/10.1002/2017GL074684 and https://doi.org/10.1029/2019WR026259. Default value is 0. Acceptable values are:
+`LIS SWS output processing:` specifies whether to take surface water storage (SWS) computed by LIS with the HYMAP2 and HYMAP3 routing models into account when processing GRACE data. For more information about generating SWS inputs, please refer to Sections "`HYMAP2 Routing`", "`HYMAP3 Routing`" and "`Model Output Specifications`" in the _LIS Users' Guide_. When this setting is enabled, LDT looks for the LIS-generated SWS data in `./OUTPUT/ROUTING`. For more information about this feature, please refer to https://doi.org/10.1002/2017GL074684 and https://doi.org/10.1029/2019WR026259. Default value is 0. Acceptable values are:
 
 [cols="<,<",]
 |===
@@ -4438,7 +4438,7 @@ VIIRS GVF data directory:   ./VIIRS_GVF
 [[ssec-hymapopts]]
 === HYMAP routing options
 
-This section describes the parameters needed for the HYMAP and the HYMAP2 routing models.  The config entries only have "`HYMAP`" within them, as they apply to both HYMAP versions.
+This section describes the parameters needed for the HYMAP, HYMAP2 and HYMAP3 routing models.  The config entries only have "`HYMAP`" within them, as they apply to all HYMAP versions.
 
 `HYMAP river width map:` specifies the name of the HYMAP river width data file.
 
@@ -4464,9 +4464,9 @@ This section describes the parameters needed for the HYMAP and the HYMAP2 routin
 
 `HYMAP grid area map:` specifies the name of the grid area data file.
 
-`HYMAP drainage area map:` specifies the name of the drainage area data file.
+`HYMAP drainage area map:` specifies the name of the drainage area data file. This parameter is not used in HYMAP. But it is a "good-to-have" for post-processing purposes.
 
-`HYMAP basin map:` specifies the name of the basin map data file.
+`HYMAP basin map:` specifies the name of the basin map data file. This parameter is not used in HYMAP. But it is a "good-to-have" for post-processing purposes.
 
 `HYMAP basin mask map:` specifies the name of the basin mask data file.
 
@@ -4476,11 +4476,21 @@ This section describes the parameters needed for the HYMAP and the HYMAP2 routin
 
 `HYMAP baseflow time delay map:` specifies the name of the baseflow time delay data file.
 
-`HYMAP baseflow dwi ratio map:` specifies the name of the baseflow dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the _lis.config_ file.  If this flag is set to 0 in the _lis.config_ file, the baseflow dwi ratio map is not required.
+`HYMAP baseflow dwi ratio map:` specifies the name of the baseflow dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" or "`HYMAP3 routing model dwi flag`" are set to 1 (turned on) in LIS in the _lis.config_ file.  If this flag is set to 0 in the _lis.config_ file, the baseflow dwi ratio map is not required.
 
-`HYMAP runoff dwi ratio map:` specifies the name of the runoff dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" is set to 1 (turned on) in LIS in the _lis.config_ file.  If this flag is set to 0 in the _lis.config_ file, the runoff dwi ratio map is not required.
+`HYMAP runoff dwi ratio map:` specifies the name of the runoff dwi ratio data file.  This is an optional parameter that is required only when "`HYMAP2 routing model dwi flag`" or "`HYMAP3 routing model dwi flag`" are set to 1 (turned on) in LIS in the _lis.config_ file.  If this flag is set to 0 in the _lis.config_ file, the runoff dwi ratio map is not required.
 
-`HYMAP river flow type map:` specifies the name of the river flow type data file.  This is an optional parameter that is required only when "`HYMAP2 routing method`" is set to "`hybrid`" in LIS in the _lis.config_ file.  If the routing method is set to a different option, the river flow type map is not required.
+`HYMAP river flow type map:` specifies the name of the river flow type data file.  This is an optional parameter that is required only when "`HYMAP2 routing method`" or "`HYMAP3 routing method`" are set to "`hybrid`" in LIS in the _lis.config_ file.  If the routing method is set to a different option, the river flow type map is not required.
+
+`HYMAP urban drainage outlet map:` specifies the name of the baseflow time delay data file. This is an optional parameter that is required only when "`HYMAP2 routing method`" or "`HYMAP3 routing method`" are set to "`urban`". If the routing method is set to a different option, the urban drainage outlet map is not required.
+
+`HYMAP levee height map:` specifies the name of the baseflow time delay data file. This is an optional parameter that is required only when "`HYMAP2 levee`" or "`HYMAP3 levee:`" are set to "`1`". If the levee option is set to "`0`" or is not specified, the levee map is not required.
+
+`Land grid area map:` specifies the name of the baseflow time delay data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.
+
+`HYMAP node lon:` specifies the name of the grid node longitude data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.
+
+`HYMAP node lat:` specifies the name of the grid node latitude data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.
 
 .Example _ldt.config_ entry
 ....
@@ -4505,6 +4515,11 @@ HYMAP baseflow time delay map:           ../HYMAP_parms/lis_tbasflw_0125.bin
 HYMAP baseflow dwi ratio map:            ../HYMAP_parms/lis_basdwi_0125.bin
 HYMAP runoff dwi ratio map:              ../HYMAP_parms/lis_rundwi_0125.bin
 HYMAP river flow type map:               ../HYMAP_parms/lis_rivflw_0125.bin
+HYMAP urban drainage outlet map:         ../HYMAP_parms/lis_urban_0125.bin
+HYMAP levee height map:                  ../HYMAP_parms/lis_levee_0125.bin
+Land grid area map:                      ../HYMAP_parms/lis_lgrdare_0125.bin
+HYMAP node lon:                          ../HYMAP_parms/lis_nodelon_0125.bin
+HYMAP node lat:                          ../HYMAP_parms/lis_nodelat_0125.bin
 ....
 
 This section also outlines the domain specifications of the HYMAP parameter data. For the HYMAP parameters spatial transform option, only "`none`" is supported at this time, and the user is required to input the HYMAP parameters at the grid and resolution of interest.
