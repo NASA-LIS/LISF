@@ -950,16 +950,16 @@ class S2Srun(DownloadForecasts):
 
             file.write("    [[log_monitor]]\n")
             file.write(f"        script = {self.scrdir}ghis2s_log.sh\n")
-            file.write("        platform = localhost\n")
+            file.write("        platform = localhost-ghi\n")
             file.write("  \n")
 
             file.write("    [[final_log_collect]]\n")
             file.write(f"        script = {self.scrdir}ghis2s_log.sh\n")
-            file.write("        platform = localhost\n")
+            file.write("        platform = localhost-ghi\n")
             file.write("  \n")
 
             file.write("    [[stop_log_monitor]]\n")
-            file.write("        platform = localhost\n")
+            file.write("        platform = localhost-ghi\n")
             file.write("        script = \"\"\"\n")
             file.write("            cylc stop $CYLC_WORKFLOW_ID --now\n")
             file.write("        \"\"\"\n")
