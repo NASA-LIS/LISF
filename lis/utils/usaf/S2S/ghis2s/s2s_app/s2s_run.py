@@ -371,7 +371,6 @@ class S2Srun(DownloadForecasts):
         self.domain = self.config['EXP']['DOMAIN']
         self.supdir = self.config['SETUP']['supplementarydir']
         self.ldtfile = self.config['SETUP']['ldtinputfile']
-        self.scrdir = self.e2esdir + 'scratch/' + self.yyyy + self.mm + '/'
         self.models = self.config["EXP"]["NMME_models"]
         self.constraint = self.config['SETUP']['CONSTRAINT']
         self.fcst_model = self.config['BCSD']['metforce_source']
@@ -382,13 +381,15 @@ class S2Srun(DownloadForecasts):
             subprocess.run(["setfacl", "-R", "-m", "u::rwx,g::rwx,o::r",
                             self.e2esdir], check=True)
 
-        os.makedirs(self.scrdir + '/lis_darun/logs', exist_ok=True)
-        os.makedirs(self.scrdir + '/ldt_ics/logs', exist_ok=True)
-        os.makedirs(self.scrdir + '/bcsd_fcst/logs', exist_ok=True)
-        os.makedirs(self.scrdir + '/lis_fcst/logs', exist_ok=True)
-        os.makedirs(self.scrdir + '/s2spost/logs', exist_ok=True)
-        os.makedirs(self.scrdir + '/s2smetric/logs', exist_ok=True)
-        os.makedirs(self.scrdir + '/s2splots/logs', exist_ok=True)
+        if self.config['SETUP']['DATATYPE'] == 'forecast':
+            self.scrdir = self.e2esdir + 'scratch/' + self.yyyy + self.mm + '/'            
+            os.makedirs(self.scrdir + '/lis_darun/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/ldt_ics/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/bcsd_fcst/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/lis_fcst/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/s2spost/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/s2smetric/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/s2splots/logs', exist_ok=True)
 
     def create_symlink(self, source, link_name):
         """
@@ -1150,6 +1151,73 @@ class S2Srun(DownloadForecasts):
 
         os.chdir(self.e2esdir)
 
+    def mf_regrid(self, cwd, mmm, resol, clim_syr, clim_eyr=None):
+        '''
+        (1) metforce_regridding (formerly bcsd01) - regrid metforce files
+        -----------------------------------------------------------------
+        '''
+        jobname='mf_regrid_'
+        resol_info = {
+            '25km': {'CPT': str(1), 'MEM':'13GB', 'NT': str(self.config["EXP"]["lead_months"]),
+                     'TPN': 2*int(self.config["EXP"]["lead_months"]), 'l_sub': 2,'HOURS': str(1)},
+            '10km': {'CPT': str(1), 'MEM':'120GB', 'NT': str(1), 'TPN': 2,
+                     'l_sub': 2, 'HOURS': str(3)},
+            '5km': {'CPT': str(1), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1,
+                    'HOURS': str(self.config["EXP"]["lead_months"])},
+        }
+        info = resol_info[resol]
+        slurm_commands = bcsd.metforce_regridding.main(
+            self.e2esroot +'/' + self.config_file, clim_syr, clim_eyr,
+            mmm, cwd, jobname, 1, 2, py_call=True)
+
+        # multi tasks per job
+        l_sub = info['l_sub']
+        par_info = {}
+        par_info['CPT'] = info['CPT']
+        par_info['MEM'] = info['MEM']
+        par_info['NT'] = info['NT']
+        par_info['TPN'] = info['TPN']
+        par_info['MP'] = False
+        slurm_sub = self.split_list(slurm_commands, l_sub)
+        for i, sub_val in enumerate(slurm_sub):
+            tfile = self.sublist_to_file(sub_val, cwd)
+            try:
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
+                                        jobname + f'{i+1:02d}_run.j', jobname+ f'{i+1:02d}_',
+                                        info['TPN'], info['HOURS'], cwd,
+                                        tfile.name, parallel_run=par_info)
+                self.create_dict(jobname+ f'{i+1:02d}_run.j', 'bcsd_fcst')
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+
+            shutil.copy(jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_run.sh')
+            utils.remove_sbatch_lines(jobname + f'{i+1:02d}_run.sh')
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), info['HOURS'],
+            # cwd, command_list=sub_val)
+
+    def pr_regrid(self, cwd):
+        '''
+        (3) precip_regridding (formerly bcsd03) regridding precipitation (NMME)
+        -----------------------------------------------------------------------
+        '''
+        jobname='pr_regrid_'
+        slurm_commands = bcsd.precip_regridding.main(self.e2esroot +'/' + self.config_file,
+                                                     self.year, self.month, jobname, 1, str(2),
+                                                     cwd, py_call=True)
+        tfile = self.sublist_to_file(slurm_commands, cwd)
+        try:
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(3), cwd, tfile.name)
+            self.create_dict(jobname+ 'run.j', 'bcsd_fcst')
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 3, cwd, command_list=slurm_commands)
+
     def bcsd(self):
         """ BCSD 12 steps """
         lats, _ = utils.get_domain_info(self.config_file, coord=True)
@@ -1183,66 +1251,9 @@ class S2Srun(DownloadForecasts):
         date_obj = datetime.strptime(f"{self.yyyy}-{self.mm}-01", "%Y-%m-%d")
         mmm = date_obj.strftime("%b").lower()
 
-        # (1) metforce_regridding (formerly bcsd01) - regrid metforce (CFSv2/GEOSv3 files
-        # ---------------------------------------------------------------------
-        jobname='mf_regrid_'
-        resol_info = {
-            '25km': {'CPT': str(1), 'MEM':'13GB', 'NT': str(self.config["EXP"]["lead_months"]),
-                     'TPN': 2*int(self.config["EXP"]["lead_months"]), 'l_sub': 2,'HOURS': str(1)},
-            '10km': {'CPT': str(1), 'MEM':'120GB', 'NT': str(1), 'TPN': 2,
-                     'l_sub': 2, 'HOURS': str(3)},
-            '5km': {'CPT': str(1), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1,
-                    'HOURS': str(self.config["EXP"]["lead_months"])},
-        }
-        info = resol_info[resol]
-        slurm_commands = bcsd.metforce_regridding.main(
-            self.e2esroot +'/' + self.config_file, self.year, None,
-            mmm, cwd, jobname, 1, 2, py_call=True)
-
-        # multi tasks per job
-        l_sub = info['l_sub']
-        par_info = {}
-        par_info['CPT'] = info['CPT']
-        par_info['MEM'] = info['MEM']
-        par_info['NT'] = info['NT']
-        par_info['TPN'] = info['TPN']
-        par_info['MP'] = False
-        slurm_sub = self.split_list(slurm_commands, l_sub)
-        for i, sub_val in enumerate(slurm_sub):
-            tfile = self.sublist_to_file(sub_val, cwd)
-            try:
-                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
-                                        jobname + f'{i+1:02d}_run.j', jobname+ f'{i+1:02d}_',
-                                        info['TPN'], info['HOURS'], cwd,
-                                        tfile.name, parallel_run=par_info)
-                self.create_dict(jobname+ f'{i+1:02d}_run.j', 'bcsd_fcst')
-            finally:
-                tfile.close()
-                os.unlink(tfile.name)
-
-            shutil.copy(jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_run.sh')
-            utils.remove_sbatch_lines(jobname + f'{i+1:02d}_run.sh')
-            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), info['HOURS'],
-            # cwd, command_list=sub_val)
-
-        # (3) precip_regridding (formerly bcsd03) regridding precipitation (NMME)
-        # ---------------------------------------
-        jobname='pr_regrid_'
-        slurm_commands = bcsd.precip_regridding.main(self.e2esroot +'/' + self.config_file,
-                                                     self.year, self.month, jobname, 1, str(2),
-                                                     cwd, py_call=True)
-        tfile = self.sublist_to_file(slurm_commands, cwd)
-        try:
-            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(3), cwd, tfile.name)
-            self.create_dict(jobname+ 'run.j', 'bcsd_fcst')
-        finally:
-            tfile.close()
-            os.unlink(tfile.name)
-
-        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
-        utils.remove_sbatch_lines(jobname + 'run.sh')
-        #utils.cylc_job_scripts(jobname + 'run.sh', 3, cwd, command_list=slurm_commands)
+        if not self.hindcast:
+            self.mf_regrid(cwd, mmm, resol, self.year)
+            self.pr_regrid(cwd)
 
         # (4) metforce_biascorrection (formerly bcsd04): Monthly "BC" step applied to CFSv2
         #    (task_04.py, after 1 and 3)
