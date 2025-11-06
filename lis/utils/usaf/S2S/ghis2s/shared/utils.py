@@ -177,6 +177,8 @@ done
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
+        _f.write('sleep 60' + '\n')
+        _f.write('\n')
         _f.write('exit 0' + '\n')
     _f.close()
 
