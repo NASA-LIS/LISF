@@ -172,9 +172,14 @@ CONTAINS
             ! Find grid cell bounds
             lat1 = lat_in(jj,ii)
             lon1 = lon_in(jj,ii)
+
+            ! Convert longitude from 0-360 to -180 to +180 convention
+            if (lon1 > 180.0) then
+                lon1 = lon1 - 360.0
+            endif
             
-            c = MINLOC(ABS(lat_in(jj,ii) - ref_lat(:)), 1)
-            r = MINLOC(ABS(lon_in(jj,ii) - ref_lon(:)), 1)
+            c = MINLOC(ABS(lat1 - ref_lat(:)), 1)
+            r = MINLOC(ABS(lon1 - ref_lon(:)), 1)
             
             rmin = max(1, r - 5)
             rmax = min(size(ref_lon), r + 5)
