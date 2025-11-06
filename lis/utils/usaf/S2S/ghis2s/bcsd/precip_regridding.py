@@ -45,7 +45,7 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd, py_call=False):
+def main(config_file,  month_num, job_name, ntasks, hours, cwd, current_year=None, py_call=False):
     """Main driver."""    
 
     # load config file
@@ -92,5 +92,5 @@ if __name__ == "__main__":
     parser.add_argument('-H', '--hours', required=True, help='hours')
     args = parser.parse_args()
 
-    main(args.config_file, args.current_year, args.month_num, args.job_name,
-         args.ntasks, args.hours, args.cwd)
+    main(args.config_file, args.month_num, args.job_name,
+         args.ntasks, args.hours, args.cwd, current_year=args.current_year)
