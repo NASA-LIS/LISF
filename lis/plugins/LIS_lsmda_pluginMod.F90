@@ -182,6 +182,9 @@ subroutine LIS_lsmda_plugin
 #if ( defined DA_OBS_USAFSI )
    use noah39_dasnow_Mod
 #endif
+#if ( defined DA_OBS_SNIP )
+   use noah39_dasnow_Mod
+#endif
 #if ( defined DA_OBS_SNODEP )
    use noah39_dasnow_Mod
 #endif
@@ -202,6 +205,7 @@ subroutine LIS_lsmda_plugin
    use NoahMP401_dasnow_Mod
    use noahmp401_dasnodep_Mod
    use noahmp401_dausafsi_Mod
+   use noahmp401_dasnip_Mod
    use noahmp401_tws_DAlogMod, only : noahmp401_tws_DAlog
    use noahmp401_datws_Mod
    use noahmp401_daveg_Mod
@@ -382,6 +386,20 @@ subroutine LIS_lsmda_plugin
    external noah39_qc_usafsiobs
 #endif
 
+#if ( defined DA_OBS_SNIP )
+! Noah-3.9 snow depth
+   external noah39_getsnipvars
+   external noah39_transform_snip
+   external noah39_map_snip
+   external noah39_updatesnip
+   external noah39_qcsnip
+   external noah39_setsnipvars
+   external noah39_getsnippred
+   external noah39_scale_snip
+   external noah39_descale_snip
+   external noah39_qc_snipobs
+#endif
+
 #if ( defined DA_OBS_SNODEP )
 ! Noah-3.9 snow depth
    external noah39_getsnodepvars
@@ -533,6 +551,20 @@ subroutine LIS_lsmda_plugin
    external noahmp401_scale_usafsi
    external noahmp401_descale_usafsi
    external noahmp401_qc_usafsiobs
+#endif
+
+#if ( defined DA_OBS_SNIP )
+! NoahMP-4.0.1_SNIP
+   external noahmp401_getsnipvars
+   external noahmp401_transform_snip
+   external noahmp401_map_snip
+   external noahmp401_updatesnipvars
+   external noahmp401_qcsnip
+   external noahmp401_setsnipvars
+   external noahmp401_getsnippred
+   external noahmp401_scale_snip
+   external noahmp401_descale_snip
+   external noahmp401_qc_snipobs
 #endif
 
 #endif
@@ -1950,6 +1982,33 @@ subroutine LIS_lsmda_plugin
         trim(LIS_usafsiobsId)//char(0),noah39_qc_usafsiobs)
 #endif
 
+#if ( defined DA_OBS_SNIP )
+! Noah-3.9 snow depth
+! DA + SNIP wirings
+   call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_dasnow_init)
+   call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_getsnipvars)
+   call registerlsmdaobstransform(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_transform_snip)
+   call registerlsmdamapobstolsm(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_map_snip)
+   call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_updatesnip)
+   call registerlsmdaqcstate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_qcsnip)
+   call registerlsmdasetstatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_setsnipvars)
+   call registerlsmdagetobspred(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_getsnippred)
+   call registerlsmdascalestatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_scale_snip)
+   call registerlsmdadescalestatevar(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_descale_snip)
+   call registerlsmdaqcobsstate(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noah39_qc_snipobs)
+#endif
+
 #if ( defined DA_OBS_SNODEP )
 ! Noah-3.6 snow depth
 ! DA + snodep wirings
@@ -3026,6 +3085,30 @@ subroutine LIS_lsmda_plugin
         trim(LIS_usafsiobsId)//char(0),noahmp401_scale_usafsi)
    call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_usafsiobsId)//char(0),noahmp401_descale_usafsi)
+#endif
+
+#if ( defined DA_OBS_SNIP )
+! DA + SNIP wirings
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_dasnip_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_getsnipvars)
+   call registerlsmdaobstransform(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_transform_snip)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_updatesnipvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_setsnipvars)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_getsnippred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_qcsnip)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_qc_snipobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_scale_snip)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snipobsId)//char(0),noahmp401_descale_snip)
 #endif
 
 #if ( defined DA_OBS_ASO_SWE)
