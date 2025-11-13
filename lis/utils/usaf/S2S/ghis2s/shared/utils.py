@@ -140,10 +140,15 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
         _f.write('\n')
         _f.write('export PYTHONPATH='+ pythonpath + '\n')
         _f.write('export SCRIPT_NAME='+ job_name + 'run.j' + '\n')
+        _f.write('export USER_CACHE_DIR="/tmp/python_cache_$USER_$$" \n')
+        _f.write('export FONTCONFIG_PATH="$USER_CACHE_DIR" \n')
+        _f.write('export XDG_CACHE_HOME="$USER_CACHE_DIR" \n')
+        _f.write('export TMPDIR="$USER_CACHE_DIR" \n')
         if parallel_run is not None:
             _f.write('export NUM_WORKERS='+ parallel_run['CPT'] + '\n')
         _f.write('cd ' + cwd + '\n')
-
+        _f.write('mkdir -p "$USER_CACHE_DIR" \n')
+        _f.write('chmod 755 "$USER_CACHE_DIR" \n')
         _f.write("PIDS=()\n")
         if command_list is None and group_jobs is None:
             _f.write(f"{this_command} || exit 1\n")
@@ -171,7 +176,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
                     _f.write("PIDS+=($!)\n")
                     _f.write("\n")
         _f.write(f"""for pid in "${{PIDS[@]}}"; do
-    wait $pid || {{ echo "[ERROR] Process failed. Exiting."; touch logs/{job_name}_FAILED; exit 1; }}
+    wait $pid || {{ echo "[ERROR] Process failed. Exiting."; touch logs/{job_name}FAILED; exit 1; }}
 done
         """)
         _f.write('\n')
