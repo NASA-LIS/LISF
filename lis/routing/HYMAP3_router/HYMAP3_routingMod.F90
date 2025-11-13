@@ -315,6 +315,11 @@ module HYMAP3_routingMod
      character(LIS_CONST_PATH_LEN) :: vecfile  !vector input file
      integer               :: vecflag          !vector input flag
 
+     !ag(4Apr2025)
+     ! ===== runoff bias correction =====
+     integer              :: rbiasflag       !total runoff bias correction flag
+     real,    allocatable :: rbias_ratio(:)  !total runoff bias correction factor [-]
+
   end type HYMAP3_routing_dec
 
   type(HYMAP3_routing_dec), allocatable :: HYMAP3_routing_struc(:)
@@ -836,6 +841,18 @@ contains
        endif
     enddo
 
+    !ag (11Nov2025)
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "HYMAP3 runoff bias correction:",rc=status)
+    do n=1, LIS_rc%nnest
+       HYMAP3_routing_struc(n)%rbiasflag=0
+       call ESMF_ConfigGetAttribute(LIS_config,&
+            HYMAP3_routing_struc(n)%rbiasflag,default=0,rc=status)
+       write(LIS_logunit,*) &
+            "[INFO] HYMAP3 runoff bias correction: ", &
+            HYMAP3_routing_struc(n)%rbiasflag
+    enddo
+
     write(LIS_logunit,*) '[INFO] Initializing HYMAP3....'
     !allocate matrixes
     do n=1, LIS_rc%nnest
@@ -1279,6 +1296,10 @@ contains
             HYMAP3_routing_struc(n)%nseqall))
        HYMAP3_routing_struc(n)%outletid=HYMAP3_routing_struc(n)%imis
 
+       !ag(11Nov2025)
+       allocate(HYMAP3_routing_struc(n)%rbias_ratio( &
+            HYMAP3_routing_struc(n)%nseqall))
+
        HYMAP3_routing_struc(n)%seqx=0.0
        HYMAP3_routing_struc(n)%seqy=0.0
        HYMAP3_routing_struc(n)%sindex=0.0
@@ -1673,6 +1694,20 @@ contains
              HYMAP3_routing_struc(n)%levhgt=0.0
           endif
 
+          !ag(11Nov2025)
+          ctitle = 'HYMAP_runoff_bias_correction'
+          if(HYMAP3_routing_struc(n)%rbiasflag==1)then
+             call HYMAP3_read_param_real_2d(ctitle,n,tmp_real)
+             call HYMAP3_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+                  1,HYMAP3_routing_struc(n)%nseqall,&
+                  HYMAP3_routing_struc(n)%imis,&
+                  HYMAP3_routing_struc(n)%seqx,&
+                  HYMAP3_routing_struc(n)%seqy,&
+                  tmp_real,HYMAP3_routing_struc(n)%rbias_ratio)
+          else
+             HYMAP3_routing_struc(n)%rbias_ratio=1.0
+          endif
+
 #if (defined SPMD)
           call MPI_ALLGATHERV(HYMAP3_routing_struc(n)%droutlet,&
                LIS_rc%nroutinggrid(n),MPI_INTEGER,&
@@ -1826,6 +1861,16 @@ contains
           else
              HYMAP3_routing_struc(n)%levhgt=0.
           endif
+                  
+          if(HYMAP3_routing_struc(n)%rbiasflag==1)then
+             ctitle = 'HYMAP_runoff_bias_correction'
+             call HYMAP3_vector_read_param(ctitle,n,1, &
+                  HYMAP3_routing_struc(n)%rbias_ratio)
+          else 
+             HYMAP3_routing_struc(n)%rbias_ratio=0.
+          endif
+
+
        endif
     enddo
 

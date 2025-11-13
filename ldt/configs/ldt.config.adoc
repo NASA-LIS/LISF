@@ -4492,6 +4492,8 @@ This section describes the parameters needed for the HYMAP, HYMAP2 and HYMAP3 ro
 
 `HYMAP node lat:` specifies the name of the grid node latitude data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.
 
+`HYMAP runoff bias correction map:` specifies the name of the runoff bias correction data file. This is an optional parameter that is required only when "`HYMAP3 runoff bias correction:`" is set to "`1`". If the runoff bias correction option is set to "`0`" or is not specified, the runoff bias correction map is not required.
+
 .Example _ldt.config_ entry
 ....
 HYMAP river width map:                   ../HYMAP_parms/lis_rivwth_0125.bin
@@ -4520,6 +4522,7 @@ HYMAP levee height map:                  ../HYMAP_parms/lis_levee_0125.bin
 Land grid area map:                      ../HYMAP_parms/lis_lgrdare_0125.bin
 HYMAP node lon:                          ../HYMAP_parms/lis_nodelon_0125.bin
 HYMAP node lat:                          ../HYMAP_parms/lis_nodelat_0125.bin
+HYMAP runoff bias correction map:        ../HYMAP_parms/lis_runoff_bc_0125.bin
 ....
 
 This section also outlines the domain specifications of the HYMAP parameter data. For the HYMAP parameters spatial transform option, only "`none`" is supported at this time, and the user is required to input the HYMAP parameters at the grid and resolution of interest.
