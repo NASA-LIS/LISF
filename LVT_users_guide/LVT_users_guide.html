@@ -483,7 +483,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#ssec-daobsrunmode">7.7. DA observation analysis</a></li>
 <li><a href="#ssec-557postrunmode">7.8. 557 post</a></li>
 <li><a href="#ssec-usafsipostrunmode">7.9. USAFSI post</a></li>
-<li><a href="#ssec-LISpostprocessingrunmode">7.10. LIS postprocessing</a></li>
+<li><a href="#ssec-snippostrunmode">7.10. SNIP post</a></li>
+<li><a href="#ssec-LISpostprocessingrunmode">7.11. LIS postprocessing</a></li>
 </ul>
 </li>
 <li><a href="#sec-metricslisttable">8. Configuration of metrics</a></li>
@@ -1785,6 +1786,10 @@ GeoTIFF means the GeoTIFF support provided by the GDAL library.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">special postprocessing mode for USAFSI</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;SNIP post&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">special postprocessing mode for SNIP</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;LIS postprocessing&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">postprocessing mode for quilting LIS distributed binary output</p></td>
 </tr>
@@ -2246,6 +2251,10 @@ GeoTIFF means the GeoTIFF support provided by the GDAL library.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;OPL E SMAP soil moisture retrieval&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Operational enhanced SMAP soil moisture retrieval data</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;SMAP L2 NRT soil moisture&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SMAP L2 NRT soil moisture data</p></td>
 </tr>
 </tbody>
 </table>
@@ -5531,7 +5540,31 @@ SMAP soil moisture data designation:      SPL3SMP</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smap_vegetation_optical_depth">7.4.66. SMAP vegetation optical depth</h4>
+<h4 id="_smap_l2_nrt_soil_moisture">7.4.66. SMAP L2 NRT soil moisture</h4>
+<div class="paragraph">
+<p><code>SMAP L2 NRT soil moisture observation directory:</code> specifies the location of the SMAP soil moisture observation directory.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SMAP L2 NRT soil moisture observation directory: ./SMAP_L2_SM_NRL</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_smap_vegetation_optical_depth">7.4.67. SMAP vegetation optical depth</h4>
 <div class="paragraph">
 <p><code>SMAP vegetation optical depth observation directory:</code> specifies the location of the SMAP vegetation optical depth (VOD) observation directory.</p>
 </div>
@@ -5569,7 +5602,7 @@ SMAP vegetation optical depth data designation:      SPL3SMP</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lprm_vegetation_optical_depth">7.4.67. LPRM vegetation optical depth</h4>
+<h4 id="_lprm_vegetation_optical_depth">7.4.68. LPRM vegetation optical depth</h4>
 <div class="paragraph">
 <p><code>LPRM vegetation optical depth observation directory:</code> specifies the location of the LPRM vegetation optical depth (VOD) observation directory.</p>
 </div>
@@ -5607,7 +5640,7 @@ LPRM vegetation optical depth data designation:      X-band</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smap_e_opl_soil_moisture_retrieval">7.4.68. SMAP-E-OPL soil moisture retrieval</h4>
+<h4 id="_smap_e_opl_soil_moisture_retrieval">7.4.69. SMAP-E-OPL soil moisture retrieval</h4>
 <div class="paragraph">
 <p><code>SMAP_E_OPL soil moisture data directory:</code> specifies the location of the Operational enhanced SMAP soil moisture retrieval data directory.</p>
 </div>
@@ -5619,7 +5652,7 @@ LPRM vegetation optical depth data designation:      X-band</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_wg_swrc">7.4.69. WG SWRC</h4>
+<h4 id="_wg_swrc">7.4.70. WG SWRC</h4>
 <div class="paragraph">
 <p><code>WG SWRC observation directory:</code> specifies the location of the WG SWRC observation directory.</p>
 </div>
@@ -5635,7 +5668,7 @@ WG SWRC station list file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ua_snow_observations">7.4.70. UA SNOW observations</h4>
+<h4 id="_ua_snow_observations">7.4.71. UA SNOW observations</h4>
 <div class="paragraph">
 <p><code>UA SNOW observation directory:</code> specifies the location of the University of Arizona SWE data.</p>
 </div>
@@ -5647,7 +5680,7 @@ WG SWRC station list file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ozflux_soil_moisture">7.4.71. OzFlux soil moisture</h4>
+<h4 id="_ozflux_soil_moisture">7.4.72. OzFlux soil moisture</h4>
 <div class="paragraph">
 <p><code>OzFlux observation directory:</code> specifies the location of the OzFlux data directory.</p>
 </div>
@@ -5682,7 +5715,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_jasmin_soil_moisture">7.4.72. JASMIN soil moisture</h4>
+<h4 id="_jasmin_soil_moisture">7.4.73. JASMIN soil moisture</h4>
 <div class="paragraph">
 <p><code>JASMIN soil moisture data directory:</code> specifies the location of the JASMIN soil moisture data directory.</p>
 </div>
@@ -5694,7 +5727,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fluxsat_gpp">7.4.73. FluxSat GPP</h4>
+<h4 id="_fluxsat_gpp">7.4.74. FluxSat GPP</h4>
 <div class="paragraph">
 <p><code>FluxSat data directory:</code> specifies the location of the FluxSat GPP data directory.</p>
 </div>
@@ -5706,7 +5739,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_thysm_soil_moisture">7.4.74. THySM soil moisture</h4>
+<h4 id="_thysm_soil_moisture">7.4.75. THySM soil moisture</h4>
 <div class="paragraph">
 <p><code>THySM data directory:</code> specifies the location of the THySM data directory.</p>
 </div>
@@ -5718,7 +5751,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mcd15a2h_lai">7.4.75. MCD15A2H LAI</h4>
+<h4 id="_mcd15a2h_lai">7.4.76. MCD15A2H LAI</h4>
 <div class="paragraph">
 <p><code>MCD15A2H data directory:</code> specifies the location of the MCD15A2H data directory.</p>
 </div>
@@ -5730,7 +5763,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="ssec-optue">7.4.76. COAMPS forcing data</h4>
+<h4 id="ssec-optue">7.4.77. COAMPS forcing data</h4>
 <div class="paragraph">
 <p><code>COAMPS output forcing directory:</code> specifies the location of the COAMPS output forcing data directory.</p>
 </div>
@@ -6290,7 +6323,164 @@ Number of state variables in the DA update: 4</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec-LISpostprocessingrunmode">7.10. LIS postprocessing</h3>
+<h3 id="ssec-snippostrunmode">7.10. SNIP post</h3>
+<div class="paragraph">
+<p>This runmode is used to postprocess SNIP (snow and ice) analyses, which are originally produced in netCDF format. LVT will optionally convert the fields to GRIB2 format and output on the LDT grid (no interpolations). In addition, three options are provided for GRIB1 output: (1) interpolate to 0.25 deg lat/lon domain; (2) interpolate to Air Force Northern Hemisphere 16th mesh polar stereographic grid; and (3) interpolate to Air Force Southern Hemisphere 16th mesh polar stereographic grid. These GRIB1 products are intended as look-alike replacements for the legacy Air Force SNODEP product. These options are activated for runmode=&#8220;SNIP post&#8221;.</p>
+</div>
+<div class="paragraph">
+<p>When run in this mode, LVT will interpret the starting year, month, etc as the valid date/time to process, and will ignore the ending date and time information. (In other words, only a single date and time will be processed.)</p>
+</div>
+<div class="paragraph">
+<p>LVT will also use the diagnostic file and undefined value entries.</p>
+</div>
+<div class="paragraph">
+<p>Other entries that are required but not actually used in this runmode include the map projection, analysis sources, output format, output GRIB settings, the output methodology, start mode, clock timestep, metrics computation and output frequencies, option to apply temporal smoothing to obs, option to apply external mask, option for stratifying by external data and/or variable, and an observation count threshold. These other entries are required by the LVT config initialization routine, which is called by the LVT driver for all runmodes.</p>
+</div>
+<div class="paragraph">
+<p><code>SNIP output GRIB2 native grid:</code> Specifies if SNIP should be output in GRIB2 (no interpolation).  Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Output in GRIB2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.false.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not output in GRIB2</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SNIP output GRIB2 native grid: .true.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP output GRIB1 global 0.25deg lat/lon:</code> Specifies if SNIP should be interpolated to 0.25 deg lat/lon grid and output in GRIB1.  Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interpolate and output in GRIB1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.false.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not interpolate or output</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SNIP output GRIB1 global 0.25deg lat/lon: .true.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP output GRIB1 NH 16th mesh polar stereographic:</code> Specifies if SNIP should be interpolated to Northern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interpolate and output in GRIB1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.false.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not interpolate or output</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SNIP output GRIB1 NH 16th mesh polar stereographic: .true.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP output GRIB1 SH 16th mesh polar stereographic:</code> Specifies if SNIP should be interpolated to Southern Hemispheric 16th mesh polar stereographic grid and output in GRIB1.  Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interpolate and output in GRIB1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.false.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not interpolate or output</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SNIP output GRIB1 SH 16th mesh polar stereographic: .true.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP input netcdf directory:</code> Specifies path of directory containing SNIP netcdf files to process.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SNIP input netcdf directory: ./SNIP</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP output grib directory:</code> Specifies path of directory to write GRIB2 and/or GRIB1 files.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SNIP output grib directory: ./grib</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ssec-LISpostprocessingrunmode">7.11. LIS postprocessing</h3>
 <div class="paragraph">
 <p>This runmode is used to quilt together distributed binary output generated by LIS into a single NetCDF file for each timestep.</p>
 </div>
@@ -7197,7 +7387,7 @@ rmse_qle_ensSTD rmse_qle_CI
 <div id="footer">
 <div id="footer-text">
 Version 4.0<br>
-Last updated 2025-11-05 20:01:56 UTC
+Last updated 2025-11-14 16:01:36 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

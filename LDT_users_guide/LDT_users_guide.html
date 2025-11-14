@@ -491,9 +491,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#ssec-hymapopts">7.15. HYMAP routing options</a></li>
 <li><a href="#ssec-ann">7.16. Artificial neural networks</a></li>
 <li><a href="#ssec-usafsi">7.17. USAF Snow and Ice Analysis</a></li>
-<li><a href="#ssec-glacier-frac">7.18. Glacier Fraction</a></li>
-<li><a href="#_observation_simulator">7.19. Observation Simulator</a></li>
-<li><a href="#ssec-smap_e_opl">7.20. Operational 9-km enhanced SMAP soil moisture retrieval</a></li>
+<li><a href="#ssec-snip">7.18. USAF SNow and Ice Product</a></li>
+<li><a href="#ssec-glacier-frac">7.19. Glacier Fraction</a></li>
+<li><a href="#_observation_simulator">7.20. Observation Simulator</a></li>
+<li><a href="#ssec-smap_e_opl">7.21. Operational 9-km enhanced SMAP soil moisture retrieval</a></li>
 </ul>
 </li>
 <li><a href="#sec-ldt_output_format">Appendix A: Description of output files from LDT</a>
@@ -1712,6 +1713,10 @@ LIBGEOTIFF means GeoTIFF support provided by the GeoTIFF library.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;USAFSI analysis&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">USAF Snow and Ice analysis</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;SNIP analysis&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAF SNow and Ice Product</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;LISHydro preprocessing for WRFHydro&#8221;</p></td>
@@ -10002,6 +10007,250 @@ USAFSI GALWEM use timestamp directories: 1
 USAFSI GALWEM nominal resolution (km): 17</pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="ssec-snip">7.18. USAF SNow and Ice Product</h3>
+<div class="paragraph">
+<p><code>SNIP valid date (YYYYMMDDHH):</code> valid date and hour (UTC) of analysis
+<code>SNIP netcdf data directory for SNIP:</code> directory for SNIP netCDF files
+<code>SNIP netcdf filename prefix for SNIP:</code> prefix used in constructing SNIP netcdf filenames
+<code>SNIP netcdf data directory for USAFSI:</code> directory for USAFSI netCDF files
+<code>SNIP netcdf filename prefix for USAFSI:</code> prefix used in constructing USAFSI netcdf filenames
+<code>SNIP data directory for modified SNODEP:</code> directory with legacy SNODEP &#8220;modified&#8221; data
+<code>SNIP data directory for unmodified SNODEP:</code> directory with legacy SNODEP &#8220;unmodified&#8221; data
+<code>SNIP static data directory:</code> directory with legacy SNODEP static data</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>SNIP valid date (YYYYMMDDHH):                    2025012006
+SNIP netcdf data directory for SNIP:       ./input/snip
+SNIP netcdf filename prefix for SNIP:      SNIP
+SNIP netcdf data directory for USAFSI:     ./input/usafsi
+SNIP netcdf filename prefix for USAFSI:    USAFSI
+SNIP data directory for modified SNODEP:   ./input/snodep_modified/
+SNIP data directory for unmodified SNODEP: ./input/snodep_unmodified/
+SNIP static data directory:                ./input/static/</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP AMSR2 snowdepth data directory:</code> directory with AMSR2 retrievals
+<code>SNIP AMSR2 shallow snow depth threshold (m):</code> threshold to reject AMSR2 retrieval if smaller than first guess</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>SNIP AMSR2 snowdepth data directory:        ./input/AMSR2_retrievals/
+SNIP AMSR2 shallow snow depth threshold (m): 0.05</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP VIIRS data directory:</code> directory with VIIRS TIFF files
+<code>SNIP max age of VIIRS pixels to use:</code> used to ignore old VIIRS data
+<code>SNIP min VIIRS fraction to mark point as bare ground:</code> fraction of no-snow VIIRS pixels in LDT grid box required to mark as &#8220;no-snow&#8221;
+<code>SNIP use VIIRS snow mask:</code> self-explanatory
+<code>SNIP default snow depth (m) when actual depth unknown:</code> bogus value for when snow detected but depth unknown</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>SNIP VIIRS data directory:                      ./input/viirs/
+SNIP max age of VIIRS pixels to use: 3
+SNIP min VIIRS fraction to mark point as bare ground:  0.6
+SNIP min VIIRS fraction to mark point as snow: 0.4
+SNIP use VIIRS snow mask: .true.
+SNIP default snow depth (m) when actual depth unknown: 0.1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP GALWEM root directory:</code> root directory for GALWEM data
+<code>SNIP GALWEM subdirectory:</code> subdirectory for GALWEM data
+<code>SNIP GALWEM use timestamp directories:</code> option to use YYYYMMDD in constructing full GALWEM directory; 1 is yes, 0 is no
+<code>SNIP GALWEM nominal resolution (km):</code> 17 or 10 (17 currently used in operations)
+<code>SNIP LIS GRIB2 data directory:</code> directory with LIS GRIB2 2-m temperature analyses
+<code>SNIP LIS GRIB2 security class:</code> used for constructing LIS GRIB2 filename
+<code>SNIP LIS GRIB2 data category:</code> used for constructing LIS GRIB2 filename
+<code>SNIP LIS GRIB2 data resolution:</code> used for constructing LIS GRIB2 filename
+<code>SNIP LIS GRIB2 area of data:</code> used for constructing LIS GRIB2 filename
+<code>SNIP degribbed LIS 0.25 deg sfc temperature data directory:</code> directory with legacy 0.25 deg LIS ungribbed surface temperatures</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>SNIP GALWEM root directory: ./input/GALWEM
+SNIP GALWEM subdirectory: GALWEM
+SNIP GALWEM use timestamp directories: 1
+SNIP GALWEM nominal resolution (km): 17
+SNIP LIS GRIB2 data directory:  ./input/LIS_T2/
+SNIP LIS GRIB2 security class:  U
+SNIP LIS GRIB2 data category:   C
+SNIP LIS GRIB2 data resolution: C0P09DEG
+SNIP LIS GRIB2 area of data:    GLOBAL
+SNIP degribbed LIS 0.25 deg sfc temperature data directory: ./input/sfctmps/</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP surface obs data directory:</code> directory with surface snow reports
+<code>SNIP surface obs data format:</code> specifies format of surface observation files</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Legacy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WIGOS</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>SNIP maximum number of surface observations allowed:</code> self-explanatory
+<code>SNIP minimum snow depth (m) for which to print a diagnostic:</code> threshold for printing surface ob report
+<code>SNIP latitudes (deg * 100) for summer climo check:</code> three latitude bands used for sanity checking snow reports
+<code>SNIP elevations (m) for summer climo check:</code> four elevations used for sanity checking snow reports
+<code>SNIP temperature (deg K * 10) above which no snow is allowed:</code> used to adjust snow analysis
+<code>SNIP max reported temperature (deg K * 10) allowed around poles:</code> used to reject snow ground reports that are too warm
+<code>SNIP observation error variance (m^2):</code> error variance assigned to surface snow reports
+<code>SNIP background error variance (m^2):</code> error variance assigned to first-guess field
+<code>SNIP background error horizontal correlation length (m):</code> correlation length for spreading snow depth corrections horizontally
+<code>SNIP background error vertical correlation length (m):</code> correlation length for spreading snow depth corrections vertically
+<code>SNIP elevQC difference threshold (m):</code> threshold for sanity checking snow report elevation against LDT
+<code>SNIP skewed backQC snow depth threshold (m):</code> threshold for rejecting abnormally small snow depth reports</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>SNIP surface obs data directory:                ./input/sfcobs/
+SNIP surface obs data format:                   1 # Legacy format
+SNIP maximum number of surface observations allowed: 200000
+SNIP minimum snow depth (m) for which to print a diagnostic: 0.025
+# There should be three latitudes listed below, defining three bands
+# for sanity checking snow reports in different seasons.
+# Strongly recommend 4000 3000 2000
+SNIP latitudes (deg * 100) for summer climo check: 4000 3000 2000
+# There should be four elevations listed below, defining four elevation
+# levels for sanity checking snow reports in different seasons.
+# Strongly recommend 1000 1500 1000 1000
+SNIP elevations (m) for summer climo check: 1000 1500 1000 1000
+SNIP temperature (deg K * 10) above which no snow is allowed: 2820
+SNIP max reported temperature (deg K * 10) allowed around poles: 3030
+SNIP observation error variance (m^2):  0.0006
+SNIP background error variance (m^2):   0.0010
+SNIP background error horizontal correlation length (m):  55555.
+SNIP background error vertical correlation length (m):      800.
+SNIP elevQC difference threshold (m): 400.
+SNIP skewed backQC snow depth threshold (m):  0.4</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP Snow Climatology:</code> specifies snow climatology data. Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">legacy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">updated 10-km climo</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>SNIP decimal fraction adjustment of snow depth towards climo:</code> controls drift to climo in data void region
+<code>SNIP bogus climatology snow depth value (m):</code> bogus value for climatology if not available</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>SNIP Snow Climatology:                1  # 1: legacy 2: updated 10-km climo
+SNIP decimal fraction adjustment of snow depth towards climo: 0.1
+SNIP bogus climatology snow depth value (m): 0.2</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>SNIP source of ocean data:</code> specifies the source of the USAFSI ocean data.  Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ESPC-D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Earth System Prediction Capability - Deterministic</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GOFS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Global Ocean Forecast System</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>SNIP ESPC-D SST data directory:</code> directory with ESPC-D sea surface temperature netCDF files
+<code>SNIP ESPC-D CICE data directory:</code> directory with ESPC-D sea ice netCDF files
+<code>SNIP GOFS SST data directory:</code> directory with GOFS sea surface temperature netCDF files
+<code>SNIP GOFS CICE data directory:</code> directory with GOFS sea ice netCDF files
+<code>SNIP FNMOC SST GRIB1 data directory:</code> directory with legacy 0.25 deg FNMOC SST GRIB1 files (used only as emergency backup to GOFS or ESPC-D netCDF data)
+<code>SNIP minimum ice concentration (%) needed to set ice flag:</code> used when constructing binary sea ice field
+<code>SNIP high latitude thresholds (deg) for sea ice::</code> 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define &#8220;high latitudes&#8221; in sea ice analysis.
+<code>SNIP low latitude thresholds (deg) for sea ice:</code> 24 latitudes, each row defining a hemisphere (NH, then SH), each column defining a month (J F M A M J J A S O N D). Used to define &#8220;low latitudes&#8221; in sea ice analysis.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>SNIP source of ocean data: "ESPC-D"
+SNIP ESPC-D SST data directory:  ./input/ESPC-D/
+SNIP ESPC-D CICE data directory: ./input/ESPC-D/
+SNIP GOFS SST data directory:   ./input/GOFS/
+SNIP GOFS CICE data directory:  ./input/GOFS/
+# Backup for when no ESPC-D or GOFS data found
+SNIP FNMOC SST GRIB1 data directory: ./input/FNMOC_SST/
+SNIP minimum ice concentration (%) needed to set ice flag: 15
+# There should 24 latitudes defined below, each row definining a
+# hemisphere (NH first row, SH second row), and each column defining a
+# month (J F M A M J J A S O N D).  These are used to define high
+# latitudes in the sea ice analysis.
+SNIP high latitude thresholds (deg) for sea ice::
+       81.0 81.0 81.0 81.0 81.0 81.0 81.0 82.0 82.0 82.0 81.0 81.0
+       90.0 90.0 78.0 78.0 68.0 68.0 67.0 67.0 66.0 66.0 68.0 70.0
+::
+# There should 24 latitudes defined below, each row definining a
+# hemisphere (NH first row, SH second row), and each column defining a
+# month (J F M A M J J A S O N D).  These are used to define low
+# latitudes in the sea ice analysis.
+SNIP low latitude thresholds (deg) for sea ice::
+       45.0 44.0 44.0 45.0 51.0 52.0 55.0 65.0 65.0 62.0 53.0 50.0
+       60.0 62.0 62.0 60.0 58.0 56.0 55.0 55.0 53.0 54.0 55.0 57.0
+::</pre>
+</div>
+</div>
 <div class="paragraph">
 <p><code>LIS OPT/UE output file:</code> name of the OPT/UE output file generated from a LIS simulation</p>
 </div>
@@ -10013,7 +10262,7 @@ USAFSI GALWEM nominal resolution (km): 17</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec-glacier-frac">7.18. Glacier Fraction</h3>
+<h3 id="ssec-glacier-frac">7.19. Glacier Fraction</h3>
 <div class="paragraph">
 <p>(Note: This feature is still under development)</p>
 </div>
@@ -10064,7 +10313,7 @@ Glacier fraction resolution (dy):   0.01</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_observation_simulator">7.19. Observation Simulator</h3>
+<h3 id="_observation_simulator">7.20. Observation Simulator</h3>
 <div class="paragraph">
 <p>This simulator can handle the use of external orbital masks to be applied to the observations created for OSSEs. Currently, AMSR2, TSMM, Sentinel-1A, and MODIS are available instrument options.</p>
 </div>
@@ -10125,7 +10374,7 @@ Observation simulator error standard deviation: 5.0 5.0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_nature_run">7.19.1. LIS Nature Run</h4>
+<h4 id="_lis_nature_run">7.20.1. LIS Nature Run</h4>
 <div class="paragraph">
 <p>Options for initializing the structures required for the handling of a land surface model output (from a LIS simulation) as observations.</p>
 </div>
@@ -10186,7 +10435,7 @@ LIS Nature run domain resolution (dy):   0.01</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_osse_masks">7.19.2. OSSE Masks</h4>
+<h4 id="_osse_masks">7.20.2. OSSE Masks</h4>
 <div class="paragraph">
 <p><code>AMSR2 OSSE mask directory:</code> specifies a directory containing the AMSR2 OSSE mask.</p>
 </div>
@@ -10242,7 +10491,7 @@ TSSM OSSE mask data resolution (km): 1</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec-smap_e_opl">7.20. Operational 9-km enhanced SMAP soil moisture retrieval</h3>
+<h3 id="ssec-smap_e_opl">7.21. Operational 9-km enhanced SMAP soil moisture retrieval</h3>
 <div class="paragraph">
 <p><code>SMAP_E_OPL valid date (YYYYMMDDHH):</code> valid date and hour (UTC) of SMAP L1B data</p>
 </div>
@@ -10343,6 +10592,31 @@ TSSM OSSE mask data resolution (km): 1</pre>
 <p><code>SMAP_E_OPL LIS snow directory:</code> specifies a directory containing LIS snow outputs</p>
 </div>
 <div class="paragraph">
+<p><code>SMAP_E_OPL snow source:</code> specifies source of snow outputs</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAFSI</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SNIP</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
 <p><code>SMAP_E_OPL snow depth threshold:</code> specifies a snow depth threshold (unit: m). Soil moisture retrievals are not generate for grid cells with snow depth greater than the threshold.</p>
 </div>
 <div class="paragraph">
@@ -10377,6 +10651,7 @@ SMAP_E_OPL apply soil temperature bias correction:  1
 SMAP_E_OPL reference Teff daily statistics file:    ../geos_daily_statistics_15obs.nc
 SMAP_E_OPL LIS Teff daily statistics file:          ../noah39_daily_statistics_15obs.nc
 SMAP_E_OPL LIS snow directory:                      ../Noah39_snow
+SMAP_E_OPL snow source:                             2
 SMAP_E_OPL snow depth threshold:                    0.05
 SMAP_E_OPL TAU directory:                           ../../data/TAU_ARFS_DAILY
 SMAP_E_OPL OMEGA file:                              ../../data/PRMS_RETRIEVAL_ARFS/omega_arfs.dat
@@ -18060,7 +18335,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 3.1<br>
-Last updated 2025-11-05 20:01:56 UTC
+Last updated 2025-11-14 16:01:36 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
