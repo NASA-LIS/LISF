@@ -199,7 +199,6 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
                      if var in method and method[var] == 'bilinear']
     conservative_vars = [var for var in cfsv2_in.data_vars
                          if var in method and method[var] == 'conservative']
-
     if bilinear_vars:
         cfsv2_bilinear = cfsv2_masked[bilinear_vars]
         result_bilinear = apply_regridding_with_mask(cfsv2_bilinear, bil_regridder,

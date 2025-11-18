@@ -5,6 +5,7 @@ Logging utilities for GHIS2S with 16WS compatibility.
 
 import os
 import glob
+import subprocess
 import json
 from pathlib import Path
 from datetime import datetime
@@ -109,6 +110,19 @@ class GHIS2SLogger:
         3. Grouped subtask entries
         4. Final general entries
         """
+
+        mem_patterns = ["out-of-memory", "oom-kill", "Memory limit exceeded", "cgroup.*memory"]
+        time_patterns = ["TIME LIMIT", "TIMEOUT", "CANCELLED.*TIME"]
+        def check_error_patterns(file_pattern, patterns):
+            ''' checks if SLURM standard error message contains the pattern '''
+            for pattern in patterns:
+                result = subprocess.run(f'grep -i "{pattern}" {file_pattern}',
+                                        shell=True, capture_output=True,
+                                        text=True, check=False)
+                if result.returncode == 0:
+                    return True
+            return False
+
         lines = log_content.split('\n')
 
         header_lines = []
@@ -116,17 +130,40 @@ class GHIS2SLogger:
         subtask_groups = {}
 
         current_section = 'header'
+        mem_error = False
+        time_error = False
+        current_task = ''
 
         for line in lines:
-            if current_section == 'header' and re.match(r'\[20\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]', line):
+            if current_section == 'header' and re.match(r'\[20\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]'
+                                                        , line):
                 current_section = 'body'
 
             if current_section == 'header':
+                if mem_error:
+                    timestamp = datetime.now().strftime(DATE_FORMAT)
+                    general_entries.append(
+                        f"[{timestamp}] [ERROR] {current_task}run killed "
+                        f"by the cgroup out-of-memory handler")
+                    mem_error = False
+                if time_error:
+                    timestamp = datetime.now().strftime(DATE_FORMAT)
+                    general_entries.append(
+                        f"[{timestamp}] [ERROR] {current_task}run CANCELLED DUE TO TIME LIMIT")
+                    time_error = False
                 header_lines.append(line)
+                if line.startswith("Script:"):
+                    current_task = line[7:].strip().replace('run', '')
+                    mem_error = check_error_patterns(
+                        f'{self.scratch_path}/*/logs/{current_task}*.err', mem_patterns)
+                    time_error = check_error_patterns(
+                        f'{self.scratch_path}/*/logs/{current_task}*.err', time_patterns)
             else:
                 # Check for subtask pattern: [timestamp] [LEVEL] [subtask] message
-                subtask_match = re.search(r'\[20\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] \[(INFO|WARNING|ERROR|DEBUG)\] \[([^\]]+)\] (.+)', line)
-
+                subtask_match = re.search(
+                    r'\[20\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] '
+                    r'\[(INFO|WARNING|ERROR|DEBUG)\] '
+                    r'\[([^\]]+)\] (.+)', line)
                 if subtask_match:
                     timestamp_level = line[:line.find('] [', line.find('] [') + 1) + 1]
                     subtask = subtask_match.group(2)
@@ -249,7 +286,6 @@ def save_schedule(scratch_path, schedule_dict):
         schedule_path = Path(scratch_path) / 'ghis2s_schedule.json'
         with open(schedule_path, 'w', encoding="utf-8") as f:
             json.dump(schedule_dict, f, indent=2)
-        print(f"Schedule saved to {schedule_path}")
     except Exception as e:
         print(f"Error saving schedule: {e}")
 
