@@ -66,7 +66,8 @@ def main(config_file,  month_num, job_name, ntasks, hours, cwd, current_year=Non
         cmd = "python"
         cmd += f" {srcdir}/nmme_module.py"
         cmd += f" {month_num}"
-        cmd += f" {current_year}"
+        if current_year is not None:
+            cmd += f" {current_year}"
         cmd += f" {nmme_output_dir}"
         cmd += f" {nmme_model}"
         cmd += f" {config_file}"

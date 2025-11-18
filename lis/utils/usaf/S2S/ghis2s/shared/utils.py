@@ -82,7 +82,10 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
             if not cfg['SETUP']['CONSTRAINT'] == 'cssrw':
                 _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
         if len(hours) > 1:
-            _f.write('#SBATCH --time=' + f'00:{hours}:00' + '\n')
+            if hours in ['12','24']:
+                _f.write('#SBATCH --time=' + f'{hours}:00:00' + '\n')
+            else:
+                _f.write('#SBATCH --time=' + f'00:{hours}:00' + '\n')
         else:
             _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
@@ -183,7 +186,7 @@ done
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
-        _f.write('sleep 60' + '\n')
+        _f.write('sleep 120' + '\n')
         _f.write('\n')
         _f.write('exit 0' + '\n')
     _f.close()
