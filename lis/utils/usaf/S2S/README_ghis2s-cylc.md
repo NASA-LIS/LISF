@@ -72,7 +72,8 @@ s2s_run.py -y YYYY -m M -c CONFIG_FILE -j
 - **"FORECAST_YEAR"**: (int, year)
 - **"FORECAST_MONTH"**: (int, month)
 - **"USER_EMAIL"**: (str, email_address)
-- **"S2S_STEP"**: (str, "E2E")
+- **"S2S_STEP"**: (str, "E2E", )
+- **"ONE_STEP"**: (bool, False)
 
 ### Acceptable keys for S2S_STEP:
 - `E2E`: end-to-end S2S forecast
@@ -95,11 +96,11 @@ The `additional_env_vars = {}` dictionary in `ghis2s_program.py` allows the user
 
 # (3) Installing Cylc Workflow
 ```bash
-WORKFLOW_NAME="CYLC-${FORECAST_YEAR}${MM} 
+WORKFLOW_NAME="cylc_${S2S_STEP}_${FORECAST_YEAR}${MM} 
 LOGDIR=${E2ESDIR}/scratch/${FORECAST_YEAR}${MM}/${WORKFLOW_NAME} 
 cylc install --symlink-dirs=run=$LOGDIR
 ```
-This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/CYLC-YYYYMM/** directory rather than the default /home/$USER/cylc-run location. 
+This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/cylc_{S2S_STEP}_{YYYYMM}/** directory rather than the default /home/$USER/cylc-run location. 
 
 # (4) Centralized Logging
 
@@ -117,7 +118,63 @@ The log monitoring system is implemented through a specialized Cylc workflow con
 
 This approach ensures comprehensive logging throughout the forecast process while maintaining system organization and enabling effective monitoring capabilities.
 
-# (5) Operational Notes and Cylc Design Rationale  
+# (5) Fault-tolerance when Cylc Workflow Breaks Down
+
+The robust design of the ghis2s package enables recovery from workflow failures without losing completed work. We demonstrate this capability using a real-world scenario from the October 2025 forecast.
+
+## Scenario: CESM1 Timeout Recovery
+
+During the October 2025 forecast, the LIS_FCST step for CESM1 exceeded its allocated 6-hour walltime limit. By this point, the LISDA, LDTICS, and BCSD steps had completed successfully, along with the LIS_FCST step for the other 5 NMME models. The following recovery procedure allows resuming the forecast from the point of failure.
+
+### Step 1: Reconfigure for Failed Model
+Modify the configuration to isolate and optimize the failed model:
+
+**a) Create model-specific configuration:**
+- Copy `s2s_config_fcst` to `s2s_config_cesm1`
+
+**b) Isolate the failed model:**
+```yaml
+Change from:
+NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]
+To:
+NMME_models: [CESM1]
+```
+
+**c) Increase job segmentation to reduce walltime requirements:**
+```yaml
+Change from:
+JOB_SEGMENTS:
+    CESM1: 3    # [1-3], [4-6], [7-9]
+To:
+JOB_SEGMENTS:
+    CESM1: 5    # [1-2], [3-4], [5-6], [7-8], [9]
+```
+
+### Step 2: Execute Recovery Forecast ###
+Launch a targeted workflow to complete the failed component:
+```bash
+Environment variables:
+S2S_STEP: "FCST"
+ONE_STEP: True
+CONFIG_FILE: s2s_config_cesm1
+
+This creates workflow ID: **cylc_fcst_202510**
+cylc install --symlink-dirs=run=$LOGDIR
+```
+
+### Step 3: Complete Remaining Workflow ###
+After CESM1 forecast completion, resume the full workflow for post-processing:
+```bash
+Environment variables:
+S2S_STEP: "POST"
+ONE_STEP: False
+CONFIG_FILE: s2s_config_global_fcst
+
+This creates workflow ID: **cylc_post_202510**
+cylc install --symlink-dirs=run=$LOGDIR
+```
+
+# (6) Operational Notes and Cylc Design Rationale  
 
 **a) Why should ghis2s’s ghis2s_program.py be executed every month?**  
   
