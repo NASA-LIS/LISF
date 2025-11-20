@@ -312,7 +312,6 @@ contains
     external :: scale_teff
     external :: get_UTC
     external :: ARFSSMRETRIEVAL
-    external :: system
 
     allocate(LDT_rc%nensem(LDT_rc%nnest))
 
@@ -567,7 +566,6 @@ contains
     character*2       :: tmp
     character(len=LDT_CONST_PATH_LEN) :: list_files
 
-    external :: system
 
     yyyymmdd = date_curr(1:8)
     hh       = date_curr(9:10)

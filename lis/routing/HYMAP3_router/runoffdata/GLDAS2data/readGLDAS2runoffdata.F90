@@ -54,7 +54,7 @@ subroutine readGLDAS2runoffdata(n, surface_runoff, baseflow)
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
   da =LIS_rc%da
-  hr=LIS_rc%hr-imod(LIS_rc%hr, &
+  hr=LIS_rc%hr-mod(LIS_rc%hr, &
        int(GLDAS2runoffdata_struc(n)%outInterval/3600.))
   mn =0
   ss =0

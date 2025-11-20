@@ -2856,7 +2856,6 @@ contains
     integer                       :: istat1
     integer                       :: ftn
 
-    external :: system
 
     !------------------------------------------------------------------
     !     executable code starts here ... open file, abort on error
@@ -3003,7 +3002,6 @@ contains
     integer                       :: istat1
     integer                       :: ftn
 
-    external :: system
 
     !------------------------------------------------------------------
     !     executable code starts here ... open file, abort on error
