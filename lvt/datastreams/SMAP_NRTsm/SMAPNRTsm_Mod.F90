@@ -109,7 +109,6 @@ contains
     integer :: status
 
     external :: neighbor_interp_input
-    external :: system
 
     if (.not.allocated(SMAPNRT_smobs)) then
        allocate(SMAPNRT_smobs(LVT_rc%nDataStreams))
