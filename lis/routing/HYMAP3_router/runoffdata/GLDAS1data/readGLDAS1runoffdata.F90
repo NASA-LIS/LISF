@@ -194,7 +194,6 @@ subroutine create_GLDAS1_filename(odir, model_name, datares, &
   integer                 :: ierr
   character(LIS_CONST_PATH_LEN) :: list_name
 
-  external :: system
 
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy
