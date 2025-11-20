@@ -60,7 +60,6 @@ subroutine read_SMAPNRTsm(source)
   real*8            :: timenow
   real              :: smobs(LVT_rc%lnc,LVT_rc%lnr)
 
-  external :: system
   external :: read_SMAPNRTL2sm_data
 
   smc = LVT_rc%udef
