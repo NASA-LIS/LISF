@@ -36,17 +36,17 @@ fi
 
 # Environment
 module use --append /ccs/home/emkemp/hpc11/privatemodules
-module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12
-module load afw-python/3.11-202406
+module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0
+module load afw-python/3.11-202511
 
 # Define the variables to be processed
 NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(imerg)
 
 # Paths on local system. Customize before running this script.
-SCRIPTDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/lis/noah39_autotune/scripts
-CFGDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/lis/noah39_autotune/cfgs
-BINDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/lis/noah39_autotune/bin
+SCRIPTDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/nrt_lis_autotune_noah39/work/scripts
+CFGDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/nrt_lis_autotune_noah39/work/cfgs
+BINDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/LISF/lis/utils/usaf/retune_bratseth/src
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then
