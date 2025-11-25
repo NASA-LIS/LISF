@@ -13,6 +13,7 @@
 !
 ! !REVISION HISTORY:
 !  07 Nov 2019: Sujay Kumar, Initial Specification
+!  15 Apr 2024: Yeosang Yoon; Update the code to fit the SWOT DA
 !
 ! !INTERFACE:
 subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
@@ -54,8 +55,11 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   integer                :: c,r,c1,c2,r1,r2,t1
   integer                :: siteid
   integer                :: status
-  real                   :: maxdistance, weight
+
   real                   :: localWeight(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  real, allocatable      :: checkWeight(:,:)
+  integer                :: max_index
+  real                   :: thresh
 
   call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField,rc=status)
   call LIS_verify(status,&
@@ -75,69 +79,80 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
 
   allocate(sfcelevIncr_tmp(HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)))
   allocate(nsfcelevIncr_tmp(HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)))
+  allocate(checkWeight(HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n), &
+           HYMAP2_daWL_struc(n)%localupdDX*HYMAP2_daWL_struc(n)%localupdDX))
   sfcelevIncr_tmp = 0.0
   nsfcelevIncr_tmp = 0
+  checkWeight = 0.0
+  thresh = 5.0  ! upper update limit
 
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
-        if (HYMAP2_daWL_struc(n)%useLocalUpd.eq.1) then 
-           if(abs(sfcelevIncr(t)).gt.0) then 
+
+        !TODO: !An anomalous value differential was detected, 
+        !       and the update was limited to the established threshold 
+        if(abs(sfcelevIncr(t))>=10.0) then
+           sfcelevIncr(t) = 0.0
+           cycle
+        elseif (abs(sfcelevIncr(t))>thresh) then
+           sfcelevIncr(t) = MAX(-thresh, MIN(sfcelevIncr(t), thresh))
+        endif
+
+        if (HYMAP2_daWL_struc(n)%useLocalUpd.eq.1) then
+           if(abs(sfcelevIncr(t)).gt.0) then
               localweight = -9999.0
 
               ix = HYMAP2_routing_struc(n)%seqx(i)
               iy = HYMAP2_routing_struc(n)%seqy(i)
-              
-!              call HYMAP2_map_l2g_index(n,i,siteid)
+
               siteid = HYMAP2_dawl_struc(n)%sites(ix,iy)
-              localweight(:,:) = &
-                   HYMAP2_daWL_struc(n)%localWeight(&
-                   LIS_ews_halo_ind(n,LIS_localPet+1):&
-                   LIS_ewe_halo_ind(n,LIS_localPet+1), &
-                   LIS_nss_halo_ind(n,LIS_localPet+1):&
-                   LIS_nse_halo_ind(n,LIS_localPet+1), &
-                   siteid)
-              
-              c1=max(1,ix-HYMAP2_daWL_struc(n)%localupdDX)
-              c2=min(LIS_rc%lnc(n),ix+HYMAP2_daWL_struc(n)%localupdDX)
-              r1=max(1,iy-HYMAP2_daWL_struc(n)%localupdDX)
-              r2=min(LIS_rc%lnr(n),iy+HYMAP2_daWL_struc(n)%localupdDX) 
+              if(siteid.ne.-9999.0) then
+                 localweight(:,:) = &
+                      HYMAP2_daWL_struc(n)%localWeight(&
+                      LIS_ews_halo_ind(n,LIS_localPet+1):&
+                      LIS_ewe_halo_ind(n,LIS_localPet+1), &
+                      LIS_nss_halo_ind(n,LIS_localPet+1):&
+                      LIS_nse_halo_ind(n,LIS_localPet+1), &
+                      siteid)
 
-              maxdistance = 0.0
-              do r=r1,r2
-                 do c=c1,c2
-                    if(localweight(c,r).gt.maxdistance) then
-                       maxdistance = localweight(c,r)
-                    endif
-                 enddo
-              enddo
-              
+                 c1=max(1,ix-HYMAP2_daWL_struc(n)%localupdDX)
+                 c2=min(LIS_rc%lnc(n),ix+HYMAP2_daWL_struc(n)%localupdDX)
+                 r1=max(1,iy-HYMAP2_daWL_struc(n)%localupdDX)
+                 r2=min(LIS_rc%lnr(n),iy+HYMAP2_daWL_struc(n)%localupdDX)
 
-              do r=r1,r2
-                 do c=c1,c2
-                    i1 = LIS_routing(n)%gindex(c,r)
-                    if(i1.gt.0) then 
-                       t1 = (i1-1)*LIS_rc%nensem(n)+m
+                 do r=r1,r2
+                    do c=c1,c2
+                       i1 = LIS_routing(n)%gindex(c,r)
+                       if(i1.gt.0) then
+                          t1 = (i1-1)*LIS_rc%nensem(n)+m
 
-                       if(sfcelev(t1).ne.-9999.0.and.&
-                            localweight(c,r).ne.-9999.0.and.&
-                            localweight(ix,iy).ne.-9999.0) then 
-                          weight = exp(-localweight(c,r)**2/&
-                               (2*maxdistance**2))
-                          sfcelevIncr_tmp(t1) = sfcelevIncr(t)*weight
-                          nsfcelevIncr_tmp(t1) = nsfcelevIncr_tmp(t1) + 1
-!                          sfcelev(t1) = sfcelev(t1) + &
-!                               sfcelevIncr(t)*weight
+                          if(sfcelev(t1).ne.-9999.0.and.&
+                             localweight(c,r).ne.-9999.0.and.&
+                             localweight(ix,iy).ne.-9999.0) then
+                             
+                             nsfcelevIncr_tmp(t1) = nsfcelevIncr_tmp(t1) + 1
+                             checkWeight(t1, nsfcelevIncr_tmp(t1)) = localweight(c,r)
+                             if (nsfcelevIncr_tmp(t1) > 1) then
+                                max_index=maxloc(checkWeight(t1,:nsfcelevIncr_tmp(t1)), dim=1)
+                                if (max_index .eq. nsfcelevIncr_tmp(t1)) then
+                                    sfcelevIncr_tmp(t1) = sfcelevIncr(t)*localweight(c,r)
+                                endif
+                             else
+                                sfcelevIncr_tmp(t1) = sfcelevIncr(t)*localweight(c,r)
+                             endif
+                         endif
                        endif
-                    endif
+                    enddo
                  enddo
-              enddo
-
+              else  !if(siteid.ne.-9999.0) then
+                 sfcelevIncr_tmp(t) = sfcelevIncr(t)
+                 !nsfcelevIncr_tmp(t) = nsfcelevIncr_tmp(t) + 1
+              endif
            endif
-        else
+        else !if (HYMAP2_daWL_struc(n)%useLocalUpd.eq.1) then
            sfcelevIncr_tmp(t) = sfcelevIncr(t)
-           nsfcelevIncr_tmp(t) = nsfcelevIncr_tmp(t) + 1
-!           sfcelev(t) = sfcelev(t) + sfcelevIncr(t)
+           !nsfcelevIncr_tmp(t) = nsfcelevIncr_tmp(t) + 1
         endif
      enddo
   enddo
@@ -145,15 +160,14 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
-        if(nsfcelevIncr_tmp(t).gt.0) then 
-          sfcelev(t) = sfcelev(t)+sfcelevIncr_tmp(t)/&
-               nsfcelevIncr_tmp(t)
-
-       endif
-    enddo
- enddo
+        if(abs(sfcelevIncr_tmp(t)).gt.0) then
+          sfcelev(t) = sfcelev(t)+sfcelevIncr_tmp(t)
+        endif
+     enddo
+  enddo
  
  deallocate(sfcelevIncr_tmp)
  deallocate(nsfcelevIncr_tmp)
+ deallocate(checkWeight)
 
 end subroutine HYMAP2_updateWL

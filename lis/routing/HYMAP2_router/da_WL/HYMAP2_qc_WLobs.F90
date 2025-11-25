@@ -13,6 +13,7 @@
 !
 ! !REVISION HISTORY:
 !  07 Nov 2019: Sujay Kumar; Initial Specification
+!  15 Apr 2024: Yeosang Yoon; Update the code to fit the SWOT DA
 !
 ! !INTERFACE:
 subroutine HYMAP2_qc_WLobs(n,k,OBS_State)
@@ -32,11 +33,6 @@ subroutine HYMAP2_qc_WLobs(n,k,OBS_State)
 !
 ! !DESCRIPTION:
 !
-!  This subroutine performs any model-based QC of the observation 
-!  prior to data assimilation. Here the soil moisture observations
-!  are flagged when LSM indicates that (1) rain is falling (2)
-!  soil is frozen or (3) ground is fully or partially covered 
-!  with snow MN:(4) ground is covered with vegatation (more than 50%). 
 !  
 !  The arguments are: 
 !  \begin{description}
@@ -53,13 +49,10 @@ subroutine HYMAP2_qc_WLobs(n,k,OBS_State)
   integer                   :: status
 
 
-  call ESMF_StateGet(OBS_State,"Observation01",obs_wl_field,&
-       rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateGet failed in noahmp36_qc_soilmobs")
+  call ESMF_StateGet(OBS_State,"Observation01",obs_wl_field,rc=status)
+  call LIS_verify(status,"ESMF_StateGet failed in HYMAP2_qc_WLobs")
   call ESMF_FieldGet(obs_wl_field,localDE=0,farrayPtr=wlobs,rc=status)
-  call LIS_verify(status,& 
-       "ESMF_FieldGet failed in noahmp36_qc_soilmobs")
+  call LIS_verify(status,"ESMF_FieldGet failed in HYMAP2_qc_WLobs")
   
   do i=1,HYMAP2_routing_struc(n)%nseqall
      wl(i) = HYMAP2_routing_struc(n)%rivelv(i)

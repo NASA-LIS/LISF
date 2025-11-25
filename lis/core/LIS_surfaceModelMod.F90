@@ -61,6 +61,7 @@ module LIS_surfaceModelMod
   public :: LIS_surfaceModel_DASetFreshIncrementsStatus
   public :: LIS_surfaceModel_DAGetFreshIncrementsStatus
   public :: LIS_surfaceModel_DAsetAnlysisUpdates
+  public :: LIS_surfaceModel_DAscaleAnlysisUpdates
   public :: LIS_surfaceModel_DAmapTileSpaceToObsSpace
   public :: LIS_surfaceModel_DAgetStateVarNames
   public :: LIS_surfaceModel_DAobsTransform
@@ -922,6 +923,42 @@ contains
     enddo
 
   end subroutine LIS_surfaceModel_DAsetAnlysisUpdates
+
+!BOP
+!
+! !ROUTINE: LIS_surfaceModel_DAscaleAnlysisUpdates
+! \label{LIS_surfaceModel_DAscaleAnlysisUpdates}
+!
+! !INTERFACE:
+  subroutine LIS_surfaceModel_DAscaleAnlysisUpdates(n,k,&
+       state_size,&
+       scalef)
+!
+! !DESCRIPTION:
+!  This routine sets the variables the state vector
+!  and state increments vector objects after assimilation
+!
+!EOP
+    integer                :: n
+    integer                :: k
+    integer                :: state_size
+    real                   :: scalef
+
+    integer                :: m
+
+    do m=1,LIS_rc%nsf_model_types
+       if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then
+          call LIS_lsm_DAscaleAnlysisUpdates(n,k,state_size,scalef)
+          call LIS_routing_DAscaleAnlysisUpdates(n,k,state_size,scalef)
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lake_index) then
+
+       elseif(LIS_rc%sf_model_type_select(m).eq.LIS_rc%glacier_index) then
+
+       endif
+    enddo
+
+  end subroutine LIS_surfaceModel_DAscaleAnlysisUpdates
 
 !BOP
 ! 
