@@ -57,6 +57,7 @@ module LIS_routingMod
   public :: LIS_routing_DAsetFreshIncrementsStatus
   public :: LIS_routing_DAgetFreshIncrementsStatus
   public :: LIS_routing_DAsetAnlysisUpdates
+  public :: LIS_routing_DAscaleAnlysisUpdates
   public :: LIS_routing_DAmapTileSpaceToObsSpace
   public :: LIS_routing_DAgetStateVarNames
   public :: LIS_routing_getlatlons
@@ -1236,6 +1237,86 @@ contains
        endif
     endif
   end subroutine LIS_routing_DAsetAnlysisUpdates
+
+!BOP
+!
+!ROUTINE: LIS_routing_DAscaleAnlysisUpdates
+! \label{LIS_routing_DAscaleAnlysisUpdates}
+!
+! !INTERFACE:
+  subroutine LIS_routing_DAscaleAnlysisUpdates(n,k,state_size,scalef)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    integer                :: state_size
+    real                   :: scalef
+
+!
+! !DESCRIPTION:
+!
+!  This interface extracts the variables from the state vector
+!  and state increments vector objects.
+!
+!  The arguments are:
+!  \begin{description}
+!   \item[n]      index of the nest
+!   \item[k]      index of the data assimilation instance
+!   \item[stvar]  state vector variables
+!   \item[stincr] state increments vector variables
+!  \end{description}
+!EOP
+
+    integer                :: status
+    integer                :: v,t
+    character*100,    allocatable     :: routing_state_objs(:)
+    type(ESMF_Field)                  :: routing_field(LIS_rc%nstvars(k))
+    type(ESMF_Field)                  :: routing_incr_field(LIS_rc%nstvars(k))
+    real,         pointer             :: stdata(:)
+    real,         pointer             :: stincrdata(:)
+
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
+       if(LIS_rc%routing_DAinst_valid(k)) then
+          allocate(routing_state_objs(LIS_rc%nstvars(k)))
+
+          call ESMF_StateGet(LIS_Routing_State(n,k),itemNameList=routing_state_objs,&
+               rc=status)
+          call LIS_verify(status, &
+               "ESMF_StateGet failed in enkf_increments")
+
+          do v=1,LIS_rc%nstvars(k)
+!             call ESMF_StateGet(LIS_Routing_State(n,k),trim(routing_state_objs(v)),&
+!                  routing_field(v),rc=status)
+!             call LIS_verify(status, &
+!                  "ESMF_StateGet failed in enkf_increments")
+
+             call ESMF_StateGet(LIS_Routing_Incr_State(n,k),trim(routing_state_objs(v)),&
+                  routing_incr_field(v),rc=status)
+             call LIS_verify(status, &
+                  "ESMF_StateGet failed in enkf_increments")
+
+!             call ESMF_FieldGet(routing_field(v),localDE=0, farrayPtr=stdata,rc=status)
+!             call LIS_verify(status,&
+!                  "ESMF_FieldGet failed in enkf_increments")
+
+             call ESMF_FieldGet(routing_incr_field(v),localDE=0,farrayPtr=stincrdata,&
+                  rc=status)
+             call LIS_verify(status, &
+                  'ESMF_FieldGet failed in enkf_increments')
+
+             do t=1,state_size
+                stincrdata(t) = stincrdata(t)/scalef
+                if(t.eq.7413) then
+                   print*, 'scal',t,stincrdata(t)
+                endif
+             enddo
+
+          enddo
+
+          deallocate(routing_state_objs)
+       endif
+    endif
+  end subroutine LIS_routing_DAscaleAnlysisUpdates
 
 !BOP
 !

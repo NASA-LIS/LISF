@@ -18,6 +18,7 @@ module HYMAP2_daWL_Mod
 ! !REVISION HISTORY:
 !
 !  07 Nov 19: Sujay Kumar; Initial specification
+!  15 Apr 24: Yeosang Yoon; Update the code to fit the SWOT DA
 !
 ! !USES:        
   use ESMF
@@ -64,7 +65,6 @@ contains
 ! !USES:
     use HYMAP2_routingMod
     use HYMAP2_initMod
-    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
@@ -85,7 +85,7 @@ contains
     integer                :: ncId, nrId, siteId
     integer                :: nc,nr,drainid,sid
     logical                :: local_upd_flag
-    character(len=LIS_CONST_PATH_LEN) :: localWeightMap
+    character*100          :: localWeightMap
     logical                :: file_exists
 
     if(.not.allocated(HYMAP2_daWL_struc)) then 
@@ -141,8 +141,8 @@ contains
                 
                 status = nf90_inq_dimid(nid,"north_south",nrId)
                 call LIS_verify(status,'Error in nf90_inq_dimid in HYMAP2_daWL_Mod')
-                
-                status = nf90_inq_dimid(nid,"site_id",siteId)
+
+                status = nf90_inq_dimid(nid,"count",siteId)
                 call LIS_verify(status,'Error in nf90_inq_dimid in HYMAP2_daWL_Mod')
                 
                 status = nf90_inquire_dimension(nid,ncId, len=nc)
@@ -155,7 +155,7 @@ contains
                      len=HYMAP2_daWL_struc(n)%nsites)
                 call LIS_verify(status,'Error in nf90_inquire_dimension in HYMAP2_daWL_Mod')
                 
-                status = nf90_inq_varid(nid,'distance',drainid)
+                status = nf90_inq_varid(nid,'weight',drainid)
                 call LIS_verify(status,'distance field not found in the localization weight file')
 
                 status = nf90_inq_varid(nid,'sites',sid)
@@ -171,7 +171,6 @@ contains
                 status = nf90_get_var(nid,drainid,&
                      HYMAP2_daWL_struc(n)%localWeight)
                 call LIS_verify(status,'Error in nf90_get_var in HYMAP2_daWL_Mod')
-
 
                 status = nf90_get_var(nid,sid,&
                      HYMAP2_daWL_struc(n)%sites, &

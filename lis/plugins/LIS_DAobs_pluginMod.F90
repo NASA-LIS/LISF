@@ -321,6 +321,10 @@ subroutine LIS_DAobs_plugin
    use hydrowebWLobs_module,   only : hydrowebwlobs_setup
 #endif
 
+#if ( defined DA_OBS_SWOTWL )
+   use swotWLobs_module,   only : swotWLobs_setup
+#endif
+
    external :: registerdaobssetup
    external :: registerreaddaobs
    external :: registerwritedaobs
@@ -435,6 +439,9 @@ subroutine LIS_DAobs_plugin
     external read_hydrowebWLobs, write_hydrowebWLobs
 #endif
 
+#if ( defined DA_OBS_SWOTWL )
+    external read_swotWLobs, write_swotWLobs
+#endif
     
 #if 0 
    external read_WindSatsm, write_WindSatsmobs
@@ -1016,6 +1023,13 @@ subroutine LIS_DAobs_plugin
    call registerdaobssetup(trim(LIS_hydrowebwlId)//char(0),hydrowebwlobs_setup)
    call registerreaddaobs(trim(LIS_hydrowebwlId)//char(0),read_hydrowebwlobs)
    call registerwritedaobs(trim(LIS_hydrowebwlId)//char(0),write_hydrowebwlobs)
+#endif
+
+#if ( defined DA_OBS_SWOTWL )
+   call registerdaobsclass(trim(LIS_swotwlId),"Routing")
+   call registerdaobssetup(trim(LIS_swotwlId)//char(0),swotWLobs_setup)
+   call registerreaddaobs(trim(LIS_swotwlId)//char(0),read_swotwlobs)
+   call registerwritedaobs(trim(LIS_swotwlId)//char(0),write_swotwlobs)
 #endif
 
 #if ( defined DA_OBS_WUSUCLA )

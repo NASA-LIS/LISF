@@ -83,6 +83,7 @@ module LIS_lsmMod
   public :: LIS_lsm_DAsetFreshIncrementsStatus
   public :: LIS_lsm_DAgetFreshIncrementsStatus
   public :: LIS_lsm_DAsetAnlysisUpdates
+  public :: LIS_lsm_DAscaleAnlysisUpdates
   public :: LIS_lsm_DAmapTileSpaceToObsSpace
   public :: LIS_lsm_DAgetStateVarNames
   public :: LIS_lsm_DAobsTransform
@@ -1705,6 +1706,81 @@ contains
        deallocate(lsm_state_objs)
     endif
   end subroutine LIS_lsm_DAsetAnlysisUpdates
+
+!BOP
+!
+!ROUTINE: LIS_lsm_DAscaleAnlysisUpdates
+! \label{LIS_lsm_DAscaleAnlysisUpdates}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAscaleAnlysisUpdates(n,k,state_size,scalef)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    integer                :: state_size
+    real                   :: scalef
+!
+! !DESCRIPTION:
+!
+!  This interface sets the variables the state vector
+!  and state increments vector objects after assimilation
+!
+!  The arguments are:
+!  \begin{description}
+!   \item[n]      index of the nest
+!   \item[k]      index of the data assimilation instance
+!   \item[stvar]  state vector variables
+!   \item[stincr] state increments vector variables
+!  \end{description}
+!EOP
+
+    integer                :: status
+    integer                :: v,t
+    character*100,    allocatable     :: lsm_state_objs(:)
+    type(ESMF_Field)                  :: lsm_field(LIS_rc%nstvars(k))
+    type(ESMF_Field)                  :: lsm_incr_field(LIS_rc%nstvars(k))
+    real,         pointer             :: stdata(:)
+    real,         pointer             :: stincrdata(:)
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then
+       allocate(lsm_state_objs(LIS_rc%nstvars(k)))
+
+       call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
+            rc=status)
+       call LIS_verify(status, &
+            "ESMF_StateGet failed in enkf_increments")
+
+       do v=1,LIS_rc%nstvars(k)
+!          call ESMF_StateGet(LIS_LSM_State(n,k),trim(lsm_state_objs(v)),&
+!               lsm_field(v),rc=status)
+!          call LIS_verify(status, &
+!               "ESMF_StateGet failed in enkf_increments")
+
+          call ESMF_StateGet(LIS_LSM_Incr_State(n,k),trim(lsm_state_objs(v)),&
+               lsm_incr_field(v),rc=status)
+          call LIS_verify(status, &
+               "ESMF_StateGet failed in enkf_increments")
+
+!          call ESMF_FieldGet(lsm_field(v),localDE=0, farrayPtr=stdata,rc=status)
+!          call LIS_verify(status,&
+!               "ESMF_FieldGet failed in enkf_increments")
+
+          call ESMF_FieldGet(lsm_incr_field(v),localDE=0,farrayPtr=stincrdata,&
+               rc=status)
+          call LIS_verify(status, &
+               'ESMF_FieldGet failed in enkf_increments')
+
+          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+!             stdata(t) =  stvar(v,t)
+             stincrdata(t) = stincrdata(t)/scalef
+          enddo
+
+       enddo
+
+       deallocate(lsm_state_objs)
+    endif
+  end subroutine LIS_lsm_DAscaleAnlysisUpdates
 
   subroutine LIS_lsm_DAobsTransform(n,k)
 ! !ARGUMENTS:

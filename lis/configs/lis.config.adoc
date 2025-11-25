@@ -1254,6 +1254,7 @@ Acceptable values are:
 |"`SNODAS`"                     | SNODAS snow depth
 |"`GLASS LAI`"                  | GLASS Leaf Area Index (LAI)
 |"`GLASS Albedo`"               | GLASS Albedo (black-sky and white-sky)
+|"`SWOT water level`"           | SWOT water surface elevation
 |====
 
 .Example _lis.config_ entry
@@ -3387,6 +3388,22 @@ SNODAS data.
 .Example _lis.config_ entry
 ....
 SNODAS snow depth data directory:                  ./FORCING/SNODAS
+....
+
+[[sssec_swotwlda,SWOT water level assimilation]]
+==== SWOT water level assimilation
+
+`SWOT water level data directory:` specifies the SWOT water level data directory.
+
+`SWOT water level map:` specifies the assimilation map file and its associated sequential ID.
+
+`Data assimilation frequency::` specifies the DA frequency: minimum 15mn and maximum 1da.
+
+.Example _lis.config_ entry
+....
+SWOT water level data directory:             ./input/SWOT_obs
+SWOT water level map:                        ./SWOT_lis_id.nc
+Data assimilation frequency                  "15mn"
 ....
 
 [[ssec_rtms,Radiative Transfer/Forward Models]]
@@ -10940,6 +10957,21 @@ active restart file.
 `HYMAP2 2-way coupling flooded fraction threshold:` specifies the flooded fraction
 threshold used in the 2-way coupling mode.
 
+`HYMAP2 use localization update in DA:` specifies whether to enable the localization 
+scheme for DA.
+
+Acceptable values are:
+
+|====
+|Value   | Description
+|0       | Do not use localization 
+|1       | Use localization for DA
+|====
+
+`HYMAP2 localization update window size:` specifies localization update window size.
+
+`HYMAP2 localization weight map:` specifies the file location of the localization weight map. 
+
 .Example _lis.config_ entry
 ....
 HYMAP2 routing model time step: "30mn"
@@ -10961,8 +10993,13 @@ HYMAP2 routing model dwi flag: 0
 HYMAP2 routing model start mode: "coldstart"
 HYMAP2 routing model restart interval: "1mo"
 HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
+
 HYMAP2 enable 2-way coupling: 0
 HYMAP2 2-way coupling flooded fraction threshold: 0.1
+
+HYMAP2 use localization update in DA: 0
+HYMAP2 localization update window size: 10
+HYMAP2 localization weight map: ./input/localization_map/distance_map_full_ohio_010.nc
 ....
 
 

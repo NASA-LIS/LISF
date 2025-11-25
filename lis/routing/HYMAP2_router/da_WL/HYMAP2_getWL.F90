@@ -83,7 +83,7 @@ subroutine HYMAP2_getWL(n, Routing_State)
 
 
   call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm1 in HYMAP2_getWL')
+  call LIS_verify(status,'ESMF_StateGet failed for sfcelev in HYMAP2_getWL')
 
   call ESMF_FieldGet(sfcelevField,localDE=0,farrayPtr=sfcelev,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for sfcelev in HYMAP2_getWL')

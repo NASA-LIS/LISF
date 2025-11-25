@@ -211,6 +211,29 @@ contains
          trim(LIS_hydrowebwlId)//char(0),HYMAP2_updateWL)
     call registerroutingdasetpertstates(trim(LIS_HYMAP2routerId)//"+"//&
          trim(LIS_hydrowebwlId)//char(0),HYMAP2_setPertStates)
+
+   call registerroutingdainit(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_daWL_init)
+   call registerroutingdagetstatespacesize(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_getStateSpaceSize)
+   call registerroutingdagetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_getWL)
+   call registerroutingdasetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_setWL)
+   call registerroutingdagetobspred(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_getWLpred)
+   call registerroutingdaqcstate(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_qcWL)
+   call registerroutingdaqcobsstate(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_qc_WLobs)
+   call registerroutingdascalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_scale_WL)
+   call registerroutingdadescalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_descale_WL)
+   call registerroutingdaupdatestate(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_updateWL)
+   call registerroutingdasetpertstates(trim(LIS_HYMAP2routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP2_setPertStates)
 #endif
 
 #if ( defined ROUTE_HYMAP3_ROUTER )
