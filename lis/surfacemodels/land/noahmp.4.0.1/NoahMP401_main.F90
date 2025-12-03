@@ -1079,7 +1079,7 @@ subroutine NoahMP401_main(n)
                     eqwtd(col,row)     = NOAHMP401_struc(n)%eqwtd(cidx, ridx)
                     rivercond(col,row) = NOAHMP401_struc(n)%rivercond(cidx, ridx)
                     rechclim(col,row)  = NOAHMP401_struc(n)%rechclim(cidx, ridx)
-                    pexp(col,row)      = 1.0
+                    pexp(col,row)      = NOAHMP401_struc(n)%pexp(cidx, ridx)
                 enddo ! col loop
             enddo ! row loop
             

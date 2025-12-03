@@ -358,6 +358,7 @@ subroutine mmf_start(n)
             NOAHMP401_struc(n)%rivercond(col, row)    = rivercond(col,row) !!! make a copy to the 2D paramter data structure 
             NOAHMP401_struc(n)%riverbed(col, row)     = riverbed(col,row)  !!! make a copy to the 2D paramter data structure 
             NOAHMP401_struc(n)%eqwtd(col, row)        = eqwtd(col,row)     !!! make a copy 
+            NOAHMP401_struc(n)%pexp(col, row)         = pexp(col,row)
         enddo
     enddo 
     deallocate(isltyp)

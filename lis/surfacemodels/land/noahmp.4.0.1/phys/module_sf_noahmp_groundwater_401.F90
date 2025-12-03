@@ -107,6 +107,7 @@ CONTAINS
     ENDWHERE
 
 !Calculate lateral flow
+    !print *, "TOPO:",TOPO
 
     QLAT = 0.
 CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
@@ -341,6 +342,10 @@ jteh=jte
        DO I=itsh,iteh
            IF(FDEPTH(I,J).GT.0.)THEN
                  KLAT = DKSAT_TABLE(ISLTYP(I,J)) * KLATFACTOR(ISLTYP(I,J))
+                 !IF(ABS(WTD(I,J)) .LT. 0.000001) THEN
+                 !    print* ,'WARNING WTD Floating Point Error Possible'
+                 !    print* ,'WTD: ',WTD(I,J)
+                 !ENDIF
                  IF(WTD(I,J) .LT. -1.5)THEN
                      KCELL(I,J) = FDEPTH(I,J) * KLAT * EXP( (WTD(I,J) + 1.5) / FDEPTH(I,J) )
                  ELSE

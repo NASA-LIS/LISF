@@ -2350,7 +2350,7 @@ SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
          LANDMASK=-1
     ENDWHERE
     
-    PEXP = 1.0
+    PEXP = 0.0
 
     DELTAT=365.*24*3600. !1 year
 
@@ -2433,6 +2433,12 @@ EQWTD=WTD
                DDZ=0.
         ENDIF
 
+        ! TML: Constrain PEXP for deeper groundwater
+        IF (EQWTD(I,J) .LT. ZSOIL(NSOIL)) THEN
+            PEXP(I,J) = 0.0
+        ELSE
+            PEXP(I,J) = 1.0
+        ENDIF
 
         TOTWATER = AREA(I,J)*(QLAT(I,J)+RECHCLIM(I,J)*0.001)/DELTAT
 
@@ -2451,6 +2457,16 @@ EQWTD=WTD
 !make riverbed to be height down from the surface instead of above sea level
 
     RIVERBED = min( RIVERBED-TOPO, 0.)
+
+!TML: constrain PEXP if RIVERBED is low...
+
+    DO J=jts,jtf
+       DO I=its,itf
+           IF (RIVERBED(I,J) .LT. ZSOIL(NSOIL)) THEN
+               PEXP(I,J) = 0.0
+           ENDIF
+       ENDDO
+    ENDDO
 
 !now recompute lateral flow and flow to rivers to initialize deep soil moisture
 

@@ -225,6 +225,7 @@ module NoahMP401_lsmMod
         real, pointer      :: eqwtd(:,:)      !SW for MMF
         real, pointer      :: riverbed(:,:)   !SW for MMF
         real, pointer      :: rivercond(:,:)  !SW for MMF 
+        real, pointer      :: pexp(:,:)       !Additional MMF TML
         real, pointer      :: qrf(:,:)        !MMF output SW for MMF
         real, pointer      :: qspring(:,:)    !MMF output, SW 
         real, pointer      :: rechclim(:,:)   !SW 
@@ -444,6 +445,8 @@ contains
                 allocate(NOAHMP401_struc(n)%riverbed(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
                 allocate(NOAHMP401_struc(n)%rivercond(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
+                                                    NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
+                allocate(NOAHMP401_struc(n)%pexp(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
                 allocate(NOAHMP401_struc(n)%qrf(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
