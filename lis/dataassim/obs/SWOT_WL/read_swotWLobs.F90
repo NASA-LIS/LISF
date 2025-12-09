@@ -138,7 +138,8 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
         enddo
      enddo
 
-     !TODO: not used for now. set to 'none'
+     !TODO: "Normal deviate scaling" is not yet working.
+     !Set dascaleoption to 'none'.
      if(LIS_rc%dascaloption(k).eq."Normal deviate scaling".and.fnd.ne.0) then
 
         call LIS_rescale_with_normal_deviate_scaling(&

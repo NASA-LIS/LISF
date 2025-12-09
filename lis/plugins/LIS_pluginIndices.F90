@@ -371,7 +371,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_wusUCLAobsId        = &
         "Western U.S. UCLA snow"
    character*50, public,  parameter :: LIS_swotwlId            = &
-        "SWOT water level" !YY
+        "SWOT water level"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
