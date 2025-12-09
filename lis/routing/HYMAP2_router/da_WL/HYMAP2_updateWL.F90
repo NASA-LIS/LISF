@@ -90,8 +90,8 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
 
-        !TODO: !An anomalous value differential was detected, 
-        !       and the update was limited to the established threshold 
+        ! An anomalous value differential was detected,
+        ! and the update was limited to the established threshold
         if(abs(sfcelevIncr(t))>=10.0) then
            sfcelevIncr(t) = 0.0
            cycle
