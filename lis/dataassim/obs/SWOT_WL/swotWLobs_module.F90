@@ -8,7 +8,6 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
-#include "LIS_NetCDF_inc.h"
 !BOP
 !
 ! !MODULE: swotWLobs_module
