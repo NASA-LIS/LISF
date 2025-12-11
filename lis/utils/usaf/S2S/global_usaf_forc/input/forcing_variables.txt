@@ -5,7 +5,7 @@ SWdown:     1  1  W/m2    # Incident shortwave radiation (total)
 SWdirect:   0  1  W/m2    # Incident shortwave radiation (direct)
 SWdiffuse:  0  1  W/m2    # Incident shortwave radiation (diffuse)
 LWdown:     1  1  W/m2    # Incident longwave radiation
-Wind_E:     1  1  W/m2    # Eastward wind
+Wind_E:     1  1  m/s    # Eastward wind
 Wind_N:     1  1  m/s     # Northward wind
 Psurf:      1  1  Pa      # Surface pressure
 Rainf:      1  1  kg/m2s  # Rainfall rate

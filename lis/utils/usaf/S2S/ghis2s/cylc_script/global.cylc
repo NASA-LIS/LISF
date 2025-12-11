@@ -13,7 +13,7 @@
     submission polling intervals = PT1H
     execution polling intervals = PT1H
 
-  [[localhost]]  
+  [[localhost-ghi]]
     job runner = background
     install target = localhost
     hosts = localhost

@@ -1,22 +1,22 @@
 DESCRIPTION OF SCRIPTS
 
-Eric Kemp (SSAI)
-Last updated 24 May 2023
+Kristi Arsenault (SAIC) and Eric Kemp (SSAI)
+Last updated 17 Nov 2025
 
 * For running on Discover, you will load the following module:
-  LISF/env/discover/lisf_7.5_intel_2021.4.0_s2s
+  LISF/env/discover/lisf_7.5_intel_2023.2.1_s2s
 
 * On HPC-11, the latest module is:
-    lisf_7.5_prgenv_cray_8.3.3_s2s 
-  which uses afw-python/3.9-202203
+    lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_s2s
+  which uses afw-python/3.11-202501
 
 There are 3 scripts used to configure and run LIS to generate USAF global
 atmospheric forcing data via "AGRMET Ops" mode.  These are located in the
-LISF distribution under: lis/utils/usaf/s2s/global_usaf_forc/.  
+LISF distribution under: lis/utils/usaf/S2S/global_usaf_forc/.  
 
 They are:
 
-run_lis_global_usaf_forcing.sh:  <- Batch job script
+ run_lis_global_usaf_forcing.sh:  <- Batch job script
         customize_lis_config.py
         store_lis_output.py
 
@@ -28,15 +28,16 @@ o run_lis_global_usaf_forcing.sh is a batch job script developed for the NASA
    lis.config file from a template; runs LIS via MPI; and runs store_lis_output.py 
    to clean-up directories after the run.  
 
- It is designed to be very simple, and delegate as much work as possible 
+ It is designed to be very simple and delegate as much work as possible 
   to the Python scripts.
 
-o customize_lis_config.py will read in a lis.config template and create a new,
-   lis.config file with updated start and end times and restart file path.
+o customize_lis_config.py will read in the lis.config template (found in the input
+   directory) and create a new lis.config file with updated start and end times
+   and restart file path.
 
 o store_lis_output.py will copy most GRIB1 output files to a new, semi-permanent
    directory for subsequent use by S2S land DA LIS runs.  (The first GRIB1 file
    valid at the start of the LIS run is skipped, since it has no precipitation
-   data.) Also, the restart file produced at t=24 hrs is copied to a ./restart
+   data.)  Also, the restart file produced at t=24 hrs is copied to a ./restart
    directory (e.g., input/restarts/), for use by the next LIS forcing run.
 
