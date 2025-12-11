@@ -1,9 +1,9 @@
 
         557WW LIS 7.7 - Global-Hydro Information (GHI) 
- Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
+  Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 31 Jan 2025
+  Last Modified 1 Dec 2025
 
 		TABLE OF CONTENTS
 		_________________
@@ -15,7 +15,9 @@
    2.2 Setting up the experiment directory
 
 3. RUNNING THE GHI S2S SUBSYSTEM
-   3.1 s2s_run.sh Usage instructions
+   3.1 Options for running the S2S subsystem
+       3.1.1  New s2s_run.py python script
+       3.1.2  New Cylc workflow script - ghis2s_program.py
    3.2 Monitoring the status of the forecast
    3.3 Directory structure
 
@@ -23,13 +25,13 @@
    4.1 Downloading forecast input forcings
        4.1.1 Downloading CFSv2 forcings
        4.1.2 Downloading NMME precipitation forcings
-   4.2 Global USAF Forcing 
-   4.3 LIS-DA run
-   4.4 LDT-ICs
-   4.5 BCSD
-   4.6 LIS Forecast
-   4.7 S2S post processing
-   4.8 S2S metrics computation
+   4.2 Global USAF Forcing generation ("S2S_Daily")
+   4.3 LIS DA run
+   4.4 LDT initial conditions (ICs) processing
+   4.5 Bias-correction/spatial downscaling (BCSD)
+   4.6 LIS forecast runs
+   4.7 S2S post-processing ("s2spost")
+   4.8 S2S metrics computations
    4.9 S2S plots
 
 5. nctool.py UTILITY
@@ -38,14 +40,18 @@
 
 1. INTRODUCTION
 
-This document describes the software and steps used to run the GHI S2S
- end-to-end system (E2ES) forcing and model initial conditions, forecasts 
- with LIS, generate netCDF4 formatted output files, and produce key metrics 
- of the forecast output.
+ This document describes the software and steps used to run the GHI S2S
+  end-to-end system (E2ES) forcing and model initial conditions, forecasts 
+  with LIS, generate netCDF4 formatted output files, and produce key metrics 
+  of the forecast output. The subsystem involves running with 12 members of 
+  NOAA's Climate Forecast System, version 2 (CFSv2), for the base forcing 
+  fields (e.g., temperature, pressure) and the main forecast models featured
+  with the North American Multi-Model Ensemble (NMME) for precipitation
+  ensembles.
 
-Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
- of combining the output files and providing in CF-compliant netCDF output
- that is compliant with USAF naming conventions.
+ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
+  of combining the output files and providing in CF-compliant netCDF output
+  (also TIF format) that is compliant with USAF naming conventions.
 
 
 2. SETTING UP THE E2ES ENVIRONMENT AND EXPERIMENT
@@ -53,26 +59,26 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   2.1  SOFTWARE REQUIREMENTS
 
 * LIS 7.7, compiled with GRIB2 support (ecCodes and AFWA-specific
-    grib configuration settings), and netCDF4 with compression.
+    grib configuration settings), and netCDF4.
 
 * For running on Discover, you will load the following module:
   LISF/env/discover/lisf_7.7_intel_2023.2.1_s2s
 
 * Python 3.11, with the following extra libraries installed:
-               NCCS        HPC
-  - xarray     2024.6.0    2024.6.0
-  - dask       2024.7.0    2024.6.2
-  - xesmf      0.8.6       0.8.5
-  - cfgrib     0.9.13.0    0.9.14.0
-  - dateutil   2.9.0       2.9.0
-  - pandas     2.2.2       2.2.2 
-  - numpy      1.26.4      1.26.4
-  - PyYAML     6.0.1       6.0.01
-  - GDAL       3.8.4       3.8.1
-  - OSGEO      3.8.4       3.8.1
-  - NetCDF4    1.7.1       1.6.5
-  - Cartopy    0.23.0      0.23.0
-  - Matplotlib 3.9.1       3.8.4
+                NCCS        HPC
+  - Cartopy     0.24.0      0.24.0
+  - cfgrib      0.9.15.0    0.9.15.0
+  - dask        2024.8.1    2024.8.1
+  - dateutil    2.9.0.post0 2.9.0.post0
+  - GDAL/OSGEO  3.9.1       3.9.1
+  - Matplotlib  3.8.4       3.8.4
+  - NetCDF4     1.7.2       1.7.2
+  - numpy       1.26.4      1.26.4
+  - pandas      2.2.3       2.2.3
+  - PyYAML      6.0.2       6.0.2
+  - rasterio    1.3.10      1.3.10
+  - xarray      2025.1.1    2025.1.1
+  - xesmf       0.8.8       0.8.8
 
   ** Note:  Updates to the above libraries and modules
         could get updated as frequent as every 3- to
@@ -85,12 +91,14 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   latest LIS 7.7 557WW code tarball, within the directory
   structure:
 
-   lisf-557ww-7.7/lis/utils/usaf/s2s/
+   lisf-557ww-7.7/lis/utils/usaf/S2S/
 
  The main E2ES script that runs the S2S subsystem is a 
-  bash shell script and is located in the directory:   
+  Python script and is located in the directory:   
 
-   s2s_app/s2s_run.sh
+   in lisf-557ww-7.7/lis/utils/usaf/S2S/ghis2s/s2s_app
+
+   s2s_run.py
   
  In setting up your main or experiment directory, you
   can simply symbolically link to the "s2s_app" directory,
@@ -99,7 +107,8 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
  Also, in the "s2s_app" directory are different text-based 
   S2S configuration files (YAML file format), which is the 
-  main input and option based file to setup and drive the E2ES steps. 
+  main input and option based file to setup and drive the 
+  E2ES steps. 
 
  For the E2ES "forecast" setup, you will want to copy:  
     s2s_config_global_fcst
@@ -108,14 +117,14 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   paths in the first section list, under "SETUP:" 
 
  SETUP:
-  LISFDIR: [DIRECTORY_PATH_OF_YOUR_LISF_TOP-LEVEL-CODE_DIRECTORY]
-  E2ESDIR: [YOUR_LOCAL_WORKING-RUN_DIRECTORY_PATH]
-  METFORC: [MAIN_USAF_FORCING_AND_SATELLITE_DATA_DIRECTORY_PATH]
+  LISFDIR:  [DIRECTORY_PATH_OF_YOUR_LISF_TOP-LEVEL-CODE_DIRECTORY]
+  E2ESDIR:  [YOUR_LOCAL_WORKING-RUN_DIRECTORY_PATH]
+  METFORC:  [MAIN_USAF_FORCING_AND_SATELLITE_DATA_DIRECTORY_PATH]
   LISFMOD: lisf_7.7_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
-  SPCODE: s1189    [YOUR LOCAL MACHINE GROUPID CODE]
+  SPCODE:  s1189     [YOUR LOCAL MACHINE GROUPID CODE]
   DATATYPE: forecast  [OPTIONS INCLUDE:  "forecast" or "hindcast"]
   supplementarydir:  [YOUR GHI_S2S/supplementary_files DIRECTORY PATH WITH RUNTIME INPUT FILES]
-  ldtinputfile:  [FILENAME FOR THE LDT-GENERATED MODEL INPUT PARAMETER FILE] 
+  ldtinputfile:      [FILENAME FOR THE LDT-GENERATED MODEL INPUT PARAMETER FILE] 
 
   * The "ldtinputfile" file will be provided as part of the E2ES 
     use-case input file package, with the naming convention of:
@@ -146,104 +155,191 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
 3. RUNNING THE GHI S2S SUBSYSTEM
 
-  3.1  s2s_run.sh USAGE INSTRUCTIONS
+  3.1 Options for running the S2S subsystem
 
- The main or "master" shell script to run the E2ES step
-  utilizes:  s2s_app/s2s_run.sh
+   3.1.1  New s2s_run.py python script
 
- To view the inputs and instructions, run:
+  The main or "master" script to run the E2ES utilizes:
+   s2s_app/s2s_run.py
 
-  sh s2s_app/s2s_run.sh -h
+  To view the inputs and instructions, run:
 
- ( or make sure "s2s_run.sh" has executable permission 
-   and run as:  ./s2s_app/s2s_run.sh )
+   python s2s_app/s2s_run.py -h
+
+   (or make sure "s2s_run.py" has executable permission 
+    and run as:  ./s2s_app/s2s_run.py)
  
- The main usage with mandatory and optional entries is:
+  The main usage with mandatory and optional entries is:
 
-  s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE -d DELETE -r REPORT -s STEP -o ONE_STEP
+   s2s_run.py [-h] -c CONFIG_FILE -y YEAR -m MONTH [-s STEP] [-o] [-j] [-r] [-l]
 
- where MANDATORY input parameters are:
- -------------------------------------
-  YEAR:        start year
-  MONTH:       start month [1 to 12]
-  CONFIG_FILE: main S2S config file (for hindcast or forecast run modes), e.g., s2s_config_global_fcst
+  where MANDATORY input parameters are:
+  -------------------------------------
+   -c, --config_file CONFIG_FILE: 
+                      Main S2S config file (for hindcast or forecast run modes),
+                      e.g., s2s_config_global_fcst
+   -y, --year YEAR:   Forecast start year
+   -m, --month MONTH: Start month [1 to 12]
  
-  Thus, s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE  can run the 
-   complete E2ES process for one YEAR/MONTH forecast (9-month) period.
+   Thus, s2s_app/s2s_run.py -y YEAR -m MONTH -c CONFIG_FILE  can run the 
+    complete E2ES process for one YEAR/MONTH forecast (9-month) period.
 
- with OPTIONAL flags:
- --------------------
-  REPORT:   Once the E2ES process has begun (jobs have been submitted), 
-             the REPORT flag is helpful to check the progress of SLURM jobs 
-             (valid inputs for -r: Y or N).
+   with OPTIONAL flags:
+   --------------------
+    -s STEP, --step STEP  LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS
+                          The E2ES process includes seven steps that are run sequentially:
+                              LISDA, LDTICS, BCSD, FCST, POST, METRICS, PLOTS.
+                          The STEP option allows the user to kick start the process
+                              from the last completed step. More info on each step is below.
 
-  STEP:     The E2ES process includes seven steps that are run sequentially:
-             LISDA, LDTICS, BCSD, FCST, POST, METRICS, PLOTS.
-            However, the STEP option allows the user to kick start the process 
-             from the last completed step.
-            -s STEP allows s2s_run.sh to start from a specific STEP 
-             (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS).
+    -o, --one_step        Is only one step? (default: False)
+                           This flag is set to run only the above -s STEP 
+                               If "-o" or "--one_step" is included, the process will exit 
+                               upon completion of the above STEP entry.
 
-  ONE_STEP: This flag is set to run only the above -s STEP (valid inputs: Y or N). 
-             If ONE_STEP is set to Y, the process will exit upon completion of the
-             above STEP entry.
+    -j, --submit_job      Submit SLURM jobs? (default: False) 
+                           This option sets the Slurm job submissions to "automatically" run 
+                           when the s2s_run.py script is run, simply entering "-j".
 
-  DELETE:   Delete generated forecast YEAR/MONTH directory (valid inputs: Y or N).
- -------------------
+    -r, --report          Print report; can be run anytime after s2s_run.py has been initiated.
+                           The report option is helpful to check the progress of SLURM jobs.
 
- To run a single step, you will select the following options, for example 
-  the BCSD step:
+    -l, --logging         Write centralized log file (based on Python logging module).
 
-  sh s2s_app/s2s_run.sh -y 2024 -m 9 -c s2s_config_global_fcst -s BCSD -o Y
+   -------------------
 
- would run just the BCSD step and scripts.
+  To run a single step, you will select the following options, for example 
+   the BCSD step:
+
+   python s2s_app/s2s_run.py -y 2025 -m 3 -c s2s_config_global_fcst -s BCSD -o
+
+   would create just the BCSD step and scripts.  If you want to submit to Slurm
+   at the same time, then the command line arguments would be:
+
+   python s2s_app/s2s_run.py -y 2025 -m 3 -c s2s_config_global_fcst -s BCSD -o -j
+
+
+   3.1.2  New Cylc workflow script - ghis2s_program.py
+
+   The latest LISV7.7 S2S code and scripts include new coupling with the Cylc
+    workflow software. To help set up and run with Cylc directories and files,
+    a more complete set of instructions have been outlined and described in this
+    companion README file found here:
+
+     lis/utils/usaf/S2S/README_ghis2s-cylc.md
+
+   Please see the above README file, which can also be viewed from GitHub,
+    for more information. 
 
 
   3.2  MONITORING THE STATUS OF THE FORECAST
 
  Users can monitor the full suite of steps when initialized from the
-  start of an E2ES run, using the same s2s_run.sh main script.
+  start of an E2ES run, using the same s2s_run.py main script.
 
  The report option allows the user to check the order, processing SLURM
   job time, and final computational resource usage and time information.
 
- An example of how to monitor an E2ES set of SLURM jobs, for an 09-2024
-  forecast:
+ An example of how to monitor an E2ES set of SLURM jobs, for an 03-2025
+  forecast for ALL 6 NMME models:
 
- sh s2s_app/s2s_run.sh -y 2024 -m 9 -c s2s_config_global_fcst -r Y
+ python s2s_app/s2s_run.py -y 2025 -m 3 -c s2s_config_global_fcst -r 
 
- The "-r" flag option with "Y" set allows the user to see the 
-  following information, e.g.:
+ The "-r" flag option allows the user to see the following info, e.g.:
 
 #######################################################################
                           STATUS OF SLURM JOBS                         
 #######################################################################
   
-            JOB FILE                 WALLTIME (HH:MM:SS)
-  
-   1/36 lisda_run.j                           3h 40m 57s
-   2/36 ldtics_run.j                          0h  7m  6s
-   3/36 bcsd01_01_run.j                       0h 50m 53s
-   4/36 bcsd01_02_run.j                       0h 50m 52s
-   5/36 bcsd01_03_run.j                       0h 50m 43s
-   6/36 bcsd01_04_run.j                       0h 51m 11s
-   7/36 bcsd03_run.j                          0h  1m  9s
-   8/36 bcsd04_01_run.j                       3h 11m 46s
-   9/36 bcsd04_02_run.j                       3h 11m 48s
-  10/36 bcsd05_01_run.j                       1h 35m 56s
-  11/36 bcsd05_02_run.j                       2h  9m 44s
- ... 
- ...
-  30/36 lis_fcst_GFDL_07_run.j                2h 45m 44s
-  31/36 lis_fcst_GFDL_08_run.j                2h 51m 39s
-  32/36 s2spost_01_run.j                      1h 38m 44s
-  33/36 s2spost_02_run.j                      2h 15m 31s
-  34/36 s2smetric_run.j                       1h 16m 58s
-  35/36 s2smetric_tiff_run.j                  0h 49m 56s
-  36/36 s2splots_run.j                        1h 39m 15s
-  
- ELAPSED TIME :  2d 7h 39m 13s
- -------------------------------
+          JOB FILE                   WALLTIME (HH:MM:SS)
+ 
+   1/84 lisda_run.j                           3h 33m  7s
+   2/84 ldtics_run.j                          0h 13m 17s
+   3/84 mf_regrid_01_run.j                    0h  7m 50s
+   4/84 mf_regrid_02_run.j                    0h  7m 52s
+   5/84 mf_regrid_03_run.j                    0h  7m 53s
+   6/84 mf_regrid_04_run.j                    0h  8m  6s
+   7/84 mf_regrid_05_run.j                    0h  8m 12s
+   8/84 mf_regrid_06_run.j                    0h  8m 12s
+   9/84 pr_regrid_run.j                       0h  2m 51s
+  10/84 mf_biascorr_01_run.j                  0h 34m 27s
+  11/84 mf_biascorr_02_run.j                  0h 35m  0s
+  12/84 mf_biascorr_03_run.j                  0h 32m 44s
+  13/84 mf_biascorr_04_run.j                  0h 33m 49s
+  14/84 mf_biascorr_05_run.j                  0h 34m 28s
+  15/84 mf_biascorr_06_run.j                  0h 36m 29s
+  16/84 mf_biascorr_07_run.j                  0h 32m 47s
+  17/84 pr_biascorr_01_run.j                  0h 27m  3s
+  18/84 pr_biascorr_02_run.j                  0h 27m 11s
+  19/84 pr_biascorr_03_run.j                  0h 36m 24s
+  20/84 pr_biascorr_04_run.j                  0h 11m  4s
+  21/84 pr_biascorr_05_run.j                  0h 53m 53s
+  22/84 pr_biascorr_06_run.j                  0h 27m 19s
+  23/84 mf_tempdis_01_run.j                   0h 21m 35s
+  24/84 mf_tempdis_02_run.j                   0h 21m 40s
+  25/84 pr_tempdis_01_run.j                   0h 20m 43s
+  26/84 pr_tempdis_02_run.j                   0h 19m 12s
+  27/84 pr_tempdis_03_run.j                   0h 21m 37s
+  28/84 combine_files_run.j                   0h 16m  4s
+  29/84 lis_fcst_CanESM5_00_run.j             3h 41m 26s
+  30/84 lis_fcst_CanESM5_01_run.j             3h 49m 48s
+  31/84 lis_fcst_CanESM5_02_run.j             3h 43m  8s
+  32/84 lis_fcst_CESM1_00_run.j               3h 41m 26s
+  33/84 lis_fcst_CESM1_01_run.j               3h 45m 44s
+  34/84 lis_fcst_CESM1_02_run.j               3h 43m  6s
+  35/84 lis_fcst_CFSv2_00_run.j               2h 56m 59s
+  36/84 lis_fcst_CFSv2_01_run.j               2h 59m  8s
+  37/84 lis_fcst_CFSv2_02_run.j               3h  2m 51s
+  38/84 lis_fcst_CFSv2_03_run.j               2h 56m  6s
+  39/84 lis_fcst_CFSv2_04_run.j               1h 28m 53s
+  40/84 lis_fcst_GEOSv2_00_run.j              2h 42m 35s
+  41/84 lis_fcst_GEOSv2_01_run.j              2h  8m 55s
+  42/84 lis_fcst_GFDL_00_run.j                2h 29m  0s
+  43/84 lis_fcst_GFDL_01_run.j                2h 24m 52s
+  44/84 lis_fcst_GFDL_02_run.j                2h 33m 26s
+  45/84 lis_fcst_GFDL_03_run.j                2h 28m  2s
+  46/84 lis_fcst_GFDL_04_run.j                2h 28m 44s
+  47/84 lis_fcst_GFDL_05_run.j                2h 28m 49s
+  48/84 lis_fcst_GFDL_06_run.j                2h 23m 37s
+  49/84 lis_fcst_GFDL_07_run.j                2h 29m  6s
+  50/84 lis_fcst_GFDL_08_run.j                2h 26m  4s
+  51/84 lis_fcst_GNEMO52_00_run.j             3h 41m 26s
+  52/84 lis_fcst_GNEMO52_01_run.j             3h 47m 21s
+  53/84 lis_fcst_GNEMO52_02_run.j             3h 43m  6s
+  54/84 s2spost_01_run.j                      0h 37m  3s
+  55/84 s2spost_02_run.j                      0h 48m 45s
+  56/84 s2spost_mon_01_run.j                  0h 12m 41s
+  57/84 s2spost_mon_02_run.j                  0h 12m 46s
+  58/84 s2spost_mon_03_run.j                  0h 12m 47s
+  59/84 s2spost_mon_04_run.j                  0h 14m 36s
+  60/84 s2spost_mon_05_run.j                  0h 14m 11s
+  61/84 s2spost_mon_06_run.j                  0h  6m 50s
+  62/84 s2spost_mon_07_run.j                  0h 17m  3s
+  63/84 s2spost_mon_08_run.j                  0h 16m 56s
+  64/84 s2spost_mon_09_run.j                  0h 12m 21s
+  65/84 s2spost_weekly_01_run.j               0h  6m  0s
+  66/84 s2spost_weekly_02_run.j               0h  6m 50s
+  67/84 s2smetric_01_run.j                    0h 18m 59s
+  68/84 s2smetric_02_run.j                    0h 19m 30s
+  69/84 s2smetric_03_run.j                    0h 19m 48s
+  70/84 s2smetric_04_run.j                    0h 12m 24s
+  71/84 s2smetric_05_run.j                    0h 23m 38s
+  72/84 s2smetric_06_run.j                    0h 19m 27s
+  73/84 s2smetric_weekly_01_run.j             0h  8m 56s
+  74/84 s2smetric_weekly_02_run.j             0h  8m 55s
+  75/84 s2smetric_weekly_03_run.j             0h  9m 12s
+  76/84 s2smetric_weekly_04_run.j             0h  7m 12s
+  77/84 s2smetric_weekly_05_run.j             0h 10m 10s
+  78/84 s2smetric_weekly_06_run.j             0h  9m  4s
+  79/84 s2smetric_tiff_run.j                  0h  4m 56s
+  80/84 s2smetric_weekly_tiff_run.j           0h  3m 34s
+  81/84 s2splots_01_run.j                     0h 22m  9s
+  82/84 s2splots_02_run.j                     0h 10m  0s
+  83/84 s2splots_03_run.j                     0h 10m 25s
+  84/84 s2splots_04_run.j                     0h 39m 25s
+ 
+ ELAPSED TIME :  1d 5h 9m 31s
+ -----------------------------
 
  The above example report output will show all the E2ES
   steps being run and the amount of wall-clock time
@@ -257,71 +353,95 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   the LDT and LIS executables needed, follow the below 
   main heirarchy.
 
- lis/utils/usaf/s2s/s2s_app/
- --------------------------
+ lis/utils/usaf/S2S/ghis2s/s2s_app/
+ ---------------------------------
+ ├── s2s_run.py
+ ├── cylc_walltime.sh
+ ├── s2s_api.py
  ├── s2s_run.sh
- ├── s2s_config_global_fcst
- ├── s2s_config_global_hcast
- ├── download_nmme_precip.sh
- ├── wget_cfsv2_oper_ts_e2es.sh
- ├── nctool.py
- └── s2s_api.py
+ └── s2s_config_global_fcast
 
- lis/utils/usaf/s2s/s2s_modules/
- ------------------------------
- ├── bcsd_fcst
- ├── lis_darun
+ (Note: Only listing main scripts and files
+         mostly needed for E2ES runs.)
+
+ lis/utils/usaf/S2S/ghis2s/
+ --------------------------
+ ├── bcsd
+ │   └── bcsd_library
+ ├── cylc_script
  ├── ldt_ics
+ │   └── template_files
+ ├── lis_darun
+ │   ├── attribs
+ │   ├── noahmp401_parms
+ │   ├── tables
+ │   └── template_files
  ├── lis_fcst
- ├── s2spost
+ │   ├── tables
+ │   └── template_files
+ ├── s2s_app
  ├── s2smetric
- └── s2splots
+ ├── s2splots
+ ├── s2spost
+ └── shared
 
- This S2S directory tree structure outlines the 
+ This S2S "ghis2s" directory tree structure outlines the 
   main routines and scripts applied in the E2ES steps
   for current final operational configurations (FOCs).
 
  * Note: A "hindcast" directory is also symbolically
      linked to the climatology input files required for
-     the "bcsd_fcst" step and the output hindcast files
+     the "bcsd" step and the output hindcast files
      from the s2spost step, required for the s2smetric
      step. These files will be provided separately to
      the user for set up and running these required
      steps for the E2E forecast subsystem.
 
- When you begin to run the E2ES and each of the 
-  sequential steps, the following output directories
-  are written to your main run directory (same directory 
-  names as found in s2s_modules):
- ├── bcsd_fcst
- ├── lis_darun
- ├── ldt_ics
- ├── lis_fcst
- ├── s2spost
- ├── s2smetric
- └── s2splots
+  -- Main output directories --
+
+  When you begin to run the E2ES and each of the 
+   sequential steps, the following output directories
+   are written to your main run directory (same directory 
+   names as found in s2s_modules):
+ 
+  ├── bcsd
+  ├── lis_darun
+  ├── ldt_ics
+  ├── lis_fcst
+  ├── s2spost
+  ├── s2smetric
+  └── s2splots
+
  * Note: The generation of the S2S global USAF forcing
     required to run the lis_darun step is performed 
     outside of the E2ES, as a lead-up to running the 
     E2E forecast step. More details are provided below in
  └── global_usaf_forc
 
- Once the main shell script is running, then all log files, 
+  -- "scratch" run directories --
+
+ Once the main script is running, then all log files, 
   slurm script files, and other runtime output files are 
   written to a temporary run directory, called "scratch". 
   The structure of "scratch" and related log files is set
   up as:
   
   [E2ES_RUN_DIRECTORY]/scratch/[YYYYMM of Forecast]/ ...
-   SLURM_JOB_SCHEDULE  [Text-file that keeps track of the SLURM
-                        job IDs and any related dependency jobs]
-   ├── bcsd_fcst
+    SLURM_JOB_SCHEDULE  [Text-file that keeps track of the SLURM
+                         job IDs and any related dependency jobs]
+    CYLC_workflow.rc    [Cylc workflow file]
+    ghis2s_log.sh       [Shell script that generates the compiled
+                         Python main log file from all steps]
+    ghis2s_main.log     [Main log file combined from all steps runs]
+
+   ├── bcsd
    ├── ldt_ics
    ├── lis_darun
    ├── lis_fcst
    ├── s2smetric
    ├── s2spost
    └── s2splots  
+
    └── global_usaf_forc  [Symbolic link to the input Grib-1 forcing
                           files used for the lis_darun step]
 
@@ -357,7 +477,6 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
         s2s_app/README_CFSv2_PATCHING
  
       More examples and details are provided in that file.
-
  
     4.1.2 Downloading NMME precipitation forcing files
 
@@ -379,19 +498,21 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
        University server before proceeding with the remaining E2E steps. 
 
 
-  4.2 GLOBAL USAF FORCING (Stand-alone step from E2ES)
+  4.2 Global USAF Forcing generation ("S2S_Daily")
+       (Stand-alone step from E2ES)
+
     global_usaf_forc:  Generate AGRMET Ops atmospheric forcing for S2S
 
   - This forcing step configures and runs LIS in AGRMET Ops mode to generate
     atmospheric forcing for subsequent S2S data assimilation runs. No land DA
     is performed, and the ensemble size is set to 1. Gridded output is
-    restricted to atmospheric forcing variables in GRIB1 format, which are
+    restricted to atmospheric forcing variables inly in GRIB1 format, which are
     saved (along with the final restart file) for subsequent use by S2S.
 
   - 3 scripts to configure and run LIS to generate USAF global atmospheric
     forcing data via "AGRMET Ops" mode. Scripts located in:
 
-    LISF/lis/utils/usaf/s2s/global_usaf_forc/
+    LISF/lis/utils/usaf/S2S/global_usaf_forc/
 
     - run_lis_global_usaf_forcing.sh:   <== Batch job script
       Calls:
@@ -401,25 +522,30 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
     - Set entries in run_lis_global_usaf_forcing.sh for output directory and
       scripts path; instructions can be found in the README file there.
 
-    - Submit shell script via SLURM (sbatch), e.g.,:
-    sbatch /absolute/path/to/run_lis_global_usaf_forcing.sh 20220801
+    - Submit script via SLURM (sbatch), e.g.,:
+    sbatch /absolute/path/to/run_lis_global_usaf_forcing.sh 20251003
+
 
  ** MAIN E2ES STEPS ** 
 
-  4.3 LIS-DA RUN
-    lis_darun:  Run the LIS Data Assimilation (DA) step to generate
+  4.3 LIS Data Assimilation (DA) run
+
+    lis_darun:  Run the LIS data assimilation (DA) step to generate
                the initial conditions (ICs) for the forecast runs
 
   - This step runs the Noah-MP-4.0.1 LSM and the HYMAP2 routing model
-    in LIS for a 1-month simulation, with daily outputs, using
+    in LIS for a 1-month simulation, writing daily outputs, using
     12-member ensemble soil moisture assimilation for the 557WW
     ~25-km S2S global domain.
 
-  - The main shell script, s2s_run.sh, generates the LIS config file 
-    and runs the LIS executable, designed to run for 1-month, up 
-    to the first of the initialized forecast month. 
+  - The main python script, s2s_run.py, generates the LIS config file 
+    (from a template lis.config file) and runs the LIS executable, 
+    designed to run for 1-month, up to the first of the initialized 
+    forecast month. 
 
-  4.4 LDT-ICs
+
+  4.4 LDT initial conditions (ICs) processing
+
     ldt_ics:  Runs LDT to generate the IC ensemble restart files from
              the LIS DA run in Step #2 (Section 4.3 above).
 
@@ -430,16 +556,18 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   - HyMAP2 routing model restart files are single-member at this time, so
     they are copied from the LIS DA run directories for operations.
 
-  - The main script, s2s_run.sh, runs the ldt_ics python script:
+  - The main script, s2s_run.py, runs the ldt_ics python script:
      generate_ldtconfig_files_ensrst_nrt.py
 
   - Output generated includes varying NMME model ensemble members for NoahMP401
-    restart file and single member of HyMAP2 restart copied over for the
+    restart files and single member of HyMAP2 restart copied over for the
     forecast initial conditions.
 
-  4.5 BCSD
-    bcsd_fcst:  Runs the Bias-Correction Spatial-Downscaling (BCSD) Method
-               scripts on the NMME and CFSv2 forecast datasets
+
+  4.5 Bias-correction/spatial downscaling (BCSD)
+
+    bcsd:  Runs the Bias-Correction Spatial-Downscaling (BCSD) Method
+             scripts on the NMME and CFSv2 forecast datasets
 
   - This step preprocesses CFSv2 (non-precip) and 6 separate NMME
     forecast model precipitation data for driving the models offline in LIS.
@@ -447,91 +575,157 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
     using the USAF-LIS7.7-S2S (e.g., NAFPA precipitation) dataset, and covers
     up to 9 months of forecast as input data to LIS.
 
-  - 13 high-level scripts (1 main and 12 individual task scripts) to create
-    bias-corrected and downscaled forecast forcings. They are also driven
-    by the main s2s_run.sh script.
+  - Scripts located in:  ghis2s/bcsd and ghis2s/bcsd/bcsd_library
 
-  - Scripts located in:  bcsd_fcst
+  - Higher level BCSD scripts include:
 
-  - Additional info can be found in the README file for hi-level scripts.
+     CFSv2 (baseforcing) meteorological forcing field processing:
+     ├── metforce_regridding.py
+     ├── metforce_biascorrection.py
+     ├── metforce_temporal_disaggregation.py
 
-  4.6 LIS FORECAST
+     NMME (supplemental forcing) precipition forcing field processing:
+     ├── precip_regridding.py
+     ├── precip_biascorrection.py
+     └── precip_temporal_disaggregation.py 
+
+  - Additional scripts which perform many of the underpinning BCSD 
+     calculations are found in "ghis2s/bcsd/bcsd_library".
+
+  - The main substeps peform include: 
+     o Spatial interpolation and converting to intermediate netcdf4 files
+     o Bias-correction of the monthly forecast files to observed climatologies
+     o Temporal disaggregation to 6-hourly "final" netcdf files read in by
+        LIS for the LIS forecast runs (for the different NMME models).
+
+
+  4.6 LIS forecast (LIS_FCST) runs
+
     lis_fcst:  Running the LIS forecast step
 
   - This step runs the Noah-MP-4.0.1 land surface model (LSM) and the
-    HyMAP2 routing model in LIS using 12-member bias-corrected CFSv2 forcing
-    (one of the six NMME models) for the ~25KM S2S global domain in
+    HyMAP2 routing model in LIS using the 12-member bias-corrected CFSv2 
+    forcing (one of the six NMME models) for the ~25KM S2S global domain in
     "forecast" run-mode, and NMME models' precipitation ensembles.
 
-  - 1 script to produce LIS forecast configs/sbatch script files and submits
-    LIS runs for all six NMME models' precipitation forecast inputs.
-    The main script, run_s2s.sh, will drive all these steps.
+  - The s2s_run.py sets up the input directories and files required for 
+    the LIS forecast step and calls:
 
-  - Script located in:  lis_fcst
+      ghis2s/lis_fcst/generate_lis_config_scriptfiles_fcst.py
+
+     to produce LIS forecast configs/sbatch script files and submits
+     LIS runs for all six NMME models' precipitation forecast inputs.
 
   - Entries for the NMME and CFSv2 models are found in the main S2S 
     configuration script (e.g., s2s_config_global_fcst):
-     == As of 01-Aug-2024 ==
-     CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5
 
-     == After 01-Aug-2024 ==
+     == Main NMME models, since 01-Aug-2024 ==
      CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52
 
-  4.7 S2S POST-PROCESSING
+     In the s2s_config_global_fcst file, there is a section also for
+      the "FCST" runs. One of the key inputs is for how many job 
+      "segments" should each model be run for in a given forecast 
+      window of time.  The current standard length is for a 9-lead 
+      month forecast run for the six NMME models. Given that the 
+      ensemble size for each model differs, the number of job segments
+      varies per model as well.  The recommended settings for the
+      9-lead months are:
+
+      JOB_SEGMENTS:
+      - CanESM5: 3
+        CESM1: 3
+        GNEMO52: 3
+        GEOSv2: 2
+        CFSv2: 5
+        GFDL: 9
+
+      Note: Number of segments per model can also vary based on
+             compute cluster type and number of lead months.
+             For example a 6-lead month run, would require less
+             segments and certain numbers.
+
+
+  4.7 S2S post-processing ("s2spost")
+
     s2spost:  S2S forecast output post-process step
 
   - This step automates the conversion of LIS S2S-Global forecast output
-    into daily and monthly netCDF4 files and ensures they are in CF-1.8
-    USAF naming conventions.
+    into daily, weekly and monthly netCDF4 files and ensures they are 
+    in CF-1.8 USAF naming conventions.
 
-  - 5 scripts used to combine SURFACEMODEL and RUNOFF LIS netCDF files into
-    daily and monthly netCDF files in CF-1.8 convention. The scripts are 
-    driven by the main script, s2s_run.sh.
+  - 4 scripts used to combine SURFACEMODEL and RUNOFF LIS netCDF files into
+    daily, weekly, and monthly netCDF files in CF-1.8 convention. The scripts 
+    are driven by the main script, s2s_run.py.
 
-  - Scripts located in:  s2spost
-     run_s2spost_9months.py:   <== Top-level python script
-       run_s2spost_1month.py:
-         daily_s2spost_nc.py
-           monthly_s2spost_nc.py
+  - Scripts are located in:  ghis2s/s2spost
+     s2spost_driver.py:   <== Top-level python script
+     ├── merge_lisf_files.py
+     ├── process_fcst_files.py
+     └── temporal_aggregate.py
 
-  4.8 S2S METRICS COMPUTATION
+
+  4.8 S2S metrics computations
+
     s2smetric:  S2S forecast metric post-process step
 
   - This step and set of scripts processes metrics for individual
-    NMME model's LIS-based hydrologic monthly forecasts out to 9 months for
-    a given month and year's initial condition.
+    NMME model's LIS-based hydrologic monthly forecasts out to 9 months
+    for a given month and year's initial condition.
 
-  - The scripts read in the monthly post-processed files from the s2spost
-    step (Section 4.7), requiring inputs as well from the hindcast s2spost step.
+    ** Note:  New with LISV7.7 -- new weekly S2S metric anomaly and 
+               standardized anomaly files, which go out to 6-week leads.
 
-  - Final set of scripts convert the intermediate-based metric (netcdf) files
-    to CF-1.8 convention, and merges the output into a single file.
+  - The scripts read in the weekly or monthly post-processed files from the 
+    s2spost step (Section 4.7), requiring inputs as well from the hindcast 
+    s2spost step.
 
-  - Again, the main s2s_run.sh script calls the 8 s2smetric scripts to 
+  - To select the variables to be processed, user can select them in the
+    s2s_config_global_fcst file, for e.g.,
+
+     metric_vars: [RZSM, TOP40SM, SFCSM, TWS, Precip, AirT, ET, Streamflow]
+     weekly_vars: [SWE, SnowDepth, RZSM, TOP40SM, TOP40ST]
+
+  - The main s2s_run.py script calls the 5 s2smetric scripts to
     calculate metrics (anomalies, std anomalies), convert into
     CF-1.8 netCDF4 files, and create GeoTIFFs of median ensemble values.
 
-  - Scripts located in:  s2smetric
+  - Scripts located in:  ghis2s/s2smetric
 
-   - postprocess_nmme_job.py:
-     calls:
-     - lib_bcsd_metrics/convert_dyn_fcst_to_anom.py:
-     - lib_bcsd_metrics/convert_dyn_fcst_to_sanom.py:
-         - lib_bcsd_metrics/metricslib.py
-     - convert_s2s_anom_cf.py
-     - merge_s2s_anom_cf.py
-     - make_s2s_median_metric_geotiff.py
+   └── s2smetric_driver.py
+      ├── compute_weekly_anom.py
+      ├── convert_dyn_fcst_to_anom.py
+      ├── make_s2s_median_metric_geotiff.py
+      └── metricslib.py
 
 
-  4.9 S2S PLOTS
+  4.9 S2S Plots
+
+   Generates a variety of *png plots for both monthly
+    standardized anomaly and anomaly based metrics for 
+    a variety of NoahMP and HyMAP variables.
+
+   Metric plots are related to what are processed in the 
+    s2smetrics step (see Section 4.8 for more details on the
+    list of available variables). 
 
    (Currently offered as optional for operational staff if
     they would like to plot the output for checking the runs)
 
+  - Scripts are located in:  ghis2s/s2splots
+
+  - Outline of the main scripts:
+     ├── plot_s2smetrics.py
+     ├── plot_anom_verify.py
+     ├── plot_hybas.py
+     ├── plot_mena.py
+     ├── plot_streamflow_anom.py
+     ├── plot_utils.py
+     └── plot_weekly_anom.py
 
 ***
 THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
 ***
+
 
 5. nctool.py UTILITY
 
@@ -576,19 +770,25 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
 
  APPENDIX A.  GHI S2S E2ES -- Full Directory Structure
 
- lis/utils/usaf/s2s/s2s_app/
- --------------------------
- ├── s2s_run.sh
- ├── s2s_config_global_fcst
- ├── s2s_config_global_hcast
+ lis/utils/usaf/S2S/ghis2s/s2s_app/
+ ----------------------------------
+ ├── s2s_run.py
+ ├── cylc_walltime.sh
+ ├── download_nmme_hindcasts.sh
  ├── download_nmme_precip.sh
- ├── wget_cfsv2_oper_ts_e2es.sh
  ├── nctool.py
- └── s2s_api.py
+ ├── README_CFSv2_PATCHING
+ ├── s2s_api.py
+ ├── s2s_config_global_fcast
+ ├── s2s_config_global_hcast
+ ├── s2s_hcst_preprocess.sh
+ ├── s2s_run.sh
+ ├── submit_hcast.sh
+ └── wget_cfsv2_oper_ts_e2es.sh
 
- lis/utils/usaf/s2s/s2s_modules/
- ------------------------------
- ├── bcsd_fcst
+ lis/utils/usaf/S2S/ghis2s/
+ --------------------------
+ ├── bcsd
  │   ├── bcsd_library
  │   │   ├── bcsd_function.py
  │   │   ├── bcsd_stats_functions.py
@@ -599,24 +799,24 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   │   ├── calc_and_write_observational_climatology.py
  │   │   ├── combine_sub_daily_downscaled_forcings.py
  │   │   ├── convert_forecast_data_to_netcdf.py
- │   │   ├── nmme_reorg_f.py
- │   │   ├── nmme_reorg_h.py
- │   │   ├── process_forecast_data.py
- │   │   ├── shrad_modules.py
+ │   │   ├── nmme_module.py
+ │   │   ├── process_cfsv2_forcing.py
+ │   │   ├── process_geosv3_forcing.py
  │   │   ├── temporal_disaggregation_6hourly_module.py
  │   │   └── temporal_disaggregation_nmme_6hourly_module.py
  │   ├── check_preprocess_forecast_files.py
- │   ├── forecast_task_01.py
- │   ├── forecast_task_03.py
- │   ├── forecast_task_04.py
- │   ├── forecast_task_05.py
- │   ├── forecast_task_06.py
- │   ├── forecast_task_07.py
- │   ├── forecast_task_08.py
- │   ├── forecast_task_09.py
- │   ├── forecast_task_10.py
- │   ├── forecast_task_11.py
- │   ├── forecast_task_12.py
+ │   ├── combine_forcings.py
+ │   ├── create_weight_files.py
+ │   ├── metforce_biascorrection.py
+ │   ├── metforce_regridding.py
+ │   ├── metforce_temporal_disaggregation.py
+ │   ├── precip_biascorrection.py
+ │   ├── precip_regridding.py
+ │   └── precip_temporal_disaggregation.py
+ │
+ ├── cylc_script
+ │   ├── ghis2s_program.py
+ │   └── test_ghis2s.sh
  │
  ├── ldt_ics
  │   ├── generate_ldtconfig_files_ensrst_nrt.py
@@ -630,8 +830,9 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   │   ├── noahmp_sm_attribs.txt
  │   │   ├── noahmp_sm_pertattribs.txt
  │   │   ├── smap_attribs.txt
- │   │   └── smap_pertattribs.txt
+ │   │   ├── smap_pertattribs.txt
  │   ├── forcing_variables.txt
+ │   ├── generate_lisda_config_nrt.py
  │   ├── noahmp401_parms
  │   │   ├── GENPARM.TBL
  │   │   ├── MPTABLE.TBL
@@ -639,7 +840,7 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   │   ├── SOILPARM.TBL
  │   │   └── URBPARM.TBL
  │   ├── tables
- │   │   ├── MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2
+ │   │   ├── MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2
  │   │   └── MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2_s2s_lisda
  │   └── template_files
  │       └── lis.config_template.GLOBAL
@@ -648,26 +849,34 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   ├── generate_lis_config_scriptfiles_fcst.py
  │   ├── tables
  │   │   ├── MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2_s2s_fcst
- │   │   └── MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2_s2s_hcst
  │   └── template_files
- │       ├── template_lis.config.s2sglobal.noahmp401.hymap2.da_ics_forecast
- │       └── template_lis.config.s2sglobal.noahmp401.hymap2.da_ics_hindcast
+ │       └── template_lis.config.s2sglobal.noahmp401.hymap2.da_ics_forecast
  │
  ├── s2smetric
- │   ├── convert_s2s_anom_cf.py
+ │   ├── compute_weekly_anom.py
+ │   ├── convert_dyn_fcst_to_anom.py
  │   ├── make_s2s_median_metric_geotiff.py
- │   ├── merge_s2s_anom_cf.py
- │   ├── metrics_library
- │   │   ├── convert_dyn_fcst_to_anom.py
- │   │   ├── convert_dyn_fcst_to_sanom.py
- │   │   ├── metricslib.py
- │   └── postprocess_nmme_job.py
+ │   ├── metricslib.py
+ │   └── s2smetric_driver.py
  │
- └── s2spost
-     ├── daily_s2spost_nc.py
-     ├── monthly_s2spost_nc.py
-     ├── run_s2spost_1month.py
-     └── run_s2spost_9months.py
+ ├── s2splots
+ │   ├── plot_anom_verify.py
+ │   ├── plot_hybas.py
+ │   ├── plot_mena.py
+ │   ├── plot_s2smetrics.py
+ │   ├── plot_streamflow_anom.py
+ │   ├── plot_utils.py
+ │   └── plot_weekly_anom.py
+ │
+ ├── s2spost
+ │   ├── merge_lisf_files.py
+ │   ├── process_fcst_files.py
+ │   ├── s2spost_driver.py
+ │   └── temporal_aggregate.py
+ │
+ └── shared
+     ├── logging_utils.py
+     └── utils.py
 
 
  * * * * * * * 

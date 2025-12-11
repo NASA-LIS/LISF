@@ -1,22 +1,27 @@
 #!/bin/bash
-# REQUIRED SET UP:
+## REQUIRED SET UP:
 #SBATCH --job-name=s2sglb
-#SBATCH --ntasks=560
-#SBATCH --ntasks-per-core=1
-#SBATCH --time=1:00:00
 #SBATCH --output s2sglb.slurm.out
+#SBATCH --time=2:00:00
 #
 ## USER INPUTS HERE:
+### USING SRUN ON DISCOVER
 ## Discover
+#SBATCH --ntasks=480
+#SBATCH --ntasks-per-socket=12
+#SBATCH --ntasks-per-core=1
 #SBATCH --account s1189
-#SBATCH --constraint="sky|cas"
+#SBATCH --constraint="mil"
 #SBATCH --mail-user=[USERNAME]
 #SBATCH --mail-type=ALL
 #
-### Cray
-##SBATCH --account=
-##SBATCH --cluster-constraint=green
+### Cray -- 480 tasks
+##SBATCH  -N 40
+##SBATCH --ntasks-per-node=12
+##SBATCH --cluster-constraint=blue
 ##SBATCH --partition=batch
+##SBATCH --exclusive
+##SBATCH --mem=0
 #
 #------------------------------------------------------------------------------
 #
@@ -34,7 +39,19 @@
 # 26 Sep 2021: Eric Kemp (SSAI), renamed to clarify forcing.
 # 07 Mar 2022: S. Mahanama (SAIC), added uname option for different systems.
 # 08 Mar 2023: K. Arsenault (SAIC), additional modifications for Cray env.
+# 20 May 2024: K. Arsenault (SAIC), updated timeframe and case.
+# 17 Nov 2025: K. Arsenault (SAIC), updated timeframe and case for LISV7.7.
 #------------------------------------------------------------------------------
+
+# Paths on local system
+SCRIPTDIR=/discover/nobackup/projects/ghilis/S2S/GLOBAL/use-cases/LISV7.7/S2S_Daily_Forc/
+
+CFGTMPL=./input/lis.config.template
+OUTDIR=./output
+RSTDIR=./input/restarts
+GRIBDIR=./output/grib
+
+## END OF USER INPUTS ##
 
 export NODE_NAME=`uname -n`
 ulimit -s unlimited
@@ -49,25 +66,21 @@ fi
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
   module purge
   unset LD_LIBRARY_PATH
+  export I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+  export I_MPI_PMI_VALUE_LENGTH_MAX=480
+else
+  export I_MPI_PMI_VALUE_LENGTH_MAX=480
 fi
 
 ## USER INPUTS:  ##
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
   module use --append ~/privatemodules
-  module load lisf_7.5_intel_2021.4.0_s2s 
-# e.g., Cray environment
+  module --ignore-cache load lisf_7.5_intel_2023.2.1_s2s
 else
-  module load lisf_7.5_prgenv_cray_8.3.3_s2s
+  # e.g., Cray environment -- Latest for LISV7.7 S2S
+  module use --append ~/privatemodules
+  module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_s2s
 fi
-
-# Paths on local system
-SCRIPTDIR=[local_script_path]
-
-CFGTMPL=./input/lis.config.template
-OUTDIR=./output
-RSTDIR=./input/restarts
-GRIBDIR=./output/grib
-
 ## END OF USER INPUTS ##
 
 # Get the command line arguments.
@@ -88,9 +101,13 @@ python $SCRIPTDIR/customize_lis_config.py $CFGTMPL $RSTDIR $YYYYMMDD || exit 1
 if [ ! -e ./LIS ] ; then
     echo "[ERR] ./LIS does not exist!" && exit 1
 fi
-echo "[INFO] Running LIS..."
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-    mpirun -np $SLURM_NTASKS ./LIS || exit 1
+   echo "[INFO] -- Running on Discover -- "
+   srun --mpi=pmi2 --ntasks=$SLURM_NTASKS \
+         --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \
+         --ntasks-per-core=$SLURM_NTASKS_PER_CORE \
+         --cpu-bind="none" \
+         ./LIS || exit 1
 else
    /usr/bin/time srun --cpu-bind=rank_ldom ./LIS || exit 1
 fi
