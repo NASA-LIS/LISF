@@ -39,8 +39,8 @@ import xesmf as xe
 import yaml
 from ghis2s.bcsd.bcsd_library.convert_forecast_data_to_netcdf import read_wgrib
 from ghis2s.shared.utils import get_domain_info
-from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
-from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask
+from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
 
 limits = lim()
@@ -58,7 +58,7 @@ def _read_cmd_args():
     with open(sys.argv[5], 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    if len(sys.argv) != 9:
+    if len(sys.argv) > 10:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -122,7 +122,7 @@ def write_monthly_files(this_6h1, file_6h, file_mon):
     this_6h = this_6h2.rename_dims({"step": "time"})
 
     encoding = {
-        var: {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
+        var: {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
         for var in ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "U10M", "V10M", "WIND10M"]
     }
 
@@ -167,12 +167,10 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
     # read CFSv2 land mask
     cfsv2_land_mask = xr.open_dataset(weightdir + f'CFSv2_{resol}_landmask.nc4')
 
-    '''
-    resol='25km': NY=720, NX=1440; 
-    resol='10km': NY=1500, NX=3600; 
-    resol='5km': NY=3000, NX=7200; 
-    cfsv2 dimensions: step: ~1151, latitude: 190, longitude: 384
-    '''
+    # resol='25km': NY=720, NX=1440;
+    # resol='10km': NY=1500, NX=3600;
+    # resol='5km': NY=3000, NX=7200;
+    # cfsv2 dimensions: step: ~1151, latitude: 190, longitude: 384
 
     method = regrid_method.get(resol)
     ds_out = xr.Dataset(
@@ -351,10 +349,14 @@ if __name__ == "__main__":
         RANK = 0
         SIZE = 1
     if SIZE==1:
-        _args = _read_cmd_args()
         with open(sys.argv[5], 'r', encoding="utf-8") as _file:
             _config = yaml.safe_load(_file)
-            for _rank in range(_config["EXP"]["lead_months"]):
-                _driver(_rank)
+        loop = [0, _config["EXP"]["lead_months"]]
+        if len(sys.argv) == 10:
+            start_rank = int(sys.argv[9])
+            loop = [start_rank, start_rank + 1]
+
+        for _rank in range(loop[0], loop[1]):
+            _driver(_rank)
     else:
         _driver(RANK)

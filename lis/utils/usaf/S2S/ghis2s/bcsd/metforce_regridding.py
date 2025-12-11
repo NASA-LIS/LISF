@@ -157,11 +157,16 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
             if fcst_model == 'CFSv2':
                 for ic_date in ic_dates:
                     cmd += f" {ic_date}"
+
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
 
             if py_call:
-                slurm_commands.append(cmd)
+                if resol == '25km':
+                    slurm_commands.append(cmd)
+                else:
+                    for lead_mon in range(config["EXP"]["lead_months"]):
+                        slurm_commands.append(cmd + f" {lead_mon}")
             else:
                 utils.job_script(config_file, jobfile, jobname, ntasks,
                                  hours, cwd, None, in_command=cmd)
