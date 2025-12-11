@@ -50,6 +50,8 @@ subroutine write_swotWLobs(n, k, OBS_State)
   integer                  :: ftn
   integer                  :: status
 
+  external :: swot_wlobsname
+
   call ESMF_AttributeGet(OBS_State, "Data Update Status", & 
        data_update, rc=status)
   call LIS_verify(status,&
