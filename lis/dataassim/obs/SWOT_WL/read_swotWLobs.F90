@@ -66,7 +66,6 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
   integer             :: yyyy, mm, dd, hh, mn, ss
   type(ESMF_Time)     :: currTime
   integer             :: fnd
-  logical             :: readflag
   integer             :: status
   logical             :: data_upd_flag(LIS_npes)
   logical             :: data_upd_flag_local
@@ -74,7 +73,7 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
   real                :: wl_current(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
   real                :: wlobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
   integer             :: t,c,r
-  integer             :: time_now, time_start, time_end, time_file, dt
+  integer             :: time_now, time_start, time_end, dt
 
   obs_unsc = LIS_rc%udef
   call ESMF_AttributeGet(OBS_State,"Data Directory",wlobsdir,rc=status)
@@ -278,7 +277,7 @@ contains
      integer :: year, month, day, hr, mn, ss
      integer :: seconds, days_since_2000
      integer, parameter :: days_per_year = 365, days_per_leap_year = 366
-     integer :: y, m, d
+     integer :: y, m
 
      days_since_2000 = 0
      do y = 2000, year - 1

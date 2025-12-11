@@ -1270,9 +1270,7 @@ contains
     integer                :: status
     integer                :: v,t
     character*100,    allocatable     :: routing_state_objs(:)
-    type(ESMF_Field)                  :: routing_field(LIS_rc%nstvars(k))
     type(ESMF_Field)                  :: routing_incr_field(LIS_rc%nstvars(k))
-    real,         pointer             :: stdata(:)
     real,         pointer             :: stincrdata(:)
 
     if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then

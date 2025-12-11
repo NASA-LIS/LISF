@@ -104,10 +104,8 @@ contains
     character(len=LIS_CONST_PATH_LEN) ::  swotwlobsdir
     character(len=LIS_CONST_PATH_LEN) ::  wlmap
     character(len=LIS_CONST_PATH_LEN) ::  temp
-    integer                           ::  ftn,i,t
+    integer                           ::  ftn,i
     integer                           ::  varid
-    integer                           ::  ngrid
-    real,  allocatable                ::  obsstd(:)
     character*1                       ::  vid(2)
     character*40, allocatable         ::  vname(:)
     real, allocatable                 ::  varmin(:)

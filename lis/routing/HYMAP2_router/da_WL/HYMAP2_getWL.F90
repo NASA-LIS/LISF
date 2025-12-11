@@ -44,7 +44,6 @@ subroutine HYMAP2_getWL(n, Routing_State)
   integer                :: t,i,m
   integer                :: status
   real, pointer          :: sfcelev(:)
-  character*100          :: lsm_state_objs(4)
 
 #if 0 
   integer                :: ielevtn
@@ -74,13 +73,6 @@ subroutine HYMAP2_getWL(n, Routing_State)
   real*8                   :: elv
   real*8                 :: rivelv
   real*8                 :: vol
-
-  real*8                 :: grarea1
-  real*8                 :: fldstomax1(HYMAP2_routing_struc(n)%nz)
-  real*8                 :: rivstomax1
-  real*8                 :: rivlen1
-  real*8                 :: rivwth1
-
 
   call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for sfcelev in HYMAP2_getWL')

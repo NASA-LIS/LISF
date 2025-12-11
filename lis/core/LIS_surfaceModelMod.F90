@@ -1222,7 +1222,6 @@ contains
 !
 !EOP
     integer             :: m
-    integer             :: c,r
 
     TRACE_ENTER("sf_setexp")
     do m=1,LIS_rc%nsf_model_types
