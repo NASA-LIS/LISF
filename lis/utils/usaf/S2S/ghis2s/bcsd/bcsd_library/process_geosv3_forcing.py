@@ -9,8 +9,8 @@ import xarray as xr
 import xesmf as xe
 import yaml
 from ghis2s.shared.utils import get_domain_info, load_ncdata
-from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
-from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask
+from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
 
 limits = lim()
@@ -33,7 +33,7 @@ def _read_cmd_args():
     with open(sys.argv[5], 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    if len(sys.argv) != 6:
+    if len(sys.argv) > 7:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -53,7 +53,7 @@ def _read_cmd_args():
 def write_monthly_files(this_6h, file_6h, file_mon):
     ''' writes regridded raw Monthly and 3-hourly files '''
     encoding = {
-        var: {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
+        var: {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
         for var in ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "WIND10M"]
     }
 
@@ -275,7 +275,11 @@ if __name__ == "__main__":
     if SIZE==1:
         with open(sys.argv[5], 'r', encoding="utf-8") as _file:
             _config = yaml.safe_load(_file)
-            for _rank in range(_config["EXP"]["lead_months"]):
-                driver(_rank)
+        loop = [0, _config["EXP"]["lead_months"]]
+        if len(sys.argv) == 7:
+            start_rank = int(sys.argv[7])
+            loop = [start_rank, start_rank + 1]
+        for _rank in range(loop[0], loop[1]):
+            driver(_rank)
     else:
         driver(RANK)

@@ -92,7 +92,17 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         jobname = job_name + '_'
 
         if py_call:
-            slurm_9_10.append(cmd)
+            if resol == '25km':
+                slurm_9_10.append(cmd)
+            else:
+                if resol == '10km':
+                    ens_size = 3
+                else:
+                    ens_size = 1
+                for i in range(0, ens_num, ens_size):
+                    start_ens = i
+                    end_ens = min(i + ens_size - 1, ens_num - 1)
+                    slurm_9_10.append(cmd + f" {start_ens} {end_ens}")
         else:
             utils.job_script(config_file, jobfile, jobname, ntasks,
                              hours, cwd, None, in_command=cmd)

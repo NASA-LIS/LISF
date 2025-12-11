@@ -9,8 +9,8 @@ import xarray as xr
 import xesmf as xe
 import yaml
 from ghis2s.shared.utils import get_domain_info, load_ncdata, write_ncfile
-from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
-from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
+from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
+from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask
 from ghis2s.shared.logging_utils import TaskLogger
 
 limits = lim()

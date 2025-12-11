@@ -54,7 +54,10 @@ def python_job_file(configfile, jobfile, jobname, ntasks, hours, cwd,
     else:
         with open(group_jobs, 'r', encoding="utf-8") as file:
             commands = [line.strip() for line in file if line.strip()]
-        ntasks = len(commands)
+        if parallel_run is not None and 'SKIP_ARG' in parallel_run:
+            ntasks = 1
+        else:
+            ntasks = len(commands)
         utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd,
                          parallel_run, group_jobs=commands)
 

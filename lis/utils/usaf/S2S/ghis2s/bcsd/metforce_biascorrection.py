@@ -37,12 +37,11 @@ from ghis2s.shared import utils
 
 def _usage():
     """Print command line usage."""
-    txt = f"[INFO] Usage: {(sys.argv[0])}  -s fcst_syr -e fcst_eyr -m month_abbr -n month_num \
+    txt = f"[INFO] Usage: {(sys.argv[0])}  -s fcst_syr -m month_abbr -n month_num \
                            -w cwd - c config_file -j job_name -t ntasks -H hours"
     print(txt)
     print("[INFO] where")
     print("[INFO] fcst_syr: Start year of forecast")
-    print("[INFO] fcst_eyr: End year of forecast")
     print("[INFO] month_abbr: Abbreviated month to start forecast")
     print("[INFO] cwd: current working directory")
     print("[INFO] config_file: Config file that sets up environment")
@@ -50,7 +49,7 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
+def main(config_file, fcst_syr,  month_abbr, month_num, job_name,
          ntasks, hours, cwd, py_call=False):
     """Main driver."""
     # load config file
@@ -76,7 +75,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     # Path for where observational & forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst"
-    obs_indir = f"{forcedir}/USAF-LIS7.3rc8_25km"
+    obs_indir = f"{forcedir}/USAF-LIS7.3rc8_{resol}/raw/Climatology"
     fcst_indir = f"{forcedir}/{fcst_model}_{resol}"
 
     #  Calculate bias correction for different variables separately:
@@ -86,9 +85,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         "PS", "QV2M", "T2M", "U10M"]
     fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
     unit_list = ["kg/m^2/s", "W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
-
-    # BC output directory for FCST:
-    outdir = f"{fcst_indir}/bcsd/Monthly/{month_abbr}01"
 
     print("[INFO] Processing forecast bias correction of CFSv2 variables")
 
@@ -105,27 +101,26 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         unit = unit_list[var_num]
         #print(f"{var_num} {fcst_var}")
         cmd = "python"
-        cmd += f" {srcdir}/bias_correction_modulefast.py"
+        cmd += f" {srcdir}/bias_correction_module.py"
         cmd += f" {obs_var}"
         cmd += f" {fcst_var}"
         cmd += f" {var_type}"
         cmd += f" {unit}"
         cmd += f" {month_num}"
-        cmd += f" {lead_months}"
-        cmd += f" {ens_num}"
         cmd += f" {fcst_syr}"
-        cmd += f" {fcst_eyr}"
+        cmd += " METF"
+        cmd += f" {ens_num}"
         cmd += f" {clim_syr}"
         cmd += f" {clim_eyr}"
+        cmd += f" {config_file}"
         cmd += f" {obs_indir}"
         cmd += f" {fcst_indir}"
-        cmd += f" {config_file}"
-        cmd += f" {outdir}"
         jobfile = job_name + '_' + obs_var + '_run.j'
         jobname = job_name + '_' + obs_var + '_'
 
         if py_call:
-            slurm_commands.append(cmd)
+            for lead_num in range(lead_months):
+                slurm_commands.append(cmd+f" {lead_num}")
         else:
             utils.job_script(config_file, jobfile, jobname, ntasks, hours,
                              cwd, None, in_command=cmd)
@@ -139,7 +134,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
-    parser.add_argument('-e', '--fcst_eyr', required=True, help='forecast end year')
     parser.add_argument('-c', '--config_file', required=True, help='config file name')
     parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
     parser.add_argument('-n', '--month_num', required=True, help='month number')
@@ -150,5 +144,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
+    main(args.config_file, args.fcst_syr, args.month_abbr, args.month_num,
          args.job_name, args.ntasks, args.hours, args.cwd)

@@ -1,12 +1,65 @@
-#!/usr/bin/env python
 """
 # Author: Shrad Shukla
 # coding: utf-8
 #Author: Shrad Shukla
 """
-
 import sys
 import math
+import numpy as np
+import xarray as xr
+
+class VarLimits:
+    '''
+    This function adjusts minimum and maximum values of a variable to recorded max and minimum.
+    Below limits are 6h based
+    '''
+    def clip_array (self, data_array, var_name=None, min_val=None, max_val=None,
+                    missing=None, min_thres=None, precip=None):
+        ''' Below limits are 6h based'''
+        min_limit={'PRECTOT': 1.e-7,
+                  'PS': 30000.,
+                  'T2M': 180.,
+                  'LWGAB': 10.,
+                  'SWGDN': 0.,
+                  'QV2M': 0.,
+                  'WIND': 0.
+        }
+
+        max_limit={'PRECTOT': 0.04,
+                  'PS': 110000.,
+                  'T2M': 332.,
+                  'LWGAB': 700.,
+                  'SWGDN': 1367.,
+                  'QV2M': 0.05,
+                  'WIND': 70.
+        }
+
+        if min_thres is not None:
+            return min_limit.get('PRECTOT')
+        if min_val is None:
+            min_val = min_limit.get(var_name)
+        if max_val is None:
+            max_val = max_limit.get(var_name)
+        if missing is None:
+            missing = -9999.
+
+        if precip is None:
+            clipped_array = np.where(data_array == missing, data_array,
+                                     np.clip(data_array, min_val, max_val))
+        else:
+            # mask identifies values that are less than min_val but not equal to missing
+            mask_lt_min = (data_array < min_val) & (data_array != missing)
+            data_array[mask_lt_min] = 0.
+
+            # mask identifies values that are greater than max_val but not equal to missing
+            mask_gt_max = (data_array > max_val) & (data_array != missing)
+            data_array[mask_gt_max] = max_val
+            clipped_array = data_array
+
+        return clipped_array
+
+    def __init__ (self):
+        self.precip_thres = self.clip_array(np.empty(1), 'PRECTOT', min_thres = True)
 
 def calc_stats(data, tiny): #,int n,float *mean,float *sd,float *skew)
     """ calculates statistics """
@@ -68,8 +121,8 @@ def lookup(query, vec1, vec2, dim, par, lu_type, mean, sd_val, skew, tiny):
                 val=get_data_from_f_weibul(mean, sd_val, skew, query, tiny)
             elif par == 'TEMP':
                 val=get_data_from_f_normal(mean, sd_val, query, tiny)
-        if val > vec2[0]:
-            val=vec2[0]
+        val = min(val, vec2[0])
+
     elif query > vec1[dim-1]: #/* if query falls above maximum value in vector 1 */
         if lu_type == 'QUAN':
             if par == 'PRCP':
@@ -90,8 +143,8 @@ def lookup(query, vec1, vec2, dim, par, lu_type, mean, sd_val, skew, tiny):
             if par=='TEMP':
                 val=get_data_from_f_normal(mean, sd_val, query, tiny)
 
-        if val<vec2[dim-1]:
-            val=vec2[dim-1]
+        val = max(val, vec2[dim - 1])
+
     #/* otherwise, it is within the range of known data in vector 1
     # do a linear interpolation between known points */
     else:
@@ -107,7 +160,7 @@ def lookup(query, vec1, vec2, dim, par, lu_type, mean, sd_val, skew, tiny):
         try:
             val = max(val, 0)
         except NameError:
-            val = tiny  
+            val = tiny
     return val
 
 def get_f_from_data_normal(mean, sd_val, x_val, tiny):
@@ -297,3 +350,47 @@ def weibul_params(skew):
             b_alpha = a_val*b_vec[ndx]+(1-a_val)*b_vec[ndx+1]
             break
     return alpha, a_alpha, b_alpha
+
+def apply_regridding_with_mask(data, regridder, source_land_mask,
+                               target_land_mask=None, method_type='conservative'):
+    """
+    Apply land mask and regrid the data.
+
+    Parameters:
+    -----------
+    data : xarray.DataArray or xarray.Dataset
+    regridder : xesmf.Regridder
+    source_land_mask : xarray.Dataset (source grid land mask)
+    target_land_mask : xarray.Dataset optional (target grid land mask)
+    method_type : str ('bilinear' or 'conservative')
+    
+    Returns:
+    --------
+    xarray.DataArray or xarray.Dataset
+    """
+    any_land = source_land_mask.LANDMASK > 0
+
+    if isinstance(data, xr.DataArray):
+        masked_data = data.where(any_land)
+        result = regridder(masked_data)
+
+    elif isinstance(data, xr.Dataset):
+        masked_data = data.copy(deep=True)
+        for var_name in masked_data.data_vars:
+            masked_data[var_name] = masked_data[var_name].where(any_land)
+        result = regridder(masked_data)
+
+    else:
+        raise TypeError(f"Expected xarray.DataArray or xarray.Dataset, got {type(data)}")
+
+    # Apply target land mask for bilinear interpolation to remove ocean extrapolation
+    if method_type == 'bilinear' and target_land_mask is not None:
+        target_mask = target_land_mask.LANDMASK > 0
+
+        if isinstance(result, xr.DataArray):
+            result = result.where(target_mask)
+        elif isinstance(result, xr.Dataset):
+            for var_name in result.data_vars:
+                result[var_name] = result[var_name].where(target_mask)
+
+    return result

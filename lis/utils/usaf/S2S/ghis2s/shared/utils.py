@@ -34,6 +34,7 @@ import psutil
 import rasterio
 import numpy as np
 import xarray as xr
+import dask as da
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
@@ -145,14 +146,17 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
         _f.write('export SCRIPT_NAME='+ job_name + 'run.j' + '\n')
         if parallel_run is not None:
             _f.write('export NUM_WORKERS='+ parallel_run['CPT'] + '\n')
+
+        # To handle MPLCONFIG and Cache home dir write situation,
+        #  where home or /tmp are read-only from compute nodes:
+        if 'discover' not in platform.node() or 'borg' not in platform.node():
+            if 'user_cache_dir' in cfg['SETUP']:
+                # print(" -- Using a user-designated cache directory from the s2s_config file --")
+                _f.write(f"export USER_CACHE_DIR=\"/{cfg['SETUP']['user_cache_dir']}/ghis2s_python_cache_$$\" \n")
+                _f.write('export MPLCONFIGDIR="$USER_CACHE_DIR" \n')
+                _f.write('export XDG_CACHE_HOME="$USER_CACHE_DIR" \n')
+
         _f.write('cd ' + cwd + '\n')
-        _f.write('export USER_CACHE_DIR="/tmp/ghis2s_python_cache_$$" \n')
-        _f.write('export FONTCONFIG_PATH="$USER_CACHE_DIR" \n')
-        _f.write('export XDG_CACHE_HOME="$USER_CACHE_DIR" \n')
-        _f.write('export MPLCONFIGDIR="$USER_CACHE_DIR" \n')
-        _f.write('export TMPDIR="$USER_CACHE_DIR" \n')
-        _f.write('mkdir -p "$USER_CACHE_DIR" \n')
-        _f.write('chmod 755 "$USER_CACHE_DIR" \n')
         _f.write("PIDS=()\n")
         if command_list is None and group_jobs is None:
             _f.write(f"{this_command} || exit 1\n")
@@ -165,8 +169,11 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
             if group_jobs:
                 for cmd in group_jobs:
                     if parallel_run is not None:
-                        _f.write(f"srun --exclusive --cpus-per-task={parallel_run['CPT']}" +
-                                 f" --ntasks {parallel_run['NT']} {cmd} &\n")
+                        if 'SKIP_ARG' in parallel_run:
+                            _f.write(f"{cmd} &\n")
+                        else:
+                            _f.write(f"srun --exclusive --cpus-per-task={parallel_run['CPT']}" +
+                                     f" --ntasks {parallel_run['NT']} {cmd} &\n")
                         _f.write("PIDS+=($!)\n")
                         _f.write("\n")
                     else:
@@ -186,7 +193,7 @@ done
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
-        _f.write('sleep 120' + '\n')
+        _f.write('sleep 90' + '\n')
         _f.write('\n')
         _f.write('exit 0' + '\n')
     _f.close()
@@ -427,8 +434,8 @@ def tiff_to_da(file):
     y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
 
     # Create an xarray DataArray
-    da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
-    return da
+    tiff2da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
+    return tiff2da
 
 def load_ncdata(infile, logger,  var_name=None, **kwargs):
     ''' generic function to load letcdf file[s] as a xarray dataset/datarray'''
@@ -462,13 +469,132 @@ def load_ncdata(infile, logger,  var_name=None, **kwargs):
         logger[0].error(f"xarray error {e}", subtask=logger[1])
         sys.exit(1)
 
+def detect_spatial_dimensions(out_xr):
+    """Detect spatial dimension """
+    lat_names = ['latitude', 'lat', 'lats', 'y', 'north_south']
+    lon_names = ['longitude', 'lon', 'lons', 'x', 'east_west']
+
+    lat_dim = None
+    lon_dim = None
+
+    # Find latitude/longiitude dimension names
+    for dim in out_xr.dims:
+        if dim.lower() in [name.lower() for name in lat_names]:
+            lat_dim = dim
+            break
+    for dim in out_xr.dims:
+        if dim.lower() in [name.lower() for name in lon_names]:
+            lon_dim = dim
+            break
+
+    return lat_dim, lon_dim
+
+def get_chunk_sizes(dataset, dim_in=None):
+    ''' returns chuck sizes '''
+    if dim_in is None:
+        lat_dim, lon_dim = detect_spatial_dimensions(dataset)
+        lat_size = dataset.sizes[lat_dim]
+        lon_size = dataset.sizes[lon_dim]
+    else:
+        lat_size, lon_size = dim_in[0], dim_in[1]
+
+    if lat_size == 3600:
+        lat_chunk = 600
+        lon_chunk = 1200
+    elif lat_size == 1800:
+        lat_chunk = 450
+        lon_chunk = 900
+    else:
+        lat_chunk = max(100, lat_size // 4)
+        lon_chunk = max(100, lon_size // 4)
+
+    return lat_chunk, lon_chunk
+
 def write_ncfile(out_xr, outfile, encoding, logger):
     ''' generic function to write netcdf4 files from xarray datasets'''
     try:
-        out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding)
+        # Get main data variable (exclude coordinates)
+        data_vars = list(out_xr.data_vars.keys())
+        if not data_vars:
+            logger[0].error("No data variables found in dataset", subtask=logger[1])
+            sys.exit(1)
+
+        main_var = data_vars[0]
+        is_lazy = hasattr(out_xr[main_var].data, 'chunks')
+
+        if is_lazy:
+            logger[0].info(f"Rechunking lazy data for optimal writing: {outfile}", subtask=logger[1])
+            lat_dim, lon_dim = detect_spatial_dimensions(out_xr)
+
+            if lat_dim and lon_dim:
+                rechunk_dict = {}
+                # Handle ensemble/time dimensions
+                for dim in out_xr.dims:
+                    if dim.lower() in ['ens', 'ensemble', 'member', 'time', 'lead']:
+                        rechunk_dict[dim] = 1
+                    elif dim == lat_dim:
+                        rechunk_dict[dim] = out_xr.sizes[lat_dim]
+                    elif dim == lon_dim:
+                        rechunk_dict[dim] = out_xr.sizes[lon_dim]
+
+                logger[0].info(f"Rechunking with: {rechunk_dict}", subtask=logger[1])
+                updated_encoding = {}
+                for var_name in data_vars:
+                    if var_name in encoding:
+                        updated_encoding[var_name] = encoding[var_name].copy()
+                    else:
+                        updated_encoding[var_name] = {
+                            'dtype': 'float32',
+                            'zlib': True,
+                            'complevel': 6,
+                            'shuffle': True,
+                            '_FillValue': -9999.0
+                        }
+
+                    updated_encoding[var_name]['chunksizes'] = (
+                        1,
+                        out_xr.sizes[lat_dim],
+                        out_xr.sizes[lon_dim]
+                    )
+
+                logger[0].info(f"Updated encoding for variables: {list(updated_encoding.keys())}", subtask=logger[1])
+
+                with da.config.set({'array.chunk-size': '2GB', 'optimization.fuse': {}}):
+                    out_xr_rechunked = out_xr.chunk(rechunk_dict)
+                out_xr_rechunked.to_netcdf(outfile, format='NETCDF4', encoding=updated_encoding, engine='netcdf4')
+            else:
+                logger[0].warning("Could not detect spatial dimensions, using standard write", subtask=logger[1])
+                out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding, engine='netcdf4')
+
+        else:
+            logger[0].warning("Data already computed, standard write", subtask=logger[1])
+            out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding, engine='netcdf4')
+
         return
     except Exception as e:
         logger[0].error(f"Error saving file: {e}", subtask=logger[1])
+        sys.exit(1)
+
+def write_zarrfile(out_xr, outfile, encoding, logger):
+    ''' generic function to write zarr files from xarray datasets'''
+    try:
+        # Parameters to drop (netCDF4-specific) zarr does not know
+        netcdf_only_params = {'zlib', 'complevel', 'shuffle', 'fletcher32', 'contiguous'}
+
+        # zarr encoding dictionary
+        zarr_encoding = {}
+        for var, enc in encoding.items():
+            zarr_encoding[var] = {}
+            for key, value in enc.items():
+                if key not in netcdf_only_params:
+                    if key == 'chunksizes':
+                        zarr_encoding[var]['chunks'] = value
+                    else:
+                        zarr_encoding[var][key] = value
+        out_xr.to_zarr(outfile, mode='w', encoding=zarr_encoding)
+        return
+    except Exception as e:
+        logger[0].error(f"Error saving zarr file: {e}", subtask=logger[1])
         sys.exit(1)
 
 def log_memory_usage(message, logger):

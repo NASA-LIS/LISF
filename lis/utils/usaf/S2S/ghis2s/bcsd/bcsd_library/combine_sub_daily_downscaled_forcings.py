@@ -24,7 +24,7 @@ import numpy as np
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-from ghis2s.shared.utils import load_ncdata, get_domain_info
+from ghis2s.shared.utils import load_ncdata, get_domain_info, get_chunk_sizes
 from ghis2s.shared.logging_utils import TaskLogger
 
 
@@ -33,6 +33,26 @@ var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
 north_east_corner_lon, south_west_corner_lat, south_west_corner_lon, \
 resolution_x, resolution_y, time_increment):
     """write netcdf"""
+    n_times = len(dates)
+    # Determine optimal chunking based on grid size
+    if len(lats) == 1800 and len(lons) == 3600:
+        # Medium resolution: ~0.1° grid
+        lat_chunk, lon_chunk = get_chunk_sizes(None, dim_in=[1800, 3600])
+        time_chunk = 24
+        complevel = 4
+
+    elif len(lats) == 3600 and len(lons) == 7200:
+        # High resolution: ~0.05° grid
+        lat_chunk, lon_chunk = get_chunk_sizes(None, dim_in=[3600, 7200])
+        time_chunk = 12
+        complevel = 6
+
+    else:
+        # Fallback for other grid sizes
+        lat_chunk, lon_chunk = get_chunk_sizes(None, dim_in=[len(lats), len(lons)])
+        time_chunk = min(24, n_times)
+        complevel = 4
+
     rootgrp = nc4_dataset(outfile, 'w', format='NETCDF4_CLASSIC')
     time = rootgrp.createDimension('time', None)
     longitude = rootgrp.createDimension('longitude', len(lons))
@@ -43,27 +63,34 @@ resolution_x, resolution_y, time_increment):
     times = rootgrp.createVariable('time', 'f4', ('time', ))
 
     # two dimensions unlimited.
-    varname1 = rootgrp.createVariable(varname[0], 'f4', ('time', \
-    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
-    least_significant_digit=sig_digit)
-    varname2 = rootgrp.createVariable(varname[1], 'f4', ('time', \
-    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
-    least_significant_digit=sig_digit)
-    varname3 = rootgrp.createVariable(varname[2], 'f4', ('time', \
-    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
-    least_significant_digit=sig_digit)
-    varname4 = rootgrp.createVariable(varname[3], 'f4', ('time', \
-    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
-    least_significant_digit=sig_digit)
-    varname5 = rootgrp.createVariable(varname[4], 'f4', ('time', \
-    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
-    least_significant_digit=sig_digit)
-    varname6 = rootgrp.createVariable(varname[5], 'f4', ('time', \
-    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
-    least_significant_digit=sig_digit)
-    varname7 = rootgrp.createVariable('V10M', 'f4', ('time', \
-    'latitude', 'longitude',), fill_value=-9999, zlib=True, \
-    least_significant_digit=sig_digit)
+    varname1 = rootgrp.createVariable(
+        varname[0], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
+        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
+        chunksizes=(time_chunk, lat_chunk, lon_chunk))
+    varname2 = rootgrp.createVariable(
+        varname[1], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
+        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
+        chunksizes=(time_chunk, lat_chunk, lon_chunk))
+    varname3 = rootgrp.createVariable(
+        varname[2], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
+        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
+        chunksizes=(time_chunk, lat_chunk, lon_chunk))
+    varname4 = rootgrp.createVariable(
+        varname[3], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
+        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
+        chunksizes=(time_chunk, lat_chunk, lon_chunk))
+    varname5 = rootgrp.createVariable(
+        varname[4], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
+        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
+        chunksizes=(time_chunk, lat_chunk, lon_chunk))
+    varname6 = rootgrp.createVariable(
+        varname[5], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
+        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
+        chunksizes=(time_chunk, lat_chunk, lon_chunk))
+    varname7 = rootgrp.createVariable(
+        'V10M', 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
+        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
+        chunksizes=(time_chunk, lat_chunk, lon_chunk))
 
     rootgrp.missing_value = -9999
     rootgrp.description = description
@@ -108,14 +135,17 @@ resolution_x, resolution_y, time_increment):
     latitudes[:] = lats
     longitudes[:] = lons
     ## Passing on values
-    varname1[:, :, :] = var[0, ]
-    varname2[:, :, :] = var[1, ]
-    varname3[:, :, :] = var[2, ]
-    varname4[:, :, :] = var[3, ]
-    varname5[:, :, :] = var[4, ]
-    varname6[:, :, :] = var[5, ]
-    varname7[:, :, :] = np.zeros_like(var[5,])
-    times[:] = nc4_date2num(dates, units=times.units, calendar=times.calendar)
+    nzeros = np.zeros_like(var[5,])
+    for i in range(0, n_times, time_chunk):
+        end_idx = min(i + time_chunk, n_times)
+        varname1[i:end_idx, :, :] = var[0, i:end_idx, :, :]
+        varname2[i:end_idx, :, :] = var[1, i:end_idx, :, :]
+        varname3[i:end_idx, :, :] = var[2, i:end_idx, :, :]
+        varname4[i:end_idx, :, :] = var[3, i:end_idx, :, :]
+        varname5[i:end_idx, :, :] = var[4, i:end_idx, :, :]
+        varname6[i:end_idx, :, :] = var[5, i:end_idx, :, :]
+        varname7[i:end_idx, :, :] = nzeros[i:end_idx, :, :]
+        times[:] = nc4_date2num(dates, units=times.units, calendar=times.calendar)
     rootgrp.close()
 
 ## Usage: <Name of variable in observed climatology> <Name of variable in
@@ -160,7 +190,6 @@ def process_ensemble(_ens):
     ## name is used in the forecasts file name
     logger.info(f"Forecast Initialization month is {MONTH_NAME}", subtask=subtask)
     ## Shape of the above dataset time, Lead, Ens, latitude, longitude
-    #for ens in range(ENS_NUM):
     indir = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
                                   INIT_FCST_YEAR, _ens+1)
     outdir = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
@@ -207,51 +236,81 @@ def process_ensemble(_ens):
                         UNITS, VAR_NAME_LIST, lons, lats, sdate, dates, 8, lats[-1], \
                         lons[-1], lats[0], lons[0], resol, resol, force_dt)
 
-logger.info("Starting parallel processing of ensembles")
-num_workers = int(sys.argv[4])
-# ProcessPoolExecutor parallel processing
-with ProcessPoolExecutor(max_workers=num_workers) as executor:
-    futures = []
-    for ens in range(int(sys.argv[4])):
-        logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
-        future = executor.submit(process_ensemble, ens)
-        futures.append(future)
+def links():
+    ''' Create ens13, ens14, ens15 links '''
+    outdir_template = '{}/final/6-Hourly/{}/{:04d}/'
+    outdir = outdir_template.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)
 
-    for future in futures:
-        result = future.result()
+    os.chdir(outdir)
+    logger.info(f"Creating ens13, ens14, ens15 links in {outdir}")
+    cmd = "ln -sfn ens1 ens13"
+    rc = subprocess.call(cmd, shell=True)
+    cmd = "ln -sfn ens2 ens14"
+    rc = subprocess.call(cmd, shell=True)
+    cmd = "ln -sfn ens3 ens15"
+    rc = subprocess.call(cmd, shell=True)
 
-# Create ens13, ens14, ens15 links
-OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/'
-OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)
+    logger.info(f"Creating symbolic links for month {LEAD_FINAL +1}")
+    init_datetime = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1)
+    src_yyyymm = []
+    dst_yyyymm = []
+    for mon in range(LEAD_FINAL):
+        src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+        dst_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
 
-os.chdir(OUTDIR)
-logger.info(f"Creating ens13, ens14, ens15 links in {OUTDIR}")
-CMD = "ln -sfn ens1 ens13"
-RC = subprocess.call(CMD, shell=True)
-CMD = "ln -sfn ens2 ens14"
-RC = subprocess.call(CMD, shell=True)
-CMD = "ln -sfn ens3 ens15"
-RC = subprocess.call(CMD, shell=True)
-
-logger.info(f"Creating symbolic links for month {LEAD_FINAL +1}")
-init_datetime = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1)
-src_yyyymm = []
-dst_yyyymm = []
-for mon in range(LEAD_FINAL):
     src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
-    dst_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
+    dst_yyyymm.append((init_datetime + relativedelta(months=mon+1)).strftime("%Y%m"))
+    last_yyyymm = len(src_yyyymm) -1
 
-src_yyyymm.append((init_datetime + relativedelta(months=mon)).strftime("%Y%m"))
-dst_yyyymm.append((init_datetime + relativedelta(months=mon+1)).strftime("%Y%m"))
-LAST_YYYYMM = len(src_yyyymm) -1
-for iens, ens_value in enumerate(range(ENS_NUM)):
-    ens_nmme = iens + 1
-    OUTDIR_ENS = OUTDIR + f'ens{ens_nmme}'
-    src_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{src_yyyymm[LAST_YYYYMM]}.nc4"
-    dst_file = f"{OUTDIR_ENS}/{MODEL_NAME}.{dst_yyyymm[LAST_YYYYMM]}.nc4"
-    CMD = f"ln -sfn {src_file} {dst_file}"
-    RC = subprocess.call(CMD, shell=True)
-    if RC != 0:
-        logger.error("Problem calling creating last precip symbolic link to {dst_file}!")
+    for iens, _ in enumerate(range(ENS_NUM)):
+        ens_nmme = iens + 1
+        outdir_ens = outdir + f'ens{ens_nmme}'
+        src_file = f"{outdir_ens}/{MODEL_NAME}.{src_yyyymm[last_yyyymm]}.nc4"
+        dst_file = f"{outdir_ens}/{MODEL_NAME}.{dst_yyyymm[last_yyyymm]}.nc4"
+        cmd = f"ln -sfn {src_file} {dst_file}"
+        rc = subprocess.call(cmd, shell=True)
+
+        if rc != 0:
+            logger.error("Problem calling creating last precip symbolic link to {dst_file}!")
+
+logger.info("Starting parallel processing of ensembles")
+num_workers = int(os.environ.get('NUM_WORKERS', ENS_NUM))
+
+# ProcessPoolExecutor parallel processing
+if str(resol) != '0.25':
+    start_ens = int(sys.argv[8])
+    end_ens = int(sys.argv[9])
+    num_workers = end_ens - start_ens + 1  # Number of workers = number of ensembles in this job
+    logger.info(f"Standard resolution grid ({resol}): "
+                f"processing ensembles {start_ens}-{end_ens} with {num_workers} workers")
+
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = []
+        for ens in range(start_ens, end_ens + 1):
+            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
+            future = executor.submit(process_ensemble, ens)
+            futures.append(future)
+
+        for future in futures:
+            result = future.result()
+
+    if end_ens + 1 == ENS_NUM:
+        links()
+
+else:
+    # Standard resolution: process all at once
+    logger.info(f"Standard resolution grid ({resol}): "
+                f"processing all {ENS_NUM} ensembles with {num_workers} workers")
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = []
+        for ens in range(int(sys.argv[4])):
+            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
+            future = executor.submit(process_ensemble, ens)
+            futures.append(future)
+
+        for future in futures:
+            result = future.result()
+
+        links()
 
 logger.info("Ran SUCCESSFULLY !")

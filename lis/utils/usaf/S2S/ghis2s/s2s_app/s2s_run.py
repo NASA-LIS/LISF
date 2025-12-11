@@ -24,7 +24,7 @@ from ghis2s.s2spost import s2spost_driver
 from ghis2s.s2smetric import s2smetric_driver
 from ghis2s import bcsd
 from ghis2s.shared.logging_utils import TaskLogger
-from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
+
 # pylint: disable=too-many-lines
 
 class DownloadForecasts():
@@ -353,6 +353,26 @@ class S2Srun(DownloadForecasts):
         super().__init__(year, month, config_file)
         with open(config_file, 'r', encoding="utf-8") as file:
             self.config = yaml.safe_load(file)
+
+       # Check for new s2s_config user_cache_dir option for HPC11:
+        if 'discover' not in platform.node() and 'borg' not in platform.node():
+            if 'user_cache_dir' not in self.config['SETUP']:
+                print("[WARNING] s2s_config SETUP: entry -- user_cache_dir:  not specified!")
+                print("[WARNING]  Exiting S2S E2ES setup ... ")
+                sys.exit()
+            else:
+                test_file = self.config['SETUP']['user_cache_dir'] + '/write_test'
+                result = subprocess.run(['touch', str(test_file)], capture_output=True,
+                    text=True, timeout=10)
+                if result.returncode != 0:
+                    print(f"[WARNING] {self.config['SETUP']['user_cache_dir']} does not have write permission !")
+                    print(" Please specify writeable s2s_config SETUP: entry -- user_cache_dir:")
+                    sys.exit()
+                else:
+                    os.remove(test_file)
+                    print(" -- Using a user-designated cache directory from the s2s_config file --")
+                    print(f" {self.config['SETUP']['user_cache_dir']}")
+
         self.config_file = config_file
         self.year = year
         self.month = month
@@ -568,10 +588,10 @@ class S2Srun(DownloadForecasts):
 
         # Obs clim files
         obs_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
-        obs_path = self.e2esdir + 'hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'
+        obs_path = self.e2esdir + f'hindcast/bcsd_fcst/USAF-LIS7.3rc8_{resol}/raw/Climatology/'
 
         for var in obs_var_list:
-            check_file(obs_clim_file_template.format(obs_path, var), 'USAF-LIS7.3rc8_25km Clim')
+            check_file(obs_clim_file_template.format(obs_path, var), f'USAF-LIS7.3rc8_{resol} Clim')
 
         # metforce clim
         fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
@@ -700,23 +720,53 @@ class S2Srun(DownloadForecasts):
 
         utils.update_job_schedule(job_schedule, "JOB ID", "JOB SCRIPT", "AFTER")
         dir_list = []
-        for jfile in self.schedule.keys():
+        cur_subdir = ''
+        sec_ids = []
+        for key_no, jfile in enumerate(self.schedule.keys()):
             subdir = self.schedule[jfile]['subdir']
+
+            # logging jobs
+            if cur_subdir != subdir:
+                if cur_subdir != '':
+                    os.chdir(self.scrdir)
+                    sec_ids = get_previds(jfile)
+                    log_id = submit_slurm_job("ghis2s_log.sh", prev_id=sec_ids)
+                    if isinstance(sec_ids, list):
+                        sec_str = ','.join(map(str, sec_ids))
+                    else:
+                        sec_str = str(sec_ids)
+                    utils.update_job_schedule(job_schedule, log_id, "ghis2s_log.sh", sec_str)
+                    sec_ids = []
+                cur_subdir = subdir
+
+            # Section header
             if subdir not in dir_list:
                 dir_list.append(subdir)
                 with open(job_schedule, "a", encoding="utf-8") as file:
                     for line in sub_section.get(subdir):
                         file.write(line + "\n")
+
+            # submit job
             os.chdir(self.scrdir + subdir)
             prev_ids = get_previds(jfile)
             job_id = submit_slurm_job(jfile, prev_id=prev_ids)
+            sec_ids.append(job_id)
             self.schedule[jfile]['jobid'] = job_id
             if isinstance(prev_ids, list):
                 prev_str = ','.join(map(str, prev_ids))
             else:
-                # If prev_id is a single value, convert it to string
                 prev_str = str(prev_ids)
             utils.update_job_schedule(job_schedule, job_id, jfile, prev_str)
+
+            # the last log job
+            if key_no == len(self.schedule) - 1:
+                os.chdir(self.scrdir)
+                log_id = submit_slurm_job("ghis2s_log.sh", prev_id=sec_ids)
+                if isinstance(sec_ids, list):
+                    sec_str = ','.join(map(str, sec_ids))
+                else:
+                    sec_str = str(sec_ids)
+                utils.update_job_schedule(job_schedule, log_id, "ghis2s_log.sh", sec_str)
 
     def split_list(self, input_list, length_sublist):
         ''' splits job list '''
@@ -735,8 +785,8 @@ class S2Srun(DownloadForecasts):
             temp_file.flush()
         return temp_file
 
-    def write_cylc_snippet(self):
-        """ writes Cylc runtime snippet """
+    def write_log_monitoring_script(self):
+        """writes the shell script to run log monitoring"""
         is_nccs = True
         if os.path.isfile(self.lisfdir + 'env/discover/' + self.lishmod):
             modulepath = self.lisfdir + 'env/discover/'
@@ -744,24 +794,35 @@ class S2Srun(DownloadForecasts):
             modulepath = self.config['SETUP']['supplementarydir'] + '/env/'
             is_nccs = False
 
-        def write_log_monitoring_script():
-            """writes the shell script to run log monitoring"""   
-            log_script_path = f"{self.scrdir}ghis2s_log.sh"
-            with open(log_script_path, 'w', encoding="utf-8") as f:
-                f.write("#!/bin/bash\n")
-                f.write("set -eu\n")
-                f.write("export USE_CYLC_ENV=0\n")
-                if is_nccs:
-                    f.write("source /etc/profile.d/modules.sh\n")
-                f.write(f"module use -a {modulepath}\n")
-                f.write(f"module load {self.lishmod}\n")
-                f.write("ulimit -s unlimited\n")
-                f.write(f"export PYTHONPATH={self.lisfdir}lis/utils/usaf/S2S/\n")
-                f.write(f"cd {self.scrdir}\n")
-                f.write(f"python {self.lisfdir}lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py "
-                        f"-y {self.year} -m {self.month} -c {self.e2esdir}{self.config_file} -l\n")
+        os.makedirs(f"{self.scrdir}logs", exist_ok=True)
+        log_script_path = f"{self.scrdir}ghis2s_log.sh"
+        with open(log_script_path, 'w', encoding="utf-8") as f:
+            f.write("#!/bin/bash\n")
+            f.write('#SBATCH --nodes=1' + '\n')
+            f.write('#SBATCH --account=' + self.config['SETUP']['SPCODE'] + '\n')
+            f.write('#SBATCH --time=' + '00:15:00' + '\n')
+            f.write('#SBATCH --output ' + f"{self.scrdir}logs/ghi_log_%j.out" + '\n')
+            f.write('#SBATCH --error ' + f"{self.scrdir}logs/ghi_log_%j.err" + '\n')
+            f.write("set -eu\n")
+            f.write("export USE_CYLC_ENV=0\n")
+            if is_nccs:
+                f.write("source /etc/profile.d/modules.sh\n")
+            f.write(f"module use -a {modulepath}\n")
+            f.write(f"module load {self.lishmod}\n")
+            f.write("ulimit -s unlimited\n")
+            f.write(f"export PYTHONPATH={self.lisfdir}lis/utils/usaf/S2S/\n")
+            f.write(f"cd {self.scrdir}\n")
+            f.write(f"python {self.lisfdir}lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py "
+                    f"-y {self.year} -m {self.month} -c {self.e2esdir}{self.config_file} -l\n")
 
-            os.chmod(log_script_path, 0o755)
+        os.chmod(log_script_path, 0o755)
+
+    def write_cylc_snippet(self):
+        """ writes Cylc runtime snippet """
+        if os.path.isfile(self.lisfdir + 'env/discover/' + self.lishmod):
+            modulepath = self.lisfdir + 'env/discover/'
+        else:
+            modulepath = self.config['SETUP']['supplementarydir'] + '/env/'
 
         def extract_slurm_info(slurm_file):
             """ reads *.j SLURM file for directives, prescript and env variables"""
@@ -855,7 +916,7 @@ class S2Srun(DownloadForecasts):
                     dependency_map[task_name] = prev_tasks
 
         # write log monitoring bash script
-        write_log_monitoring_script()
+        self.write_log_monitoring_script()
 
         # write flow.cylc
         has_dependencies = any(dependencies for dependencies in dependency_map.values())
@@ -1254,11 +1315,11 @@ class S2Srun(DownloadForecasts):
         fcast_clim_dir=\
             f'{self.e2esroot}/hindcast/bcsd_fcst/{self.fcst_model}_{resol}/raw/Climatology/'
         nmme_clim_dir=f'{self.e2esroot}/hindcast/bcsd_fcst/NMME/raw/Climatology/'
-        usaf_25km=f'{self.e2esroot}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'
+        usaf_25km=f'{self.e2esroot}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_{resol}/raw/Climatology/'
 
         os.makedirs(self.e2esdir + '/bcsd_fcst', exist_ok=True)
         os.chdir(self.e2esdir + '/bcsd_fcst')
-        os.makedirs('USAF-LIS7.3rc8_25km/raw', exist_ok=True)
+        os.makedirs(f'USAF-LIS7.3rc8_{resol}/raw', exist_ok=True)
         os.makedirs(f'{self.fcst_model}_{resol}/raw', exist_ok=True)
         os.makedirs('NMME/raw', exist_ok=True)
 
@@ -1269,7 +1330,7 @@ class S2Srun(DownloadForecasts):
         os.chdir(self.e2esdir + '/bcsd_fcst/NMME/raw')
         self.create_symlink(nmme_clim_dir, 'Climatology')
 
-        os.chdir(self.e2esdir + '/bcsd_fcst/USAF-LIS7.3rc8_25km/raw')
+        os.chdir(self.e2esdir + f'/bcsd_fcst/USAF-LIS7.3rc8_{resol}/raw')
         self.create_symlink(usaf_25km, 'Climatology')
 
         # manage jobs from SCRATCH
@@ -1286,27 +1347,33 @@ class S2Srun(DownloadForecasts):
 
         # (4) metforce_biascorrection (formerly bcsd04): Monthly "BC" step applied to CFSv2
         #    (task_04.py, after 1 and 3)
-        # --------------------------------------------------------------------------
+        # ---------------------------------------------------------------------------------
         jobname='mf_biascorr_'
         par_info = {}
-        par_info['CPT'] = '10'
+        par_info['CPT'] = '120'
         par_info['NT']= str(1)
         par_info['MEM']= '240GB'
         par_info['TPN'] = None
         par_info['MP'] = True
+        par_info['SKIP_ARG'] = True
         prev = [f"{key}" for key in self.schedule.keys() if 'mf_regrid_' in key]
         slurm_commands = bcsd.metforce_biascorrection.main(
-            self.e2esroot +'/' + self.config_file, self.year, self.year, mmm,
+            self.e2esroot +'/' + self.config_file, self.year, mmm,
             self.mm, jobname, 1, 3, cwd, py_call=True)
+
         # multi tasks per job
-        l_sub = 1
+        l_sub = self.config["EXP"]["lead_months"]
+        if resol == '10km':
+            l_sub = 4
+        if resol == '5km':
+            l_sub = 1
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_',
-                                        1, str(4), cwd, tfile.name, parallel_run=par_info)
+                                        1, str(6), cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
@@ -1324,22 +1391,20 @@ class S2Srun(DownloadForecasts):
         slurm_commands = []
         for nmme_model in self.models:
             var1 = bcsd.precip_biascorrection.main(self.e2esroot +'/' + self.config_file,
-                                                   self.year, self.year, mmm, self.mm, jobname,
+                                                   self.year, mmm, self.mm, jobname,
                                                    1, 3, cwd, nmme_model, py_call=True)
             slurm_commands.extend(var1)
 
         # multi tasks per job
-        l_sub = 1
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
-            nmme_model = sub_val[0].split()[7]
-            ens_num = NMMEParams(nmme_model).ens_num
-            par_info['CPT'] = str(max(10,ens_num))
+            nmme_model = sub_val[0].split()[8]
+
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1,
-                                        str(4), cwd, tfile.name, parallel_run=par_info)
+                                        str(6), cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
@@ -1367,14 +1432,17 @@ class S2Srun(DownloadForecasts):
                                                                     self.e2esdir, py_call=True)
 
         # multi tasks per job
-        l_sub = 3
+        if resol == '25km':
+            l_sub = 3
+        else:
+            l_sub = 1
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j',
-                                        jobname + f'{i+1:02d}_', 1, str(4), cwd, tfile.name,
+                                        jobname + f'{i+1:02d}_', 1, str(6), cwd, tfile.name,
                                         parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
             finally:
@@ -1406,14 +1474,17 @@ class S2Srun(DownloadForecasts):
             slurm_commands.extend(var1)
 
         # multi tasks per job
-        l_sub = 2
+        if resol == '25km':
+            l_sub = 2
+        else:
+            l_sub = 1
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j',
-                                        jobname + f'{i+1:02d}_', 1, str(2), cwd, tfile.name,
+                                        jobname + f'{i+1:02d}_', 1, str(6), cwd, tfile.name,
                                         parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
             finally:
@@ -1442,19 +1513,37 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = None
         par_info['MP'] = True
 
-        tfile = self.sublist_to_file([slurm_9_10[0]], cwd)
-        try:
-            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(1), cwd, tfile.name, parallel_run=par_info)
-            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
-        finally:
-            tfile.close()
-            os.unlink(tfile.name)
+        if resol == '25km':
+            tfile = self.sublist_to_file([slurm_9_10[0]], cwd)
+            try:
+                s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
+                                        jobname, 1, str(6), cwd, tfile.name, parallel_run=par_info)
+                self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
 
-        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
-        utils.remove_sbatch_lines(jobname + 'run.sh')
+            shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+            utils.remove_sbatch_lines(jobname + 'run.sh')
+
+        else:
+            l_sub = 1
+            slurm_sub = self.split_list(slurm_9_10, l_sub)
+            for i, sub_val in enumerate(slurm_sub):
+                tfile = self.sublist_to_file(sub_val, cwd)
+                try:
+                    s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
+                                        jobname + f'{i+1:02d}_run.j',
+                                        jobname + f'{i+1:02d}_', 1, str(6), cwd, tfile.name,
+                                        parallel_run=par_info)
+                    self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
+                finally:
+                    tfile.close()
+                    os.unlink(tfile.name)
+
+                shutil.copy(jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_run.sh')
+                utils.remove_sbatch_lines(jobname + f'{i+1:02d}_run.sh')
         #utils.cylc_job_scripts(jobname + 'run.sh', 6, cwd, command_list=slurm_9_10[0])
-
         os.chdir(self.e2esdir)
 
     def lis_fcst(self):
@@ -2087,4 +2176,5 @@ if __name__ == "__main__":
     # Submit SLURM jobs
     # -----------------
     if  args.submit_job:
+        s2s.write_log_monitoring_script()
         s2s.submit_jobs()
