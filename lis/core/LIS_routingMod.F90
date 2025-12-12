@@ -1283,19 +1283,11 @@ contains
                "ESMF_StateGet failed in enkf_increments")
 
           do v=1,LIS_rc%nstvars(k)
-!             call ESMF_StateGet(LIS_Routing_State(n,k),trim(routing_state_objs(v)),&
-!                  routing_field(v),rc=status)
-!             call LIS_verify(status, &
-!                  "ESMF_StateGet failed in enkf_increments")
 
              call ESMF_StateGet(LIS_Routing_Incr_State(n,k),trim(routing_state_objs(v)),&
                   routing_incr_field(v),rc=status)
              call LIS_verify(status, &
                   "ESMF_StateGet failed in enkf_increments")
-
-!             call ESMF_FieldGet(routing_field(v),localDE=0, farrayPtr=stdata,rc=status)
-!             call LIS_verify(status,&
-!                  "ESMF_FieldGet failed in enkf_increments")
 
              call ESMF_FieldGet(routing_incr_field(v),localDE=0,farrayPtr=stincrdata,&
                   rc=status)

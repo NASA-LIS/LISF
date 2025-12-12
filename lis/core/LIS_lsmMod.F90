@@ -1823,19 +1823,11 @@ contains
             "ESMF_StateGet failed in enkf_increments")
 
        do v=1,LIS_rc%nstvars(k)
-!          call ESMF_StateGet(LIS_LSM_State(n,k),trim(lsm_state_objs(v)),&
-!               lsm_field(v),rc=status)
-!          call LIS_verify(status, &
-!               "ESMF_StateGet failed in enkf_increments")
 
           call ESMF_StateGet(LIS_LSM_Incr_State(n,k),trim(lsm_state_objs(v)),&
                lsm_incr_field(v),rc=status)
           call LIS_verify(status, &
                "ESMF_StateGet failed in enkf_increments")
-
-!          call ESMF_FieldGet(lsm_field(v),localDE=0, farrayPtr=stdata,rc=status)
-!          call LIS_verify(status,&
-!               "ESMF_FieldGet failed in enkf_increments")
 
           call ESMF_FieldGet(lsm_incr_field(v),localDE=0,farrayPtr=stincrdata,&
                rc=status)
@@ -1843,7 +1835,6 @@ contains
                'ESMF_FieldGet failed in enkf_increments')
 
           do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-!             stdata(t) =  stvar(v,t)
              stincrdata(t) = stincrdata(t)/scalef
           enddo
 
