@@ -44,33 +44,14 @@ subroutine HYMAP2_getWL(n, Routing_State)
   integer                :: t,i,m
   integer                :: status
   real, pointer          :: sfcelev(:)
-
-#if 0 
-  integer                :: ielevtn
-  integer                :: ifldhgt(HYMAP2_routing_struc(n)%nz)
-  real                   :: fldstomax(HYMAP2_routing_struc(n)%nz)
-  real                   :: grarea
-  real                   :: rivstomax
-  real                   :: rivlen
-  real                   :: rivwth
-  integer                :: ielv
-  integer                :: irivelv
-  real*8                 :: vol
-
-  real*8                 :: grarea1
-  real*8                 :: fldstomax1(HYMAP2_routing_struc(n)%nz)
-  real*8                 :: rivstomax1
-  real*8                 :: rivlen1
-  real*8                 :: rivwth1
-#endif
-  real*8                :: elevtn
-  real*8                :: fldhgt(HYMAP2_routing_struc(n)%nz)
-  real*8                   :: fldstomax(HYMAP2_routing_struc(n)%nz)
-  real*8                   :: grarea
-  real*8                   :: rivstomax
-  real*8                   :: rivlen
-  real*8                   :: rivwth
-  real*8                   :: elv
+  real*8                 :: elevtn
+  real*8                 :: fldhgt(HYMAP2_routing_struc(n)%nz)
+  real*8                 :: fldstomax(HYMAP2_routing_struc(n)%nz)
+  real*8                 :: grarea
+  real*8                 :: rivstomax
+  real*8                 :: rivlen
+  real*8                 :: rivwth
+  real*8                 :: elv
   real*8                 :: rivelv
   real*8                 :: vol
 
@@ -109,7 +90,7 @@ subroutine HYMAP2_getWL(n, Routing_State)
              vol)
         sfcelev(t) = real(elv) - HYMAP2_routing_struc(n)%rivelv(i)
      enddo
-     
+
   enddo
 
 end subroutine HYMAP2_getWL
