@@ -1296,9 +1296,6 @@ contains
 
              do t=1,state_size
                 stincrdata(t) = stincrdata(t)/scalef
-                if(t.eq.7413) then
-                   print*, 'scal',t,stincrdata(t)
-                endif
              enddo
 
           enddo
