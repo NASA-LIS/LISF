@@ -145,14 +145,12 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
                        endif
                     enddo
                  enddo
-              else  !if(siteid.ne.-9999.0) then
+              else
                  sfcelevIncr_tmp(t) = sfcelevIncr(t)
-                 !nsfcelevIncr_tmp(t) = nsfcelevIncr_tmp(t) + 1
               endif
            endif
-        else !if (HYMAP2_daWL_struc(n)%useLocalUpd.eq.1) then
+        else
            sfcelevIncr_tmp(t) = sfcelevIncr(t)
-           !nsfcelevIncr_tmp(t) = nsfcelevIncr_tmp(t) + 1
         endif
      enddo
   enddo
