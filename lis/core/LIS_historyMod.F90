@@ -3090,7 +3090,8 @@ contains
                       continue   
                    endif
                 else
-                   dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                   ! Handle all outputs
+                   dataEntry%modelOutput(:,t,k) = LIS_rc%udef
                 endif
              enddo
           enddo
