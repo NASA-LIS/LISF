@@ -2326,6 +2326,7 @@ SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
     REAL :: FRLIQ,SMCEQDEEP
     REAL :: DELTAT,RCOND,TOTWATER
     REAL :: AA,BBB,CC,DD,DX,FUNC,DFUNC,DDZ,EXPON,SMC,FLUX
+    REAL :: WTDQRFMAX
     REAL, DIMENSION(1:NSOIL) :: SMCEQ,ZSOIL
     REAL,      DIMENSION( ims:ime, jms:jme )    :: QLAT, QRF
     INTEGER,   DIMENSION( ims:ime, jms:jme )    :: LANDMASK !-1 for water (ice or no ice) and glacial areas, 1 for land where the LSM does its soil moisture calculations
@@ -2353,6 +2354,7 @@ SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
     PEXP = 0.0
 
     DELTAT=365.*24*3600. !1 year
+    WTDQRFMAX=-20.0 !TML: Maximum depth to enable full PEXP for MMF Fix
 
 !readjust the raw aggregated water table from hires, so that it is better compatible with topography
 
@@ -2434,7 +2436,7 @@ EQWTD=WTD
         ENDIF
 
         ! TML: Constrain PEXP for deeper groundwater
-        IF (EQWTD(I,J) .LT. ZSOIL(NSOIL)) THEN
+        IF (EQWTD(I,J) .LT. WTDQRFMAX) THEN
             PEXP(I,J) = 0.0
         ELSE
             PEXP(I,J) = 1.0
@@ -2462,7 +2464,7 @@ EQWTD=WTD
 
     DO J=jts,jtf
        DO I=its,itf
-           IF (RIVERBED(I,J) .LT. ZSOIL(NSOIL)) THEN
+           IF (RIVERBED(I,J) .LT. WTDQRFMAX) THEN
                PEXP(I,J) = 0.0
            ENDIF
        ENDDO
