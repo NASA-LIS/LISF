@@ -57,8 +57,6 @@ proc ModulesHelp { } {
     puts stderr "\t\tLVT_LIBESMF"
     puts stderr "\t\tLVT_GDAL"
     puts stderr "\t\tLVT_FORTRANGIS"
-    puts stderr "\t\tECCODES_DEFINITION_PATH"
-    puts stderr "\t\tECCODES_SAMPLES_PATH"
     puts stderr ""
     puts stderr "\tThe following modules are loaded:"
     puts stderr "\t\tcpe/25.03"
@@ -191,10 +189,6 @@ setenv   LVT_FORTRANGIS  $def_lvt_fortrangis
 
 
 setenv FI_VERBS_PREFER_XRC 0
-
-
-setenv ECCODES_DEFINITION_PATH "$def_lis_eccodes/share/eccodes/definitions"
-setenv ECCODES_SAMPLES_PATH "$def_lis_eccodes/share/eccodes/samples"
 
 
 prepend-path   LD_LIBRARY_PATH   "$def_lis_openjpeg/lib"
