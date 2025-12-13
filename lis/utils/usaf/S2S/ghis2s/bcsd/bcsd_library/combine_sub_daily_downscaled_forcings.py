@@ -154,7 +154,8 @@ resolution_x, resolution_y, time_increment):
 task_name = os.environ.get('SCRIPT_NAME')
 logger = TaskLogger(task_name,
                     os.getcwd(),
-                    f'bcsd/bcsd_library/combine_sub_daily_downscaled_forcings.py processing {sys.argv[3]} for month {int(sys.argv[1]):04d}{int(sys.argv[2]):02d}')
+                    f'bcsd/bcsd_library/combine_sub_daily_downscaled_forcings.py processing '
+                    f'{sys.argv[3]} for month {int(sys.argv[1]):04d}{int(sys.argv[2]):02d}')
 
 INIT_FCST_YEAR = int(sys.argv[1])
 ## initial forecast year for which to downscale the data
@@ -183,7 +184,7 @@ resol = round((latsg[1] - latsg[0])*100.)/100.
 
 def process_ensemble(_ens):
     ''' process each ensemble member '''
-    subtask = f'ens{_ens:02d}'
+    subtask = f'ens{_ens+1:02d}'
 
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
@@ -287,7 +288,8 @@ if str(resol) != '0.25':
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         futures = []
         for ens in range(start_ens, end_ens + 1):
-            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
+            logger.info(f"Submitting disaggregation job for ens {ens+1:02d}",
+                        subtask=f'ens{ens+1:02d}')
             future = executor.submit(process_ensemble, ens)
             futures.append(future)
 
@@ -304,7 +306,8 @@ else:
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         futures = []
         for ens in range(int(sys.argv[4])):
-            logger.info(f"Submitting disaggregation job for ens {ens:02d}", subtask=f'ens{ens:02d}')
+            logger.info(f"Submitting disaggregation job for ens {ens+1:02d}",
+                        subtask=f'ens{ens+1:02d}')
             future = executor.submit(process_ensemble, ens)
             futures.append(future)
 

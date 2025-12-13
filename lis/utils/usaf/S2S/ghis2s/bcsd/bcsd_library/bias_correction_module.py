@@ -161,7 +161,7 @@ def process_point(land_mask, obs_clim, fcst_clim, fcst_monthly):
 
 def process_month(logger):
     ''' process the month '''
-    logger.info(f"Processing month {LEAD_NUM}", subtask=SUBTASK)
+    logger.info(f"Processing lead month {LEAD_NUM}", subtask=SUBTASK)
     fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, 6) + \
         relativedelta(months=LEAD_NUM)
     fcst_year, fcst_month = fcst_date.year, fcst_date.month

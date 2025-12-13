@@ -73,9 +73,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
-    # domain
-    domain = config['EXP']['DOMAIN']
-
     lead_months = config['EXP']['lead_months']
     ens_num = NMMEParams(nmme_model).ens_num
 
@@ -119,12 +116,22 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
         cmd += f" {monthly_bc_fcst_dir}"
         cmd += f" {subdaily_raw_fcst_dir}"
         cmd += f" {outdir}"
-        cmd += f" {domain}"
         jobfile = job_name + '_' + nmme_model + '_run.j'
         jobname = job_name + '_' + nmme_model + '_'
 
         if py_call:
-            slurm_commands.append(cmd)
+            if resol == '25km':
+                slurm_commands.append(cmd)
+            else:
+                if resol == '10km':
+                    ens_size = 3
+                else:
+                    ens_size = 1
+                for i in range(0, ens_num, ens_size):
+                    start_ens = i
+                    end_ens = min(i + ens_size - 1, ens_num - 1)
+                    slurm_commands.append(cmd + f" {start_ens} {end_ens}")
+
         else:
             utils.job_script(config_file, jobfile, jobname, ntasks, hours,
                              cwd, None, in_command=cmd)

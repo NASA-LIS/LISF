@@ -71,9 +71,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
-    # domain
-    domain = config['EXP']['DOMAIN']
-
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
     model_name = config['BCSD']['metforce_source']
@@ -128,12 +125,23 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
             cmd += f" {monthly_raw_fcst_dir}"
             cmd += f" {subdaily_raw_fcst_dir}"
             cmd += f" {outdir}"
-            cmd += f" {domain}"
+
             jobfile = job_name + '_' + obs_var + '_run.j'
             jobname = job_name + '_' + obs_var + '_'
 
             if py_call:
-                slurm_commands.append(cmd)
+                if resol == '25km':
+                    slurm_commands.append(cmd)
+                else:
+                    if resol == '10km':
+                        ens_size = 3
+                    else:
+                        ens_size = 1
+                    for i in range(0, ens_num, ens_size):
+                        start_ens = i
+                        end_ens = min(i + ens_size - 1, ens_num - 1)
+                        slurm_commands.append(cmd + f" {start_ens} {end_ens}")
+
             else:
                 utils.job_script(config_file, jobfile, jobname, ntasks, hours,
                                  cwd, None, in_command=cmd)
@@ -158,6 +166,6 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--project_directory', required=True, help='Project (E2ES) directory')
 
     args = parser.parse_args()
-    
+
     main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
          args.job_name, args.ntasks, args.hours, args.cwd, args.project_directory)

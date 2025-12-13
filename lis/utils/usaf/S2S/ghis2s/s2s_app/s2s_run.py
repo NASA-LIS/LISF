@@ -1432,10 +1432,8 @@ class S2Srun(DownloadForecasts):
                                                                     self.e2esdir, py_call=True)
 
         # multi tasks per job
-        if resol == '25km':
-            l_sub = 3
-        else:
-            l_sub = 1
+        l_sub = 3
+
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
@@ -1474,10 +1472,10 @@ class S2Srun(DownloadForecasts):
             slurm_commands.extend(var1)
 
         # multi tasks per job
-        if resol == '25km':
-            l_sub = 2
-        else:
+        l_sub = 2
+        if resol == '5km':
             l_sub = 1
+
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
