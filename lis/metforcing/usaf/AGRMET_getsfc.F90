@@ -376,13 +376,13 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
            cycle
         end if
 
-!     ------------------------------------------------------------------
-!     If the number of obs in the file is greater than the array size
-!     write an alert to the log and set back the number to read to
-!     prevent a segfault.
-!     ------------------------------------------------------------------
+        !     ------------------------------------------------------------------
+        !     If the number of obs in the file is greater than the array size
+        !     write an alert to the log and set back the number to read to
+        !     prevent a segfault.
+        !     ------------------------------------------------------------------
 
-         if ( nsize .GT. isize ) then
+        if ( nsize .GT. isize ) then
 
            write(LIS_logunit,*)' '
            write(LIS_logunit,*)"******************************************************"
@@ -491,12 +491,12 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
         ! reading a particular report
         if (ierr2 .eq. 0) then
 
-!     ------------------------------------------------------------------
-!         Retrieve and descale observation latitude and longitude.
-!         check to make sure lat/lon is not missing (-99999999) or
-!         or unreported (-99999998).  If it is, skip to the next
-!         observation.  also ensure there are no goofy values.
-!     ------------------------------------------------------------------
+           !     ------------------------------------------------------------------
+           !         Retrieve and descale observation latitude and longitude.
+           !         check to make sure lat/lon is not missing (-99999999) or
+           !         or unreported (-99999998).  If it is, skip to the next
+           !         observation.  also ensure there are no goofy values.
+           !     ------------------------------------------------------------------
 
            do irecord=1, nsize
 
@@ -514,203 +514,193 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
               else
                  cycle
               end if
-!     ------------------------------------------------------------------
-!         Only process the observations for the current hemisphere.
-!     ------------------------------------------------------------------
+              !     ------------------------------------------------------------------
+              !         Only process the observations for the current hemisphere.
+              !     ------------------------------------------------------------------
 
               ! EMK...Use all obs if we are using a WIGOS global file
               if( ((hemi .eq. 1) .and. (rlat .ge. 0.0)) .or. &
                    ((hemi .eq. 2) .and. (rlat .lt. 0.0)) .or. &
                    use_wigos_sfcobs) then
-!     ------------------------------------------------------------------
-!         Convert point's lat/lon to i/j coordinates.
-!         check for values of rigrid and rjgrid outside of
-!         the AGRMET model grid, or in the other hemisphere.
-!     ------------------------------------------------------------------
+                 !     ------------------------------------------------------------------
+                 !         Convert point's lat/lon to i/j coordinates.
+                 !     ------------------------------------------------------------------
 
                  call latlon_to_ij(LIS_domain(n)%lisproj, rlat, rlon, &
                       rigrid, rjgrid)
 
-                 !if(rigrid.ge.1.and.rigrid.le.imax.and. &
-!                      rjgrid.ge.1.and.rjgrid.le.jmax) then 
-! EMK TEST
-                 if (.true.) then
-!     ------------------------------------------------------------------
-!         Make sure the observation is actually reporting temp, wind, 
-!         and rh or dew point before we store it.  
-!         Initial tests in july 99 showed that, on average, 5% of the 
-!         observations had to be discared for this reason.
-!     ------------------------------------------------------------------
+                 if ( (itmp(irecord) .le. -99999998) .and. &
+                      (ispd(irecord) .le. -99999998) .and. &
+                      (irelh(irecord) .le. -99999998) .and. &
+                      (idpt(irecord) .le. -99999998) ) cycle
 
-                    if ( ( (itmp(irecord)  .gt. -99999998) .and. &
-                         (ispd(irecord)  .gt. -99999998) ) .and. &
-                         ( (irelh(irecord) .gt. -99999998) .or. &
-                         (idpt(irecord) .gt. -99999998) ) ) then
+                 ! EMK...Make sure dew point .le. temperature
+                 if ( (itmp(irecord)  .gt. -99999998) .and. &
+                      (idpt(irecord) .gt. -99999998) ) then
+                    if (idpt(irecord) .gt. itmp(irecord)) then
+                       idpt(irecord) = -99999999
+                    end if
+                 end if
 
-                       ! EMK...Make sure dew point .le. temperature
-                       if ( (itmp(irecord)  .gt. -99999998) .and. &
-                            (idpt(irecord) .gt. -99999998) ) then
-                          if (idpt(irecord) .gt. itmp(irecord)) cycle
+                 !--------------------------------------------------------
+                 ! Gross error check and set temperature.
+                 ! Ensure temperature values are between 200.0 and 350.0K
+                 ! "-99999999" indicates missing data and a "-99999998"
+                 ! indicates a non report.  Bad data is given a value of
+                 ! -1
+                 !--------------------------------------------------------
+
+                 if (itmp(irecord) .gt. -99999998) then
+                    rtmp = float (itmp(irecord)) / 100.0
+                    if ( (rtmp .lt. 200.0) .or. &
+                         (rtmp .gt. 350.0) ) then
+                       rtmp = -1.0
+                    end if
+                 else
+                    rtmp = -1.0
+                 end if
+
+                 !-----------------------------------------------------
+                 ! Gross error check and set relative humidity values.
+                 ! ensure RH values are between 0.0 and 1.0.
+                 ! JMOBS RH is in percent.  Missing or bad values are
+                 ! given a value of -1.
+                 !-----------------------------------------------------
+
+                 if (irelh(irecord) .gt. -99999998) then
+                    rrelh = float(irelh(irecord)) / 10000.0
+                    if ( (rrelh .gt. 1.0) .or. &
+                         (rrelh .lt. 0.0) ) then
+                       rrelh = -1.0
+                    end if
+                 else if ( (idpt(irecord) .gt. -99999998) .and. &
+                      (rtmp .ne. -1.0) ) then
+                    rdpt = float(idpt(irecord)) / 100.0
+                    rrelh = AGRMET_calcrh_dpt(rtmp, rdpt)
+                    if ( (rrelh .gt. 1.0) .or. &
+                         (rrelh .lt. 0.0) ) then
+                       rrelh = -1.0
+                    end if
+                 else
+                    rrelh = -1.0
+                 end if
+
+                 !-----------------------------------------------------
+                 ! Constrain surface wind speed to a value between
+                 ! 75 ms-1 and minwind (from control file).
+                 ! JMOBS winds are scaled by 10.  Bad values are given
+                 ! a value of -1.
+                 !-----------------------------------------------------
+
+                 if (ispd(irecord) .gt. -99999998) then
+                    rspd = float(ispd(irecord)) / 10.0
+                    rspd = max( min( rspd, 75.0 ), minwnd )
+                 else
+                    rspd = -1.0
+                 end if
+
+                 !-----------------------------------------------------
+                 ! If all the data is out of range and/or missing,
+                 ! don't store this observation.
+                 !-----------------------------------------------------
+
+                 if ( (nint(rtmp)  .gt. 0)  .or. &
+                      (nint(rrelh) .gt. 0)  .or. &
+                      (nint(rspd)  .gt. 0) ) then
+
+                    !--------------------------------------------------
+                    ! If we make it here, the observation probably has
+                    ! some good data, so increment the observation
+                    ! counter, store the data into the observation
+                    ! arrays.
+                    !--------------------------------------------------
+
+                    ! EMK...Add to data structures.  Handle reformated
+                    ! CDMS data that is missing platform and network
+                    if (rtmp .gt. 0) then
+                       net32 = blank32
+                       net32 = netyp(irecord)
+                       platform32 = blank32
+                       platform32 = platform(irecord)
+                       if (trim(net32) .eq. 'NULL') then
+                          net32 = 'CDMS'
                        end if
-
-!     ------------------------------------------------------------------
-!         Gross error check and set temperature.
-!         Ensure temperature values are between 200.0 and 350.0 K.
-!         a "-99999999" indicates missing data and a "-99999998" 
-!         indicates a non report.  Bad data is given a value of -1, 
-!         so the Barnes scheme will ignore it.
-!     ------------------------------------------------------------------
-
-                       if (itmp(irecord) .gt. -99999998) then
-                          rtmp = float (itmp(irecord)) / 100.0
-                          if ( (rtmp .lt. 200.0) .or. (rtmp .gt. 350.0) ) then
-                             rtmp = -1.0
-                          end if
-                       else
-                          rtmp = -1.0
+                       if (trim(platform32) .eq. '-99999999') then
+                          platform32 = '00000000'
                        end if
-        
-!     ------------------------------------------------------------------
-!         Gross error check and set relative humidity values.
-!         ensure RH values are between 0.0 and 1.0.
-!         JMOBS RH is in percent.  Missing or bad values are given a
-!         value of -1, so the Barnes scheme will ignore it.  
-!     ------------------------------------------------------------------
+                       call USAF_assignObsData(t2mObs,net32, &
+                            platform32,rtmp,rlat,rlon, &
+                            agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr,&
+                            0., 0.)
 
-                       if (irelh(irecord) .gt. -99999998) then
-                          rrelh = float(irelh(irecord)) / 10000.0
-                          if ( (rrelh .gt. 1.0) .or. (rrelh .lt. 0.0) ) then   
-                             rrelh = -1.0
-                          end if
-                       else if ( (idpt(irecord) .gt. -99999998) .and. &
-                            (rtmp .ne. -1.0) ) then
-                          rdpt = float(idpt(irecord)) / 100.0
-                          rrelh = AGRMET_calcrh_dpt(rtmp, rdpt)
-                          if ( (rrelh .gt. 1.0) .or. (rrelh .lt. 0.0) ) then   
-                             rrelh = -1.0
-                          end if
-                       else
-                          rrelh = -1.0
+                    end if
+                    if (rrelh .gt. 0) then
+                       net32 = blank32
+                       net32 = netyp(irecord)
+                       platform32 = blank32
+                       platform32 = platform(irecord)
+                       if (trim(net32) .eq. 'NULL') then
+                          net32 = 'CDMS'
                        end if
-           
-!     ------------------------------------------------------------------
-!         Constrain surface wind speed to a value between
-!         75 ms-1 and minwind (from control file).
-!         JMOBS winds are scaled by 10.  Bad values are given a value
-!         of -1, so the Barnes scheme will ignore it.
-!     ------------------------------------------------------------------
-
-                       if (ispd(irecord) .gt. -99999998) then
-                          rspd = float(ispd(irecord)) / 10.0
-                          rspd = max( min( rspd, 75.0 ), minwnd )
-                       else
-                          rspd = -1.0
+                       if (trim(platform32) .eq. '-99999999') then
+                          platform32 = '00000000'
                        end if
-                       
-!     ------------------------------------------------------------------
-!         If all the data is out of range and/or missing, don't store
-!         this observation.
-!     ------------------------------------------------------------------
-           
-                       if ( (nint(rtmp)  .gt. 0)  .and. &
-                            (nint(rrelh) .gt. 0)  .and.&
-                            (nint(rspd)  .gt. 0) ) then 
-                          
-!     ------------------------------------------------------------------
-!         If we make it here, the observation probably has some good
-!         data, so increment the observation counter, store the
-!         data into the observation arrays.
-!     ------------------------------------------------------------------
-
-                          ! EMK...Add to data structures.  Handle reformated
-                          ! CDMS data that is missing platform and network
-                          if (rtmp .gt. 0) then
-                             net32 = blank32
-                             net32 = netyp(irecord)
-                             platform32 = blank32
-                             platform32 = platform(irecord)
-                             if (trim(net32) .eq. 'NULL') then
-                                net32 = 'CDMS'
-                             end if
-                             if (trim(platform32) .eq. '-99999999') then
-                                platform32 = '00000000'
-                             end if
-                             call USAF_assignObsData(t2mObs,net32, &
-                                  platform32,rtmp,rlat,rlon, &
-                                  agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr,&
-                                  0., 0.)
-
-                          end if
-                          if (rrelh .gt. 0) then
-                             net32 = blank32
-                             net32 = netyp(irecord)
-                             platform32 = blank32
-                             platform32 = platform(irecord)
-                             if (trim(net32) .eq. 'NULL') then
-                                net32 = 'CDMS'
-                             end if
-                             if (trim(platform32) .eq. '-99999999') then
-                                platform32 = '00000000'
-                             end if
-                             call USAF_assignObsData(rh2mObs,net32, &
-                                  platform32,rrelh,rlat,rlon, &
-                                  agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr, &
-                                  0., 0.)
-                          end if
-                          if (rspd .gt. 0) then
-                             net32 = blank32
-                             net32 = netyp(irecord)
-                             platform32 = blank32
-                             platform32 = platform(irecord)
-                             if (trim(net32) .eq. 'NULL') then
-                                net32 = 'CDMS'
-                             end if
-                             if (trim(platform32) .eq. '-99999999') then
-                                platform32 = '00000000'
-                             end if
-                             call USAF_assignObsData(spd10mObs,net32, &
-                                  platform32,rspd,rlat,rlon, &
-                                  agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr, &
-                                  0., 0.)
-                          end if
-
-                          obscnt         = obscnt + 1
-
-                          ri(obscnt)     = rigrid
-                          rj(obscnt)     = rjgrid
-                          obstmp(obscnt) = rtmp
-                          obsrlh(obscnt) = rrelh
-                          obsspd(obscnt) = rspd
-                       endif
-!     ------------------------------------------------------------------
-!         If we have reached the number of obs that our hard-wired
-!         arrays can hold, then exit the loop.
-!     ------------------------------------------------------------------
-
-                       if ( obscnt .eq. isize ) then
-                          write(LIS_logunit,*) &
-                               '[WARN] ROUTINE GETSFC: REACHED MAXIMUM NUMBER OF SFC OBS TO SAVE IN MEMORY'
-                          message(1) = 'program:  LIS'
-                          message(2) = '  routine:  AGRMET_getsfc'
-                          message(3) = '  reached maximum number of sfc obs to save memory in memory'
-                          alert_number = alert_number + 1
-                          if(LIS_masterproc) then
-                             call lis_alert( 'LIS.AGRMET_getsfc', &
-                                  alert_number, &
-                                  message )
-                          endif
-                          message = ''
-                          exit ! Jump out of hemi do loop
+                       call USAF_assignObsData(rh2mObs,net32, &
+                            platform32,rrelh,rlat,rlon, &
+                            agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr, &
+                            0., 0.)
+                    end if
+                    if (rspd .gt. 0) then
+                       net32 = blank32
+                       net32 = netyp(irecord)
+                       platform32 = blank32
+                       platform32 = platform(irecord)
+                       if (trim(net32) .eq. 'NULL') then
+                          net32 = 'CDMS'
                        end if
-                    endif
+                       if (trim(platform32) .eq. '-99999999') then
+                          platform32 = '00000000'
+                       end if
+                       call USAF_assignObsData(spd10mObs,net32, &
+                            platform32,rspd,rlat,rlon, &
+                            agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr, &
+                            0., 0.)
+                    end if
+
+                    obscnt         = obscnt + 1
+                    ri(obscnt)     = rigrid
+                    rj(obscnt)     = rjgrid
+                    obstmp(obscnt) = rtmp
+                    obsrlh(obscnt) = rrelh
+                    obsspd(obscnt) = rspd
                  endif
-              endif
-           enddo
-        endif
-     endif
 
+                 !-----------------------------------------------------
+                 ! If we have reached the number of obs that our
+                 ! hard-wired arrays can hold, then exit the loop.
+                 !-----------------------------------------------------
+
+                 if ( obscnt .eq. isize ) then
+                    write(LIS_logunit,*) &
+                         '[WARN] ROUTINE GETSFC: REACHED MAXIMUM NUMBER OF SFC OBS TO SAVE IN MEMORY'
+                    message(1) = 'program:  LIS'
+                    message(2) = '  routine:  AGRMET_getsfc'
+                    message(3) = '  reached maximum number of sfc obs to save memory in memory'
+                    alert_number = alert_number + 1
+                    if(LIS_masterproc) then
+                       call lis_alert( 'LIS.AGRMET_getsfc', &
+                            alert_number, &
+                            message )
+                    endif
+                    message = ''
+                    exit ! Jump out of hemi do loop
+                 endif ! if ( obscnt .eq. isize )
+              endif ! if in hemispheric bounds
+           end do ! do irecord=1, nsize
+        end if ! if (ierr2.eq.0)
+     endif ! if(ierr1.eq.0)
      if (use_wigos_sfcobs) exit ! New sfcobs file is global
-  enddo
+   enddo ! do hemi = 1,2
 
   deallocate ( idpt )
   deallocate ( ilat )

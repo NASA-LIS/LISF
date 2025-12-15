@@ -53,7 +53,11 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      !ag (12Sep2019)
      rivsto, fldsto, fldfrc,&
      parameters ,                                                & ! out Noah MP only
-     sfcheadrt , INFXSRT, soldrain)                                ! For WRF-Hydro
+     sfcheadrt , INFXSRT, soldrain                               & ! For WRF-Hydro
+#ifdef PARFLOW
+     ,qinsur, etrani                                             & ! out Noah MP only
+#endif
+     )
 
   use module_sf_noahmpdrv_401, only: noahmplsm_401
   use module_sf_noahmplsm_401
@@ -259,7 +263,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real,   intent(in)  :: rivsto               ! river storage [m s-1]
   real,   intent(in)  :: fldsto               ! flood storage [m s-1]
   real,   intent(in)  :: fldfrc               ! flooded fraction [-]
-
+#ifdef PARFLOW
+  real, intent(out) :: qinsur        ! water input on soil surface [m/s]
+  real, intent(out) :: etrani(nsoil) ! evapotranspiration from soil layers [mm s-1]
+#endif
 
   type(noahmp_parameters) :: parameters
 
@@ -468,6 +475,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, dimension(1,1) :: rivstoin
   real, dimension(1,1) :: fldstoin
   real, dimension(1,1) :: fldfrcin
+#ifdef PARFLOW
+  real, dimension(1,1) :: qinsurout
+  real, dimension(1,nsoil,1) :: etraniout
+#endif
 
 
    ids = 1
@@ -727,6 +738,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   chb2out(1,1)  = chb2
   relsmcout(1,:,1)  = relsmc(:)
   rsout(1,1)    = rs
+#ifdef PARFLOW
+  qinsurout(1,1) = qinsur
+  etraniout(1,:,1) = etrani(:)
+#endif
 
 ! Code from module_NoahMP_hrldas_driver.F.  Initial guess only.
   if ((trim(LIS_rc%startcode).eq."coldstart").and.(itimestep.eq.1)) then
@@ -785,6 +800,9 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
        rivstoin,fldstoin,fldfrcin,                                 &
 #ifdef WRF_HYDRO
        sfcheadrt, INFXSRT, soldrain,                               &
+#endif
+#ifdef PARFLOW
+       qinsurout, etraniout,                                       &
 #endif
        ids,ide,  jds,jde,  kds,kde,                                &
        ims,ime,  jms,jme,  kms,kme,                                &
@@ -914,6 +932,10 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
 #ifndef WRF_HYDRO
   INFXSRT  = 0.0
   soldrain = 0.0
+#endif
+#ifdef PARFLOW
+  qinsur = qinsurout(1,1)
+  etrani(:) = etraniout(1,:,1)
 #endif
 
   deallocate(zsoil)

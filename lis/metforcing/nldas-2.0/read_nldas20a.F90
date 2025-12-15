@@ -33,7 +33,7 @@ subroutine read_nldas20a(n,kk,findex,order,month,name,ferror)
   integer, intent(in)          :: kk     ! Forecast member index
   integer, intent(in)          :: findex ! Forcing index
   integer, intent(in)          :: order
-  integer, intent(out)         :: month
+  integer, intent(in)         :: month
   character(len=*), intent(in) :: name
   integer, intent(out)         :: ferror
 !
@@ -69,7 +69,7 @@ subroutine read_nldas20a(n,kk,findex,order,month,name,ferror)
 !EOP
   integer                :: iv,ftn
   integer                :: nldas20,paramid
-  integer                :: k,t,c,r,iret,rc
+  integer                :: k,t,c,r,iret
   real, parameter        :: missingValue = -9999.0
   integer, parameter     :: nvars = 11
   logical                :: pcp_flag
@@ -80,6 +80,9 @@ subroutine read_nldas20a(n,kk,findex,order,month,name,ferror)
   real, allocatable      :: nldas20_forcing(:,:)
   real                   :: varfield(LIS_rc%lnc(n),LIS_rc%lnr(n))
   real    :: dummy(nldas20_struc(n)%ncold,nldas20_struc(n)%nrold)
+
+  external :: nldas20_ec_removal
+  external :: interp_nldas20
 
   ferror = 1
   iv = 0
@@ -264,6 +267,10 @@ subroutine interp_nldas20(n,findex,month,pcp_flag,input_size,    &
   integer :: count1,i,j
   real, dimension(nc*nr) :: output_data
   logical*1 :: output_bitmap(nc*nr)
+
+  external :: bilinear_interp
+  external :: conserv_interp
+  external :: neighbor_interp
 
 !=== End variable declarations
 

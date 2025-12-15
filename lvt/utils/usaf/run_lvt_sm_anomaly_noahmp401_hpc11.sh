@@ -28,14 +28,15 @@ fi
 
 # Environment
 module use --append /ccs/home/emkemp/hpc11/privatemodules
-module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12
-module load afw-python/3.11-202406
+module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0
+module load afw-python/3.11-202511
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
 fi
 
-lvtconfig=configs/lvt.config.template_sm_anomaly_noahmp401
+#lvtconfig=configs/lvt.config.template_sm_anomaly_noahmp401
+lvtconfig=configs/lvt.config.sm_anomaly
 
 if [ ! -e $lvtconfig ] ; then
    echo "ERROR, $lvtconfig does not exist!" && exit 1

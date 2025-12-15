@@ -241,10 +241,14 @@ subroutine NoahMP401_main(n)
     real                 :: TWS_out                ! terrestrial water storage [mm]
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
-   
+
     real, dimension(1,1) :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
     real, dimension(1,1) :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
     real, dimension(1,1) :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
+#ifdef PARFLOW
+    real                 :: tmp_qinsur             ! water input on soil surface [m/s]
+    real,allocatable     :: tmp_etrani(:)          ! evapotranspiration from soil layers [mm s-1]
+#endif
 
         !ag (05Jan2021)
     real                 :: tmp_rivsto
@@ -269,6 +273,9 @@ subroutine NoahMP401_main(n)
     allocate( tmp_snowliq( NOAHMP401_struc(n)%nsnow ) )
     allocate( tmp_smoiseq( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_gecros_state( 60 ) )
+#ifdef PARFLOW
+    allocate( tmp_etrani( NOAHMP401_struc(n)%nsoil ) )
+#endif
 
     ! check NoahMP401 alarm. If alarm is ring, run model.
 
@@ -568,7 +575,10 @@ subroutine NoahMP401_main(n)
             tmp_grain           = NOAHMP401_struc(n)%noahmp401(t)%grain
             tmp_gdd             = NOAHMP401_struc(n)%noahmp401(t)%gdd
             tmp_pgs             = NOAHMP401_struc(n)%noahmp401(t)%pgs
-            tmp_sfcheadrt       = NoahMP401_struc(n)%noahmp401(t)%sfcheadrt
+            tmp_sfcheadrt(1,1)  = NoahMP401_struc(n)%noahmp401(t)%sfcheadrt
+#ifdef PARFLOW
+            tmp_etrani(:)       = 0
+#endif
 
 ! Calculate water storages at start of timestep
             startsm = 0.0
@@ -755,7 +765,12 @@ subroutine NoahMP401_main(n)
                                    NOAHMP401_struc(n)%noahmp401(t)%param, & ! out   - relative soil moisture [-]
                                    tmp_sfcheadrt         , & 
                                    tmp_infxs1rt          , &
-                                   tmp_soldrain1rt    ) ! out   - extra output for WRF-HYDRO [m]
+                                   tmp_soldrain1rt         & ! out   - extra output for WRF-HYDRO [m]
+#ifdef PARFLOW
+                                   ,tmp_qinsur             & ! out  - water input on soil surface [m/s]
+                                   ,tmp_etrani             & ! out  - evapotranspiration from soil layers [mm s-1]
+#endif
+                                   )
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff
@@ -869,6 +884,13 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
             NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt(1,1)
             NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt(1,1)
+#ifdef PARFLOW
+            NOAHMP401_struc(n)%noahmp401(t)%wtrflx(1)    = (tmp_qinsur*1000.0) &
+              - ((tmp_edir + tmp_etrani(1)))
+            do i=2, NOAHMP401_struc(n)%nsoil
+              NOAHMP401_struc(n)%noahmp401(t)%wtrflx(i)  = - (tmp_etrani(i))
+            enddo
+#endif
 
             ! EMK Update RHMin for 557WW
             if (tmp_tair .lt. &
@@ -1403,6 +1425,21 @@ subroutine NoahMP401_main(n)
                        value=tempval,unit='%',direction="-",surface_type=LIS_rc%lsm_index)
             enddo
 
+#ifdef PARFLOW
+            ! output variable: qinsur (unit=kg/m2). ***  water input on soil surface
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QINSUR, value = (tmp_qinsur*1000.0), &
+                                              vlevel=1, unit="kg m-2 s-1", direction="DN", surface_type = LIS_rc%lsm_index)
+
+            ! output variable: etrani (unit=kg/m2). ***  evapotranspiration from soil layers
+            ! output variable: wtrflx (unit=kg/m2). ***  total water flux
+            do i=1, NOAHMP401_struc(n)%nsoil
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ETRANI, value = tmp_etrani(i), &
+                                              vlevel=i, unit="kg m-2 s-1", direction="UP", surface_type = LIS_rc%lsm_index)
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_WTRFLX, value = NOAHMP401_struc(n)%noahmp401(t)%wtrflx(i), &
+                                              vlevel=i, unit="kg m-2 s-1", direction="DN", surface_type = LIS_rc%lsm_index)
+            end do
+
+#endif
             ! reset forcing variables to zeros
             NOAHMP401_struc(n)%noahmp401(t)%tair = 0.0
             NOAHMP401_struc(n)%noahmp401(t)%psurf = 0.0
@@ -1431,6 +1468,9 @@ subroutine NoahMP401_main(n)
     deallocate( tmp_snowliq )
     deallocate( tmp_smoiseq )
     deallocate( tmp_gecros_state )
+#ifdef PARFLOW
+    deallocate( tmp_etrani )
+#endif
 
     ! EMK...See if noahmp401_struc(n)%noahmp401(t)%tair_agl_min needs to be 
     ! reset for calculating RHMin.  
