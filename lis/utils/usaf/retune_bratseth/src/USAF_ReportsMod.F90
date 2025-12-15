@@ -7,7 +7,6 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-
 !
 !
 ! MODULE: USAF_ReportsMod
@@ -17,6 +16,7 @@
 !
 ! REVISION HISTORY:
 ! 26 Oct 2020:  Eric Kemp.  Initial specification.
+! 03 Dec 2024:  Eric Kemp.  Extended station/platform IDs for WIGOS.
 !
 module USAF_ReportsMod
 
@@ -28,8 +28,8 @@ module USAF_ReportsMod
   type Reports
      private
      integer :: nobs
-     character(len=10), allocatable :: networks(:)
-     character(len=10), allocatable :: platforms(:)
+     character(len=32), allocatable :: networks(:)
+     character(len=32), allocatable :: platforms(:)
      character(len=10), allocatable :: yyyymmddhh(:)
      real, allocatable :: latitudes(:)
      real, allocatable :: longitudes(:)
@@ -121,8 +121,8 @@ contains
 
     ! Arguments
     type(Reports), intent(inout) :: this
-    character(len=10), intent(in) :: network
-    character(len=10), intent(in) :: platform
+    character(len=32), intent(in) :: network
+    character(len=32), intent(in) :: platform
     character(len=10), intent(in) :: yyyymmddhh
     real, intent(in) :: latitude
     real, intent(in) :: longitude
@@ -167,8 +167,8 @@ contains
     ! Arguments
     type(Reports), intent(in) :: this
     integer, intent(in) :: index
-    character(len=10), optional, intent(out) :: network
-    character(len=10), optional, intent(out) :: platform
+    character(len=32), optional, intent(out) :: network
+    character(len=32), optional, intent(out) :: platform
     character(len=10), optional, intent(out) :: yyyymmddhh
     real, optional, intent(out) :: latitude
     real, optional, intent(out) :: longitude
@@ -240,8 +240,8 @@ contains
   subroutine getListOfNetworksAndPlatforms(this, networks, platforms)
     implicit none
     type(Reports), intent(in) :: this
-    character(len=10), allocatable, intent(inout) :: networks(:)
-    character(len=10), allocatable, intent(inout) :: platforms(:)
+    character(len=32), allocatable, intent(inout) :: networks(:)
+    character(len=32), allocatable, intent(inout) :: platforms(:)
     integer :: i
     if (this%nobs .eq. 0) return
     allocate(networks(this%nobs))

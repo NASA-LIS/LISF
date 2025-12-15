@@ -14,6 +14,7 @@
 ! 22 Jun 2017  Initial version.........................Eric Kemp/SSAI/NASA
 ! 07 Sep 2018  Changed EMK_ prefix to USAF_............Eric Kemp/SSAI/NASA
 ! 29 Nov 2023  Add QC flags............................Eric Kemp/SSAI/NASA
+! 03 Dec 2024  Extend character ID for WIGOS...........Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 ! Contains data structure and methods for collecting observed, background,
@@ -32,8 +33,8 @@ module USAF_OBAMod
    type OBA
       private
       integer :: nobs
-      character*10, allocatable :: networks(:)
-      character*10, allocatable :: platforms(:)
+      character*32, allocatable :: networks(:)
+      character*32, allocatable :: platforms(:)
       real, allocatable :: latitudes(:) ! Latitude of observation (deg N)
       real, allocatable :: longitudes(:) ! Longitude of observation (deg E)
       real, allocatable :: O(:) ! Observation values
@@ -75,14 +76,14 @@ contains
 
    !---------------------------------------------------------------------------
    ! Constructor
-   function newOBA(nest,maxobs) result(this)
-      
+   function newOBA(nest, maxobs) result(this)
+
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
 
       ! Defaults
       implicit none
-      
+
       ! Arguments
       integer,intent(in) :: nest
       integer,intent(in), optional :: maxobs
@@ -145,8 +146,8 @@ contains
 
    !---------------------------------------------------------------------------
    ! Add new diagnostics from one observation to the data structure.
-   subroutine assignOBA(this,network,platform,latitude,longitude,O,B,A, &
-        qc, set_qc_good)
+   subroutine assignOBA(this, network, platform, latitude, longitude, &
+        O, B, A, qc, set_qc_good)
 
       ! Imports
       use LIS_logmod, only : LIS_logunit
@@ -156,8 +157,8 @@ contains
 
       ! Arguments
       type(OBA), intent(inout) :: this
-      character(len=10), intent(in) :: network
-      character(len=10), intent(in) :: platform
+      character(len=32), intent(in) :: network
+      character(len=32), intent(in) :: platform
       real, intent(in) :: latitude
       real, intent(in) :: longitude
       real, intent(in) :: O
@@ -201,7 +202,7 @@ contains
 
    !---------------------------------------------------------------------------
    ! Write diagnostic output to ASCII file.
-   subroutine writeToFile(this,filename)
+   subroutine writeToFile(this, filename)
 
       ! Imports
       use LIS_logMod, only: LIS_getNextUnitNumber, LIS_releaseUnitNumber, &
@@ -225,7 +226,7 @@ contains
       iunit = LIS_getNextUnitNumber()
 
       ! Open output file
-      open( unit = iunit, &
+      open(unit = iunit, &
            file=trim(filename), &
            iostat = istat)
 
@@ -240,7 +241,7 @@ contains
               trim(this%platforms(j)), this%latitudes(j), &
               this%longitudes(j),&
               this%O(j), this%B(j), this%A(j), qc_string(this%qc(j)+1)
-1000     format(a10,1x,a10,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,a11)
+1000     format(a32,1x,a32,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,a11)
       end do ! j
 
       ! Close file
@@ -250,7 +251,7 @@ contains
 
    !---------------------------------------------------------------------------
    ! Creates filename for OBA statistics
-   subroutine makeFilename(pathOBA,yyyymmddhh,accum,filename)
+   subroutine makeFilename(pathOBA, yyyymmddhh, accum, filename)
 
       ! Imports
       use LIS_constantsMod, only: LIS_CONST_PATH_LEN

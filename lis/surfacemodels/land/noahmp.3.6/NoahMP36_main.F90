@@ -218,6 +218,10 @@ subroutine NoahMP36_main(n)
     ! Code added by Chandana Gangodagamage on 02/25/2019
     real                 :: tmp_infxs1rt           ! variable for LISHydro coupling [mm]
     real                 :: tmp_soldrain1rt        ! variable for LISHydro coupling [mm]
+#ifdef PARFLOW
+    real                 :: tmp_qinsur             ! water input on soil surface [m/s]
+    real,allocatable     :: tmp_etrani(:)          ! evapotranspiration from soil layers [mm s-1]
+#endif
     
     ! SY: Begin for enabling OPTUE
     ! SY: Begin corresponding to REDPRM
@@ -331,6 +335,9 @@ subroutine NoahMP36_main(n)
     allocate( tmp_zss( NOAHMP36_struc(n)%nsoil+NOAHMP36_struc(n)%nsnow) )
     allocate( tmp_snowice( NOAHMP36_struc(n)%nsnow ) )
     allocate( tmp_snowliq( NOAHMP36_struc(n)%nsnow ) )
+#ifdef PARFLOW
+    allocate( tmp_etrani( NOAHMP36_struc(n)%nsoil ) )
+#endif
     
     ! check NoahMP36 alarm. If alarm is ring, run model. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP36 model alarm")
@@ -611,6 +618,9 @@ subroutine NoahMP36_main(n)
 #ifdef WRF_HYDRO
             tmp_sfcheadrt   = NoahMP36_struc(n)%noahmp36(t)%sfcheadrt
 #endif
+#ifdef PARFLOW
+            tmp_etrani(:)   = 0
+#endif
             ! SY: End corresponding to read_mp_veg_parameters
             ! SY: End for enabling OPTUE: get calibratable parameters
             call noahmp_driver_36(LIS_localPet, t,tmp_landuse_tbl_name  , & ! in    - Noah model landuse parameter table [-]
@@ -832,7 +842,12 @@ subroutine NoahMP36_main(n)
                                   tmp_fldsto            , & ! in   - flood storage [m/s]
                                   tmp_fldfrc            , & ! in   - flood storage [m/s]
                                   
-                                  tmp_sfcheadrt         )   ! out   - extra output for WRF-HYDRO [m]
+                                  tmp_sfcheadrt           & ! out  - extra output for WRF-HYDRO [m]
+#ifdef PARFLOW
+                                  ,tmp_qinsur             & ! out  - water input on soil surface [m/s]
+                                  ,tmp_etrani             & ! out  - evapotranspiration from soil layers [mm s-1]
+#endif
+                                  )
             
             !Added by Chandana Gangodagamage
             !obtain infiltration excess and soil drain from model physics 
@@ -943,6 +958,13 @@ subroutine NoahMP36_main(n)
             !Added by Chandana Gangodagamage
             NOAHMP36_struc(n)%noahmp36(t)%infxs1rt     = tmp_infxs1rt
             NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt  = tmp_soldrain1rt
+#ifdef PARFLOW
+            NOAHMP36_struc(n)%noahmp36(t)%wtrflx(1)    = (tmp_qinsur*1000.0) &
+              - ((tmp_edir + tmp_etrani(1)))
+            do i=2, NOAHMP36_struc(n)%nsoil
+              NOAHMP36_struc(n)%noahmp36(t)%wtrflx(i)  = - (tmp_etrani(i))
+            enddo
+#endif
 
             ![ 1] output variable: soil_temp (unit=K). ***  soil layer temperature
             soil_temp(1:NOAHMP36_struc(n)%nsoil) = NOAHMP36_struc(n)%noahmp36(t)%sstc(NOAHMP36_struc(n)%nsnow+1 : NOAHMP36_struc(n)%nsoil+NOAHMP36_struc(n)%nsnow)
@@ -1463,6 +1485,21 @@ subroutine NoahMP36_main(n)
                  tmp_subsnow, vlevel=1,         &
                  unit="kg m-2 s-1", direction="-", surface_type = LIS_rc%lsm_index)
             
+#ifdef PARFLOW
+            ! output variable: qinsur (unit=kg/m2). ***  water input on soil surface
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QINSUR, value = (tmp_qinsur*1000.0), &
+                                              vlevel=1, unit="kg m-2 s-1", direction="DN", surface_type = LIS_rc%lsm_index)
+
+            ! output variable: etrani (unit=kg/m2). ***  evapotranspiration from soil layers
+            ! output variable: wtrflx (unit=kg/m2). ***  total water flux
+            do i=1, NOAHMP36_struc(n)%nsoil
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ETRANI, value = tmp_etrani(i), &
+                                              vlevel=i, unit="kg m-2 s-1", direction="UP", surface_type = LIS_rc%lsm_index)
+                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_WTRFLX, value = NOAHMP36_struc(n)%noahmp36(t)%wtrflx(i), &
+                                              vlevel=i, unit="kg m-2 s-1", direction="DN", surface_type = LIS_rc%lsm_index)
+            end do
+
+#endif
             ! reset forcing variables to 0 for accumulation 
             NOAHMP36_struc(n)%noahmp36(t)%tair = 0.0
             NOAHMP36_struc(n)%noahmp36(t)%psurf = 0.0
@@ -1486,4 +1523,7 @@ subroutine NoahMP36_main(n)
     deallocate( tmp_zss )
     deallocate( tmp_snowice )
     deallocate( tmp_snowliq )
+#ifdef PARFLOW
+    deallocate( tmp_etrani )
+#endif
 end subroutine NoahMP36_main

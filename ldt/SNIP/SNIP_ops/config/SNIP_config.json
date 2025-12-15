@@ -1,0 +1,12 @@
+{
+  "target_datetime": "201902131800",
+  "project_path": "/discover/nobackup/kyang17/projects/usaf_lis/kyang17/test_case/SNIP_ops/",
+  "amsr2_path": "data/amsr2/",
+  "amsr2_merge_path": "data/amsr2_merge",
+  "output_dir": "data/output",
+  "model_path": "data/models/model.json",
+  "template_path": "data/template/USAFSI_2024123112.nc",
+  "reproject_USAF": true,
+  "source": "NOAA",
+  "_comment": "source: JAXA or NOAA; land_frac_th: land and water fraction threshold, only grids with more than 90% of the land are used."
+}

@@ -24,6 +24,7 @@ REVISION HISTORY:
 16 Dec 2020: Eric Kemp. Reorganized most driver code into new function that
              can be called directly (via Python module import) instead of
              via shell call.
+10 Dec 2024: Eric Kemp. Updates to support WIGOS.
 """
 
 # Standard modules
@@ -122,14 +123,15 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
             with open(file, "r", encoding="ascii") as infile:
                 lines = infile.readlines()
             for line in lines[1:]:
-                network = line.split()[0]
-                platform = line.split()[1]
+                network = line[0:31].lstrip()
+                platform = line[32:64].lstrip()
                 if is_sat(platform):
                     continue
                 if platform not in data:
                     data[platform] = []
-                obs = line.split()[4]
-                back = line.split()[5]
+                obs = line[65:].split()[2]
+                back = line[65:].split()[3]
+
                 data[platform].append(f"{network}:{obs}:{back}")
 
         # Now, loop through each station and calculate the mean OMB.
