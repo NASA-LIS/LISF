@@ -727,7 +727,7 @@ class S2Srun(DownloadForecasts):
 
             # logging jobs
             if cur_subdir != subdir:
-                if cur_subdir != '':
+                if cur_subdir != '' and cur_subdir not in ["bcsd_fcst", "ldt_ics"]:
                     os.chdir(self.scrdir)
                     sec_ids = get_previds(jfile)
                     log_id = submit_slurm_job("ghis2s_log.sh", prev_id=sec_ids)
