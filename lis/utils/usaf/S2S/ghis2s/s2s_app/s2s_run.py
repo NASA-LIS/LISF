@@ -801,6 +801,11 @@ class S2Srun(DownloadForecasts):
             f.write('#SBATCH --nodes=1' + '\n')
             f.write('#SBATCH --account=' + self.config['SETUP']['SPCODE'] + '\n')
             f.write('#SBATCH --time=' + '00:15:00' + '\n')
+            if not is_nccs:
+                _f.write('#SBATCH --cluster-constraint=' + self.config['SETUP']['CONSTRAINT'] + '\n')
+                _f.write('#SBATCH --partition=batch' + '\n')
+                _f.write('#SBATCH --exclusive' + '\n')
+                _f.write('#SBATCH --mem=0' + '\n')
             f.write('#SBATCH --output ' + f"{self.scrdir}logs/ghi_log_%j.out" + '\n')
             f.write('#SBATCH --error ' + f"{self.scrdir}logs/ghi_log_%j.err" + '\n')
             f.write("set -eu\n")
