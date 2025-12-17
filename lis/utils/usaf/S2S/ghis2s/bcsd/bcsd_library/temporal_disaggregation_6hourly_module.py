@@ -123,6 +123,7 @@ resolution_x, resolution_y, time_increment):
     """write netcdf"""
     n_times = len(dates)
     complevel = 6
+    lat_chunk, lon_chunk = len(lats), len(lons)
     # Determine optimal chunking based on grid size
     if len(lats) == 1800 and len(lons) == 3600:
         # Medium resolution: ~0.1° grid
@@ -134,7 +135,7 @@ resolution_x, resolution_y, time_increment):
 
     else:
         # Fallback for other grid sizes
-        time_chunk = min(24, n_times)
+        time_chunk = 1
 
     rootgrp = nc4_dataset(outfile, 'w', format='NETCDF4')
     time = rootgrp.createDimension('time', None)
@@ -151,7 +152,7 @@ resolution_x, resolution_y, time_increment):
                                     zlib=True,
                                     complevel=complevel,
                                     shuffle=True,
-                                    chunksizes=(time_chunk, LAT_CHUNK, LON_CHUNK),
+                                    chunksizes=(time_chunk, lat_chunk, lon_chunk),
                                     least_significant_digit=sig_digit)
     rootgrp.missing_value = -9999
     rootgrp.description = description
