@@ -563,11 +563,11 @@ def write_ncfile(out_xr, outfile, encoding, logger):
                     out_xr_rechunked = out_xr.chunk(rechunk_dict)
                 out_xr_rechunked.to_netcdf(outfile, format='NETCDF4', encoding=updated_encoding, engine='netcdf4')
             else:
-                logger[0].warning("Could not detect spatial dimensions, using standard write", subtask=logger[1])
+                logger[0].info("Could not detect spatial dimensions, using standard write to NetCDF file", subtask=logger[1])
                 out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding, engine='netcdf4')
 
         else:
-            logger[0].warning("Data already computed, standard write", subtask=logger[1])
+            logger[0].info("Pre-computed xarray dataset detected, writing directly to NetCDF file", subtask=logger[1])
             out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding, engine='netcdf4')
 
         return
