@@ -10,6 +10,7 @@
 # REVISION HISTORY:
 # 25 Oct 2021: Eric Kemp/SSAI, first version
 # 02 Jun 2023: K. Arsenault + S. Mahanama, updated 557 WW file conventions.
+# 09 Dec 2025: K. Arsenault; Added more variables for weekly / monthly outputs
 #
 #------------------------------------------------------------------------------
 """
@@ -17,9 +18,8 @@
 import sys
 import os
 import glob
-import xarray as xr
-import numpy as np
 import gc
+import numpy as np
 from ghis2s.shared.utils import load_ncdata
 from ghis2s.s2splots import plot_utils
 
@@ -42,6 +42,10 @@ def _get_surface_st(sel_cim_data):
 def _get_surface_sm(sel_cim_data):
     """Return surface soil moisture."""
     return sel_cim_data.SoilMoist_tavg.isel(soil_layer=0)
+
+def _get_surface_relsm(sel_cim_data):
+    """Return relative surface soil moisture."""
+    return sel_cim_data.RelSMC_tavg.isel(soil_layer=0)
 
 def _get_tws(sel_cim_data):
     """Return terrestrial water storage."""
@@ -96,6 +100,15 @@ def sel_var(sel_cim_data, var_name, model):
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
+    elif var_name == "TOP40RELSM":
+        if model in ('NOAHMP', 'NoahMP'):
+            term1 = sel_cim_data.RelSMC_tavg.isel(soil_layer=0) * 0.1
+            term2 = sel_cim_data.RelSMC_tavg.isel(soil_layer=1) * 0.3
+            var_sel_clim_data = term1 + term2
+        else:
+            print(f"[ERR] Unknown model {model}")
+            sys.exit(1)
+
     elif var_name == 'Total-SM':
         if model == 'CLSM':
             # for clsm the total soil moisture is in the third layer
@@ -121,6 +134,7 @@ def sel_var(sel_cim_data, var_name, model):
         # based on the variable name.
         selections = {
             "SFCSM" : _get_surface_sm,
+            "SFCRELSM" : _get_surface_relsm,
             "TWS" : _get_tws,
             "Precip" : _get_precip,
             "AirT" : _get_air_t,
@@ -160,6 +174,8 @@ UNITS_ANOM = {
     "RZSM" : "m3 m-3",
     "TOP40SM" : "m3 m-3",
     "SFCSM" : "m3 m-3",
+    "SFCRELSM" : "1",
+    "TOP40RELSM" : "1",
     "TWS" : "mm",
     "Precip" : "kg m-2",
     "AirT" : "K",
@@ -167,12 +183,15 @@ UNITS_ANOM = {
     "Streamflow" : "m3 s-1",
     "SWE" : "kg m-2",
     "SnowDepth" : "kg m-2",
+    "SFCST" : "K",
     "TOP40ST" : "K",
 }
 UNITS_SANOM = {
     "RZSM" : "1",
     "TOP40SM" : "1",
     "SFCSM" : "1",
+    "SFCRELSM" : "1",
+    "TOP40RELSM" : "1",
     "TWS" : "1",
     "Precip" : "1",
     "AirT" : "1",
@@ -180,6 +199,7 @@ UNITS_SANOM = {
     "Streamflow" : "1",
     "SWE": "1",
     "SnowDepth": "1",
+    "SFCST" : "1",
     "TOP40ST" : "1",    
 }
 
@@ -187,6 +207,8 @@ LONG_NAMES_SANOM = {
     "RZSM" : "Root zone soil moisture standardized anomaly",
     "TOP40SM" : "Top 0-40 cm soil moisture standardized anomaly",
     "SFCSM" : "Surface soil moisture standardized anomaly",
+    "SFCRELSM" : "Relative surface soil moisture standardized anomaly",
+    "TOP40RELSM" : "Top 0-40 cm relative soil moisture standardized anomaly",
     "TWS" : "Terrestrial water storage standardized anomaly",
     "Precip" : "Total precipitation amount standardized anomaly",
     "AirT" : "Air temperature standardized anomaly",
@@ -194,6 +216,7 @@ LONG_NAMES_SANOM = {
     "Streamflow" : "Streamflow standardized anomaly",
     "SWE": "Snow water equivalent standardized anomaly",
     "SnowDepth": " Snowdepth standardized anomaly",
+    "SFCST" : "Top 0-10 cm soil temperature standardized anomaly",
     "TOP40ST" : "Top 0-40 cm soil temperature standardized anomaly",
 }
 
@@ -201,6 +224,8 @@ LONG_NAMES_ANOM = {
     "RZSM" : "Root zone soil moisture anomaly",
     "TOP40SM" : "Top 0-40 cm soil moisture anomaly",
     "SFCSM" : "Surface soil moisture anomaly",
+    "SFCRELSM" : "Relative surface soil moisture anomaly",
+    "TOP40RELSM" : "Top 0-40 cm relative surface soil moisture anomaly",
     "TWS" : "Terrestrial water storage anomaly",
     "Precip" : "Total precipitation amount anomaly",
     "AirT" : "Air temperature anomaly",
@@ -208,6 +233,7 @@ LONG_NAMES_ANOM = {
     "Streamflow" : "Streamflow anomaly",
     "SWE": "Snow water equivalent anomaly",
     "SnowDepth": "Snowdepth anomaly",
+    "SFCST" : "Top 0-10 cm soil temperature anomaly",
     "TOP40ST" : "Top 0-40 cm soil temperature anomaly",    
 }
 

@@ -11,11 +11,11 @@
 **Figure Caption**: This figure depicts the information flow in GHIREPOS/ghis2s_program.py coupled with GHI-S2S, along with the output E2ES directory tree. The embedded Cylc-generated workflow graph illustrates the complexity of the end-to-end GHI-S2S forecast system, which involves 7 main steps (LISDA, LDT-ICS, BCSD, FCST, S2SPOST, S2SMETRICS, and S2SPLOTS) executed on a predefined schedule. To maintain organization, each month's forecast-related scripts and links are created under the scratch/YYYYMM/ directory, keeping the main E2ESDIR clean and tidy.
 
 # (1) The ghis2s Python Package
-We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at 16WS. The core component is the [*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py) Python module -- the master script containing `S2Srun` class.
+We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at 16WS. The core component is the [*s2s_run.py*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py) Python module -- the master script containing `S2Srun` class.
 
 ## Configuration
 
-The `S2Srun` class requires only one input file: a YAML [*configuration file*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_config_global_fcast) containing system and experiment-related parameters/paths for the forecast. This configuration file must be placed in the E2ESDIR directory.
+The `S2Srun` class requires only one input file: a YAML [*configuration file*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_config_global_fcast) containing system and experiment-related parameters/paths for the forecast. This configuration file must be placed in the E2ESDIR directory.
 
 ## Key Capabilities
 
@@ -30,7 +30,7 @@ The `S2Srun` class provides the following functionality:
    - Selected NMME models 
    - Requirements specified in the forecast configuration file
      
-   **Note:** The flow.cylc file uses [this global.cylc](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/cylc_script/global.cylc) configuration file
+   **Note:** The flow.cylc file uses [this global.cylc](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/ghis2s/cylc_script/global.cylc) configuration file
 
 ## Methods
 
@@ -48,7 +48,7 @@ These methods correspond to the 7 main steps of the end-to-end forecast process.
 
 ## Integration
 
-The `ghis2s` Python package includes a supplementary program, [**ghis2s_program.py**](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/cylc_script/ghis2s_program.py), designed to couple GHI-S2S with operational GHIREPOS systems. This program is provided by the LIS team as a foundation for GHIREPOS integration, with 16WS personnel free to edit, update, and customize it according to their operational requirements.
+The `ghis2s` Python package includes a supplementary program, [**ghis2s_program.py**](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/ghis2s/cylc_script/ghis2s_program.py), designed to couple GHI-S2S with operational GHIREPOS systems. This program is provided by the LIS team as a foundation for GHIREPOS integration, with 16WS personnel free to edit, update, and customize it according to their operational requirements.
 
 ## Command Line Usage
 
@@ -210,7 +210,7 @@ An example of a **SLURM's srun-free** shell script can be found here:
 
 **e) How does ghis2s differ from other GHI subsystems (GHI-NRT, GHI-MR)?**  
   
-Although the GHI-S2S workflow includes over 150 tasks and is more complex than other subsystems, **the master script of the ghis2s software tool, [*s2s_run.py*](https://github.com/smahanam/LISF-1/blob/parallelizing/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)**, simplifies execution by consolidating all tasks into a single command driven by a unified configuration file.  
+Although the GHI-S2S workflow includes over 150 tasks and is more complex than other subsystems, **the master script of the ghis2s software tool, [*s2s_run.py*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)**, simplifies execution by consolidating all tasks into a single command driven by a unified configuration file.  
 The script automates the execution of all tasks based on their dependencies, effectively eliminating the need for manual intervention.
   
 
