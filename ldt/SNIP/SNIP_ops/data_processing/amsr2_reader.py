@@ -32,6 +32,7 @@ from scipy.interpolate import RectBivariateSpline
 from scipy.spatial import cKDTree
 import xarray as xr
 
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -165,36 +166,33 @@ class AMSR2DataProcessor:
 
         # Current month path
         year_str = target_datetime.strftime('%Y')
-        month_str = target_datetime.strftime('%m')
-        amsr2_path = os.path.join(amsr2_path_root, year_str, month_str)
+        day_of_year = target_datetime.strftime('%j')
+        month = target_datetime.strftime('%m')
+        hour = target_datetime.strftime('%H')  # 24-hour format (00-23)
+        amsr2_path = ''
+        if hour == '00':
+            # Go back one day using datetime arithmetic
+            prev_datetime = target_datetime - timedelta(days=1)
+            year_str = prev_datetime.strftime('%Y')
+            month = prev_datetime.strftime('%m')
+            day_of_year = prev_datetime.strftime('%j')
 
-        # Previous month path using datetime arithmetic
-        prev_month_date = target_datetime.replace(day=1) - \
-            timedelta(days=1)
-        year_str_pre = prev_month_date.strftime('%Y')
-        month_str_pre = prev_month_date.strftime('%m')
-        amsr2_path_prev = os.path.join(amsr2_path_root, year_str_pre, \
-                                       month_str_pre)
+        if self.config.source == 'NOAA':
+            amsr2_path = os.path.join(amsr2_path_root, year_str, day_of_year)
+        elif self.config.source == 'JAXA':
+            amsr2_path = os.path.join(amsr2_path_root, year_str, month)
+        else:
+            logger.error("Wrong Source provided (either NOAA or JAXA)")
+
 
         all_files = []
-        search_paths = [amsr2_path, amsr2_path_prev]
 
-        for path in search_paths:
-            if os.path.exists(path):
-                all_files.extend(glob.glob(os.path.join(path, "*.h5")))
-            else:
-                logger.warning("Path does not exist")
+        if os.path.exists(amsr2_path):
+            all_files.extend(glob.glob(os.path.join(amsr2_path, "*.h5")))
+            logger.info("Found %s files", len(all_files))
+        else:
+            logger.warning("Path does not exist")
 
-        # filter file names for NOAA, as NOAA and JAXA data in the same
-        # directory
-        if self.config.source == 'NOAA':
-            all_files = [f for f in all_files if \
-                         os.path.basename(f).split('_')[1] == 'GW1AM2']
-            logger.info("Found %s files", len(all_files))
-        if self.config.source == 'JAXA':
-            all_files = [f for f in all_files if \
-                         os.path.basename(f).split('_')[0] == 'GW1AM2']
-            logger.info("Found %s files", len(all_files))
         file_list = self._get_file_list(all_files, start_time, \
                                         target_datetime)
         if not file_list:
@@ -222,7 +220,8 @@ class AMSR2DataProcessor:
                 if self.config.source == 'JAXA':  # "JAXA" or "NOAA":
                     orbit = filename.split('_')[2][3]
                     # Only read descending pass
-                    # NOAA: 20250120203202_GW1AM2_202501201817_126A_L1DLRTBR_2210210.h5
+                    # NOAA (sample): 20250120203202_GW1AM2_202501201817_126A_L1DLRTBR_2210210.h5
+                    # NOAA (new): GW1AM2_202501201817_126A_L1DLRTBR_2210210.h5
                     # JAXA: GW1AM2_201904122301_172D_L1SGRTBR_2220220.h5
                     if orbit == 'D':
                         time_str = filename.split('_')[1]
@@ -234,7 +233,7 @@ class AMSR2DataProcessor:
                         if start_time <= file_datetime <= target_datetime:
                             file_list.append(file_path)
                 elif self.config.source == 'NOAA':  # "JAXA" or "NOAA":
-                    time_str = filename.split('_')[0][0:12]
+                    time_str = filename.split('_')[1][0:12]
                     if len(time_str) == 12:  # YYYYMMDD UTC time
                         file_datetime = datetime.strptime(time_str, '%Y%m%d%H%M')
                     else:
