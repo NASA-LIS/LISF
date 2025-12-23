@@ -233,7 +233,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
          endif
          call LIS_endrun
        else
-         if(LIS_masterproc) write(LIS_logunit,*)'[INFO] Opened file: ',infile
+         if(LIS_masterproc) write(LIS_logunit,*)'[INFO] Opened file: ',trim(infile)
        end if
 
       if (princeton_struc(n)%version=="2.2" .OR. princeton_struc(n)%version=="3")then

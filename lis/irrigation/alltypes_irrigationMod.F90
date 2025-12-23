@@ -25,6 +25,7 @@ module alltypes_irrigationMod
 !  14 Apr 2021: Wanshu Nie; Add support for GW/SW irrigation partitioning.
 !  29 Oct 2021: Sarith Mahanama; Added mapping croptypes to irrigation types.
 !  14 Jul 2023: Hiroko Beaudoing; Changed from IRRIGFRAC to IRRIGATEDAREA
+!  31 Aug 2024: Hiroko Beaudoing; Added QRI for runoff recycle in paddy
 !                   
 !
 ! !USES: 
@@ -56,18 +57,30 @@ contains
     type(ESMF_Field)     :: irrigTypeField
     type(ESMF_Field)     :: irrigScheduleTimerField,irrigScheduleStartField
     type(ESMF_Field)     :: irriggwratioField
+    type(ESMF_Field)     :: irrigQRIField
+    type(ESMF_Field)     :: cropgsField
+    type(ESMF_Field)     :: totRField
+    type(ESMF_Field)     :: recRField
+    type(ESMF_Field)     :: outRField
     real,  allocatable   :: irriggwratio(:)
     real,  pointer       :: gwratio(:)
     real,  allocatable   :: irrigFrac(:)
     real,  allocatable   :: irrigRootdepth(:)
     real,  allocatable   :: irrigScale(:)
     real,  allocatable   :: irrigType(:)
+    real,  allocatable   :: irrigQRI(:)       !HKB
     real, pointer        :: frac(:),scale(:),rootdepth(:),irrigRate(:)
     real, pointer        :: itype(:),scheduleTimer(:)
     real, pointer        :: irrigAppRate(:)   !HKB
+    real, pointer        :: qri(:)       !HKB
+    real, pointer        :: cropgs(:)       !HKB
+    real, pointer        :: totR(:)       !HKB
+    real, pointer        :: recR(:)       !HKB
+    real, pointer        :: outR(:)       !HKB
     real*8, pointer      :: scheduleStart(:)
     character*100        :: maxrootdepthfile
     character*50         :: irrigtypetocrop
+    character*200        :: runofffile
     integer              :: nlctypes ! non-crop land cover types
 ! __________________________________________________________
 
@@ -288,6 +301,115 @@ contains
        call LIS_verify(status,&
             'ESMF_StateAdd for irrig_schedule_timer failed in alltypes_irrigation_init')
 
+!HKB ! Read country total Qsb ancillary data and compute QRI
+       call ESMF_ConfigGetAttribute(LIS_config,runofffile,&
+            label="Irrigation runoff recycle input file:",rc=rc)
+       call LIS_verify(rc,&
+            'Irrigation runoff recycle input file: option not specified in the config file')
+       allocate(irrigQRI(LIS_rc%npatch(n,LIS_rc%lsm_index)))  
+       call get_qri(n, irrigQRI, runofffile)
+
+       irrigQRIField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Runoff Recycled to Irrigation", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate failed in alltypes_irrigation_init")
+
+       call ESMF_FieldGet(irrigQRIField,localDE=0,&
+            farrayPtr=qri,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for IrrigQRI')
+       qri = irrigQRI
+
+       call ESMF_StateAdd(irrigState(n),(/irrigQRIField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for irrigQRI failed in alltypes_irrigation_init")
+       deallocate(irrigQRI)
+
+!HKB keep track of growing season flag
+       cropgsField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Crop Growing Season", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate failed in alltypes_irrigation_init")
+
+       call ESMF_AttributeSet(cropgsField,"Units","-",&
+               rc=status)
+       call LIS_verify(status,&
+               'error in ESMF_AttributeSet in alltypes_irrigation_init"')
+
+       call ESMF_FieldGet(cropgsField,localDE=0,&
+            farrayPtr=cropgs,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for cropgrowingseason ')
+       cropgs = -1.0
+
+       call ESMF_StateAdd(irrigState(n),(/cropgsField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for cropgrowingseason failed in alltypes_irrigation_init")
+!HKB keep track of qsb before runoff recycling
+       totRField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Total Subsurface Runoff for Irrigation", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate for totR failed in alltypes_irrigation_init")
+
+       call ESMF_AttributeSet(totRField,"Units","kg m-2 s-1",&
+               rc=status)
+       call LIS_verify(status,&
+               'error in ESMF_AttributeSet for totR in alltypes_irrigation_init"')
+
+       call ESMF_FieldGet(totRField,localDE=0,&
+            farrayPtr=totR,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for totR in alltypes_irrigation_init"')
+       totR = 0.0
+
+       call ESMF_StateAdd(irrigState(n),(/totRField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for totR failed in alltypes_irrigation_init")
+
+       recRField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Recycled Subsurface Runoff for Irrigation", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate for recR failed in alltypes_irrigation_init")
+
+       call ESMF_AttributeSet(recRField,"Units","kg m-2 s-1",&
+               rc=status)
+       call LIS_verify(status,&
+               'error in ESMF_AttributeSet for recR in alltypes_irrigation_init"')
+
+       call ESMF_FieldGet(recRField,localDE=0,&
+            farrayPtr=recR,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for recR in alltypes_irrigation_init"')
+       recR = 0.0
+
+       call ESMF_StateAdd(irrigState(n),(/recRField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for recR failed in alltypes_irrigation_init")
+
+       outRField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Net Output Subsurface Runoff for Irrigation", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate for outR failed in alltypes_irrigation_init")
+
+       call ESMF_AttributeSet(outRField,"Units","kg m-2 s-1",&
+               rc=status)
+       call LIS_verify(status,&
+               'error in ESMF_AttributeSet for outR in alltypes_irrigation_init"')
+
+       call ESMF_FieldGet(outRField,localDE=0,&
+            farrayPtr=outR,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for outR in alltypes_irrigation_init"')
+       outR = 0.0
+
+       call ESMF_StateAdd(irrigState(n),(/outRField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for outR failed in alltypes_irrigation_init")
     enddo
 
   end subroutine alltypes_irrigation_init
@@ -320,11 +442,19 @@ contains
     type(ESMF_Field)    :: irrigRateField,prcpField
     type(ESMF_Field)    :: irrigAppRateField
     type(ESMF_Field)    :: irrigTypeField,irrigScaleField
+    type(ESMF_Field)    :: totRField
+    type(ESMF_Field)    :: recRField
+    type(ESMF_Field)    :: outRField
+    type(ESMF_Field)    :: irrigQRIField
     real,    pointer    :: prcp(:)
     real,    pointer    :: irrigRate(:)
     real,    pointer    :: irrigAppRate(:)
     real,    pointer    :: irrigType(:)
     real,    pointer    :: irrigScale(:)
+    real,    pointer    :: totR(:)
+    real,    pointer    :: recR(:)
+    real,    pointer    :: outR(:)
+    real,    pointer    :: irrigQRI(:)
     real                :: itype1, itype2, itype3
     real, allocatable   :: lcfrac(:)
     integer             :: i,k,col,row
@@ -334,7 +464,7 @@ contains
          "Irrigation rate",&
          irrigRateField,rc=status)
     call LIS_verify(status,&
-         'ESMF_StateGet failed for Irrigation rate')
+         'ESMF_StateGet failed for Irrigation rate in alltypes_irrigation_updates')
     
     call ESMF_FieldGet(irrigRateField,localDE=0,&
          farrayPtr=irrigrate,rc=status)
@@ -369,6 +499,46 @@ contains
     call ESMF_FieldGet(irrigScaleField,localDE=0,&
          farrayPtr=irrigScale,rc=status)
     call LIS_verify(status,'ESMF_FieldGet failed for irrigScale ')
+
+    call ESMF_StateGet(irrigState,&
+         "Total Subsurface Runoff for Irrigation",&
+         totRField,rc=status)
+    call LIS_verify(status,&
+         'ESMF_StateGet failed for Total Subsurface Runoff')
+    
+    call ESMF_FieldGet(totRField,localDE=0,&
+         farrayPtr=totR,rc=status)
+    call LIS_verify(status,'ESMF_FieldGet failed for totR in alltypes_irrigation')
+
+    call ESMF_StateGet(irrigState,&
+         "Recycled Subsurface Runoff for Irrigation",&
+         recRField,rc=status)
+    call LIS_verify(status,&
+         'ESMF_StateGet failed for Recycled Subsurface Runoff')
+    
+    call ESMF_FieldGet(recRField,localDE=0,&
+         farrayPtr=recR,rc=status)
+    call LIS_verify(status,'ESMF_FieldGet failed for recR in alltypes_irrigation')
+
+    call ESMF_StateGet(irrigState,&
+         "Net Output Subsurface Runoff for Irrigation",&
+         outRField,rc=status)
+    call LIS_verify(status,&
+         'ESMF_StateGet failed for Net Output Subsurface Runoff')
+    
+    call ESMF_FieldGet(outRField,localDE=0,&
+         farrayPtr=outR,rc=status)
+    call LIS_verify(status,'ESMF_FieldGet failed for outR in alltypes_irrigation')
+
+    call ESMF_StateGet(irrigState,&
+         "Runoff Recycled to Irrigation",&
+         irrigQRIField,rc=status)
+    call LIS_verify(status,&
+         'ESMF_StateGet failed for Runoff Recycled to Irrigation')
+
+    call ESMF_FieldGet(irrigQRIField,localDE=0,&
+         farrayPtr=irrigQRI,rc=status)
+    call LIS_verify(status,'ESMF_FieldGet failed for IrrigQRI in alltypes_irrigation')
 
     call ESMF_StateGet(LIS_FORC_State(n),&
          trim(LIS_FORC_Rainf%varname(1)),prcpField,&
@@ -427,16 +597,25 @@ contains
                value=itype2,unit="kg m-2 s-1",direction="-",vlevel=1)
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGTFD,&
                value=itype3,unit="kg m-2 s-1",direction="-",vlevel=1)
+
+     ! Write out qsb before runoff recyclyng "Total Subsurface Runoff"
+         call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_TOTR,&
+               value=totR(t),unit="kg m-2 s-1",direction="-",vlevel=1)
+     ! Write out recycled runoff 
+         call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_RECR,&
+               value=recR(t),unit="kg m-2 s-1",direction="-",vlevel=1)
+     ! Write out output runoff 
+         call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_OUTR,&
+               value=outR(t),unit="kg m-2 s-1",direction="-",vlevel=1)
+     ! Write out QRI
+         call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_QRI,&
+               value=irrigQRI(t),unit="-",direction="-",vlevel=1)
+
          ! 3D land cover fractions 
          i = LIS_domain(n)%tile(t)%vegt
          row = LIS_domain(n)%tile(t)%row
          col = lIS_domain(n)%tile(t)%col
          lcfrac(i) = LIS_LMLC(n)%landcover(col, row, i)
-! limit printing this out to frst time stemp
-!         write(*,101) t,i,col,row,lcfrac(i),irrigType(t),irrigScale(t),&
-!                      LIS_irrig_struc(n)%plantDay(t,:), &
-!                      LIS_irrig_struc(n)%harvestDay(t,:)
-!    101 format (i5,i4,2i4,f10.6,f4.0,f7.4,2f7.0,2f7.0)
          do k = 1, LIS_rc%nsurfacetypes
           call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRLCFRAC,&
                vlevel=k,value=lcfrac(k),unit="-",direction="-")
@@ -449,7 +628,6 @@ contains
     deallocate(lcfrac)
     
   end subroutine alltypes_irrigation_updates
-
 
   subroutine read_irrigFrac(n,frac)
 
@@ -481,8 +659,6 @@ contains
        
        allocate(glb_frac(LIS_rc%gnc(n),LIS_rc%gnr(n)))
 
-!       ios = nf90_inq_varid(nid,'IRRIGFRAC',fracId)
-!       call LIS_verify(ios,'nf90_inq_varid failed for IRRIGFRAC')
        ios = nf90_inq_varid(nid,'IRRIGATEDAREA',fracId)
        call LIS_verify(ios,'nf90_inq_varid failed for IRRIGATEDAREA')
        
@@ -730,7 +906,6 @@ contains
             else
                rootdepth(t) = 0
             endif
-!HKB check            write(99,*) t,col,row,l_croptype(col,row),rootd(nint(l_croptype(col,row)))
          enddo
          deallocate(l_croptype)
 
@@ -1031,13 +1206,7 @@ contains
          end do
          
          call MA_USA%git(LIS_rc%gnc(n),LIS_rc%gnr(n),cell_area, l_county, l_croptype, l_itype, PREFTYPE, usa = .true.)
-         !do t = 21, 46
-         !   do j=1, LIS_rc%lnr(n)
-         !      write(800, '(1440i3)') NINT(preftype(:,j,t))
-         !   end do
-         !end do
          deallocate (cell_area)
-         !stop
        endif   !irrigtypetocrop .eq. "distribute"
 
        TILE_LOOP: do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
@@ -1083,6 +1252,7 @@ contains
               else
                  itype(t) = 0         ! no irrigation
               endif
+              write(LIS_logunit,*) "check dominant",t,itype(t) 
            case("distribute")
 
               itype(t) = PREFTYPE(col,row,vegt)
@@ -1122,6 +1292,156 @@ contains
     endif
 #endif
   end subroutine get_irrigType
+
+  subroutine get_qri(n, irrigQRI, runofffile)
+! Read in preprocessed country-level runoff fields from Irrigation and No irrigation LIS 
+! simulations. Compute runoff recycle to irrigation ratio (QRI).
+! Irrigation Runoff input must be prepared for each run domain and set in config file.
+! In case of Noah, qs is very small and qsb is much larger, so use just qsb.
+! 
+! QRI = 1 – [total qsb from GLNoIrr (km3) / total qsb from GLIrr (km3)]
+!
+! 2025-05-13: reduce the unrecycled runoff fraction to 40% of the present value.
+!             unrecycled runoff fraction = 1 – QRI
+! 2025-06-07: moved runofffile into config
+! 2025-07-08: added using optimized QRI read in from a CSV file
+!
+    use LIS_fileIOMod
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
+!- Inputs/Outputs:
+    integer      :: n
+    real         :: irrigQRI(LIS_rc%npatch(n,LIS_rc%lsm_index))
+    character*200        :: runofffile, oqfile, pifile
+    
+    integer, parameter   :: total_countries = 257
+    integer      :: nid, ios
+    integer      :: t, c, r, col, row
+    integer      :: irrqsbId, noirrqsbId, countryId
+    logical      :: file_exists, file_exists2
+    integer      :: j, ftn, ftn2, error, error2, polyid
+    real         :: val
+    real,  allocatable   :: irr_qsb (:,:)
+    real,  allocatable   :: noirr_qsb (:,:)
+    real,  allocatable   :: country (:,:)
+    real,  allocatable   :: l_irr_qsb (:,:)
+    real,  allocatable   :: l_noirr_qsb (:,:)
+    real,  allocatable   :: l_country (:,:)
+    real,  allocatable   :: optQRI (:)
+   
+    
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+    inquire(file=trim(runofffile), exist=file_exists)
+    if(file_exists) then
+
+       allocate(l_irr_qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+       allocate(l_noirr_qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+       allocate(l_country(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+
+       ios = nf90_open(path=trim(runofffile),mode=NF90_NOWRITE,ncid=nid)
+       call LIS_verify(ios,'Error in nf90_open in the lis input netcdf file')
+
+       write(LIS_logunit,*) "[INFO] Reading in the runoff ratio field ... "
+       
+       allocate(irr_qsb(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+       allocate(noirr_qsb(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+       allocate(country(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+
+       ios = nf90_inq_varid(nid,'GLIrr_QSB_VOL',irrqsbId)
+       call LIS_verify(ios,'nf90_inq_varid failed for GLIrr_QSB_VOL')
+       ios = nf90_get_var(nid, irrqsbId, irr_qsb)
+       call LIS_verify(ios,'nf90_get_var failed for in GLIrr_QSB_VOL')
+       ios = nf90_inq_varid(nid,'GLNoIrr_QSB_VOL',noirrqsbId)
+       call LIS_verify(ios,'nf90_inq_varid failed for GLNoIrr_QSB_VOL')
+       ios = nf90_get_var(nid, noirrqsbId, noirr_qsb)
+       call LIS_verify(ios,'nf90_get_var failed for in GLNoIrr_QSB_VOL')
+       ios = nf90_inq_varid(nid,'COUNTRY',countryId)
+       call LIS_verify(ios,'nf90_inq_varid failed for COUNTRY')
+       ios = nf90_get_var(nid, countryId, country)
+       call LIS_verify(ios,'nf90_get_var failed for in COUNTRY')
+       ios = nf90_close(nid)
+       call LIS_verify(ios,'nf90_close failed in get_qri alltypes_irrigationMod')
+      
+       l_irr_qsb(:,:) = irr_qsb(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            LIS_ewe_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1):&
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+
+       l_noirr_qsb(:,:) = noirr_qsb(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            LIS_ewe_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1):&
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+
+       l_country(:,:) = country(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            LIS_ewe_halo_ind(n,LIS_localPet+1),&
+            LIS_nss_halo_ind(n,LIS_localPet+1):&
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+
+       deallocate(irr_qsb)
+       deallocate(noirr_qsb)
+       deallocate(country)
+
+!      read in Optimized QRI: optQRI(polyid)
+       pifile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/polyid.csv"
+       oqfile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/optQRI.csv"
+       inquire(file=oqfile,exist=file_exists2)
+       if(file_exists2) then
+          write(LIS_logunit,*) "[INFO] Reading in optimized QRI file: ",trim(oqfile)
+          ftn = LIS_getNextUnitNumber()
+          open(ftn,file=oqfile,status='old')
+          ftn2 = LIS_getNextUnitNumber()
+          open(ftn2,file=pifile,status='old')
+          allocate( optQRI(total_countries) )
+          optQRI = -9999.
+          do
+             read(ftn,*,iostat=error) val
+             read(ftn2,*,iostat=error2) j
+             optQRI(j) = val
+             if (error == -1) exit
+          end do
+          call LIS_releaseUnitNumber(ftn)
+          call LIS_releaseUnitNumber(ftn2)
+       else
+          write(LIS_logunit,*) "[ERR] optimized QRI file, ",trim(oqfile),", not found."
+          write(LIS_logunit,*) "[ERR] Stopping program ..."
+          call LIS_endrun()
+       endif
+       write(LIS_logunit,*) "optQRI=",optQRI
+
+!      compute QRI
+       TILE_LOOP: do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+          row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+          if ( l_irr_qsb(col,row) .gt. 0 ) then
+! original QRI formula, test5
+            irrigQRI(t) = 1.0 - (l_noirr_qsb(col,row)/l_irr_qsb(col,row))
+! overwrite with optimized QRI
+            polyid = l_country(col,row)
+            if (optQRI(polyid) .ne. -9999.) then
+               irrigQRI(t) = optQRI(polyid)
+            end if
+          else
+            irrigQRI(t) = 0.0
+          endif
+       enddo TILE_LOOP
+
+       write(LIS_logunit,*) "[INFO] setup Runoff Recycle to Irrigaiton index"
+
+       deallocate(l_irr_qsb)
+       deallocate(l_noirr_qsb)
+       deallocate(l_country)
+       deallocate(optQRI)
+    else
+       write(LIS_logunit,*) "[ERR] no runoff recycle input data"
+       write(LIS_logunit,*) " Stopping program ... "
+       call LIS_endrun()
+    endif
+#endif
+  end subroutine get_qri
 
   subroutine compute_irrigScale(n, irrigFrac, irrigScale)
 ! Compute scale to be applied to irrigation amount when the grid total

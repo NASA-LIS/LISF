@@ -96,6 +96,8 @@
 ! May 2023: Hiroko Beaudoing; Fixed a bug in the schedule option for sprinkler
 ! Nov 2023: Hiroko Beaudoing; Changed sprinkler schedule to irrigate only during 
 !                             the duration. 
+! Sep 2024: Hiroko Beaudoing; Added Runoff Recycling of Irrigation (QRI) and modified 
+!                             Paddy irrigation scheme
 
 !EOP
 
@@ -122,6 +124,11 @@ MODULE IRRIGATION_MODULE
      real,  pointer :: irrigScale(:)
      real,  pointer :: irrigRootDepth(:)
      real,  pointer :: irriggwratio(:)
+     real,  pointer :: irrigQRI(:)
+     real,  pointer :: cropgs(:)
+     real,  pointer :: totR(:)     ! total runoff (qsb)
+     real,  pointer :: recR(:)     ! recycled runoff (qsb)
+     real,  pointer :: outR(:)     ! output net runoff (qsb)
      real*8,  pointer :: irrig_schedule_start(:)
      real,  pointer :: irrig_schedule_timer(:)
      
@@ -152,10 +159,15 @@ contains
     type(ESMF_Field)                        :: irrigAppRateField
     type(ESMF_Field)                        :: irrigScheduleTimerField
     type(ESMF_Field)                        :: irrigScheduleStartField
+    type(ESMF_Field)                        :: irrigQRIField
+    type(ESMF_Field)                        :: cropgsField
+    type(ESMF_Field)                        :: totRField
+    type(ESMF_Field)                        :: recRField
+    type(ESMF_Field)                        :: outRField
     integer                                 :: rc
     
     call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
-    call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
+    call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate in get_irrigstate')    
     call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=IM%irrigRate,rc=rc)
     call LIS_verify(rc,'ESMF_FieldGet failed for Irrigation rate')
     
@@ -215,6 +227,41 @@ contains
          farrayPtr=IM%irrig_schedule_timer,rc=rc)
     call LIS_verify(rc,'ESMF_FieldGet failed for Irrig schedule timer')
 
+    call ESMF_StateGet(irrigState, "Runoff Recycled to Irrigation",&
+         irrigQRIField,rc=rc)
+    call LIS_verify(rc,'ESMF_StateGet failed for QRI')    
+    call ESMF_FieldGet(irrigQRIField, localDE=0,&
+         farrayPtr=IM%irrigQRI,rc=rc)
+    call LIS_verify(rc,'ESMF_FieldGet failed for QRI')
+
+    call ESMF_StateGet(irrigState, "Crop Growing Season",&
+         cropgsField,rc=rc)
+    call LIS_verify(rc,'ESMF_StateGet failed for cropgrowingseason1')    
+    call ESMF_FieldGet(cropgsField, localDE=0,&
+         farrayPtr=IM%cropgs,rc=rc)
+    call LIS_verify(rc,'ESMF_FieldGet failed for cropgrowingseason1')
+
+    call ESMF_StateGet(irrigState, "Total Subsurface Runoff for Irrigation",&
+         totRField,rc=rc)
+    call LIS_verify(rc,'ESMF_StateGet failed for totR 1')    
+    call ESMF_FieldGet(totRField, localDE=0,&
+         farrayPtr=IM%totR,rc=rc)
+    call LIS_verify(rc,'ESMF_FieldGet failed for totR 1')
+
+    call ESMF_StateGet(irrigState, "Recycled Subsurface Runoff for Irrigation",&
+         recRField,rc=rc)
+    call LIS_verify(rc,'ESMF_StateGet failed for recR 1')    
+    call ESMF_FieldGet(recRField, localDE=0,&
+         farrayPtr=IM%recR,rc=rc)
+    call LIS_verify(rc,'ESMF_FieldGet failed for recR 1')
+
+    call ESMF_StateGet(irrigState, "Net Output Subsurface Runoff for Irrigation",&
+         outRField,rc=rc)
+    call LIS_verify(rc,'ESMF_StateGet failed for outR 1')    
+    call ESMF_FieldGet(outRField, localDE=0,&
+         farrayPtr=IM%outR,rc=rc)
+    call LIS_verify(rc,'ESMF_FieldGet failed for outR 1')
+
   END SUBROUTINE get_irrigstate
   
   ! ----------------------------------------------------------------------------
@@ -259,6 +306,7 @@ contains
     logical  :: season_active
     logical  :: irrigOn, irrigStart
     real*8   :: curtime
+    real     :: tile_sat_target, smcpaddy
 
     asmc    = 0.0
     tsmcwlt = 0.0
@@ -352,6 +400,8 @@ contains
     ! Run irrigation model if the crop growing season is active
     ! ----------------------------------------------------------
     
+    write(LIS_logunit,*) 'at ',LIS_rc%time,TileNo,croptype,season_active,ma,irrigStart,irrigOn
+
     CROP_GROWING_SEASON: if (season_active) then
 
        curtime = LIS_rc%time   
@@ -361,13 +411,21 @@ contains
           ! PADDY--continually add water to keep the surface soil layer at 
           ! saturation, which would maximize soil evaporation and recharge, 
           ! as would be the case with ponded water during the growing season
-          IM%irrigRate(TileNo) = (smsat - SMCNT(1))*rdpth(1)*1000.0 * &
-                        (100.0/(100.0-LIS_irrig_struc(nest)%flood_efcor))
-          ! convert from mm to mm/s
-          IM%irrigRate(TileNo) = IM%irrigRate(TileNo)*IM%IrrigScale(TileNo)/LIS_rc%ts
+          ! NEW PADDY--introduce tile_saturation_target soil moisture and 
+          ! irrigate only when surface soil moisture is below the target.
+          ! 10/30: SMCNT(1) passed is sh2o, not smc and rdpth(1) is 0.1 m 
+          ! 1/21/25: IrrigRate = "Total Irrigation" whereas IrrigAppRate = "New Irrigation"
+          tile_sat_target = IM%IrrigScale(TileNo)*smsat + (1.0 - IM%IrrigScale(TileNo))*smref
+          if ( SMCNT(1) .lt. tile_sat_target ) then
+           IM%irrigRate(TileNo) = (tile_sat_target - SMCNT(1))*rdpth(1)*1000.0/LIS_rc%ts
+          else
+           IM%irrigRate(TileNo) = 0.0
+          end if
+          IM%cropgs(TileNo) = 1.0
 
        else  
           ! SPRINKLER, DRIP, or FLOOD
+          IM%cropgs(TileNo) = 1.0
 
           call irrig_trigger ( nest, TileNo, HC, ma, IM%irrigType(TileNo),  &
                                irrigOn, irrigStart, &
@@ -405,6 +463,7 @@ contains
        IM%irrigRate(TileNo) = 0.
        IM%irrig_schedule_start(TileNo) = -1.0
        IM%irrig_schedule_timer(TileNo) = -1.0
+       IM%cropgs(TileNo) = 0.0
        
     endif CROP_GROWING_SEASON
 
@@ -552,13 +611,14 @@ contains
                 sprinklerOn = .false.
               endif
             endif   ! timer
-         !check for saturation_shutoff:90% reference RZSM
-         ! HKB: NEED TO TEST OTHER SHUTOFF CONDITIONS!
-         elseif ( ma > 0.90 ) then  
-            sprinklerOn = .false.
-            irrigStart = .false.
-            irrigStartTime = -1
-            timer = -1
+!HKB: 11/2 removing shutoff trigger 
+!         !check for saturation_shutoff:90% reference RZSM
+!         ! HKB: NEED TO TEST OTHER SHUTOFF CONDITIONS!
+!         elseif ( ma > 0.90 ) then  
+!            sprinklerOn = .false.
+!            irrigStart = .false.
+!            irrigStartTime = -1
+!            timer = -1
          else  ! 0.5 < ma <= 0.9
             irrigStart = .false.
             ! is it during the revolution?
@@ -601,10 +661,11 @@ contains
              else
                irrigStart = .false.
              endif
-!           elseif( ma > 0.99 ) then ! at field capacity, shut off
-           elseif( ma > 0.90 ) then ! at field capacity, shut off
-             dripOn = .false.
-             irrigStart = .false.
+!HKB: 11/2 removing shutoff trigger 
+!!           elseif( ma > 0.99 ) then ! at field capacity, shut off
+!           elseif( ma > 0.90 ) then ! at field capacity, shut off
+!             dripOn = .false.
+!             irrigStart = .false.
            else
              dripOn = .true.
              irrigStart = .false.
@@ -660,13 +721,14 @@ contains
                 dripOn = .false.
               endif
             endif   ! timer
-         !check for saturation_shutoff:90% reference RZSM
-         ! HKB: NEED TO TEST OTHER SHUTOFF CONDITIONS!
-         elseif ( ma > 0.90 ) then
-            dripOn = .false.
-            irrigStart = .false.
-            irrigStartTime = -1
-            timer = -1
+!HKB: 11/2 removing shutoff trigger 
+!         !check for saturation_shutoff:90% reference RZSM
+!         ! HKB: NEED TO TEST OTHER SHUTOFF CONDITIONS!
+!         elseif ( ma > 0.90 ) then
+!            dripOn = .false.
+!            irrigStart = .false.
+!            irrigStartTime = -1
+!            timer = -1
          else  ! 0.5 < ma <= 0.9
             irrigStart = .false.
             ! is it during the irrigation event frequency?
@@ -759,13 +821,14 @@ contains
                 floodOn = .false.
               endif
             endif   ! timer
-         !check for saturation_shutoff:90% reference RZSM
-         ! HKB: NEED TO TEST OTHER SHUTOFF CONDITIONS!
-         elseif ( ma > 0.90 ) then
-            floodOn = .false.
-            irrigStart = .false.
-            irrigStartTime = -1
-            timer = -1
+!HKB: 11/2 removing shutoff trigger 
+!         !check for saturation_shutoff:90% reference RZSM
+!         ! HKB: NEED TO TEST OTHER SHUTOFF CONDITIONS!
+!         elseif ( ma > 0.90 ) then
+!            floodOn = .false.
+!            irrigStart = .false.
+!            irrigStartTime = -1
+!            timer = -1
          else  ! 0.5 < ma <= 0.9
             irrigStart = .false.
             ! is it during the irrigation event frequency?

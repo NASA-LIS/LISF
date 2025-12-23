@@ -326,6 +326,10 @@ module LIS_histDataMod
   public :: LIS_MOC_IRRIGTFD
   public :: LIS_MOC_IRRLCFRAC
   public :: LIS_MOC_IRRPADDY
+  public :: LIS_MOC_TOTR
+  public :: LIS_MOC_RECR
+  public :: LIS_MOC_OUTR
+  public :: LIS_MOC_QRI
 
   public :: LIS_MOC_LSM_COUNT
   public :: LIS_MOC_ROUTING_COUNT
@@ -838,6 +842,10 @@ module LIS_histDataMod
    integer :: LIS_MOC_IRRIGTFD = -9999
    integer :: LIS_MOC_IRRLCFRAC = -9999
    integer :: LIS_MOC_IRRPADDY = -9999
+   integer :: LIS_MOC_TOTR = -9999
+   integer :: LIS_MOC_RECR = -9999
+   integer :: LIS_MOC_OUTR = -9999
+   integer :: LIS_MOC_QRI = -9999
 
    integer :: LIS_MOC_LSM_COUNT
    integer :: LIS_MOC_ROUTING_COUNT
@@ -4437,6 +4445,55 @@ contains
             LIS_histData(n)%head_irrig_list,&
             n,1,ntiles,(/"-"/),&
             1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"totR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "totR",&
+         "total_subsurface_runoff",&
+         "total subsurface runoff",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_TOTR,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"recR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "recR",&
+         "recycled_subsurface_runoff",&
+         "recycled subsurface runoff",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_RECR,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"outR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "outR",&
+         "net_output_subsurface_runoff",&
+         "net output subsurface runoff",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_OUTR,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"QRI:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "QRI",&
+         "runoff_recycled_to_irrigation",&
+         "runoff recycled to irrigation",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_QRI,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"-"/),&
+            1,(/"-"/),2,1,1,&
             model_patch=.true.)
     endif
 

@@ -26,6 +26,7 @@
 !  05 Jan 2021: Augusto Getirana: 2-way coupling
 !  28 Feb 2023: Hiroko Beaudoing, remove irrigation amount from prcp when
 !                                 using sprinkler
+!  31 Aug 2024: Hiroko Beaudoing, recycle runoff in paddy irrigation
 !
 ! !INTERFACE:
 subroutine noah36_main(n)
@@ -46,6 +47,7 @@ subroutine noah36_main(n)
   use LIS_tbotAdjustMod, only: LIS_tbotTimeUtil,LIS_updateTbot
   use ESMF
   use LIS_irrigationMod, only: LIS_irrig_state
+  use IRRIGATION_MODULE
   
   implicit none
 ! !ARGUMENTS: 
@@ -199,6 +201,7 @@ subroutine noah36_main(n)
 
   real, parameter :: CONST_LATSUB=2.83E+6 ! to be consistent with Noah SFLX
   integer         :: row, col
+  real            :: ilat, ilon
 
   REAL     :: WRSI_TimeStep
   REAL     :: WR_TimeStep
@@ -219,10 +222,10 @@ subroutine noah36_main(n)
   real :: tempval, soiltm, soiltw, soilt
 ! J.Case -- end mod (9/11/2014)
 ! HKB: added below (2/28/2023)
-  type(ESMF_Field)                        :: irrigRateField,irrigTypeField
-  real,    pointer                        :: irrigRate(:)
-  real,    pointer                        :: irrigType(:)
+  type(irrigation_model) :: IM
+
   integer                                 :: status
+  integer                                 :: croptype
   
 #if 0 
   svk_statebf = 0.0
@@ -259,18 +262,12 @@ subroutine noah36_main(n)
         if (trim(LIS_rc%metforc(i)).eq."Bondville") Bondvillecheck = .true.
      enddo
      ! HKB -- need to get irrigation states and subtract from precip
+     !     -- Concurrent includes Paddy for recycling runoff
      if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
          LIS_rc%irrigation_type .eq. "Concurrent" ) then
-      call ESMF_StateGet(LIS_irrig_state(n), "Irrigation rate", &
-           irrigRateField,rc=status)
-      call LIS_verify(status,'noah36_main: ESMF_StateGet failed for irrigRate')
-      call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=status)
-      call LIS_verify(status,'noah36_main: ESMF_FieldGet failed for irrigRate')
-      call ESMF_StateGet(LIS_irrig_state(n), "Irrigation type", &
-           irrigTypeField,rc=status)
-      call LIS_verify(status,'noah36_main: ESMF_StateGet failed for irrigType')
-      call ESMF_FieldGet(irrigTypeField, localDE=0,farrayPtr=irrigType,rc=status)
-      call LIS_verify(status,'noah36_main: ESMF_FieldGet failed for irrigType')
+       ! Get irrigation state variables
+       ! -----------------------------------------
+       call IM%get_irrigstate (n, LIS_irrig_state(n))
      endif   ! irrigation
      ! end HKB -- need to get irrigation states
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ffrozp,dt,zlvl,zlvl_wind,sfctmp,q2,sfcprs,prcp,uwind,vwind,cpcp,soldn,q2sat,lwdn,sfcspd,esat,nsoil,sldpth,ice,isurban,solnet,local,solardirect,prcprain,cosz,th2,th2v,t1v,t2v,dqsdt2,slope,shdfac,shdmin,shdmax,tbot,evp,eta,eta_kinematic,shtflx,fdown,ec,edir,et,smav,ett,esnow,drip,dew,beta,etp,gflx,flx1,flx2,flx3,snomlt,sncovr,runoff3,rc,pc,rcs,rct,rcq,rcsoil,soilw,soilm,tsoil,snoalb,soilrz,soilrzmax,rdlai2d,usemonalb,ribb,ptu,ustar,soiltyp,llanduse,lsoil,frzk,frzfact,t2diag,q2diag,rho,i,k,soilhtc,soilmtc,startht,startsm,startswe,startint,sfctsno,e2sat,q2sati,ch,cm,row,col,WRSI_TimeStep,WR_TimeStep,AET_TimeStep)
@@ -782,6 +779,13 @@ subroutine noah36_main(n)
         if (ice.eq.0) then 
            col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
            row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+!hkb
+           ilat =  LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
+                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lat
+           ilon =  LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
+                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lon
            call sflx(                                                                 &
                 ffrozp, isurban, dt, zlvl, nsoil, sldpth,                             &
                 local,                                                                &
@@ -1036,13 +1040,6 @@ subroutine noah36_main(n)
            noah36_struc(n)%noah(t)%rhmin = Q2/Q2SAT
         endif
 
-        noah36_struc(n)%noah(t)%soilm = soilm*1000.0
-        noah36_struc(n)%noah(t)%qs    = noah36_struc(n)%noah(t)%runoff1 *  &
-                                        LIS_CONST_RHOFW
-        noah36_struc(n)%noah(t)%qsb   = noah36_struc(n)%noah(t)%runoff2 *  &
-                                        LIS_CONST_RHOFW
-        noah36_struc(n)%noah(t)%qsm   = snomlt*LIS_CONST_RHOFW/dt
-
 ! Save variables to output
         call LIS_diagnoseSurfaceOutputVar(n, t,LIS_MOC_SWNET,value=soldn * &
              (1.0-noah36_struc(n)%noah(t)%albedo),vlevel=1,unit="W m-2",&
@@ -1100,22 +1097,87 @@ subroutine noah36_main(n)
                 vlevel=1,unit="-",direction="-",surface_type=LIS_rc%lsm_index)
         endif
 
-        ! Compute wchange before removing irrigRate from precip - HKB
-        wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
-             noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
-
-        call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_DELSURFSTOR,              &
-             value=(noah36_struc(n)%noah(t)%wchange_prev - wchange_prev),vlevel=1,unit="kg m-2 s-1",&
-             direction="INC",surface_type=LIS_rc%lsm_index)
-        noah36_struc(n)%noah(t)%wchange_prev = wchange_prev
 
         ! Sprinkler Irrigation added water needs to be removed - HKB
+        ! Paddy Irrigation recycle runoff QRI
         if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
             LIS_rc%irrigation_type .eq. "Concurrent" ) then
-            if ( irrigType(t) .eq. 1 ) then  ! Sprinkler
-              prcp = prcp - irrigRate(t)
-            endif
+            ! Save total runoff before QRI for all tiles in mm/s as in qs+qsb
+            IM%totR(t) = ( noah36_struc(n)%noah(t)%runoff1+ &
+                noah36_struc(n)%noah(t)%runoff2 )*LIS_CONST_RHOFW
+                                        
+            if ( IM%irrigType(t) .eq. 1 ) then  ! Sprinkler
+             ! Compute wchange before removing irrigRate from precip - HKB
+              wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
+              noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
+              prcp = prcp - IM%irrigRate(t)
+              IM%recR(t) = 0.0
+              IM%outR(t) = 0.0 
+
+            !-- Runoff Recycling Irrigation start
+            else if ( IM%irrigType(t) .eq. 3 ) then  ! Flood
+              croptype = noah36_struc(n)%noah(t)%vegt - (LIS_rc%nsurfacetypes - LIS_rc%numbercrops)   ! crop index 1-26; ricecrop = 3 for MIRCA
+              if ( croptype .eq. LIS_rc%ricecrop ) then !paddy
+!! set QRI to negative for no qri -- do nothing 
+!!                IM%irrigQRI(t) = -10.
+                if ( IM%cropgs(t) .gt. 0 ) then  ! rice growing season
+                  if ( IM%irrigQRI(t) .gt. 0 ) then  ! do not adjust if QRI is negative
+                    IM%recR(t) = min(IM%irrigQRI(t)*IM%totR(t),IM%irrigRate(t))
+                    IM%outR(t) = IM%totR(t) - IM%recR(t)
+                     if ( IM%outR(t) .lt. 0 ) then
+                      write(LIS_logunit,*) " Negative ourR ...Stopping program ...",t
+                      call LIS_endrun()
+                     end if
+                    IM%irrigAppRate(t) = IM%irrigRate(t) - IM%recR(t)
+                     if ( IM%irrigAppRate(t) .lt. 0 ) then
+                      IM%irrigAppRate(t) = 0.0
+                      write(LIS_logunit,*) " Negative newI ...Stopping program ...",t
+                      call LIS_endrun()
+                     end if
+                    ! runoff2 in m/s, outR & totR in mm/s
+                    if ( IM%totR(t) .ne. 0 ) then   ! handle invalid
+                     noah36_struc(n)%noah(t)%runoff2 = noah36_struc(n)%noah(t)%runoff2 *(IM%outR(t)/IM%totR(t))
+                     noah36_struc(n)%noah(t)%runoff1 = noah36_struc(n)%noah(t)%runoff1 *(IM%outR(t)/IM%totR(t))
+                    endif
+
+                  else
+                   IM%irrigAppRate(t) = IM%irrigRate(t) 
+                   IM%recR(t) = 0.0
+                   IM%outR(t) = IM%totR(t)
+                  endif     ! QRI negative
+
+                else ! not in growing season
+                  IM%irrigAppRate(t) = IM%irrigRate(t)   ! should be zero
+                  IM%recR(t) = 0.0
+                  IM%outR(t) = IM%totR(t)
+                endif    ! growing season
+              endif   ! paddy
+             ! Compute wchange after adjusted runoff1 & runoff2 - HKB
+              wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
+                   noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
+            else    ! Drip
+              ! Compute wchange after adjusted runoff1 & runoff2 - HKB
+              wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
+                   noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
+              IM%recR(t) = 0.0
+              IM%outR(t) = 0.0
+            endif    ! Flood
+            !-- Runoff Recycling Irrigation end
+
+        else
+          ! Compute wchange after adjusted runoff1 & runoff2 - HKB
+          wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
+               noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
         endif   ! irrigation
+
+        ! Include adjustment to runoff and soilm over paddies - HKB
+        ! does soilm needs to be adjsted too? no bc it's diagnostic variable?
+        noah36_struc(n)%noah(t)%soilm = soilm*1000.0    ! not adjusted here
+        noah36_struc(n)%noah(t)%qs    = noah36_struc(n)%noah(t)%runoff1 *  &
+                                        LIS_CONST_RHOFW
+        noah36_struc(n)%noah(t)%qsb   = noah36_struc(n)%noah(t)%runoff2 *  &
+                                        LIS_CONST_RHOFW
+        noah36_struc(n)%noah(t)%qsm   = snomlt*LIS_CONST_RHOFW/dt
 
         ! Noah-3.6 uses this value instead of 273.16 - D. Mocko
         if (sfctmp .lt. T0) then
@@ -1170,6 +1232,11 @@ subroutine noah36_main(n)
            soilmtc = soilmtc + noah36_struc(n)%noah(t)%smc(i) *           &
                 LIS_CONST_RHOFW * sldpth(i)
         enddo
+
+        call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_DELSURFSTOR,              &
+             value=(noah36_struc(n)%noah(t)%wchange_prev - wchange_prev),vlevel=1,unit="kg m-2 s-1",&
+             direction="INC",surface_type=LIS_rc%lsm_index)
+        noah36_struc(n)%noah(t)%wchange_prev = wchange_prev
 
         call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_DELSOILMOIST,              &
              value=(soilmtc-startsm),vlevel=1,unit="kg m-2",&
