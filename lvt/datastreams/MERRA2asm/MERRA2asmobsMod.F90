@@ -17,6 +17,7 @@ module MERRA2asmobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -45,7 +46,7 @@ module MERRA2asmobsMod
 !EOP
 
   type, public :: merra2asmdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)

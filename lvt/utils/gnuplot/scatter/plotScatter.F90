@@ -42,13 +42,14 @@ program plotScatter
 !EOP
 
   implicit none
-  
+
+  integer, parameter :: LVT_CONST_PATH_LEN = ESMF_MAXPATHLEN
   type(ESMF_Config)      :: ts_config
-  character*100          :: tsconfigfile
+  character(len=LVT_CONST_PATH_LEN) :: tsconfigfile
   character*50           :: model_name
   character*50           :: d1label, d2label
-  character*100          :: configfile,gfile,tsfile, statsodir
-  character*100          :: rmsefile,biasfile,rcorrfile,mfile
+  character(len=LVT_CONST_PATH_LEN) :: configfile,gfile,tsfile, statsodir
+  character(len=LVT_CONST_PATH_LEN) :: rmsefile,biasfile,rcorrfile,mfile
   character*3            :: expcode
   real  , allocatable        :: mmaxv(:),mminv(:),mdy(:)
   real  , allocatable        :: omaxv(:),ominv(:),ody(:)

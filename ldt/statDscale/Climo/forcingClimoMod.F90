@@ -230,6 +230,8 @@ contains
 
   subroutine forcingClimo_output(pass)
 
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     integer :: n
     integer :: pass
 
@@ -237,7 +239,7 @@ contains
     character*3       :: cdoy
     integer           :: ftn
     integer           :: iret
-    character*100     :: outfile
+    character(len=LDT_CONST_PATH_LEN) :: outfile
 
     n = 1
     if(LDT_masterproc) then

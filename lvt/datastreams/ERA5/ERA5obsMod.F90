@@ -18,6 +18,7 @@ module ERA5obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -46,8 +47,8 @@ module ERA5obsMod
 !EOP
 
   type, public :: era5dec
-     character*100           :: odir
-     character*100           :: mapfile
+     character(len=LVT_CONST_PATH_LEN) :: odir
+     character(len=LVT_CONST_PATH_LEN) :: mapfile
      integer                 :: nc, nr,npts,ntimes
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)

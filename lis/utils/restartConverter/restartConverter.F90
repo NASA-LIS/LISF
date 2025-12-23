@@ -27,6 +27,7 @@
 program restartConverter
 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -40,8 +41,8 @@ program restartConverter
   integer           :: nc,nr,ntiles
   type(proj_info)   :: cproj, fproj
 
-  character*100     :: clcfile, flcfile, clmfile, flmfile
-  character*100     :: input_rstfile, output_rstfile
+  character(len=LIS_CONST_PATH_LEN) :: clcfile, flcfile, clmfile, flmfile
+  character(len=LIS_CONST_PATH_LEN) :: input_rstfile, output_rstfile
   integer           :: nt, nfields,cnens, fnens, waterclass
   integer           :: j,c,r,t,m,ios
   integer           :: cntiles, fntiles

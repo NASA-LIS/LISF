@@ -22,6 +22,7 @@ subroutine readGDASforcdata(source)
    ! Imports
    use ESMF
    use GDASforc_dataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod
    use LVT_histDataMod
    use LVT_logMod
@@ -39,7 +40,7 @@ subroutine readGDASforcdata(source)
 
    ! Local variables
    integer             :: ftn 
-   character*100       :: name00, name03, name06
+   character(len=LVT_CONST_PATH_LEN) :: name00, name03, name06
    logical             :: F06flag
    logical             :: file_exists1,file_exists2,file_exists3
    logical*1           :: lb(gdasforcdata(source)%ncold*gdasforcdata(source)%nrold)
@@ -937,7 +938,6 @@ subroutine create_GDASforc_filename(gdasdir,yr,mo,da,hr,name00, name03, name06,&
   logical :: is_analysis_hr
   character(len=2)  :: analysis_hour_inst, analysis_hour_avg, &
                        fcstcode0, fcstcode1, fcstcode2
-  character(len=80) :: fbase
   character(len=8)  :: fdir
   character(len=10) :: ftime
   character(len=21) :: fsubs

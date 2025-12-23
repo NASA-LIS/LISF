@@ -18,6 +18,7 @@ subroutine readOCO2_SIFObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_histDataMod
@@ -53,7 +54,7 @@ subroutine readOCO2_SIFObs(source)
   real                   :: lat_min,lat_max,lon_min,lon_max
   integer                :: flag
   integer                :: ftn
-  character*100          :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   real, allocatable      :: sif_temp(:),lat(:), lon(:),flat(:,:),flon(:,:)
   real                   :: sif_ip(LVT_rc%lnc,LVT_rc%lnr)
   integer                :: nsif_ip(LVT_rc%lnc,LVT_rc%lnr)

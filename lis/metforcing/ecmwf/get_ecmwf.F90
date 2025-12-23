@@ -282,7 +282,7 @@ subroutine create_ecmwf_filename(dir,avgfilename1, avgfilename2, instfilename,&
   real :: igmt
   integer :: iyr,imo,ida,ihr,imn,iss,ts,idoy
   character(len=LIS_CONST_PATH_LEN) :: filename
-  character(200)                    :: file1, file2
+  character(len=LIS_CONST_PATH_LEN) :: file1, file2
 
 
   !instantaneous files 

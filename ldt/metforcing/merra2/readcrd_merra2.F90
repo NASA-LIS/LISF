@@ -67,7 +67,7 @@ subroutine readcrd_merra2()
   do n=1,LDT_rc%nnest
      write(LDT_logunit,*) 'Using MERRA2 forcing'
      write(LDT_logunit,*) 'MERRA2 forcing directory: ',&
-          merra2_struc(n)%merra2DIR
+           trim(merra2_struc(n)%merra2DIR)
 
      merra2_struc(n)%merra2time1 = 3000.0
      merra2_struc(n)%merra2time2 = 0.0

@@ -17,6 +17,7 @@ module WGPBMRobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -38,7 +39,7 @@ module WGPBMRobsMod
 !EOP
 
   type, public :: wgpbmrobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: stnid
   end type wgpbmrobsdec
 

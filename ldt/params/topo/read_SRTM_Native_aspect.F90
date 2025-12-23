@@ -22,6 +22,7 @@
 subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
@@ -40,6 +41,10 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
 ! !DESCRIPTION:
 !  This subroutine retrieves static elevation data from the SRTM source
 !  and reprojects it to the latlon projection. 
+!
+!  NOTE:  SRTM "Native" ~1km files do not include areas south of 60degS.
+!         GTOPO30 elevation tiles can be read in, since they include points
+!         south of 60degS (Antarctica).
 !
 !  Source information:
 !   http://dds.cr.usgs.gov/srtm/version2_1/SRTM30/
@@ -103,7 +108,7 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
    real, allocatable :: subset_elev(:,:)    ! Read input parameter
    real, allocatable :: subset_aspect(:,:)  ! Derived from input parameter
 
-   character(140) :: tempfile
+   character(len=LDT_CONST_PATH_LEN) :: tempfile
 !________________________________________________________________________
 
   fgrd = 0.

@@ -138,6 +138,7 @@ subroutine read_snodepdata(source, odir, yr, mo, da)
 ! 
 ! !USES:  
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_timeMgrMod, only : LVT_calendar
   use LVT_logMod,     only : LVT_logunit, LVT_verify, LVT_getNextUnitNumber, &
@@ -190,7 +191,7 @@ subroutine read_snodepdata(source, odir, yr, mo, da)
   real                    :: col,row
   integer                 :: status
   integer                 :: data_index
-  character*100           :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   real                    :: tempc, dewpc, avgc
   type(ESMF_Time)         :: datatime, starttime
 

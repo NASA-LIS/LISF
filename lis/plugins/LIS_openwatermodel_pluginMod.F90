@@ -156,6 +156,8 @@ subroutine LIS_openwatermodel_plugin
         trim(LIS_retroId)//char(0),templateOpenWater_f2t)
    call registeropenwaterf2t(trim(LIS_templateOpenWaterId)//"+"//&
         trim(LIS_agrmetrunId)//char(0),templateOpenWater_f2t)
+   call registeropenwaterf2t(trim(LIS_templateOpenWaterId)//"+"//&
+        trim(LIS_forecastrunId)//char(0),templateOpenWater_f2t)
    call registeropenwaterwrst(trim(LIS_templateOpenWaterId)//char(0),&
         templateOpenWater_writerst)
    call registeropenwaterfinalize(trim(LIS_templateOpenWaterId)//char(0),&

@@ -126,7 +126,8 @@ end subroutine readOzfluxobs
 ! !INTERFACE:
 subroutine process_ozflux_data(source,yr,mo,da)
 ! 
-! !USES:
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use LVT_logMod,      only : LVT_logunit
   use OzFlux_obsMod,      only : ozfluxobs
@@ -164,7 +165,7 @@ subroutine process_ozflux_data(source,yr,mo,da)
 !
 !EOP
   integer          :: i 
-  character*100    :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer          :: status
   logical          :: file_exists
 

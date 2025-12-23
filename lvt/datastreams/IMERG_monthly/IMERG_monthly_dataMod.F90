@@ -11,6 +11,8 @@
 ! NOTE:  Currently only V07A IMERG Final Run data are supported
 module IMERG_monthly_dataMod
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
   ! Defaults
   implicit none
   private
@@ -22,7 +24,7 @@ module IMERG_monthly_dataMod
   public :: imergmonthlydata
 
   type, public :: imergmonthlydatadec
-     character*100 :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*10  :: imergver, imergprd
      real          :: datares
      real, allocatable           :: rlat(:)

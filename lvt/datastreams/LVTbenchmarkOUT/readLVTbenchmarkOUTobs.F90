@@ -19,6 +19,7 @@ subroutine readLVTbenchmarkOUTobs(source)
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc
   use LVT_histDataMod
   use LVT_logMod
@@ -39,7 +40,7 @@ subroutine readLVTbenchmarkOUTobs(source)
 ! 
 !EOP
 
-  character*100    :: fname 
+  character(len=LVT_CONST_PATH_LEN) :: fname 
   logical          :: file_exists
   real             :: obsData(LVT_rc%lnc, LVT_rc%lnr)
   

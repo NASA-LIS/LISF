@@ -19,6 +19,7 @@
 module GEOSTEFF_obsMod
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -34,7 +35,7 @@ module GEOSTEFF_obsMod
 !EOP
   type, public :: geoTeffdec
 
-     character*100        :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      integer              :: nc, nr
      real                 :: gridDesci(50)
      real,    allocatable :: teffobs(:,:)

@@ -104,7 +104,7 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   integer                :: ftn,ierr
   character(len=LIS_CONST_PATH_LEN) :: smap_filename(10),tstring(10)
   character(len=4) :: istring
-  character(len=200) :: cmd
+  character(len=LIS_CONST_PATH_LEN) :: cmd
   integer :: rc
   integer, external :: create_filelist ! C function
 
@@ -498,6 +498,7 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
 ! 
 ! !USES:   
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,  only : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_logMod, only: LIS_logunit, LIS_alert
   use LIS_pluginIndices, only: LIS_agrmetrunId
@@ -567,7 +568,7 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   real                           :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
   integer                        :: status,ios
-  character(len=512) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer, save :: alert_number = 0
 
   

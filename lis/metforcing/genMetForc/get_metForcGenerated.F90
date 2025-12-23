@@ -142,7 +142,7 @@ subroutine get_metForcGenerated(n, findex)
         LIS_rc%rstflag(n) == 1 ) then
       LIS_rc%rstflag(n) = 0
       retrieve_file2 = .true.
-      write(LIS_logunit,*)" [ERR] Currently Forcing 1 File is NOT opened in first timestep ..."
+      write(LIS_logunit,*)" [INFO] Forcing 1 file is NOT opened in first timestep ..."
    endif
 
 !- Retrieve LDT-generated Forcing File 2:

@@ -17,6 +17,7 @@ module USDM_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -46,7 +47,7 @@ module USDM_obsMod
 !EOP
 
   type, public :: usdmdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      integer, allocatable    :: n11(:)
      real,    allocatable    :: drcategory(:)

@@ -129,7 +129,7 @@ subroutine read_ASCATTUW_data(n, odir, yr,mo,da,sm_data)
 !
 !EOP
   real, parameter        :: err_threshold = 0.03
-  character*200          :: ls_comm, cmd2
+  character(len=LDT_CONST_PATH_LEN)          :: ls_comm, cmd2
   character(len=LDT_CONST_PATH_LEN)          :: fname
   integer                :: ftn1, ftn2
   integer                :: fsize,n_data

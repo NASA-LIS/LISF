@@ -11,14 +11,14 @@
 ! AGRMET outputx
 
 program createLISrestart
-  
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   implicit none
   integer, parameter :: imax=512, jmax=512
   integer, parameter :: nc = 720, nr=300
   real, parameter :: xmeshl = 47.625
   real, parameter :: xpnmcaf = 257
   real, parameter :: ypnmcaf = 257
-  character*100 :: filename1
+  character(len=LIS_CONST_PATH_LEN) :: filename1
   integer       :: ip
   real       :: udef1
   real       :: gi(2,imax,jmax)

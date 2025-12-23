@@ -18,6 +18,7 @@ subroutine readHARdata(source)
 ! !USES: 
    use ESMF
    use HAR_dataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod
    use LVT_histDataMod
    use LVT_logMod
@@ -45,7 +46,7 @@ subroutine readHARdata(source)
 
    ! Local variables
    integer             :: ftn 
-   character*100       :: filename
+   character(len=LVT_CONST_PATH_LEN) :: filename
    logical             :: file_exists
    real                :: prcp_in(hardata(source)%nc,hardata(source)%nr)
    real                :: prcp_in1(hardata(source)%nc*hardata(source)%nr)

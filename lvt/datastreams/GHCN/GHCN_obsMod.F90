@@ -17,6 +17,7 @@ module GHCN_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
   PRIVATE 
@@ -48,7 +49,7 @@ module GHCN_obsMod
   PUBLIC :: GHCNobs !Object to hold GHCN observation attributes
 !EOP
   type, public :: ghcnobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nstns
      real                 :: udef
      integer              :: nts
@@ -78,7 +79,8 @@ contains
 ! !INTERFACE: 
   subroutine GHCN_obsinit(i)
 ! 
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -109,7 +111,7 @@ contains
     integer            :: ts
     character*50       :: stnid
     real               :: stnlat, stnlon,stnelev
-    character*100      :: stationfile
+    character(len=LVT_CONST_PATH_LEN) :: stationfile
     integer            :: c,r
     real               :: col,row
     

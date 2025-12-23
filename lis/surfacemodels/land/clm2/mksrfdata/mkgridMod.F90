@@ -93,6 +93,7 @@ contains
 ! Author: Mariana Vertenstein
 ! 
 !-----------------------------------------------------------------------
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
     include 'netcdf.inc'
 
@@ -107,7 +108,7 @@ contains
     real(r8) :: lon(lsmlon)             !input longitude array (full grid)
     real(r8) :: lat(lsmlat)             !input latitude array (full grid)
     real(r8) :: oro(lsmlon,lsmlat)      !input oro field 
-    character(len=256) :: locfn         !local file name
+    character(len=LIS_CONST_PATH_LEN) :: locfn !local file name
 !-----------------------------------------------------------------------
 
     write (6,*) 'Attempting to read land grid data .....'
@@ -237,9 +238,10 @@ contains
 ! Author: Mariana Vertenstein
 ! 
 !-----------------------------------------------------------------------
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
 ! ------------------------ local variables ------------------------
-    character(len=256) :: locfn                !local file name
+    character(len=LIS_CONST_PATH_LEN) :: locfn !local file name
 
     integer  :: i,j,k,n                        !indices
     integer  :: ii,ji,io,jo                    !indices

@@ -19,6 +19,7 @@
 ! !INTERFACE: 
 subroutine readLIS_Teff(n,yyyymmdd,hh,Orbit,teff)
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_smap_e_oplMod
@@ -34,7 +35,7 @@ subroutine readLIS_Teff(n,yyyymmdd,hh,Orbit,teff)
 !EOP 
   integer             :: c,r
   real                :: tsoil(LDT_rc%lnc(n),LDT_rc%lnr(n),4)
-  character*100       :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   logical             :: file_exists
   real                :: kk, cc_6am, cc_6pm    !parameters for calculating effective soil temperature
                                                !from soil layer temperature at 6 AM and 6 PM local time

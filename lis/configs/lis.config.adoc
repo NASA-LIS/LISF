@@ -175,6 +175,7 @@ Acceptable values are:
 |GeoWRSI.2   | GeoWRSI version 2.0
 |JULES.5.0   | JULES version 5.0
 |CABLE.1.4b  | CABLE version 1.4b
+|AquaCrop.7.2| AquaCrop version 7.2
 ifdef::devonly[]
 |FASST       | FASST
 endif::devonly[]
@@ -1053,6 +1054,7 @@ Acceptable values are:
 |"`NLDAS router`"  | use the NLDAS router
 |"`HYMAP router`"  | use the HyMAP router
 |"`HYMAP2 router`" | use the HyMAP2 router
+|"`HYMAP3 router`" | use the HyMAP3 router
 |"`RAPID router`" | use the RAPID router
 |====
 
@@ -1244,7 +1246,8 @@ Acceptable values are:
 |"`SMOS(NESDIS) soil moisture`" | NESDIS SMOS soil moisture
 |"`SNODEP`"                     | AFWA SNODEP
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
-|"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
+|"`SNIP`"                     | USAF SNow and Ice Product
+|"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth
 |"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
 |"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
@@ -2086,6 +2089,22 @@ be "`usafsi_yyyymmddhh.nc.`"
 ....
 USAFSI data directory:                  ./FORCING/USAFSI
 USAFSI netcdf filename prefix:         usafsi
+....
+
+[[sssec_snipda,SNIP Assimilation]]
+==== SNIP Assimilation
+
+`SNIP data directory:` specifies the directory for the
+SNIP data.
+
+`SNIP netcdf filename prefix:` specifies the prefix of
+the SNIP dataset. If prefix is "`SNIP`", then the file name will
+be "`SNIP_yyyymmddhh.nc.`"
+
+.Example _lis.config_ entry
+....
+SNIP data directory:                  ./FORCING/SNIP
+SNIP netcdf filename prefix:         SNIP
 ....
 
 [[sssec_ansasweda,ANSA SWE Assimilation]]
@@ -5223,7 +5242,7 @@ x direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved for future use)
 |(3600) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn`'t grid centered)
+          this is not grid centered)
 |====
 
 `AGRMET GEOPRECIP jmax:` specifies the GEOPRECIP grid dimension
@@ -5236,7 +5255,7 @@ y direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved fro future use)
 |(1801) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn`'t grid centered)
+          this is not grid centered)
 |====
 
 `AGRMET SSMI imax:` specifies the SSMI/S grid dimension x direction
@@ -5331,7 +5350,7 @@ Acceptable values are:
 |0     | do not use
 |1     | use the estimate, do not use the rank {emdash}
          assumes that rank of GEOPRECIP is 1;
-         i.e., uses it when it`'s available
+         i.e., uses it when it is available
 |2     | use the estimate and use the rank
 |====
 
@@ -5524,6 +5543,284 @@ of gauge networks to use, to be identified in separate config entry.
 `AGRMET gauge networks to use::` specifies list of names of gauge
 networks to be used. (One line of names per domain.)
 
+`AGRMET GALWEM Precip correlation function type:` specifies function for modeling precipitation error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM T2M correlation function type:` specifies function for modeling 2m temperature error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM RH2M correlation function type:` specifies function for modeling 2m relative humidity error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM SPD10M correlation function type:` specifies function for modeling 10m wind speed error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+
+`AGRMET GFS Precip correlation function type:` specifies function for modeling precipitation error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS T2M correlation function type:` specifies function for modeling 2m temperature error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS RH2M correlation function type:` specifies function for modeling 2m relative humidity error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS SPD10M correlation function type:` specifies function for modeling 10m wind speed error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET precip obs file format:` specifies preobs file format.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use legacy files
+|2                       | use WIGOS supported files
+|====
+
+`AGRMET sfc obs file format:` specifies sfcobs file format.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use legacy files
+|2                       | use WIGOS supported files
+|====
+
+`AGRMET GALWEM Precip background error scale length (m):` specifies scale length for GALWEM precipitation error correlation.
+
+`AGRMET GALWEM Precip background error variance:` specifies GALWEM precipitation error variance.
+
+`AGRMET GALWEM Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance.
+
+`AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation.
+
+`AGRMET GALWEM Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance.
+
+`AGRMET GALWEM Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation.
+
+`AGRMET GALWEM Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance.
+
+`AGRMET GALWEM Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation.
+
+`AGRMET GALWEM Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance.
+
+`AGRMET GALWEM Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation.
+
+`AGRMET GALWEM Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance.
+
+`AGRMET GALWEM T2M background error scale length (m):` specifies scale length for GALWEM 2m temperature error correlation.
+
+`AGRMET GALWEM T2M background error variance:` specifies GALWEM 2m temperature error variance.
+
+`AGRMET GALWEM T2M station observation error variance:` specifies station observation 2m temperature error variance.
+
+`AGRMET GALWEM RH2M background error scale length (m):` specifies scale length for GALWEM 2m relative humidity error correlation.
+
+`AGRMET GALWEM RH2M background error variance:` specifies GALWEM 2m relative humidity error variance.
+
+`AGRMET GALWEM RH2M station observation error variance:` specifies station observation 2m relative humidity error variance.
+
+`AGRMET GALWEM SPD10M background error scale length (m):` specifies scale length for GALWEM 10m wind speed error correlation.
+
+`AGRMET GALWEM SPD10M background error variance:` specifies GALWEM 10m wind speed error variance.
+
+`AGRMET GALWEM SPD10M station observation error variance:` specifies station observation 10 wind speed error variance.
+
+`AGRMET GFS Precip background error scale length (m):` specifies scale length for GFS precipitation error correlation.
+
+`AGRMET GFS Precip background error variance:` specifies GFS precipitation error variance.
+
+`AGRMET GFS Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance.
+
+`AGRMET GFS Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation.
+
+`AGRMET GFS Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance.
+
+`AGRMET GFS Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation.
+
+`AGRMET GFS Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance.
+
+`AGRMET GFS Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation.
+
+`AGRMET GFS Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance.
+
+`AGRMET GFS Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation.
+
+`AGRMET GFS Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance.
+
+`AGRMET GFS T2M background error scale length (m):` specifies scale length for GFS 2m temperature error correlation.
+
+`AGRMET GFS T2M background error variance:` specifies GFS 2m temperature error variance.
+
+`AGRMET GFS T2M station observation error variance:` specifies station observation 2m temperature error variance.
+
+`AGRMET GFS RH2M background error scale length (m):` specifies scale length for GFS 2m relative humidity error correlation.
+
+`AGRMET GFS RH2M background error variance:` specifies GFS 2m relative humidity error variance.
+
+`AGRMET GFS RH2M station observation error variance:` specifies station observation 2m relative humidity error variance.
+
+`AGRMET GFS SPD10M background error scale length (m):` specifies scale length for GFS 10m wind speed error correlation.
+
+`AGRMET GFS SPD10M background error variance:` specifies GFS 10m wind speed error variance.
+
+`AGRMET GFS SPD10M station observation error variance:` specifies station observation 10 wind speed error variance.
+
+`AGRMET forcing map projection:` specifies map projection type.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|latlon                  | use latitude/longitude projection
+|====
+
+`AGRMET forcing domain lower left lat:` specifies southwest latitude corner.
+
+`AGRMET forcing domain lower left lon:` specifies southwest longitude corner.
+
+`AGRMET forcing domain upper right lat:` specifies northeast latitude corner.
+
+`AGRMET forcing domain upper right lon:` specifies northeast longitude corner.
+
+`AGRMET forcing domain resolution (dx):` specifies east-west grid resolution in degrees longitude.
+
+`AGRMET forcing domain resolution (dy):` specifies north-south grid resolution in degrees latitude.
+
+`AGRMET use IMERG data:` specifies whether to use 30-min IMERG data
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not assimilate IMERG
+|1                       | Assimilate IMERG
+|====
+
+`AGRMET IMERG temperature threshold:` temperature threshold (K) below which to reject IMERG retrievals.
+
+`AGRMET IMERG data directory:` top directory to find IMERG files.
+
+`AGRMET IMERG product:` identifies which IMERG run to assimilate.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|3B-HHR-E                | 30-min Early Run
+|3B-HHR-L                | 30-min Late Run
+|3B-HHR                  | 30-min Final Run
+|====
+
+`AGRMET IMERG version:` text string identifying IMERG version to assimilate.  Used to construct file names.  V06x and V07x are supported.
+Acceptable values include:
+
+|====
+|Value                   | Description
+
+|V06B                    | Version 06B
+|V06C                    | Version 06C
+|V06D                    | Version 06D
+|V07B                    | Version 07B
+|====
+
+`AGRMET IMERG Probability Liquid Precip Threshold:` threshold to reject IMERG if liquid precip likelihood is too low.
+
+`AGRMET output OBA data:` option for writing OBA (observation, background, analysis) files from Bratseth.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not write OBA files
+|1                       | Write OBA files
+|2                       | Write OBA files w/o actually running Bratseth scheme
+|====
+
+`AGRMET skip backQC:` option to disable backQC step.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not skip backQC step
+|1                       | Skip backQC step
+|====
+
+`AGRMET skip superstatQC:` option to disable superstatQC step.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not skip superstatQC step
+|1                       | Skip superstatQC step
+|====
+
+`AGRMET 3hr maximum precip ceiling:` set threshold (mm) above which to reject precipitation.
+
+`AGRMET mask file:` path to legacy AGRMET landmask file.
+
+`AGRMET terrain file:` path to legacy AGRMET terrain file.
+
 .Example _lis.config_ entry
 ....
 AGRMET forcing directory:               ./FORCING/
@@ -5595,12 +5892,88 @@ AGRMET CMORPH dx:
 AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
-AGRMET radiation derived from: 'GALWEM_RAD'
+AGRMET radiation derived from: GALWEM_RAD
 AGRMET GALWEM radiation data directory: GALWEM_Rad
 AGRMET number of gauge networks to use: 7
 AGRMET gauge networks to use::
 AMIL CANA FAA ICAO WMO HADS NWSLI
 ::
+AGRMET GALWEM Precip correlation function type: 1
+AGRMET GALWEM T2M correlation function type: 1
+AGRMET GALWEM RH2M correlation function type: 1
+AGRMET GALWEM SPD10M correlation function type: 1
+AGRMET GFS Precip correlation function type: 1
+AGRMET GFS T2M correlation function type: 1
+AGRMET GFS RH2M correlation function type: 1
+AGRMET GFS SPD10M correlation function type: 1
+AGRMET precip obs file format: 1
+AGRMET sfc obs file format: 1
+
+AGRMET GALWEM Precip background error scale length (m):         102000.
+AGRMET GALWEM Precip background error variance:                      0.83
+AGRMET GALWEM Precip Gauge observation error variance:               0.86
+AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): 132000.
+AGRMET GALWEM Precip GEOPRECIP observation error variance:           1.24
+AGRMET GALWEM Precip SSMI observation error scale length (m):   133000.
+AGRMET GALWEM Precip SSMI observation error variance:                2.58
+AGRMET GALWEM Precip CMORPH observation error scale length (m):  89000.
+AGRMET GALWEM Precip CMORPH observation error variance:              1.15
+AGRMET GALWEM Precip IMERG observation error scale length (m):  101000.
+AGRMET GALWEM Precip IMERG observation error variance:               1.93
+AGRMET GALWEM T2M background error scale length (m):            110000.
+AGRMET GALWEM T2M background error variance:                         1.48
+AGRMET GALWEM T2M station observation error variance:                2.30
+AGRMET GALWEM RH2M background error scale length (m):           119000.
+AGRMET GALWEM RH2M background error variance:                       30.7
+AGRMET GALWEM RH2M station observation error variance:              65.8
+AGRMET GALWEM SPD10M background error scale length (m):          53000.
+AGRMET GALWEM SPD10M background error variance:                      0.62
+AGRMET GALWEM SPD10M station observation error variance:             2.37
+
+AGRMET GFS Precip background error scale length (m):             93000.
+AGRMET GFS Precip background error variance:                         0.47
+AGRMET GFS Precip Gauge observation error variance:                  0.70
+AGRMET GFS Precip GEOPRECIP observation error scale length (m): 131000.
+AGRMET GFS Precip GEOPRECIP observation error variance:              1.06
+AGRMET GFS Precip SSMI observation error scale length (m):      131000.
+AGRMET GFS Precip SSMI observation error variance:                   2.10
+AGRMET GFS Precip CMORPH observation error scale length (m):     91000.
+AGRMET GFS Precip CMORPH observation error variance:                 0.92
+AGRMET GFS Precip IMERG observation error scale length (m):     100000.
+AGRMET GFS Precip IMERG observation error variance:                  1.62
+AGRMET GFS T2M background error scale length (m):               125000.
+AGRMET GFS T2M background error variance:                            1.36
+AGRMET GFS T2M station observation error variance:                   2.38
+AGRMET GFS RH2M background error scale length (m):              197000.
+AGRMET GFS RH2M background error variance:                          51.3
+AGRMET GFS RH2M station observation error variance:                 66.8
+AGRMET GFS SPD10M background error scale length (m):             86000.
+AGRMET GFS SPD10M background error variance:                         0.57
+AGRMET GFS SPD10M station observation error variance:                2.48
+
+AGRMET forcing map projection:             latlon
+AGRMET forcing domain lower left lat:       -89.9531250
+AGRMET forcing domain lower left lon:      -179.9296875
+AGRMET forcing domain upper right lat:       89.9531250
+AGRMET forcing domain upper right lon:      179.9296875
+AGRMET forcing domain resolution (dx):        0.1406250
+AGRMET forcing domain resolution (dy):        0.0937500
+
+AGRMET use IMERG data:                      1
+AGRMET IMERG temperature threshold:        278
+AGRMET IMERG data directory:               ./input/IMERG/Early_V07B
+AGRMET IMERG product:                      3B-HHR-E        # Early Run
+AGRMET IMERG version:                      V07B # Jun 2024
+AGRMET IMERG Probability Liquid Precip Threshold: 100
+
+AGRMET output OBA data: 0
+AGRMET skip backQC: 0
+AGRMET skip superstatQC: 0
+
+AGRMET 3hr maximum precip ceiling: 200.0
+
+AGRMET mask file:                ./input/legacy/all_16/point_switches
+AGRMET terrain file:              ./input/legacy/pst_16/terrain
 ....
 
 
@@ -6789,11 +7162,25 @@ run mode. Currently, only the forecast mode is supported.
 `GALWEM-GE forecast number of ensemble members:` specifies the number of ensembles
 of the GALWEM-GE forecast forcing data.
 
+`Apply GALWEM-GE precipitation bias correction:` specifies whether to enable the precipitation
+bias correction. Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not enable
+|1     | Enable
+|====
+
+`GALWEM-GE model CDF directory:` specifies the location of the GALWEM-GE model CDF files.
+
 .Example _lis.config_ entry
 ....
-GALWEM-GE forecast forcing directory:          ./GALWEM_GE
-GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
-GALWEM-GE forecast number of ensemble members: 21
+GALWEM-GE forecast forcing directory:          ./input/GALWEM_GE
+GALWEM-GE forecast run mode:                   forecast   
+GALWEM-GE forecast number of ensemble members: 10
+Apply GALWEM-GE precipitation bias correction: 1 #enter 1 - use; or 0
+GALWEM-GE model CDF directory:                 ./input/cdf/
 ....
 
 [[sssec_mogrepsgforecast,MOGREPS-G forecast]]
@@ -9832,6 +10219,63 @@ AWRAL600 initial sd: 0.5 0.5
 AWRAL600 initial mleaf: 0.67 0.2
 ....
 
+`AquaCrop.7.2 soil parameter table:` specifies the soil AquaCrop.7.2 soil parameter file.
+
+`AquaCrop.7.2 model timestep:` specifies the model timestep for AquaCrop.7.2. This option should be set to `"1da"` because of the fixed daily model timestep of AquaCrop.
+
+`AquaCrop.7.2 restart output interval:` specifies the restart writing interval for AquaCrop.7.2 The typical value is 1 month (1mo).
+
+`AquaCrop.7.2 restart file:` specifies the AquaCrop.7.2 restart file.
+
+`AquaCrop.7.2 restart file format:` specifies the restart file format for AquaCrop.7.2.
+
+`AquaCrop.7.2 reference height for forcing T and q:` specifies the height in meters of air temperature and specific humidity forcings.
+
+`AquaCrop.7.2 reference height for forcing u and v:` specifies the height in meters of u and v wind forcings.
+
+`AquaCrop.7.2 initial liquid soil moistures:` specifies the initial liquid volumetric soil moistures (for each layer defined in LDT, from top to bottom) used in the cold start runs. (units stem:[\frac{m^3}{m^3}])
+
+`AquaCrop.7.2 input path:` specifies the directory containing the native AquaCrop files.
+
+`AquaCrop.7.2 CO2_Filename:` specifies the file name of the CO2 file (.CO2) used by AquaCrop.7.2 stored in the "input path" directory.
+
+`AquaCrop.7.2 crop library directory:` specifies the location of the crop library directory containing the AC_Crop.Inventory file and the AC_Crop.List directory containing the crop files.
+
+`AquaCrop.7.2 Management_Filename:` specifies the management file (.MAN) used by AquaCrop.7.2 stored in the "input path" directory. If not specified, AquaCrop.7.2 will run without management file (set to "(None)").
+
+`AquaCrop.7.2 Irrigation_Filename:` specifies the management file (.IRR) used by AquaCrop.7.2 stored in the "input path" directory. If not specified, AquaCrop.7.2 will run without irrigation file (set to "(None)").
+
+`AquaCrop.7.2 starting day of sim period:` specifies the starting day of the AquaCrop simulation period (same for each year given that the length of the AquaCrop simulation period is hardcoded to 1 calendar year).
+
+`AquaCrop.7.2 starting month of sim period:` specifies the starting month of the AquaCrop simulation period (same for each year given that the length of the AquaCrop simulation period is hardcoded to 1 calendar year).
+
+`AquaCrop.7.2 starting day of crop period:` specifies the starting day of the AquaCrop cropping period (planting/sowing). Currently, only one cropping period is possible within an AquaCrop simulation period (= 1 calendar year).
+
+`AquaCrop.7.2 starting month of crop period:` specifies the starting month of the AquaCrop cropping period (planting/sowing). Currently, only one cropping period is possible within an AquaCrop simulation period (= 1 calendar year).
+
+.Example _lis.config_ entry:
+....
+AquaCrop.7.2 soil parameter table: ./SOILPARM_AC72.TBL
+AquaCrop.7.2 model timestep: "1da"
+AquaCrop.7.2 restart output interval: "1mo"
+AquaCrop.7.2 restart file: none
+AquaCrop.7.2 restart file format: netcdf
+AquaCrop.7.2 reference height of T and q: 2.0
+AquaCrop.7.2 reference height of u and v: 10.0
+AquaCrop.7.2 initial liquid soil moistures: 0.33 0.33
+AquaCrop.7.2 input path: "./AC_INPUT_dir/"
+AquaCrop.7.2 CO2_Filename: "file.CO2"
+AquaCrop.7.2 crop library directory: "./crop_params_dir/"
+AquaCrop.7.2 Management_Filename: "file.MAN"
+AquaCrop.7.2 Irrigation_Filename: "file.IRR"
+
+##Simulation and crop period
+AquaCrop.7.2 starting day of sim period: 1
+AquaCrop.7.2 starting month of sim period: 1
+AquaCrop.7.2 starting day of crop period: 22
+AquaCrop.7.2 starting month of crop period: 3
+....
+
 [[ssec_sublsm,Sublevel land surface models]]
 === Sublevel land surface models
 
@@ -10519,7 +10963,192 @@ HYMAP2 routing model start mode: "coldstart"
 HYMAP2 routing model restart interval: "1mo"
 HYMAP2 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP2_router_197901030000.d01.nc
 HYMAP2 enable 2-way coupling: 0
-HYMAP2 2-way coupling flooded fraction threshold: 2.0
+HYMAP2 2-way coupling flooded fraction threshold: 0.1
+....
+
+
+[[sssec_hymap3routing,HYMAP3 routing]]
+==== HYMAP3 routing
+
+`HYMAP3 routing model time step:` specifies the timestep for
+the HyMAP3 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP3 routing model output interval:` defines the output
+writing interval for the HyMAP3 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP3 run in ensemble mode:` specifies whether to run the HyMAP3 router in ensemble mode.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not run in ensemble mode
+|1     | Run in ensemble mode
+|====
+
+`HYMAP3 routing method:` specifies the HyMAP3 routing method to use.
+
+Acceptable values are:
+
+|====
+|Value              | Description
+
+|kinematic          | use kinematic method
+|diffusive          | use diffusive method
+|"`local inertia`"  | use local inertia method
+|hybrid             | use hybrid method (requires a river flow map from LDT)
+|urban             | use urban hydrology method (requires river flow and urban drainage outlet maps from LDT, and an additional lis.config_ entry)
+|====
+`HYMAP3 urban drainage parameter file:` specifies the text file name containing gutter and drainage network parameters. This config entry is only used when ` HYMAP3 routing method:` is set to `urban`.
+
+`HYMAP3 routing model time step method:` specifies the HyMAP3
+routing model time step method to use. This option is elective. If not defined,  HYMAP3 adopts `adaptive` by default. 
+
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|constant  | use constant timestep
+|adaptive  | use adaptive (time-varying) timesteps (must provide an alfa coefficient value)
+|====
+
+`HYMAP3 routing model adaptive time step alfa coefficient:`
+specifies the adaptive time step alfa coefficient (a real number)
+for the HyMAP3 router.  This option is elective. If not defined,  HYMAP3 adopts 0.5 by default. This coefficient is not needed if using the `constant` time step method.
+
+`HYMAP3 floodplain dynamics:` specifies whether simulate
+floodplain dynamics in the HyMAP3 router.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP3 reservoir operation option:` specifies whether to use reservoir operations in the HyMAP3 router.  This option is elective. If not defined,  HYMAP3 does not use reservoir operation.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use data-driven model (additional _lis.config_ entries required)
+|2     | Use parameter-based model (additional _lis.config_ entries required)
+|3     | Use beaver dam module (additional _lis.config_ entries required)
+|====
+additional _lis.config_ entries for  data-driven model
+
+`HYMAP3 reservoir operation input directory:` specifies the input
+directory for the reservoir operation files to be used when using
+reservoir operations with the HyMAP3 router.  This config entry is
+only used when `HYMAP3 reservoir operation option:` is set to 1.
+
+`HYMAP3 reservoir operation header filename:` specifies the filename
+header for the reservoir operation files to be used when using
+reservoir operations with the HyMAP3 router.  This config entry is
+only used when `HYMAP3 reservoir operation option:` is set to 1.
+
+additional _lis.config_ entries for parameter-based model 
+`HYMAP3 reservoir operation input file:` specifies NetCDF file containing reservoir parameters. This config entry is only used when `HYMAP3 reservoir operation option:` is set to 2.
+
+`HYMAP3 reservoir list:` specifies text file containing the list of reservoirs. This config entry is only used when `HYMAP3 reservoir operation option:` is set to 2.
+
+`HYMAP3 levee:` specifies whether to account for levees. This option is elective. If not defined,  HYMAP3 does not account for levees.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use (requires a levee map from LDT)
+|====
+
+`HYMAP3 sea level:` specifies whether to account for sea levels as downstream boundary condition. This option is elective. If not defined,  HYMAP3 does not account for sea levels. 
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use (requires additional lis.config_ entries)
+|====
+
+`HYMAP3 sea level input directory:` specifies the directory where data is found when using sea levels as downstream boundary condition with the HyMAP3 router.  This config entry is only used when `HYMAP3 sea level:` is set to 1.
+
+`HYMAP3 sea level header filename:` specifies the filename header for the sea level files to be used when using sea levels as downstream boundary condition with the HyMAP3 router. This config entry is only used when `HYMAP3 sea level:` is set to 1.
+
+`HYMAP3 sea level outlet list:` specifies the text filename listing the outlet grid cells using sea level data as downstream boundary conditions with the HyMAP3 router. This config entry is only used when `HYMAP3 sea level:` is set to 1.
+
+
+`HYMAP3 routing model start mode:` specifies the restart mode
+to be used for the HyMAP3 router.
+
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|restart   | A restart mode is being used; read a HyMAP3 restart file
+|coldstart | A cold start mode is being used; no restart file read
+|====
+
+`HYMAP3 routing model restart interval:` defines the restart writing
+interval for the HyMAP3 router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`HYMAP3 routing model restart file:` specifies the HyMAP3 router
+active restart file.
+
+`HYMAP3 enable 2-way coupling:` specifies whether to enable 2-way coupling.
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use
+|====
+
+`HYMAP3 2-way coupling flooded fraction threshold:` specifies the flooded fraction
+threshold used in the 2-way coupling mode.
+
+.Example _lis.config_ entry
+....
+HYMAP3 routing model time step: "30mn"
+HYMAP3 routing model output interval: "1da"
+HYMAP3 run in ensemble mode: 0
+HYMAP3 routing method: "kinematic"
+HYMAP3 routing model time step method: "constant"
+HYMAP3 routing model adaptive time step alfa coefficient: 0.7
+HYMAP3 floodplain dynamics: 1
+HYMAP3 reservoir operation option: 1
+HYMAP3 reservoir operation input directory: "./reservoir_data"
+HYMAP3 reservoir operation header filename: "RESDATA"
+HYMAP3 levees: 1
+HYMAP3 sea level: 1
+HYMAP3 sea level input directory: “./sea_level_data”
+HYMAP3 sea level header filename: “SEALEVDATA”_
+HYMAP3 sea level outlet list: “OUTLETLIST”
+HYMAP3 routing model start mode: "coldstart"
+HYMAP3 routing model restart interval: "1mo"
+HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_197901030000.d01.nc
+HYMAP3 enable 2-way coupling: 0
+HYMAP3 2-way coupling flooded fraction threshold: 0.1
 ....
 
 
@@ -10625,7 +11254,7 @@ Acceptable values are:
 
 |0     | Do not run in ensemble mode
 |1     | Run in ensemble mean mode
-|2     | Run in ensemble mode (not support)
+|2     | Run in ensemble mode
 |====
 
 `RAPID run option:` is set to 1 for a regular run. The other options are not

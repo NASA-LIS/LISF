@@ -74,6 +74,7 @@ contains
 ! 
 ! !USES: 
     use ESMF
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_timeMgrMod,         only : LVT_clock, LVT_calendar, LVT_seconds2time
     use LVT_InformationContentMod, only : LVT_initInformationContent
     use LVT_StratStatsMod,      only : LVT_initStratStats
@@ -127,7 +128,7 @@ contains
     real(ESMF_KIND_R8)      :: nts
     integer                 :: i,m,k,rc
     real                    :: nc,nr
-    character*500           :: metricsAttribFile
+    character(len=LVT_CONST_PATH_LEN) :: metricsAttribFile
     integer                 :: exp_v1, exp_v2
     character*50            :: anomalyTwindow
     type(ESMF_Time)         :: startTime, stopTime
@@ -490,7 +491,7 @@ contains
 ! 
 ! !USES:   
     use ESMF
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -519,9 +520,9 @@ contains
     integer                 :: ios
     type(ESMF_Time)         :: ftime,currTime
     character*4             :: fens
-    character*500           :: filename
-    character*500           :: meta_output_file
-    character*500           :: summ_output_file
+    character(len=LVT_CONST_PATH_LEN) :: filename
+    character(len=LVT_CONST_PATH_LEN) :: meta_output_file
+    character(len=LVT_CONST_PATH_LEN) :: summ_output_file
     integer                 :: yr,mo,da,hr,mn
     character*5000          :: c_line
     integer                 :: status
@@ -910,6 +911,7 @@ contains
 ! 
 ! !USES:   
     use ESMF
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_timeMgrMod,      only : LVT_calendar
     use LVT_DataStreamsMod  
 
@@ -950,10 +952,10 @@ contains
     type(ESMF_Time)         :: currTime
     type(ESMF_TimeInterval) :: ts
     integer                 :: ftn
-    character*500           :: rstfile
+    character(len=LVT_CONST_PATH_LEN) :: rstfile
     character(len=12)       :: cdate
     character(len=4)        :: cdate1
-    character*500           :: dir_string
+    character(len=LVT_CONST_PATH_LEN) :: dir_string
     integer                 :: status
     logical                 :: alarmCheck_total
 
@@ -1622,7 +1624,8 @@ contains
   subroutine createOutputFile(metric,pass)
 ! 
 ! !USES:   
-!
+    !
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 ! !INPUT PARAMETERS: 
 ! 
 ! !OUTPUT PARAMETERS:
@@ -1641,7 +1644,7 @@ contains
     character(len=12)  :: cdate
     character(len=4)   :: cdate1
     integer            :: iret
-    character*500      :: fname_total
+    character(len=LVT_CONST_PATH_LEN) :: fname_total
 
     if(pass.eq.metric%npass.and.metric%selectOpt.eq.1) then 
        call system("mkdir -p "//trim(LVT_rc%statsodir))
@@ -1690,6 +1693,7 @@ contains
 ! 
 ! !USES:   
     use ESMF
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_timeMgrMod,  only : LVT_tick
 
 !
@@ -1708,7 +1712,7 @@ contains
     integer                 :: pass
     type(LVT_metricEntry)   :: metric
 
-    character*500           :: fname_ts
+    character(len=LVT_CONST_PATH_LEN) :: fname_ts
     character(len=12)       :: cdate
     character(len=4)        :: cdate1
     integer                 :: status,iret

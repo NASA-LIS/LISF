@@ -129,6 +129,9 @@ subroutine noah33_main(n)
 !   which is not currently implemented within LIS without WRF_HYDRO:
   real        :: etpnd1
 #endif
+#ifdef PARFLOW
+  real        :: pcpdrp
+#endif
   real        :: snomlt    ! snow melt (m) (water equivalent)
   real        :: sncovr    ! fractional snow cover (unitless fraction, 0-1)
 !  real        :: runoff1   ! ground surface runoff (m s-1)
@@ -758,6 +761,9 @@ subroutine noah33_main(n)
         print*, 'b  INFXS1RT = ', noah33_struc(n)%noah(t)%infxs1rt
         print*, 'b  SOLDRAIN1RT = ', noah33_struc(n)%noah(t)%soldrain1rt
 #endif
+#ifdef PARFLOW
+        print*, 'b  WATERFLUX = ', noah33_struc(n)%noah(t)%wtrflx
+#endif
         print *,' '
         print *,'CALLING SFLX'
         print *,' '
@@ -823,6 +829,9 @@ subroutine noah33_main(n)
                 ,noah33_struc(n)%noah(t)%infxs1rt &
                 ,etpnd1 &
 #endif
+#ifdef PARFLOW
+                ,pcpdrp &
+#endif
                 )
 
 !     if(LIS_localPet.eq.8) then 
@@ -840,6 +849,12 @@ subroutine noah33_main(n)
            noah33_struc(n)%noah(t)%z0_old = noah33_struc(n)%noah(t)%z0
 #ifdef WRF_HYDRO
            noah33_struc(n)%noah(t)%soldrain1rt = noah33_struc(n)%noah(t)%runoff2*dt*1000.0
+#endif
+#ifdef PARFLOW
+           noah33_struc(n)%noah(t)%wtrflx(1) = - ((edir + et(1))/LVH2O) + pcpdrp
+           do i=2,noah33_struc(n)%nslay
+             noah33_struc(n)%noah(t)%wtrflx(i) = (et(i)/LVH2O)
+           enddo
 #endif
 #if _DEBUG_PRINT_
         print *,' '
@@ -944,6 +959,9 @@ subroutine noah33_main(n)
         print*, 'a  SFHEAD1RT = ', noah33_struc(n)%noah(t)%sfhead1rt
         print*, 'a  INFXS1RT = ', noah33_struc(n)%noah(t)%infxs1rt
         print*, 'a  SOLDRAIN1RT = ', noah33_struc(n)%noah(t)%soldrain1rt
+#endif
+#ifdef PARFLOW
+        print*, 'a  WATERFLUX = ', noah33_struc(n)%noah(t)%wtrflx
 #endif
 #endif
         elseif(ice.eq.1) then 

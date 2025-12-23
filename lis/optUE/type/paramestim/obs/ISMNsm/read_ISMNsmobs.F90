@@ -52,7 +52,6 @@ subroutine read_ISMNsmobs(Obj_Space)
   character(len=LIS_CONST_PATH_LEN) :: obsdir
   logical               :: data_update
   integer               :: i
-  character(len=LIS_CONST_PATH_LEN) :: filename
   integer               :: ios
   integer               :: yr,doy,mo,da,hr,mn,ss
   logical               :: file_exists
@@ -418,7 +417,7 @@ subroutine getNumberOfISMNfiles(odir, yr, num_files)
 !EOP
   character*100                :: temp1
   character(len=LIS_CONST_PATH_LEN) :: ls_comm
-  character*500                :: cmd2
+  character(len=LIS_CONST_PATH_LEN) :: cmd2
   character*4                  :: fyr
   integer                      :: ftn
   character*1                  :: fproc(4) 

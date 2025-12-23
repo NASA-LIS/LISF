@@ -15,6 +15,8 @@
 ! !INTERFACE:
 subroutine stg4file( name, stg4dir, yr, mo, da, hr)
 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   implicit none
 
 ! !DESCRIPTION:
@@ -42,8 +44,8 @@ subroutine stg4file( name, stg4dir, yr, mo, da, hr)
 ! !ARGUMENTS: 
   integer :: yr, mo, da, hr
 
-  character(80) :: name
-  character(40) :: stg4dir
+  character(len=LDT_CONST_PATH_LEN) :: name
+  character(len=LDT_CONST_PATH_LEN) :: stg4dir
   character(4) :: cyear
   character(2) :: cmon, cday, chour
 

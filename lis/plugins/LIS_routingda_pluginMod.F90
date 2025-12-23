@@ -35,8 +35,8 @@ contains
 !
 ! !DESCRIPTION:
 !
-! This is a custom-defined plugin point for introducing a new routing scheme
-! in a data assimilation mode. The interface mandates that
+! This is a custom-defined plugin point for introducing a new routing
+! scheme in a data assimilation mode. The interface mandates that
 ! a number of routines be implemented and registered for
 ! each of the routing model that is used in a data assimilation setup.
 !
@@ -44,12 +44,12 @@ contains
 !   \begin{description}
 !    \item[Return the state prognostic variables]
 !      Routine that retrieves the specified state prognostic variable(s)
-!      (to be registered using {\tt registerroutingdagetstatevar} and later called
-!       through {\tt routingdagetstatevar} method)
+!      (to be registered using {\tt registerroutingdagetstatevar} and
+!       later called through {\tt routingdagetstatevar} method)
 !    \item[Set the state prognostic variables]
 !      Routine that sets the specified state prognostic variable(s)
-!      (to be registered using {\tt registerroutingdasetstatevar} and later called
-!       through {\tt routingdasetstatevar} method)
+!      (to be registered using {\tt registerroutingdasetstatevar} and
+!       later called through {\tt routingdasetstatevar} method)
 !     \item[Retrieve ``Obspred'']
 !      Routine that retrieves the model's estimate of observations.
 !      (to be registered using {\tt registerroutingdagetobspred} and later
@@ -76,8 +76,8 @@ contains
 !     \item[Update routing state]
 !      updates the state variables using the values of the Increment
 !      object (note that the set method actually sets the variables to the
-!      routing state, whereas the update method simply changes the Routing\_State
-!      object).
+!      routing state, whereas the update method simply changes the
+!      Routing_State object).
 !      (to be registered using {\tt registerroutingdaupdatestate} and later
 !      called through {\tt routingdaupdatestate} method)
 !    \end{description}
@@ -86,100 +86,185 @@ contains
 !    \begin{description}
 !    \item[Return the state prognostic variables]
 !      Routine that retrieves the specified state prognostic variable(s)
-!      (to be registered using {\tt registerroutingdagetstatevar} and later called
-!       through {\tt routingdagetstatevar} method)
+!      (to be registered using {\tt registerroutingdagetstatevar} and
+!       later called through {\tt routingdagetstatevar} method)
 !    \item[Set the state prognostic variables]
 !      Routine that sets the specified state prognostic variable(s)
-!      (to be registered using {\tt registerroutingdasetstatevar} and later called
-!       through {\tt routingdasetstatevar} method)
+!      (to be registered using {\tt registerroutingdasetstatevar} and
+!       later called through {\tt routingdasetstatevar} method)
 !     \item[Transform Observations]
 !      Routine that transforms observations to the Routing state space
 !      (could be as simple as a unit conversion).
-!      (to be registered using {\tt registerroutingdaobstransform} and later
-!      called through {\tt routingdaobstransform} method)
+!      (to be registered using {\tt registerroutingdaobstransform} and
+!      later called through {\tt routingdaobstransform} method)
 !     \item[Map observations to routing space]
 !      Routine that maps observations to the routing state variables.
-!      (to be registered using {\tt registerroutingdamapobstorouting} and later
-!      called through {\tt routingdamapobstorouting} method)
+!      (to be registered using {\tt registerroutingdamapobstorouting} and
+!      later called through {\tt routingdamapobstorouting} method)
 !     \end{description}
 !
-!
 ! !INTERFACE:
-subroutine LIS_routingda_plugin
+  subroutine LIS_routingda_plugin
 !EOP
 
 #if ( ( defined DA_DIRECT_INSERTION ) || \
       ( defined DA_ENKS )             || \
       ( defined DA_ENKF ) )
 
-   use LIS_pluginIndices
+    use LIS_pluginIndices
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
-   use HYMAP2_dawL_Mod
+    use HYMAP2_dawL_Mod
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+    use HYMAP3_dawL_Mod
+#endif
+
+    implicit none
+
+    external :: registerroutingdainit
+    external :: registerroutingdagetstatespacesize
+    external :: registerroutingdagetstatevar
+    external :: registerroutingdasetstatevar
+    external :: registerroutingdagetobspred
+    external :: registerroutingdaqcstate
+    external :: registerroutingdaqcobsstate
+    external :: registerroutingdascalestatevar
+    external :: registerroutingdadescalestatevar
+    external :: registerroutingdaupdatestate
+    external :: registerroutingdasetpertstates
+
+#if ( defined ROUTE_HYMAP2_ROUTER )
+    external HYMAP2_getStateSpaceSize
+    external HYMAP2_getWL
+    external HYMAP2_setWL
+    external HYMAP2_getWLpred
+    external HYMAP2_qcWL
+    external HYMAP2_qc_WLobs
+    external HYMAP2_scale_WL
+    external HYMAP2_descale_WL
+    external HYMAP2_updateWL
+    external HYMAP2_setPertStates
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+    external HYMAP3_getStateSpaceSize
+    external HYMAP3_getWL
+    external HYMAP3_setWL
+    external HYMAP3_getWLpred
+    external HYMAP3_qcWL
+    external HYMAP3_qc_WLobs
+    external HYMAP3_scale_WL
+    external HYMAP3_descale_WL
+    external HYMAP3_updateWL
+    external HYMAP3_setPertStates
 #endif
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
-   external HYMAP2_getStateSpaceSize
-   external HYMAP2_getWL
-   external HYMAP2_setWL
-   external HYMAP2_getWLpred
-   external HYMAP2_qcWL
-   external HYMAP2_qc_WLobs
-   external HYMAP2_scale_WL
-   external HYMAP2_descale_WL
-   external HYMAP2_updateWL
-   external HYMAP2_setPertStates
+    call registerroutingdainit(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_daWL_init)
+    call registerroutingdagetstatespacesize( &
+         trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_getStateSpaceSize)
+    call registerroutingdagetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_getWL)
+    call registerroutingdasetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_setWL)
+    call registerroutingdagetobspred(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_getWLpred)
+    call registerroutingdaqcstate(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_qcWL)
+    call registerroutingdaqcobsstate(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_qc_WLobs)
+    call registerroutingdascalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_scale_WL)
+    call registerroutingdadescalestatevar( &
+         trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_descale_WL)
+    call registerroutingdaupdatestate(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_updateWL)
+    call registerroutingdasetpertstates(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP2_setPertStates)
+
+    call registerroutingdainit(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_daWL_init)
+    call registerroutingdagetstatespacesize( &
+         trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_getStateSpaceSize)
+    call registerroutingdagetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_getWL)
+    call registerroutingdasetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_setWL)
+    call registerroutingdagetobspred(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_getWLpred)
+    call registerroutingdaqcstate(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_qcWL)
+    call registerroutingdaqcobsstate(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_qc_WLobs)
+    call registerroutingdascalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_scale_WL)
+    call registerroutingdadescalestatevar( &
+         trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_descale_WL)
+    call registerroutingdaupdatestate(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_updateWL)
+    call registerroutingdasetpertstates(trim(LIS_HYMAP2routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP2_setPertStates)
 #endif
 
-#if ( defined ROUTE_HYMAP2_ROUTER )
-   call registerroutingdainit(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_daWL_init)
-   call registerroutingdagetstatespacesize(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_getStateSpaceSize)
-   call registerroutingdagetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_getWL)
-   call registerroutingdasetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_setWL)
-   call registerroutingdagetobspred(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_getWLpred)
-   call registerroutingdaqcstate(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_qcWL)
-   call registerroutingdaqcobsstate(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_qc_WLobs)
-   call registerroutingdascalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_scale_WL)
-   call registerroutingdadescalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_descale_WL)
-   call registerroutingdaupdatestate(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_updateWL)
-   call registerroutingdasetpertstates(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_synwlId)//char(0),HYMAP2_setPertStates)
+#if ( defined ROUTE_HYMAP3_ROUTER )
+    call registerroutingdainit(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_daWL_init)
+    call registerroutingdagetstatespacesize( &
+         trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_getStateSpaceSize)
+    call registerroutingdagetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_getWL)
+    call registerroutingdasetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_setWL)
+    call registerroutingdagetobspred(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_getWLpred)
+    call registerroutingdaqcstate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_qcWL)
+    call registerroutingdaqcobsstate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_qc_WLobs)
+    call registerroutingdascalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_scale_WL)
+    call registerroutingdadescalestatevar( &
+         trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_descale_WL)
+    call registerroutingdaupdatestate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_updateWL)
+    call registerroutingdasetpertstates(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_synwlId)//char(0),HYMAP3_setPertStates)
 
-
-   call registerroutingdainit(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_daWL_init)
-   call registerroutingdagetstatespacesize(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_getStateSpaceSize)
-   call registerroutingdagetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_getWL)
-   call registerroutingdasetstatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_setWL)
-   call registerroutingdagetobspred(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_getWLpred)
-   call registerroutingdaqcstate(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_qcWL)
-   call registerroutingdaqcobsstate(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_qc_WLobs)
-   call registerroutingdascalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_scale_WL)
-   call registerroutingdadescalestatevar(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_descale_WL)
-   call registerroutingdaupdatestate(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_updateWL)
-   call registerroutingdasetpertstates(trim(LIS_HYMAP2routerId)//"+"//&
-        trim(LIS_hydrowebwlId)//char(0),HYMAP2_setPertStates)
+    call registerroutingdainit(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_daWL_init)
+    call registerroutingdagetstatespacesize( &
+         trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_getStateSpaceSize)
+    call registerroutingdagetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_getWL)
+    call registerroutingdasetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_setWL)
+    call registerroutingdagetobspred(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_getWLpred)
+    call registerroutingdaqcstate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_qcWL)
+    call registerroutingdaqcobsstate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_qc_WLobs)
+    call registerroutingdascalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_scale_WL)
+    call registerroutingdadescalestatevar( &
+         trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_descale_WL)
+    call registerroutingdaupdatestate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_updateWL)
+    call registerroutingdasetpertstates(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_hydrowebwlId)//char(0),HYMAP3_setPertStates)
 #endif
 
 #endif
- end subroutine LIS_routingda_plugin
+  end subroutine LIS_routingda_plugin
 end module LIS_routingda_pluginMod

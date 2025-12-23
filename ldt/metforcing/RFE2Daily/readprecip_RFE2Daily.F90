@@ -64,7 +64,6 @@ subroutine readprecip_RFE2Daily( n, fname, findex, order, ferror_RFE2Daily )
   real, allocatable     :: rain1d(:)
   REAL, ALLOCATABLE     :: rain2d(:,:)
   integer               :: ftn, ios, ftn2, ftn3
-  character(len=124)    :: fnametemp
   LOGICAL               :: file_exists
   real, dimension(LDT_rc%lnc(n), LDT_rc%lnr(n)) :: varfield ! reprojected arrray
 !=== End Variable Definition =======================

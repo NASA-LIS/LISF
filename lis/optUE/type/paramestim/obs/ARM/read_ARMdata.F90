@@ -24,7 +24,6 @@ subroutine read_ARMdata(Obj_Space)
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use LIS_fileIOMod,      only : LIS_readData
   use LIS_timeMgrMod,     only : LIS_calendar, LIS_tick
-  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use map_utils
   use ARMdata_module,     only : ARMdata_struc
 
@@ -47,7 +46,6 @@ subroutine read_ARMdata(Obj_Space)
   integer                   :: yr, mo, da, hr, mn, ss,doy
   real*8                    :: lis_prevtime
   integer                   :: status
-  character(len=LIS_CONST_PATH_LEN) :: filename
   real                      :: time, gmt
   integer                   :: i,t,gid,c,r,st,et
   type(ESMF_TimeInterval)   :: dayInterval
@@ -1733,7 +1731,8 @@ end subroutine read_baebbr_flux_file
 ! !INTERFACE: 
 subroutine create_arm_ecor_flux_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
-  
+
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,  only : LIS_localPet
   implicit none
 
@@ -1773,7 +1772,7 @@ subroutine create_arm_ecor_flux_filename(odir, site_id, stnid, &
   character*4       :: fproc
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -1815,7 +1814,8 @@ end subroutine create_arm_ecor_flux_filename
 ! !INTERFACE: 
 subroutine create_arm_baebbr_flux_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
-  
+
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_localPet
 
   implicit none
@@ -1856,7 +1856,7 @@ subroutine create_arm_baebbr_flux_filename(odir, site_id, stnid, &
   character*4       :: fproc
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -1898,7 +1898,8 @@ end subroutine create_arm_baebbr_flux_filename
 ! !INTERFACE: 
 subroutine create_arm_ebbr_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
-! !USES: 
+  ! !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_localPet
   
   implicit none
@@ -1937,7 +1938,7 @@ subroutine create_arm_ebbr_filename(odir, site_id, stnid, &
   character*4       :: fproc
 
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 

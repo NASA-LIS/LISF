@@ -19,6 +19,9 @@ module rapid_var
 !*******************************************************************************
 #include <petsc/finclude/petsctao.h>
 use petsctao
+
+use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
 implicit none
 
 
@@ -53,73 +56,73 @@ PetscInt :: IS_opt_phi
 !*******************************************************************************
 !Declaration of variables - input and output files
 !*******************************************************************************
-character(len=200) :: rapid_connect_file
+character(len=LIS_CONST_PATH_LEN) :: rapid_connect_file
 !unit 10 - file with connectivity information using RAPID connectivity format
-character(len=200) :: riv_bas_id_file
+character(len=LIS_CONST_PATH_LEN) :: riv_bas_id_file
 !unit 11 - file with all the IDs of the reaches in _riv considered
-character(len=200) :: obs_tot_id_file
+character(len=LIS_CONST_PATH_LEN) :: obs_tot_id_file
 !unit 12 - file with all the IDs of the all reaches with gage measurements
-character(len=200) :: obs_use_id_file
+character(len=LIS_CONST_PATH_LEN) :: obs_use_id_file
 !unit 13 - file with all the IDs of the reaches used
-character(len=200) :: hum_tot_id_file
+character(len=LIS_CONST_PATH_LEN) :: hum_tot_id_file
 !unit 14 - file with all the IDs of the reaches with human-induced flow added
-character(len=200) :: hum_use_id_file
+character(len=LIS_CONST_PATH_LEN) :: hum_use_id_file
 !unit 15 - file with all the IDs of the reaches used
-character(len=200) :: for_tot_id_file
+character(len=LIS_CONST_PATH_LEN) :: for_tot_id_file
 !unit 16 - file with all the IDs where flows can be used as forcing to their 
 !corresponding downstream reach  
-character(len=200) :: for_use_id_file
+character(len=LIS_CONST_PATH_LEN) :: for_use_id_file
 !unit 17 - file with all the IDs of the reaches used 
-character(len=200) :: dam_tot_id_file
+character(len=LIS_CONST_PATH_LEN) :: dam_tot_id_file
 !unit 18 - file with all the IDs of the reaches where the dam model runs and 
 !flows to their corresponding downstream reach  
-character(len=200) :: dam_use_id_file
+character(len=LIS_CONST_PATH_LEN) :: dam_use_id_file
 !unit 19 - file with all the IDs of the reaches used
 
-character(len=200) :: k_file
+character(len=LIS_CONST_PATH_LEN) :: k_file
 !unit 20 - file with values for k (possibly from previous param. estim.)
-character(len=200) :: x_file
+character(len=LIS_CONST_PATH_LEN) :: x_file
 !unit 21 - file with values for x (possibly from previous param. estim.)
-character(len=200) :: kfac_file  
+character(len=LIS_CONST_PATH_LEN) :: kfac_file  
 !unit 22 - file with kfac for all reaches of the domain
-character(len=200) :: xfac_file
+character(len=LIS_CONST_PATH_LEN) :: xfac_file
 !unit 23 - file with xfac for all reaches of the domain
-character(len=200) :: dam_file
+character(len=LIS_CONST_PATH_LEN) :: dam_file
 !unit 24 - file with dam information for all dams of the domain
 
-character(len=200) :: Qinit_file
+character(len=LIS_CONST_PATH_LEN) :: Qinit_file
 !unit 30 - file where initial flowrates can be stored to run the model with them
-character(len=200) :: Qfinal_file
+character(len=LIS_CONST_PATH_LEN) :: Qfinal_file
 !unit 31 - file where final flowrates can be stored at the end of model run 
-character(len=200) :: Vlat_file
+character(len=LIS_CONST_PATH_LEN) :: Vlat_file
 
-character(len=200) :: Qobs_file
+character(len=LIS_CONST_PATH_LEN) :: Qobs_file
 !unit 33 - file where the flowrates observations are given
-character(len=200) :: Qfor_file
+character(len=LIS_CONST_PATH_LEN) :: Qfor_file
 !unit 34 - file where forcing flowrates are stored.  Forcing is taken as the
 !flow coming from upstream reach.
-character(len=200) :: Qobsbarrec_file
+character(len=LIS_CONST_PATH_LEN) :: Qobsbarrec_file
 !unit 35 - file where the reciprocal (1/xi) of the average obs are stored.
-character(len=200) :: Qhum_file
+character(len=LIS_CONST_PATH_LEN) :: Qhum_file
 !unit 36 - file where human-induced flowrates are stored.  These flows are added 
 !upstream.
 
-character(len=200) :: babsmax_file
+character(len=LIS_CONST_PATH_LEN) :: babsmax_file
 !unit 42 - file where the maximum of the absolute values of the right-hand-side
 !are stored
-character(len=200) :: QoutRabsmin_file
+character(len=LIS_CONST_PATH_LEN) :: QoutRabsmin_file
 !unit 43 - file where the minimum of the absolute values of the instantaneous 
 !flows are stored 
-character(len=200) :: QoutRabsmax_file
+character(len=LIS_CONST_PATH_LEN) :: QoutRabsmax_file
 !unit 44 - file where the maximum of the absolute values of the instantaneous 
 !flows are stored 
-character(len=200) :: Qout_file
+character(len=LIS_CONST_PATH_LEN) :: Qout_file
 !        - file where the flow of water at the outlet of each reach are stored
-character(len=200) :: V_file
+character(len=LIS_CONST_PATH_LEN) :: V_file
 !        - file where the volume of water in each reach are stored
 
 !Yeosang Yoon
-character(len=200) :: weight_table_file    ! weight factors for calculating boundary inflows
+character(len=LIS_CONST_PATH_LEN) :: weight_table_file    ! weight factors for calculating boundary inflows
 integer            :: n_weight_table       ! weight table size
 
 !*******************************************************************************
@@ -663,7 +666,7 @@ namelist /NL_namelist/                                                         &
                        ZS_dtF,ZS_dtH,                                          &
                        ZS_phifac,IS_strt_opt
                         
-character(len=200) :: namelist_file
+character(len=LIS_CONST_PATH_LEN) :: namelist_file
 !unit 88 - Namelist
 
 

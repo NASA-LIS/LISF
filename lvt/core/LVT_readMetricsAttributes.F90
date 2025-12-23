@@ -39,9 +39,6 @@ subroutine LVT_readMetricsAttributes(attribFile)
 
   type(ESMF_Config)            :: attribConfig
   integer                      :: rc
-  character*100                  :: messages ( 20 )
-  
-  messages(:) = ''
 
   attribConfig = ESMF_ConfigCreate(rc=rc)
   call ESMF_ConfigLoadFile(attribConfig,trim(attribFile),rc=rc)

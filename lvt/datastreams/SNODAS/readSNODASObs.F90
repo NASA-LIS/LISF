@@ -17,6 +17,7 @@ subroutine readSNODASObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -49,8 +50,8 @@ subroutine readSNODASObs(source)
   integer                :: i,j,t,c,r
   integer                :: stn_col, stn_row
   real                   :: col,row
-  character*100          :: snodas_swefilename
-  character*100          :: snodas_snwdfilename
+  character(len=LVT_CONST_PATH_LEN) :: snodas_swefilename
+  character(len=LVT_CONST_PATH_LEN) :: snodas_snwdfilename
   logical                :: file_exists
   logical                :: readflag
   integer                :: ftn, ios

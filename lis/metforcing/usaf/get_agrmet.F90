@@ -21,7 +21,8 @@
 !
 ! !INTERFACE:    
 subroutine get_agrmet(n, findex)
-! !USES:
+  ! !USES:
+  use LIS_constantsMod, only    : LIS_CONST_PATH_LEN
   use LIS_coreMod, only         : LIS_rc, LIS_endofrun
   use LIS_timeMgrMod, only      : LIS_get_nstep,           &
                                   LIS_computeTimeBookEnds, &
@@ -86,7 +87,7 @@ subroutine get_agrmet(n, findex)
   integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1,ts1
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2,ts2
   real    :: gmt1,gmt2
-  character*400 :: name 
+  character(len=LIS_CONST_PATH_LEN) :: name 
 
   agrmet_struc(n)%findtime1 = 0 
   agrmet_struc(n)%findtime2 = 0 

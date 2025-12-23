@@ -17,6 +17,7 @@ module SMAP_vwcobsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -51,9 +52,9 @@ module SMAP_vwcobsMod
 !EOP
   type, public :: smapobsdec
 
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*20         :: data_designation
-     character*3           :: release_number
+     character*3          :: release_number
      integer              :: nc
      integer              :: nr
      integer              :: mo

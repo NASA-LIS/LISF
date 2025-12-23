@@ -46,7 +46,7 @@ subroutine read_GlobalLSObsdata(Obj_Space)
   real,    allocatable    :: lsobs(:,:)
   real,    pointer    :: obsl(:)
   type(ESMF_Field)    :: lsField
-  character(len=LIS_CONST_PATH_LEN) :: lsobsdir, name
+  character(len=LIS_CONST_PATH_LEN) :: lsobsdir
   logical             :: data_update
   logical             :: file_exists
   logical             :: readflag

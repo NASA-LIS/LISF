@@ -39,6 +39,7 @@ subroutine readANSASNWDobs(source)
   use hdf5
 #endif
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -58,7 +59,7 @@ subroutine readANSASNWDobs(source)
 #if (defined USE_HDF5) 
   character*100,   parameter    :: snwd_field_name = "ansa_swe_depth_cyl_GB"
   character*100,   parameter    :: snwd_field_name1 = "ansa_swe_depth_cyl_NH"
-  character*100                 :: ansa_filename
+  character(len=LVT_CONST_PATH_LEN) :: ansa_filename
   integer(hsize_t), allocatable :: dims(:)
   integer(hid_t)                :: dataspace
   integer(hid_t)                :: memspace

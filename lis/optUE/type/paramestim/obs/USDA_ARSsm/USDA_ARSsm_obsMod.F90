@@ -77,7 +77,6 @@ contains
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field)          ::  obsField
     character(len=LIS_CONST_PATH_LEN) ::  soilmoistureobsdir
-    character(len=LIS_CONST_PATH_LEN) ::  soilmoistureobsmaskdir
     character*100             ::  vname
     character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                   ::  ftn

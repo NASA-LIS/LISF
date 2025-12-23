@@ -109,9 +109,15 @@ def gather_ensemble_info(nmme_model):
         ens_num=10
     elif nmme_model == "CCM4":
         ens_num=10
+    elif nmme_model == "CanESM5":
+        ens_num=20
     elif nmme_model == "GNEMO5":
         ens_num=10
+    elif nmme_model == "GNEMO52":
+        ens_num=20
     elif nmme_model == "CCSM4":
+        ens_num=10
+    elif nmme_model == "CESM1":
         ens_num=10
     elif nmme_model == "GFDL":
         ens_num=30

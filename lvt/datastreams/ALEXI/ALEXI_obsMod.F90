@@ -17,7 +17,8 @@ module ALEXI_obsMod
 ! 
 ! !USES: 
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+  
   implicit none
 
   PRIVATE 
@@ -47,7 +48,7 @@ module ALEXI_obsMod
 !EOP
 
   type, public :: alexidec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*50            :: extent
      integer                 :: nc,nr
      integer                 :: res

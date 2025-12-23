@@ -24,6 +24,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 
 ! !USES:
   use AGRMET_forcingMod, only : agrmet_struc
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
                                 LIS_verify, LIS_endrun
@@ -127,9 +128,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 !    abort in case of error
 !  \end{description}
 !EOP
-  character(255) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer                 :: ftn, igrib
-  character*250           :: avnfile
+  character(len=LIS_CONST_PATH_LEN) :: avnfile
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: fc_hr
   integer                 :: iginfo      ( 2 )
@@ -155,7 +156,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 
   ! ---------------------------------------------------
 
-  ! Initialize return code to "no error".  We will change it below if 
+  ! Initialize return code to "no error".  We will change it below if
   ! necessary.
   rc = 0
 
@@ -513,6 +514,7 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, &
      ifguess, jfguess, fg_swdown, fg_lwdown, rc )
 
   ! !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_masterproc
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
@@ -581,7 +583,7 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, &
 !       \end{description}
 !
 !EOP
-  character(255) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer, save :: alert_number = 1
   integer                       :: count_swdown
   integer                       :: count_lwdown

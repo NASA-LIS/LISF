@@ -19,6 +19,7 @@
 ! 26 0ct 2020:  Eric Kemp.  Initial Specification. Multi-process
 !   MPI doesn't work yet, just use single process.
 ! 15 Dec 2020:  Eric Kemp.  Added user-defined logfile name.
+! 10 Dec 2024:  Eric Kemp.  Updates for WIGOS.
 
 program main
 
@@ -31,7 +32,7 @@ program main
    implicit none
 
    ! Local variables
-   character(len=255) :: outfile
+   character(len=ESMF_MAXPATHLEN) :: outfile
    integer :: iunit_input, istat, iunit_out_vario
    integer :: j, i
    integer*8, allocatable :: icounts_vario(:)
@@ -43,7 +44,7 @@ program main
    integer :: max_num_files
    integer :: max_vario_bins
    integer :: vario_bin_dist
-   character(len=255) :: datadir
+   character(len=ESMF_MAXPATHLEN) :: datadir
    integer :: startyear
    integer :: startmonth
    integer :: startday
@@ -71,10 +72,10 @@ program main
    logical :: is_precip
    integer :: num_args
    logical :: use_blacklist
-   character(len=255) :: blacklist_file
-   character(len=9), allocatable :: blacklist_stns(:)
+   character(len=ESMF_MAXPATHLEN) :: blacklist_file
+   character(len=32), allocatable :: blacklist_stns(:)
    integer :: nstns
-   character(len=255) :: logname
+   character(len=ESMF_MAXPATHLEN) :: logname
 
    ! TODO:  Add other ob types.
    character(len=maxlen_obtype), parameter :: T2M     = "T2M"
@@ -707,6 +708,7 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
+      use esmf
       use USAF_ReportsMod, only: Reports, newReports, getNobs, getReport, &
            destroyReports, appendToReports, bcast_reports
       use USAF_StationsMod, only: great_circle_distance
@@ -720,7 +722,7 @@ contains
       type(esmf_time), intent(in) :: starttime
       type(esmf_time), intent(in) :: endtime
       type(esmf_timeinterval), intent(in) :: deltatime
-      character(len=255), intent(in) :: datadir
+      character(len=ESMF_MAXPATHLEN), intent(in) :: datadir
       integer, intent(in) :: max_stations
       integer, intent(in) :: max_vario_bins
       integer, intent(in) :: vario_bin_dist
@@ -730,21 +732,21 @@ contains
       logical, external :: is_obtype ! Function
       logical, intent(in) :: use_blacklist
       integer, intent(in) :: nstns
-      character(len=9), allocatable, intent(in) ::  blacklist_stns(:)
+      character(len=32), allocatable, intent(in) ::  blacklist_stns(:)
 
       ! Local variables
       type(esmf_time) :: curtime
       integer :: yyyy, mm, dd, hh
       character(len=10) :: yyyymmddhh
       integer :: rc
-      character(len=44) :: infile
-      character(len=123) :: fullpath
+      character(len=ESMF_MAXPATHLEN) :: infile
+      character(len=ESMF_MAXPATHLEN) :: fullpath
       integer :: istat
       integer :: iunit_input
       type(Reports) :: R_obs
-      character(len=80) :: line
-      character(len=10) :: platform, platform_i,platform_j
-      character(len=10) :: network
+      character(len=123) :: line
+      character(len=32) :: platform, platform_i, platform_j
+      character(len=32) :: network
       real :: latitude, longitude, lat_i, lon_i, lat_j, lon_j
       real :: O, B, A, O_i, B_i, O_j, B_j
       integer :: nobs
@@ -832,7 +834,7 @@ contains
                if (istat .ne. 0) exit
                if (line(2:2) .eq. '#') cycle
                read(line, &
-                    '(A10,1x,A10,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3)') &
+                    '(A32,1x,A32,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3)') &
                     network, platform, latitude, longitude, O, B, A
 
                ! Only save requested obtype
@@ -842,11 +844,10 @@ contains
                skip = .false.
                if (use_blacklist) then
                   do istn = 1, nstns
-                     !print*, "EMK: blacklist, platform = ", &
-                     !     trim(blacklist_stns(istn)), " ", adjustl(platform)
                      if (trim(blacklist_stns(istn)) .eq. &
                           adjustl(platform)) then
-                        !print*, "[INFO] Skipping blacklisted station ", &
+
+                        !write(6,*) "[INFO] Skipping blacklisted station ", &
                         !     adjustl(platform)
                         count_skips = count_skips + 1
                         skip = .true.
@@ -876,10 +877,10 @@ contains
 
          ! Update semivariogram sums and counts
          nobs = getNobs(R_obs)
-         if (myid .eq. 0) then
-            !print*, '[INFO] Working with ', nobs, ' ', trim(obtype), &
-            !     '/NWP matches...'
-         end if
+         !if (myid .eq. 0) then
+         !   write(6,*) '[INFO] Working with ', nobs, ' ', trim(obtype), &
+         !        '/NWP matches...'
+         !end if
          t0 = mpi_wtime()
          do j = 1,nobs
 
@@ -899,10 +900,10 @@ contains
 
             t1 = mpi_wtime()
 
-            do i = j+1,nobs
+            do i = j+1, nobs
 
                ! See if current processor is responsible for this j ob.
-               call pick_proc(id,id_incr, numprocs)
+               call pick_proc(id, id_incr, numprocs)
                if (id .ne. myid) cycle
 
                call getReport(R_obs,i, platform=platform_i,&

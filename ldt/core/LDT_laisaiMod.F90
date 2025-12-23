@@ -132,7 +132,8 @@ contains
 ! !INTERFACE:
   subroutine LDT_laisai_init
 
-! !USES:
+    ! !USES:
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
     use LDT_paramOptCheckMod, only: LDT_laisaiOptChecks, &
@@ -166,10 +167,10 @@ contains
    real, allocatable           :: laisai_gridDesc(:,:)
    character*50                :: laisai_proj
    character*50,  allocatable  :: laisai_gridtransform(:)
-   character*100, allocatable  :: laidir(:)
-   character*140, allocatable  :: laifile(:)
-   character*100, allocatable  :: saidir(:)
-   character*140, allocatable  :: saifile(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable  :: laidir(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable  :: laifile(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable  :: saidir(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable  :: saifile(:)
    character*20,  allocatable  :: laisaiInterval(:)
 
 ! ___________________________________________________________________

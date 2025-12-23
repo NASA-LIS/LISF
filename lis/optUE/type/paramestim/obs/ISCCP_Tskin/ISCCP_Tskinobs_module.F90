@@ -80,7 +80,7 @@ contains
     type(ESMF_Field), allocatable ::  obsField(:)
     character(len=LIS_CONST_PATH_LEN) ::  synsmobsdir
     character*100,  allocatable   ::  vname(:)
-    character*100             ::  objspaceAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) ::  objspaceAttribFile(LIS_rc%nnest)
     integer                   ::  ftn
     real                      ::  gridDesci(LIS_rc%nnest,50)
 

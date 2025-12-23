@@ -48,7 +48,6 @@ subroutine readISMNObs(source)
   integer                 :: ftn
   integer                 :: ios
   integer                 :: yr,mo,da,hr,mn,ss
-  character*500           :: name1, name2
   real                    :: lat, lon, elev
   real                    :: depthfrom, depthto
   real                    :: sm_value
@@ -285,6 +284,7 @@ end subroutine readISMNObs
 subroutine getNumberOfISMNfiles(odir, yr, num_files)
 ! 
 ! !USES:   
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_logMod
 
   implicit none
@@ -303,8 +303,8 @@ subroutine getNumberOfISMNfiles(odir, yr, num_files)
 ! !REVISION HISTORY: 
 ! 
 !EOP
-  character*500                :: ls_comm
-  character*500                :: cmd2
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm
+  character(len=LVT_CONST_PATH_LEN) :: cmd2
   character*4                  :: fyr
   integer                      :: ftn 
 
@@ -325,6 +325,7 @@ end subroutine getNumberOfISMNfiles
 
 subroutine generateISMNstationInfo(source, odir, yr, num_files)
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use ISMN_obsMod
@@ -340,17 +341,17 @@ subroutine generateISMNstationInfo(source, odir, yr, num_files)
   real                       :: depthfrom
   real                       :: depthto
   
-  character*500, allocatable     :: filenames(:)
-  character*500              :: filename2
-  character*500              :: name1, name2, name3
-  character*500              :: stnname
-  character*500              :: checkString
+  character(len=LVT_CONST_PATH_LEN), allocatable :: filenames(:)
+  character(len=LVT_CONST_PATH_LEN) :: filename2
+  character(len=LVT_CONST_PATH_LEN) :: name1, name2, name3
+  character(len=LVT_CONST_PATH_LEN) :: stnname
+  character(len=LVT_CONST_PATH_LEN) :: checkString
 
   
   integer                      :: iloc
   integer                      :: n_stns
-  character*500                :: ls_comm
-  character*500                :: cmd2
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm
+  character(len=LVT_CONST_PATH_LEN) :: cmd2
   character*4                  :: fyr
   integer                      :: k 
   integer                      :: ftn

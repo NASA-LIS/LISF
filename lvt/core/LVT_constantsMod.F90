@@ -11,12 +11,12 @@ module LVT_constantsMod
 !BOP
 !
 !  !MODULE: LVT_constantsMod
-! 
-!  !DESCRIPTION: 
+!
+!  !DESCRIPTION:
 !   The code in this file provides values of physical constants for
-!   consistent use across different components. 
-!   
-!  !REVISION HISTORY: 
+!   consistent use across different components.
+!
+!  !REVISION HISTORY:
 !  17 Feb 2004    Sujay Kumar  Initial Specification
 !
 !EOP
@@ -24,7 +24,12 @@ module LVT_constantsMod
 !----------------------------------------------------------------------------
 ! physical constants (all data public)
 !----------------------------------------------------------------------------
+   use ESMF, only: ESMF_MAXPATHLEN
    public
+
+   ! Software contraints
+   integer, parameter :: LVT_CONST_PATH_LEN = ESMF_MAXPATHLEN
+
 !   real,parameter :: CONST_PI     = 3.14159265358979323846  ! pi
    real,parameter :: LVT_CONST_PI     = 3.14159265   ! pi
    real,parameter :: LVT_CONST_CDAY   = 86400.0      ! sec in calendar day ~ sec
@@ -44,7 +49,7 @@ module LVT_constantsMod
    real,parameter :: LVT_CONST_RWV    = LVT_CONST_RGAS/LVT_CONST_MWWV    ! Water vapor gas constant ~ J/K/kg
    real,parameter :: LVT_CONST_ZVIR   = (LVT_CONST_RWV/LVT_CONST_RDAIR)-1.0   ! RWV/RDAIR - 1.0
    real,parameter :: LVT_CONST_KARMAN = 0.4          ! Von Karman constant
- 
+
    real,parameter :: LVT_CONST_TKFRZ  = 273.16       ! freezing T of fresh water ~ K (intentionally made == to TKTRIP)
    real,parameter :: LVT_CONST_TKTRIP = 273.16       ! triple point of fresh water ~ K
 
@@ -70,4 +75,4 @@ module LVT_constantsMod
    real, parameter :: LVT_CONST_ANGULAR_VELOCITY = 0.2618 ! Angular velocity of earth's rotation (radian/hr)
 
 !EOC
- end module LVT_constantsMod
+end module LVT_constantsMod

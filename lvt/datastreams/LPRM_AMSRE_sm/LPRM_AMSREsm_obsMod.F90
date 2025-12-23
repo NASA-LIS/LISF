@@ -17,6 +17,7 @@ module LPRM_AMSREsm_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -49,7 +50,7 @@ module LPRM_AMSREsm_obsMod
 !EOP
   type, public :: lprmamsresmobsdec
 
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: rawdata
      character*10            :: version
      character*10            :: channel

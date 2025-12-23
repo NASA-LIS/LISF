@@ -82,7 +82,6 @@ contains
     integer       :: status
     character*1   :: nestid(2)
     character*1   :: caseid(3)
-    character*100 :: temp
     integer       :: ftn
 
     integer              :: i,j,k

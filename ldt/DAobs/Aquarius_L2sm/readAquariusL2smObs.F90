@@ -42,12 +42,11 @@ subroutine readAquariusL2smObs(n)
   logical                 :: alarmCheck
   logical                 :: file_exists
   integer                 :: c,r,i,j
-  character(len=LDT_CONST_PATH_LEN)           :: fname
   character(len=LDT_CONST_PATH_LEN)           :: aquarius_filename
   character*7             :: yyyyddd
   character*4             :: fyr
   character*2             :: fmo,fda
-  character*200           :: list_files
+  character(len=LDT_CONST_PATH_LEN)           :: list_files
   integer                 :: sind
   integer                 :: yr,doy,mo,da,hr,mn,ss
   integer                 :: ftn

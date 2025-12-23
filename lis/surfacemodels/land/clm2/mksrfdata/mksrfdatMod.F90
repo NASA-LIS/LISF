@@ -31,6 +31,7 @@ CONTAINS
 ! $Id: mksrfdatMod.F90,v 1.5 2004/05/07 22:18:37 jim Exp $
 !-----------------------------------------------------------------------
 
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_precisionMod
     use infnan
     use clm2_varpar                      !parameters 
@@ -58,9 +59,9 @@ CONTAINS
     integer :: i,j,k,m                               !indices
     integer :: ier                                   !error status
     integer :: ndiag                                 !unit number for surface data summary
-    character(len=256) :: loc_fn                      !local file name 
-    character(len=256) :: rem_dir                    !mass store file name
-    character(len=256) :: rem_fn                     !mass store full path name
+    character(len=LIS_CONST_PATH_LEN) :: loc_fn  !local file name 
+    character(len=LIS_CONST_PATH_LEN) :: rem_dir !mass store file name
+    character(len=LIS_CONST_PATH_LEN) :: rem_fn  !mass store full path name
     character(len=  7) :: resol                      !resolution for file name
     real(r8) :: sum                                  !sum for error check
     real(r8) :: rmax                                 !maximum patch cover

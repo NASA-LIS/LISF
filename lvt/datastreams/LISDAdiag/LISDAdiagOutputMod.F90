@@ -16,6 +16,8 @@
 module LISDAdiagOutputMod
 ! 
 ! !USES:   
+
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -46,7 +48,7 @@ module LISDAdiagOutputMod
 !EOP
   
   type, public :: lisdadiagobsdec
-     character*100  :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer        :: computeInnovDist
      integer        :: computeGain
      integer        :: computeSpread

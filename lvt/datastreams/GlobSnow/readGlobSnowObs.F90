@@ -18,6 +18,7 @@ subroutine readGlobSnowObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use LVT_logMod,      only : LVT_logunit, LVT_verify
   use LVT_histDataMod
@@ -53,7 +54,7 @@ subroutine readGlobSnowObs(source)
 ! 
 !EOP
 
-  character*100          :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   logical                :: file_exists
   integer                :: nid, ios
   integer                :: sweid, rowId, colId

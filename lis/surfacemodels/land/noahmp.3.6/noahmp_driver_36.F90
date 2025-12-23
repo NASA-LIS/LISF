@@ -58,9 +58,14 @@ subroutine noahmp_driver_36(iloc, jloc, &
                             chleaf  , chuc    , chv2    , chb2    , fpice   , &
                             !ag (12Sep2019)
                             rivsto, fldsto, fldfrc, &
-                            sfcheadrt)  ! out 
+                            sfcheadrt                                                   & ! out :
+#ifdef PARFLOW
+                            ,qinsur,etrani                                              & ! out :
+#endif
+                            )
   
   ! use LIS_FORC_AttributesMod 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use module_sf_noahlsm_36, only: slcats, lucats, slpcats
   use noahmp_globals_36, only: dveg, opt_crs , opt_btr , opt_run ,      &
                                opt_sfc , opt_frz, opt_inf , opt_rad ,   &
@@ -76,10 +81,10 @@ subroutine noahmp_driver_36(iloc, jloc, &
                                FOLNMX, WDPOOL, WRRAT, MRP ! SY    
   use noahmp_routines_36, only: noahmp_sflx_36, redprm 
   implicit none
-  character(len=256), intent(in) :: landuse_tbl_name      ! Noah model landuse parameter table
-  character(len=256), intent(in) :: soil_tbl_name         ! Noah model soil parameter table
-  character(len=256), intent(in) :: gen_tbl_name          ! Noah model general parameter table
-  character(len=256), intent(in) :: noahmp_tbl_name       ! NoahMP parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: landuse_tbl_name      ! Noah model landuse parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: soil_tbl_name         ! Noah model soil parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: gen_tbl_name          ! Noah model general parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: noahmp_tbl_name       ! NoahMP parameter table
   character(len=256), intent(in) :: landuse_scheme_name   ! Landuse classficiation scheme
   character(len=256), intent(in) :: soil_scheme_name      ! Soil classification scheme  
   integer, intent(in) :: dveg_opt             ! vegetation model ( 1->prescribed [table LAI, shdfac=FVEG]; 2->dynamic; 3->table LAI, calculate FVEG 4->table LAI, shdfac=maximum)    
@@ -299,6 +304,10 @@ subroutine noahmp_driver_36(iloc, jloc, &
   real, intent(inout) :: fldsto               ! flood storage
   real, intent(inout) :: fldfrc               ! flood storage
   real, intent(inout) :: sfcheadrt            ! extra output for WRF-HYDRO [m] 
+#ifdef PARFLOW
+  real, intent(out)   :: qinsur               ! water input on soil surface [m/s]
+  real, intent(out)   :: etrani(nsoil)        ! evapotranspiration from soil layers [mm s-1]
+#endif
 
   ! external function
   real, external      :: month_d_36
@@ -385,6 +394,11 @@ subroutine noahmp_driver_36(iloc, jloc, &
 !  jloc = 1 
 #ifndef WRF_HYDRO
   sfcheadrt = 0.0 
+#endif
+
+#ifdef PARFLOW
+  qinsur = 0.0
+  etrani = 0.0
 #endif
 
   if (opt_sfc == 3) then
@@ -588,6 +602,9 @@ subroutine noahmp_driver_36(iloc, jloc, &
                rivsto  , fldsto, fldfrc            &
 #ifdef WRF_HYDRO
                ,sfcheadrt                                                  & ! in/out :
+#endif
+#ifdef PARFLOW
+               ,qinsur,etrani                                              & ! out :
 #endif
                )
 

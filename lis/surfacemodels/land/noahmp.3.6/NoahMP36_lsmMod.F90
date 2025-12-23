@@ -199,10 +199,10 @@ module NoahMP36_lsmMod
         !-------------------------------------------------------------------------
         ! Constant Parameter
         !-------------------------------------------------------------------------
-        character(len=256) :: landuse_tbl_name
-        character(len=256) :: soil_tbl_name
-        character(len=256) :: gen_tbl_name
-        character(len=256) :: noahmp_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: landuse_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: soil_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: gen_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: noahmp_tbl_name
         character(len=256) :: landuse_scheme_name
         character(len=256) :: soil_scheme_name
         integer            :: dveg_opt
@@ -292,6 +292,9 @@ contains
                 allocate(NOAHMP36_struc(n)%noahmp36(t)%zss( NOAHMP36_struc(n)%nsoil + NOAHMP36_struc(n)%nsnow))
                 allocate(NOAHMP36_struc(n)%noahmp36(t)%snowice(NOAHMP36_struc(n)%nsnow))
                 allocate(NOAHMP36_struc(n)%noahmp36(t)%snowliq(NOAHMP36_struc(n)%nsnow))
+#ifdef PARFLOW
+                allocate(NOAHMP36_struc(n)%noahmp36(t)%wtrflx(NOAHMP36_struc(n)%nsoil))
+#endif
             enddo
 !            ! allocate memory for intiali state variables
 !            allocate(NOAHMP36_struc(n)%init_stc( NOAHMP36_struc(n)%nsoil))
@@ -317,6 +320,9 @@ contains
             !   NOAHMP36_struc(n)%noahmp36(t)%sfhead1rt = 0.0
                 NOAHMP36_struc(n)%noahmp36(t)%infxs1rt = 0.0
                 NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt = 0.0
+#endif
+#if PARFLOW
+                NOAHMP36_struc(n)%noahmp36(t)%wtrflx = 0.0
 #endif
                 
                 NOAHMP36_struc(n)%noahmp36(t)%albd = -9999.0

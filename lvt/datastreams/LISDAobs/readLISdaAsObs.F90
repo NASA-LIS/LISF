@@ -19,6 +19,7 @@ subroutine readLISdaAsObs(source)
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
+  use LVT_constantsMod, only:  LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc
   use LVT_histDataMod
   use LVT_logMod
@@ -39,7 +40,7 @@ subroutine readLISdaAsObs(source)
 ! 
 !EOP
 
-  character*100    :: fname 
+  character(len=LVT_CONST_PATH_LEN) :: fname 
   logical          :: file_exists
   real             :: obsData_inp(lisdaobs(source)%nc,lisdaobs(source)%nr)
   real             :: obsData_inp_1d(lisdaobs(source)%nc*lisdaobs(source)%nr)

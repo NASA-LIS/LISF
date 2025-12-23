@@ -885,13 +885,13 @@ contains
     deallocate(LIS_patch_deltas)
     if ( fin_esmf ) then
        call ESMF_Finalize(endflag=ESMF_END_KEEPMPI, rc=ierr)
-    endif
 #if ( defined COUPLED)
 #else
 #if ( defined SPMD )
     call MPI_FINALIZE(ierr)
 #endif
 #endif
+    endif
   end subroutine spmd_finalize
 
 !BOP

@@ -16,6 +16,7 @@
 #NMME preciptation forecasts
 #Date: May 06, 2021
 # Update: KR Arsenault; Feb-2024; CFSv2 Jan/Feb update
+# Update: KR Arsenault; Sep-2024; Added new NMME models
 """
 
 from datetime import datetime
@@ -74,6 +75,7 @@ CMN = int(sys.argv[1])  ##
 NMME_OUTPUT_DIR = str(sys.argv[2])
 NMME_MODEL = str(sys.argv[3])
 CONFIGFILE = str(sys.argv[4])
+
 # Load config file
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
@@ -169,6 +171,7 @@ elif NMME_MODEL == 'GEOSv2':
         EYR2 = 2021
         INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
         XPREC[35:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
 elif NMME_MODEL == 'CCM4':
     MODEL = 'CanSIPS-IC3'
     SYR1 = 1991
@@ -178,12 +181,14 @@ elif NMME_MODEL == 'CCM4':
     x1 = np.moveaxis(x, 1, 2)
     XPREC[9:39,:,:,:,:] = x1[:,0:LEAD_MON,10:20,:,:]
 
-    SYR2 = 2021
-    EYR2 = 2021
+    # IRI CCM4 hindcast period files stop in Nov-2021; forecast files start then:
+    #SYR2 = 2021
+    #EYR2 = 2021
     #INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
     #x = read_nc_files(INFILE, 'prec')
     #x1 = np.moveaxis(x, 1, 2)
     #XPREC[39:40,:,:,:,:] = x1[:,0:LEAD_MON,10:20,:,:]
+
 elif NMME_MODEL == 'GNEMO5':
     MODEL = 'CanSIPS-IC3'
     SYR1 = 1991
@@ -193,24 +198,56 @@ elif NMME_MODEL == 'GNEMO5':
     x1 = np.moveaxis(x, 1, 2)
     XPREC[9:39,:,:,:,:] = x1[:,0:LEAD_MON,0:10,:,:]
 
-    SYR2 = 2021
-    EYR2 = 2021
+    # IRI GNEMO5 hindcast period files stop in Nov-2021; forecast files start then:
+    #SYR2 = 2021
+    #EYR2 = 2021
     #INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
     #x = read_nc_files(INFILE, 'prec')
     #x1 = np.moveaxis(x, 1, 2)
     #XPREC[39:40,:,:,:,:] = x1[:,0:LEAD_MON,0:10,:,:]
+
+# New NMME CanSIPS model - GEMv5.2-NEMO -- using first 10 members:
+elif NMME_MODEL == 'GNEMO52':
+    MODEL = 'CanSIPS-IC4'
+    MODEL2 = 'GEM5.2-NEMO'
+    SYR1 = 1991
+    EYR1 = 2020
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL2, MON[MM], SYR1, EYR1)
+    x = read_nc_files(INFILE, 'prec')
+    x1 = np.moveaxis(x, 1, 2)
+    XPREC[9:39,:,:,:,:] = x1[:,0:LEAD_MON,0:10,:,:]
+
+# New NMME CanSIPS model - CanESM5 -- using first 10 members:
+elif NMME_MODEL == 'CanESM5':
+    MODEL = 'CanSIPS-IC4'
+    MODEL2 = 'CanESM5'
+    SYR1 = 1991
+    EYR1 = 2020
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL2, MON[MM], SYR1, EYR1)
+    x = read_nc_files(INFILE, 'prec')
+    x1 = np.moveaxis(x, 1, 2)
+    XPREC[9:39,:,:,:,:] = x1[:,0:LEAD_MON,0:10,:,:]
+
 elif NMME_MODEL == 'CCSM4':
     MODEL = 'COLA-RSMAS-CCSM4'
     SYR1 = 1982
     EYR1 = 2021
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
     XPREC = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
+# New COLA-RSMAS CESM1 model (as of Aug-2024):
+elif NMME_MODEL == 'CESM1':
+    MODEL = 'COLA-RSMAS-CESM1'
+    SYR1 = 1991
+    EYR1 = 2021
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
+    XPREC[9:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
 elif NMME_MODEL == 'GFDL':
     MODEL = 'GFDL-SPEAR'
     SYR1 = 1991
     EYR1 = 2020
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
-    # IH = nc.Dataset(INFILE, mode='r')
     XPREC[9:39,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
 
     SYR2 = 2021

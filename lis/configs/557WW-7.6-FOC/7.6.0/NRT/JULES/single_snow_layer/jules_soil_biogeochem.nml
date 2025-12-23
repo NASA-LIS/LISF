@@ -1,0 +1,9 @@
+&jules_soil_biogeochem
+ch4_substrate=1,
+l_ch4_interactive=.false.,
+l_ch4_tlayered=.false.,
+l_layeredc=.false.,
+l_q10=.true.,
+l_soil_resp_lev2=.false.,
+soil_bgc_model=1,
+/

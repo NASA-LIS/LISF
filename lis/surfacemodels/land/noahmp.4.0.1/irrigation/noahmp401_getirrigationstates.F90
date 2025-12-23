@@ -213,7 +213,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
 
         t=(i-1)*LIS_rc%nensem(n)+m
 
-     timestep = NOAHMP401_struc(n)%dt
+     timestep = NOAHMP401_struc(n)%ts
      soiltyp = noahmp401_struc(n)%noahmp401(t)%soiltype
     
  

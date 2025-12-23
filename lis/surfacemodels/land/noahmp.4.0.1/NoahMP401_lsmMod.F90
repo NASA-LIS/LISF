@@ -187,9 +187,9 @@ module NoahMP401_lsmMod
         real, pointer      :: sldpth(:)
         integer            :: nsoil
         integer            :: nsnow
-        character(len=256) :: soil_tbl_name
-        character(len=256) :: gen_tbl_name
-        character(len=256) :: noahmp_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: soil_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: gen_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: noahmp_tbl_name
         character(len=256) :: landuse_scheme_name
         integer            :: dveg_opt
         integer            :: crs_opt
@@ -277,6 +277,9 @@ contains
                 allocate(NOAHMP401_struc(n)%noahmp401(t)%snowliq(NOAHMP401_struc(n)%nsnow))
                 allocate(NOAHMP401_struc(n)%noahmp401(t)%smoiseq(NOAHMP401_struc(n)%nsoil))
                 allocate(NOAHMP401_struc(n)%noahmp401(t)%gecros_state(60))
+#ifdef PARFLOW
+                allocate(NOAHMP401_struc(n)%noahmp401(t)%wtrflx(NOAHMP401_struc(n)%nsoil))
+#endif
             enddo
 
             ! initialize forcing variables to zeros
@@ -295,6 +298,9 @@ contains
                 NOAHMP401_struc(n)%noahmp401(t)%rivsto = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%fldsto = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%fldfrc = 0.0
+#ifdef PARFLOW
+                NOAHMP401_struc(n)%noahmp401(t)%wtrflx = 0.0
+#endif
             enddo ! end of tile (t) loop
 
             !------------------------------------------------------------------------

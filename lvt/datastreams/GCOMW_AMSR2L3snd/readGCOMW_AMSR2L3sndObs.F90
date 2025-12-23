@@ -18,6 +18,7 @@ subroutine readGCOMW_AMSR2L3sndObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -42,7 +43,7 @@ subroutine readGCOMW_AMSR2L3sndObs(source)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j,status
-  character*100     :: fname_A, fname_D
+  character(len=LVT_CONST_PATH_LEN) :: fname_A, fname_D
   integer           :: yr, mo, da, hr, mn, ss
   real              :: sndobs(LVT_rc%lnc, LVT_rc%lnr)
   real              :: sndobs_t(LVT_rc%lnc*LVT_rc%lnr)

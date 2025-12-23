@@ -524,7 +524,8 @@ program test_rfg2d
   
 !  use random_fields
 !  use nr_ran2_gasdev
-  
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
   implicit none
   
   integer :: N_x, N_y, i, j, n_e
@@ -533,7 +534,7 @@ program test_rfg2d
   
   real, allocatable, dimension(:,:) :: field1, field2
   
-  character(300) :: file_name
+  character(len=LIS_CONST_PATH_LEN) :: file_name
   character(10)  :: n_e_string
   character(100) :: output_format
   character(10)  :: tmp_string

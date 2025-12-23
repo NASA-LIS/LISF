@@ -97,7 +97,7 @@ FCST_INDIR = str(sys.argv[15])
 OBS_CLIM_FILE_TEMPLATE = '{}/{}_obs_clim.nc'
 FCST_CLIM_FILE_TEMPLATE = '{}/{}/{}_fcst_clim.nc'
 MONTH_NAME_TEMPLATE = '{}01'
-# GEOS5 filename TEMPLATE:
+# NMME monthly filename TEMPLATE:
 FCST_INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 
 CONFIGFILE = str(sys.argv[16])

@@ -18,6 +18,7 @@ subroutine readASOSWEObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -57,7 +58,7 @@ subroutine readASOSWEObs(source)
   integer                :: i,j,t,c,r
   integer                :: stn_col, stn_row
   real                   :: col,row
-  character*100          :: asoswe_filename
+  character(len=LVT_CONST_PATH_LEN) :: asoswe_filename
   logical                :: file_exists
   integer                :: ftn, ios
   integer                :: status

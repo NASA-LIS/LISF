@@ -249,9 +249,9 @@ AGRMET CMORPH minimum temperature threshold:    273
 # Use IMERG rainfall data
 AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
-AGRMET IMERG data directory:               ./IMERG/Early_V06B
+AGRMET IMERG data directory:               ./IMERG/Early_V07B
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
-AGRMET IMERG version:                      V06B            # V06B released in 2019
+AGRMET IMERG version:                      V07B            # V07B released Jun-1-2024
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 # Bratseth runtime settings
@@ -335,12 +335,17 @@ AGRMET GFS SPD10M station observation error variance:                2.48
 # Radiation settings.  Uses WWMCA cloud data.  Use WWMCA_LE from
 # 20071101 to 2012032700, use NONE from 2012032700 to 2012040912,
 # use WWMCA beginning 2012040912.
-AGRMET cloud data directory:               WWMCA           # WWMCA_LE, NONE, or WWMCA
+#AGRMET cloud data directory:               WWMCA           # WWMCA_LE, NONE, or WWMCA
 # Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
-AGRMET radiation derived from: "cloud types"
-AGRMET GALWEM radiation data directory: WWMCA_GRIB
+#AGRMET radiation derived from:         "cloud types"
+#AGRMET GALWEM radiation data directory: WWMCA_GRIB
+## AS OF AUG-2024 and after S2S Forecast runs – use the following options:
+#  -- July 2, 2024, 00Z and onward:
+AGRMET radiation derived from:         "GALWEM_RAD"         # GALWEM Radiation files
+AGRMET cloud data directory:              GALWEM            #  GALWEM forcing directory
+AGRMET GALWEM radiation data directory:   GALWEM
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.

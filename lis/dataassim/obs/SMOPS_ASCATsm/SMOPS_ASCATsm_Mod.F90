@@ -603,7 +603,7 @@ contains
           call LIS_date2time(SMOPS_ASCATsm_struc(n)%version3_time,updoy,upgmt,&
              yr1,mo1,da1,hr1,mn1,ss1)
 
-          yr1 = 2024; mo1 = 4; da1 = 25; hr1 = 0; mn1 = 0; ss1 = 0
+          yr1 = 2024; mo1 = 7; da1 = 4; hr1 = 18; mn1 = 0; ss1 = 0
           call LIS_date2time(SMOPS_ASCATsm_struc(n)%version4_time,updoy,upgmt,&
              yr1,mo1,da1,hr1,mn1,ss1)
 

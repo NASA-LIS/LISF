@@ -113,7 +113,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine LVT_initSRI(selectNlevs, stats,metric)
-! !ARGUMENTS: 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+    ! !ARGUMENTS: 
     integer                 :: selectNlevs(LVT_rc%nDataStreams)
     type(LVT_statsEntry)    :: stats
     type(LVT_metricEntry)   :: metric
@@ -129,7 +130,7 @@ contains
     type(ESMF_TimeInterval) :: timeStep
     integer                 :: i,m
     character*4             :: fens
-    character*100           :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
     character*10            :: time
     integer                 :: rc
 

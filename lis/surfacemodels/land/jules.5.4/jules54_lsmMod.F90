@@ -38,6 +38,7 @@ module jules54_lsmMod
 ! !USES:        
 
   use jules54_module
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -74,8 +75,8 @@ module jules54_lsmMod
      integer                    :: count
      real                       :: rstInterval
      integer                    :: outInterval
-     character(len=256)         :: namelist_dir
-     character(len=256)         :: rfile 
+     character(len=LIS_CONST_PATH_LEN) :: namelist_dir
+     character(len=LIS_CONST_PATH_LEN) :: rfile 
      character(len=32)          :: rformat
      type(jules54dec), allocatable :: jules54(:)
   end type jules54_type_dec

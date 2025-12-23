@@ -17,6 +17,7 @@ module SNOTEL_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -41,7 +42,7 @@ module SNOTEL_obsMod
 !EOP
 
   type, public :: snotelobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nstns
      integer              :: nstates
      real                 :: udef
@@ -71,7 +72,8 @@ contains
 ! !INTERFACE: 
   subroutine SNOTEL_obsinit(i)
 ! 
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -101,8 +103,8 @@ contains
     integer            :: eyr, emo, eda, ehr, emn, ess
     integer            :: ts
     integer            :: siteid
-    character*100      :: coordfile
-    character*100      :: mdata
+    character(len=LVT_CONST_PATH_LEN) :: coordfile
+    !character(len=LVT_CONST_PATH_LEN) :: mdata
     
     if(.not.allocated(snotelobs)) then 
        allocate(snotelobs(LVT_rc%nDataStreams))

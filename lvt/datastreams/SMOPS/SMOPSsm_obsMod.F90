@@ -122,6 +122,7 @@ module SMOPSsm_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -158,7 +159,7 @@ module SMOPSsm_obsMod
 !EOP
   type, public :: smopssmobsdec ! rtsmopsl2smobsdec
     integer                :: useRealtime
-     character*100          :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                :: useASCAT
 !     integer                :: useWindSat
      integer                :: useSMOS

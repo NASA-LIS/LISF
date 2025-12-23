@@ -20,6 +20,7 @@
 subroutine readCDFS_GVFObs(n)
 ! !USES:   
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_DAobsDataMod
@@ -40,7 +41,7 @@ subroutine readCDFS_GVFObs(n)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   real              :: gvfobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 
 !-----------------------------------------------------------------------

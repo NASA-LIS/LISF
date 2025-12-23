@@ -8,6 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
+#include "LIS_plugins.h"
 ! Macros for tracing - Requires ESMF 7_1_0+
 #ifdef ESMF_TRACE
 #define TRACE_ENTER(region) call ESMF_TraceRegionEnter(region)
@@ -1171,12 +1172,15 @@ contains
 ! 
 ! !INTERFACE:
   subroutine surfaceModel_setexport_noesmf(n)
+#if (defined RM_WRF_COUPLING)
 ! !USES:    
     use LIS_LMLCMod
     use LISWRFGridCompMod, only : LISWRF_export
     use LIS_historyMod, only : LIS_tile2grid
+#endif
 ! !ARGUMENTS: 
     integer, intent(in) :: n 
+#if (defined RM_WRF_COUPLING)
 ! !DESCRIPTION:
 !
 !EOP
@@ -1237,6 +1241,7 @@ contains
     call LIS_tile2grid(n,LISWRF_export(n)%xland,LISWRF_export(n)%xland_t)
     TRACE_EXIT("sf_setexp")
 
+#endif
   end subroutine surfaceModel_setexport_noesmf
 
 end module LIS_surfaceModelMod

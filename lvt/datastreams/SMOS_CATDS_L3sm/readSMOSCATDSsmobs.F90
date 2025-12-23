@@ -18,6 +18,7 @@ subroutine readSMOSCATDSsmobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc
   use LVT_histDataMod
   use LVT_logMod,       only : LVT_logunit
@@ -45,7 +46,7 @@ subroutine readSMOSCATDSsmobs(source)
 
   logical           :: alarmcheck, file_exists, readflag
   integer           :: iret
-  character*200     :: name
+  character(len=LVT_CONST_PATH_LEN) :: name
   real              :: smc(LVT_rc%lnc, LVT_rc%lnr)
   real              :: smc_A(LVT_rc%lnc, LVT_rc%lnr)
   real              :: smc_D(LVT_rc%lnc, LVT_rc%lnr)

@@ -21,6 +21,7 @@
 subroutine read_stg4( n, fname,findex,order, ferror_stg4 )
 
 ! !USES:
+  use LDT_constantsMod,   only : LDT_CONST_PATH_LEN
   use LDT_coreMod,        only : LDT_rc, LDT_domain
   use LDT_logMod,         only : LDT_verify, LDT_logunit, LDT_endrun
   use LDT_metforcingMod,  only : LDT_forc
@@ -33,7 +34,7 @@ subroutine read_stg4( n, fname,findex,order, ferror_stg4 )
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname          
+  character(len=LDT_CONST_PATH_LEN)   :: fname          
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_stg4

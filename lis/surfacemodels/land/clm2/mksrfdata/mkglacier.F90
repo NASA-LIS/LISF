@@ -25,6 +25,7 @@ subroutine mkglacier (fgla, ndiag, gla_o)
 ! $Id: mkglacier.F90,v 1.5 2004/05/07 22:18:36 jim Exp $ 
 !-----------------------------------------------------------------------
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_precisionMod
   use clm2_varpar   !parameters
 !  use clm2_varsur   !surface variables
@@ -40,7 +41,7 @@ subroutine mkglacier (fgla, ndiag, gla_o)
 ! -----------------------------------------------------------------
 
 ! ------------------------ local variables ------------------------
-  character(len=256) :: locfn              !local dataset file name
+  character(len=LIS_CONST_PATH_LEN) :: locfn !local dataset file name
 
   integer :: nlon_i                        !input grid : longitude points (read in)
   integer :: nlat_i                        !input grid : latitude  points (read in)

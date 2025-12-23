@@ -99,7 +99,6 @@ contains
     type(ESMF_Field)          ::  obsField1,obsField2
     character(len=LIS_CONST_PATH_LEN) ::  obsdir
     character*100             ::  vname
-    character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                 :: k
     integer                 :: ftn
     integer                 :: status

@@ -15,6 +15,8 @@
 ! !INTERFACE:
 module ECMWFforc_dataMod
 
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
    ! Defaults
    implicit none
    private
@@ -26,7 +28,7 @@ module ECMWFforc_dataMod
    public :: ECMWFforcdata
 
    type, public :: ecmwfforcdatadec
-      character*100 :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       real          :: datares
       real, allocatable           :: rlat(:)
       real, allocatable           :: rlon(:)
