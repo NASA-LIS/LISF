@@ -3219,7 +3219,7 @@ whether to use CDF transfer method.
 
 `Reference domain model CDF file:` specifies the reference domain model CDF name and data directory.
 
-`Reference domain obs CDF file:` specifies the reference domain obs CDF name and data directory.
+`Target domain obs CDF file:` specifies the reference domain obs CDF name and data directory.
 
 `Number of bins in the soil moisture CDF:` specifies the number of bins in the CDF.
 
