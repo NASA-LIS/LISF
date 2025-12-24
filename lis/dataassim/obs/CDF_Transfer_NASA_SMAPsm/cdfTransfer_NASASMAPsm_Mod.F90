@@ -224,13 +224,13 @@ contains
        call LIS_verify(status, 'Reference domain model CDF file: is missing')
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"Reference domain obs CDF file:",&
+    call ESMF_ConfigFindLabel(LIS_config,"Target domain obs CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,&
             cdfT_SMAPsm_struc(n)%obscdffile,&
             rc=status)
-       call LIS_verify(status, 'Reference domain obs CDF file: is missing')
+       call LIS_verify(status, 'Target domain obs CDF file: is missing')
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"Reference domain precipitation climatology data source:",&
