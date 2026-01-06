@@ -25,7 +25,7 @@ subroutine HYMAP2_getWL(n, Routing_State)
   use HYMAP2_modelMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
 !
@@ -33,8 +33,8 @@ subroutine HYMAP2_getWL(n, Routing_State)
 !
 !  Returns the water level DA related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
