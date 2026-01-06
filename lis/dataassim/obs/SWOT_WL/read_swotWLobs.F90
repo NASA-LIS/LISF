@@ -17,9 +17,9 @@
 !  17 Apr 2024: Yeosang Yoon; Initial Specification
 !  25 Nov 2025: Yeosang Yoon; Clean up the code
 !
-! !INTERFACE: 
-subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state) 
-! !USES: 
+! !INTERFACE:
+subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
+! !USES:
   use ESMF
   use LIS_mpiMod
   use LIS_historyMod
@@ -33,19 +33,19 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
   use swotWLobs_module
 
   implicit none
-! !ARGUMENTS: 
-  integer, intent(in) :: n 
+! !ARGUMENTS:
+  integer, intent(in) :: n
   integer, intent(in) :: k
   type(ESMF_State)    :: OBS_State
   type(ESMF_State)    :: OBS_Pert_State
 !
 ! !DESCRIPTION:
-!  
-!  reads the swot radar altimetry observations 
-!  The processed data is packaged 
-!  into an ESMF State for later use within the DA algorithm. 
-!  
-!  The arguments are: 
+!
+!  reads the swot radar altimetry observations
+!  The processed data is packaged
+!  into an ESMF State for later use within the DA algorithm.
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n]                index of the nest
 !  \item[k]                index of the data assimilation instance
@@ -96,8 +96,7 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
 
       if(file_exists) then
          write(LIS_logunit,*)  '[INFO] Reading SWOT WL data ',trim(filename)
-         call read_swotWL(filename) 
-         
+         call read_swotWL(filename)
          swot_wl_struc(n)%time_file = calculate_seconds_since_2000(yyyy, mm, dd, hh, mn, ss) !since 2000-01-01
       else
          write(LIS_logunit,*)'[WARN] Cannot find file ',trim(filename)
@@ -107,7 +106,8 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
   time_now = calculate_seconds_since_2000(yyyy, mm, dd, hh, mn, ss) !since 2000-01-01
   dt = nint(swot_wl_struc(n)%daInterval)
 
-  if((time_now <= swot_wl_struc(n)%time_file+86400) .and. (mod(time_now, dt).eq.0)) then 
+  if((time_now <= swot_wl_struc(n)%time_file+86400) .and. &
+       (mod(time_now, dt).eq.0)) then
      call ESMF_StateGet(OBS_State,"Observation01",wlfield,rc=status)
      call LIS_verify(status)
      call ESMF_FieldGet(wlfield,localDE=0,farrayPtr=obsl,rc=status)
@@ -123,15 +123,15 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
 
      do r =1,LIS_rc%obs_lnr(k)
         do c =1,LIS_rc%obs_lnc(k)
-           if(swot_wl_struc(n)%lisid(c,r).gt.0) then 
+           if(swot_wl_struc(n)%lisid(c,r).gt.0) then
               do t=1, swot_wl_struc(n)%ntimes
                  if((swot_wl_struc(n)%time(swot_wl_struc(n)%lisid(c,r),t) >= time_start) &
                     .and. (swot_wl_struc(n)%time(swot_wl_struc(n)%lisid(c,r),t) <= time_end)) then
                     wlobs(c,r) = swot_wl_struc(n)%WLobs(swot_wl_struc(n)%lisid(c,r),t)
 
-                    if(wlobs(c,r).gt.0) then  
+                    if(wlobs(c,r).gt.0) then
                        fnd = 1
-                    endif 
+                    endif
                  endif
               enddo
            endif
@@ -140,11 +140,12 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
 
      !TODO: "Normal deviate scaling" is not yet working.
      !Set dascaleoption to 'none'.
-     if(LIS_rc%dascaloption(k).eq."Normal deviate scaling".and.fnd.ne.0) then
+     if(LIS_rc%dascaloption(k).eq."Normal deviate scaling".and. &
+          fnd.ne.0) then
 
         call LIS_rescale_with_normal_deviate_scaling(&
-             n,k,                         & 
-             swot_wl_struc(n)%nt,         & 
+             n,k,                         &
+             swot_wl_struc(n)%nt,         &
              swot_wl_struc(n)%model_mu,   &
              swot_wl_struc(n)%model_sigma,&
              swot_wl_struc(n)%obs_mu,     &
@@ -159,18 +160,18 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
            end if
         end do
      end do
-     
+
      !  Apply LSM-based QC of observations
      call LIS_checkForValidObs(n, k,obsl,fnd,wl_current)
      call LIS_surfaceModel_DAqcObsState(n,k)
      call LIS_checkForValidObs(n, k,obsl,fnd,wl_current)
-        
-     if(fnd.eq.0) then 
+
+     if(fnd.eq.0) then
         data_upd_flag_local = .false.
      else
         data_upd_flag_local = .true.
      endif
-        
+
 #if (defined SPMD)
      call MPI_ALLGATHER(data_upd_flag_local, 1, MPI_LOGICAL, data_upd_flag(:),&
           1, MPI_LOGICAL, LIS_mpi_comm, status)
@@ -178,33 +179,33 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
 #else
      data_upd = data_upd_flag_local
 #endif
-        
-     if(data_upd) then 
+
+     if(data_upd) then
         do t=1,LIS_rc%obs_ngrid(k)
            gid(t) = t
-           if(obsl(t).ne.-9999.0) then 
+           if(obsl(t).ne.-9999.0) then
               assimflag(t) = 1
               fnd = 1
            else
               assimflag(t) = 0
            endif
         enddo
-           
+
         call ESMF_AttributeSet(OBS_State,"Data Update Status",.true., rc=status)
         call LIS_verify(status)
-           
-        if(LIS_rc%obs_ngrid(k).gt.0) then 
+
+        if(LIS_rc%obs_ngrid(k).gt.0) then
            call ESMF_AttributeSet(wlfield,"Grid Number",&
                 gid,itemCount=LIS_rc%obs_ngrid(k),rc=status)
            call LIS_verify(status)
-              
+
            call ESMF_AttributeSet(wlfield,"Assimilation Flag",&
                 assimflag,itemCount=LIS_rc%obs_ngrid(k),rc=status)
            call LIS_verify(status)
-              
+
            call ESMF_AttributeSet(wlfield, "Unscaled Obs",&
                 obs_unsc, itemCount=LIS_rc%obs_ngrid(k), rc=status)
-           call LIS_verify(status, 'Error in setting Unscaled Obs attribute')      
+           call LIS_verify(status, 'Error in setting Unscaled Obs attribute')
         endif
      else
         call ESMF_AttributeSet(OBS_State,"Data Update Status",.false., rc=status)
@@ -233,7 +234,7 @@ contains
       write(unit=cmm, fmt='(i2.2)') mm
       write(unit=cdd, fmt='(i2.2)') dd
 
-      filename = trim(dir) // "/SWOT_L2_HR_RiverSP_Node_" & 
+      filename = trim(dir) // "/SWOT_L2_HR_RiverSP_Node_" &
            // trim(cyyyy) // trim(cmm) // trim(cdd) // ".d01.nc"
    end subroutine swotWL_filename
 
@@ -275,6 +276,7 @@ contains
 #endif
 
    function calculate_seconds_since_2000(year, month, day, hr, mn, ss) result(seconds)
+     implicit none
      integer :: year, month, day, hr, mn, ss
      integer :: seconds, days_since_2000
      integer, parameter :: days_per_year = 365, days_per_leap_year = 366
@@ -299,9 +301,9 @@ contains
    end function calculate_seconds_since_2000
 
    function is_leap_year(year) result(leap)
+     implicit none
      integer :: year
      logical :: leap
-
      leap = .false.
      if (mod(year, 4) == 0) then
          if (mod(year, 100) /= 0 .or. mod(year, 400) == 0) then
@@ -311,6 +313,7 @@ contains
    end function is_leap_year
 
    function days_in_month(month, year) result(days)
+     implicit none
      integer :: month, year
      integer :: days
      integer, dimension(12) :: month_days = (/31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31/)
