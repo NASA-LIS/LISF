@@ -11,17 +11,17 @@
 !BOP
 !
 ! !MODULE: swotWLobs_module
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !   This module contains interfaces and subroutines to
 !   handle SWOT water level observations
-!   
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 !  15 Apr 2024    Yeosang Yoon;   Initial Specification
 !  25 Nov 2025: Yeosang Yoon; Clean up the code
-! 
+!
 module swotWLobs_module
-! !USES: 
+! !USES:
   use ESMF
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
@@ -58,13 +58,13 @@ module swotWLobs_module
   type(swot_wl_dec), allocatable :: swot_wl_struc(:)
 contains
 !BOP
-! 
+!
 ! !ROUTINE: swotWLobs_setup
 ! \label{swotWLobs_setup}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine swotWLobs_setup(k, OBS_State, OBS_Pert_State)
-! !USES: 
+! !USES:
     use LIS_coreMod
     use LIS_logMod
     use LIS_dataAssimMod
@@ -75,26 +75,26 @@ contains
     use netcdf
 #endif
 
-    implicit none 
+    implicit none
 
-! !ARGUMENTS: 
-    integer                ::  k 
+! !ARGUMENTS:
+    integer                ::  k
     type(ESMF_State)       ::  OBS_State(LIS_rc%nnest)
     type(ESMF_State)       ::  OBS_Pert_State(LIS_rc%nnest)
-! 
-! !DESCRIPTION: 
-!   
-!   This routine completes the runtime initializations and 
-!   creation of data strctures required for water level 
+!
+! !DESCRIPTION:
+!
+!   This routine completes the runtime initializations and
+!   creation of data strctures required for water level
 !   assimilation
-!  
-!   The arguments are: 
+!
+!   The arguments are:
 !   \begin{description}
-!    \item[OBS\_State]   observation state 
+!    \item[OBS\_State]   observation state
 !    \item[OBS\_Pert\_State] observation perturbations state
 !   \end{description}
 !EOP
-    integer                           ::  n 
+    integer                           ::  n
     integer                           ::  status
     type(ESMF_Field)                  ::  obsField(LIS_rc%nnest)
     type(ESMF_ArraySpec)              ::  intarrspec, realarrspec
@@ -128,11 +128,13 @@ contains
          rc=status)
     call LIS_verify(status)
 
-    call ESMF_ConfigFindLabel(LIS_config,"SWOT water level data directory:", rc=status)
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "SWOT water level data directory:", rc=status)
     do n=1,LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,swotwlobsdir,rc=status)
        call LIS_verify(status)
-       call ESMF_AttributeSet(OBS_State(n),"Data Directory",swotwlobsdir, rc=status)
+       call ESMF_AttributeSet(OBS_State(n), "Data Directory", &
+            swotwlobsdir, rc=status)
        call LIS_verify(status)
     enddo
 
@@ -142,7 +144,8 @@ contains
        call LIS_verify(status)
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"Data assimilation frequency:", rc=status)
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "Data assimilation frequency:", rc=status)
     do n=1, LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,time,rc=status)
        call LIS_verify(status,"Data assimilation frequency: not defined")
@@ -152,22 +155,26 @@ contains
 
     do n=1,LIS_rc%nnest
 
-       call ESMF_AttributeSet(OBS_State(n),"Data Update Status", .false., rc=status)
+       call ESMF_AttributeSet(OBS_State(n),"Data Update Status", &
+            .false., rc=status)
        call LIS_verify(status)
 
-       call ESMF_AttributeSet(OBS_State(n),"Data Update Time", -99.0, rc=status)
+       call ESMF_AttributeSet(OBS_State(n),"Data Update Time", -99.0, &
+            rc=status)
        call LIS_verify(status)
 
-       call ESMF_AttributeSet(OBS_State(n),"Data Assimilate Status", .false., rc=status)
+       call ESMF_AttributeSet(OBS_State(n),"Data Assimilate Status", &
+            .false., rc=status)
        call LIS_verify(status)
-       
+
        call ESMF_AttributeSet(OBS_State(n),"Number Of Observations",&
             LIS_rc%obs_ngrid(k),rc=status)
        call LIS_verify(status)
-       
+
     enddo
 
-    write(LIS_logunit,*) '[INFO] Reading SWOT water level map ',trim(wlmap)
+    write(LIS_logunit,*) '[INFO] Reading SWOT water level map ', &
+         trim(wlmap)
     do n=1,LIS_rc%nnest
 
        call ESMF_TimeIntervalSet(swot_wl_struc(n)%ts,d=1,rc=status)
@@ -179,24 +186,28 @@ contains
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
        call LIS_verify(nf90_open(path=trim(wlmap),mode=NF90_NOWRITE,ncid=ftn),&
             '[ERR] Error opening file '//trim(wlmap))
-       call LIS_verify(nf90_inq_varid(ftn,'lis_id',varid), '[ERR] Error with nf90_inq_varid: lis_id')
+       call LIS_verify(nf90_inq_varid(ftn,'lis_id',varid), &
+            '[ERR] Error with nf90_inq_varid: lis_id')
        call LIS_verify(nf90_get_var(ftn,varid, swot_wl_struc(n)%lisid, &
-            start=(/LIS_ews_obs_halo_ind(n,LIS_localPet+1), LIS_nss_obs_halo_ind(n,LIS_localPet+1)/),&
-            count = (/LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)/)),'[ERR] Error with nf90_get_var: lis_id')
+            start=(/LIS_ews_obs_halo_ind(n,LIS_localPet+1), &
+            LIS_nss_obs_halo_ind(n,LIS_localPet+1)/),&
+            count = (/LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)/)), &
+            '[ERR] Error with nf90_get_var: lis_id')
        call LIS_verify(nf90_close(ftn))
 #endif
     enddo
 !----------------------------------------------------------------------------
 !   Create the array containers that will contain the observations and
-!   the perturbations. 
+!   the perturbations.
 !----------------------------------------------------------------------------
-    write(LIS_logunit,*) '[INFO] Reading SWOT water level data specifications'
+    write(LIS_logunit,*) &
+         '[INFO] Reading SWOT water level data specifications'
 
     do n=1,LIS_rc%nnest
 
        write(unit=temp,fmt='(i2.2)') 1
        read(unit=temp,fmt='(2a1)') vid
-       
+
        obsField(n) = ESMF_FieldCreate(arrayspec=realarrspec,&
             grid=LIS_obsVecGrid(n,k),&
             name="Observation"//vid(1)//vid(2), rc=status)
@@ -210,19 +221,19 @@ contains
        read(ftn,*)
        read(ftn,*) LIS_rc%nobtypes(k)
        read(ftn,*)
-    
+
        allocate(vname(LIS_rc%nobtypes(k)))
        allocate(varmax(LIS_rc%nobtypes(k)))
        allocate(varmin(LIS_rc%nobtypes(k)))
-       
+
        do i=1,LIS_rc%nobtypes(k)
           read(ftn,fmt='(a40)') vname(i)
           read(ftn,*) varmin(i),varmax(i)
           write(LIS_logunit,*) '[INFO] ',vname(i),varmin(i),varmax(i)
        enddo
-       call LIS_releaseUnitNumber(ftn)  
-              
-       if(trim(LIS_rc%perturb_obs(k)).ne."none") then 
+       call LIS_releaseUnitNumber(ftn)
+
+       if(trim(LIS_rc%perturb_obs(k)).ne."none") then
 
           allocate(obs_pert%vname(1))
           allocate(obs_pert%perttype(1))
@@ -241,31 +252,32 @@ contains
                grid=LIS_obsEnsOnGrid(n,k),name="Observation"//vid(1)//vid(2),&
                rc=status)
           call LIS_verify(status)
-          
-! initializing the perturbations to be zero 
-          call ESMF_FieldGet(pertField(n),localDE=0,farrayPtr=obs_temp,rc=status)
+
+! initializing the perturbations to be zero
+          call ESMF_FieldGet(pertField(n),localDE=0,farrayPtr=obs_temp, &
+               rc=status)
           call LIS_verify(status)
-          obs_temp(:,:) = 0 
+          obs_temp(:,:) = 0
 
           call ESMF_AttributeSet(pertField(n),"Perturbation Type",&
                obs_pert%perttype(1), rc=status)
           call LIS_verify(status)
-          
+
           call ESMF_AttributeSet(pertField(n),"Std Normal Max",&
                obs_pert%stdmax(1), rc=status)
           call LIS_verify(status)
-          
+
           call ESMF_AttributeSet(pertField(n),"Ensure Zero Mean",&
                obs_pert%zeromean(1),rc=status)
           call LIS_verify(status)
-          
+
           call ESMF_AttributeSet(pertField(n),"Temporal Correlation Scale",&
                obs_pert%tcorr(1),rc=status)
           call LIS_verify(status)
-          
+
           call ESMF_AttributeSet(pertField(n),"X Correlation Scale",&
                obs_pert%xcorr(1),rc=status)
-          
+
           call ESMF_AttributeSet(pertField(n),"Y Correlation Scale",&
                obs_pert%ycorr(1),rc=status)
 
@@ -273,29 +285,30 @@ contains
                obs_pert%ccorr(1,:),itemCount=1,rc=status)
 
        endif
-          
+
        deallocate(vname)
        deallocate(varmax)
        deallocate(varmin)
 !to obsarr
 
     enddo
-    write(LIS_logunit,*) '[INFO] Created the States to hold the observations data'
-    
+    write(LIS_logunit,*) &
+         '[INFO] Created the States to hold the observations data'
+
 
     do n=1,LIS_rc%nnest
        allocate(ssdev(LIS_rc%obs_ngrid(k)))
        ssdev = obs_pert%ssdev(1)
-       
+
        if(LIS_rc%obs_ngrid(k).gt.0) then
           call ESMF_AttributeSet(pertField(n),"Standard Deviation",&
                   ssdev,itemCount=LIS_rc%obs_ngrid(k),rc=status)
           call LIS_verify(status, 'Error in AttributeSet: Standard Deviation')
        endif
- 
+
        deallocate(ssdev)
     enddo
-    
+
     do n=1,LIS_rc%nnest
 
        call LIS_registerAlarm("swotWL read alarm", 86400.0, 86400.0) !daily input
@@ -308,5 +321,5 @@ contains
     enddo
 
   end subroutine swotWLobs_setup
-  
+
 end module swotWLobs_module
