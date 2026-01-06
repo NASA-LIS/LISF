@@ -8,17 +8,17 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! 
+!
 ! !ROUTINE: write_swotWLobs
 ! \label{write_swotWLobs}
-! 
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 ! 22 Apr 2024: Yeosang Yoon; Initial Specification
 !  25 Nov 2025: Yeosang Yoon; Clean up the code
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
 subroutine write_swotWLobs(n, k, OBS_State)
-! !USES: 
+! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_logMod
@@ -27,20 +27,20 @@ subroutine write_swotWLobs(n, k, OBS_State)
   use LIS_DAobservationsMod
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use swotWLobs_module
-  
+
   implicit none
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
 
-  integer,     intent(in)  :: n 
+  integer,     intent(in)  :: n
   integer,     intent(in)  :: k
   type(ESMF_State)         :: OBS_State
 !
-! !DESCRIPTION: 
-! 
-! writes the transformed (interpolated/upscaled/reprojected)  
+! !DESCRIPTION:
+!
+! writes the transformed (interpolated/upscaled/reprojected)
 ! SWOT observations to a file
-! 
+!
 !EOP
   type(ESMF_Field)         :: wlField
   logical                  :: data_update
@@ -52,61 +52,61 @@ subroutine write_swotWLobs(n, k, OBS_State)
 
   external :: swot_wlobsname
 
-  call ESMF_AttributeGet(OBS_State, "Data Update Status", & 
+  call ESMF_AttributeGet(OBS_State, "Data Update Status", &
        data_update, rc=status)
   call LIS_verify(status,&
        "ESMF_AttributeGet: Data Update Status failed in write_swotWLobs")
 
-  if(data_update) then 
-     
+  if(data_update) then
+
      call ESMF_StateGet(OBS_State, "Observation01",wlField, rc=status)
      call LIS_verify(status, &
           "ESMF_StateGet failed in write_swotWLobs")
-     
+
      call ESMF_FieldGet(wlField, localDE=0, farrayPtr=wlobs, rc=status)
      call LIS_verify(status,&
           "ESMF_FieldGet failed in write_swotWLobs")
 
-     if(LIS_masterproc) then 
+     if(LIS_masterproc) then
         ftn = LIS_getNextUnitNumber()
-        call swot_wlobsname(n,k,obsname)        
+        call swot_wlobsname(n,k,obsname)
 
         call LIS_create_output_directory('DAOBS')
         open(ftn,file=trim(obsname), form='unformatted')
      endif
 
-     if(LIS_rc%dascaloption(k).ne."none") then 
+     if(LIS_rc%dascaloption(k).ne."none") then
         call LIS_writevar_gridded_obs(ftn,n,k,wlobs_unsc)
      endif
 
      call LIS_writevar_gridded_obs(ftn,n,k,wlobs)
-     
-     if(LIS_masterproc) then 
+
+     if(LIS_masterproc) then
         call LIS_releaseUnitNumber(ftn)
      endif
 
-  endif  
+  endif
 
 end subroutine write_swotWLobs
 
 !BOP
 ! !ROUTINE: swot_wlobsname
 ! \label{swot_wlobsname}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
 subroutine swot_wlobsname(n,k,obsname)
-! !USES: 
+! !USES:
   use LIS_coreMod, only : LIS_rc
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
    integer,          intent(in)  :: n
    integer,          intent(in)  :: k
    character(len=*), intent(out) :: obsname
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This subroutine creates the name of the swot observation
 !  data file
-! 
+!
 !EOP
 
   character(len=12) :: cdate1
