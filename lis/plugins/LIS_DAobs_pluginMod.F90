@@ -12,18 +12,18 @@ module LIS_DAobs_pluginMod
 !BOP
 !
 ! !MODULE: LIS_DAobs_pluginMod
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !   This module contains the definition of the functions that are
-!   used to read observation data for data assimiliation.  
-!   The user defined functions are incorporated into 
-!   the appropriate registry to be later invoked through generic calls. 
-!   
-! !REVISION HISTORY: 
+!   used to read observation data for data assimiliation.
+!   The user defined functions are incorporated into
+!   the appropriate registry to be later invoked through generic calls.
+!
+! !REVISION HISTORY:
 !  27 Feb 2005;   Sujay Kumar  Initial Specification
-!  11 Aug 2016:   Mahdi Navari, PILDAS added 
-! 
-!EOP  
+!  11 Aug 2016:   Mahdi Navari, PILDAS added
+!
+!EOP
   implicit none
   PRIVATE
 !------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ module LIS_DAobs_pluginMod
 !------------------------------------------------------------------------------
   PUBLIC :: LIS_DAobs_plugin
   PUBLIC :: LIS_isDAinstanceValid
-  
+
   type DAobsFuncEntry
 
      character*100            :: name
@@ -39,14 +39,14 @@ module LIS_DAobs_pluginMod
      type(DAobsFuncEntry), pointer :: next
 
   end type DAobsFuncEntry
-  
+
   type, public :: daobsfunc_meta
 
      type(daobsfuncentry), pointer :: head_daobsfunc_list
 
   end type daobsfunc_meta
-     
-  type(daobsfunc_meta) :: LIS_DAobsFuncEntry     
+
+  type(daobsfunc_meta) :: LIS_DAobsFuncEntry
 contains
 !BOP
 ! !ROUTINE: LIS_DAobs_plugin
@@ -54,66 +54,66 @@ contains
 !
 ! !DESCRIPTION:
 !
-!  This is a plugin point for introducing routines to handle the 
-!  observation data for assimilation.As explaind in 
+!  This is a plugin point for introducing routines to handle the
+!  observation data for assimilation.As explaind in
 !  the {\tt dataassim\_module}, there are three
-!  different abstractions associated with the 
+!  different abstractions associated with the
 !  data assimilation implementation. The implementations defined in this
-!  subroutine complete the "wirings" required to complete the 
+!  subroutine complete the "wirings" required to complete the
 !  observation data-related abstractions. Other required
 !  interfaces defined in {\tt lsmda\_pluginMod} and {\tt dataassim\_pluginMod}
-!  should be completed for a successful implementation. 
-! 
-!  The following interfaces should be implemented in this routine. 
+!  should be completed for a successful implementation.
+!
+!  The following interfaces should be implemented in this routine.
 !  \begin{description}
 !  \item[Define DAobs class]
 !      Define the "class" of DAobservation (LSM/Routing), which helps to
 !      setup the appropriate surface model for data assimilation
 !  \item[Setup]
 !      Initialization of data and memory structures
-!      (to be registered using {\tt registerreaddaobssetup} and later called 
+!      (to be registered using {\tt registerreaddaobssetup} and later called
 !       through {\tt daobssetup})
 !  \item[read observations]
-!      Routines to read the observation data and perform any 
-!      spatial transformation. 
+!      Routines to read the observation data and perform any
+!      spatial transformation.
 !      (to be registered using {\tt registerreaddaobs} and later called
 !       through {\tt readobservations})
 !  \item[get number of selected observations]
-!      routines to retrieve the number of selected observations for 
-!      the selected modeling point. 
+!      routines to retrieve the number of selected observations for
+!      the selected modeling point.
 !      (to be registered using {\tt registergetnso} and later called
 !      through {\tt getselctedobsnumber}
 !   \end{description}
-! 
-!  The user-defined functions are included in the registry using a single 
+!
+!  The user-defined functions are included in the registry using a single
 !  index. For example, consider an instance where soil moisture
 !  assimilation using TMI soil moisture data is conducted. The methods
-!  should be defined in the registry as follows, if the index of the 
+!  should be defined in the registry as follows, if the index of the
 !  'assimilation set' (assimilating TMI to update soil moisture variables)
 !  is defined to be 1
 !
 !  \begin{verbatim}
-!    call registerdaobssetup(1,TMIsmobs_setup)  
+!    call registerdaobssetup(1,TMIsmobs_setup)
 !    call registerreaddaobs(1,read_TMIsm)
 !    call registergetnso(1,getNSO_TMIsm)
 !  \end{verbatim}
 !
-!   The functions registered above are invoked using generic calls as 
-!   follows: 
-!  
+!   The functions registered above are invoked using generic calls as
+!   follows:
+!
 !  \begin{verbatim}
 !    call daobssetup(1)       -  calls TMIsmobs_setup
 !    call readobservations(1) -  calls read_TMIsm
 !  \end{verbatim}
 !
-!   In the LIS code, the above calls are typically invoked in the 
-!   following manner. 
+!   In the LIS code, the above calls are typically invoked in the
+!   following manner.
 !   \begin{verbatim}
-!    call daobssetup(lis%daset, )       
+!    call daobssetup(lis%daset, )
 !    call readobservations(lis%daset)
 !   \end{verbatim}
 !   where $lis\%daset$ is set through the configuration
-!   utility, enabling the user to make selections at runtime. 
+!   utility, enabling the user to make selections at runtime.
 !
 ! !INTERFACE:
 subroutine LIS_DAobs_plugin
@@ -144,7 +144,7 @@ subroutine LIS_DAobs_plugin
    use syntheticSnowTbObs_Mod,  only : syntheticSnowTbobs_setup
 #endif
 
-#if 0 
+#if 0
    use syntheticlstobs_module,  only : syntheticlstobs_setup
    use multisynsmobs_Mod,       only : multisynsmobs_setup
    use ISCCP_Tskin_module,      only : ISCCP_Tskin_setup
@@ -176,24 +176,24 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_SMOPSSM )
-!   use SMOPSsm_Mod,             only : SMOPSsm_setup   
+!   use SMOPSsm_Mod,             only : SMOPSsm_setup
 #endif
 
 !MN
 #if ( defined DA_OBS_SMOPS_ASCATSM )
-   use SMOPS_ASCATsm_Mod,             only : SMOPS_ASCATsm_setup   
+   use SMOPS_ASCATsm_Mod,             only : SMOPS_ASCATsm_setup
 #endif
 
 #if ( defined DA_OBS_SMOPS_SMOSSM )
-   use SMOPS_SMOSsm_Mod,             only : SMOPS_SMOSsm_setup   
+   use SMOPS_SMOSsm_Mod,             only : SMOPS_SMOSsm_setup
 #endif
 
 #if ( defined DA_OBS_SMOPS_AMSR2SM )
-   use SMOPS_AMSR2sm_Mod,             only : SMOPS_AMSR2sm_setup   
+   use SMOPS_AMSR2sm_Mod,             only : SMOPS_AMSR2sm_setup
 #endif
 
 #if ( defined DA_OBS_SMOPS_SMAPSM )
-   use SMOPS_SMAPsm_Mod,             only : SMOPS_SMAPsm_setup   
+   use SMOPS_SMAPsm_Mod,             only : SMOPS_SMAPsm_setup
 #endif
 
 #if 0
@@ -208,7 +208,7 @@ subroutine LIS_DAobs_plugin
    use ANSASNWDsnow_Mod,        only : ANSASNWDsnow_setup
 #endif
 
-#if 0  
+#if 0
    use AMSRE_SWE_Mod,           only : AMSRE_SWE_setup
 !    use AMSRE_snow_Mod,          only : AMSRE_snow_setup !yliu
 #endif
@@ -256,7 +256,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
-    use cdfTransfer_NASASMAPsm_Mod,         only : cdfTransfer_NASASMAPsm_setup
+    use cdfTransfer_NASASMAPsm_Mod,   only : cdfTransfer_NASASMAPsm_setup
 #endif
 
 !YK
@@ -339,7 +339,7 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_THYSM )
     external read_THySM, write_THySM
-#endif    
+#endif
 
 #if ( defined DA_OBS_SYNTHETICSND )
     external read_syntheticsndobs,write_syntheticsndobs
@@ -352,7 +352,6 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_SYNTHETICSNOWTB )
     external read_syntheticSnowTbObs,write_syntheticSnowTbObs
 #endif
-
 
 #if 0
    external read_syntheticlstobs
@@ -411,7 +410,7 @@ subroutine LIS_DAobs_plugin
    external read_SMOSNESDISsm, write_SMOSNESDISsmobs
 #endif
 
-#if 0 
+#if 0
    external read_ANSASWEsnow, write_ANSASWEsnowobs
 #endif
 
@@ -442,8 +441,8 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_SWOTWL )
     external read_swotWLobs, write_swotWLobs
 #endif
-    
-#if 0 
+
+#if 0
    external read_WindSatsm, write_WindSatsmobs
    external read_WindSatCsm, write_WindSatCsmobs
    external read_AMSRE_SWE, write_AMSRE_SWEobs
@@ -455,7 +454,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if 0
-    external read_simGRACEJPLobs, write_simGRACEJPLobs    
+    external read_simGRACEJPLobs, write_simGRACEJPLobs
     external read_SYN_LBAND_TB, write_SYN_LBAND_TB
     external read_ASCAT_TUWsm, write_ASCAT_TUWsmobs
     external read_GCOMW_AMSR2L3sm,  write_GCOMW_AMSR2L3smobs
@@ -463,7 +462,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_GRACE )
-    external read_GRACEobs,  write_GRACEobs    
+    external read_GRACEobs,  write_GRACEobs
 #endif
 
 #if ( defined DA_OBS_PILDAS )
@@ -529,14 +528,14 @@ subroutine LIS_DAobs_plugin
    external read_SNODAS,  write_SNODAS
 #endif
 
-#if ( defined DA_OBS_WUSUCLA )    
+#if ( defined DA_OBS_WUSUCLA )
    external read_WUS_UCLAsnow, write_WUS_UCLAsnow
 #endif
 
     LIS_DAobsFuncEntry%head_daobsfunc_list => null()
-    
+
 #if ( defined DA_OBS_SYNTHETICSM )
-!synthetic noah soil moisture    
+!synthetic noah soil moisture
    call registerdaobsclass(trim(LIS_synsmId),"LSM")
    call registerdaobssetup(trim(LIS_synsmId)//char(0),syntheticsmobs_setup)
    call registerreaddaobs(trim(LIS_synsmId)//char(0),read_syntheticsmobs)
@@ -544,7 +543,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_SYNTHETICWL )
-!synthetic noah soil moisture    
+!synthetic noah soil moisture
    call registerdaobsclass(trim(LIS_synwlId),"Routing")
    call registerdaobssetup(trim(LIS_synwlId)//char(0),syntheticwlobs_setup)
    call registerreaddaobs(trim(LIS_synwlId)//char(0),read_syntheticwlobs)
@@ -572,19 +571,19 @@ subroutine LIS_DAobs_plugin
    call registerwritedaobs(trim(LIS_synSnowTBId)//char(0),write_syntheticSnowTBobs)
 #endif
 
-#if 0 
+#if 0
 !synthetic lst
    call registerdaobsclass(trim(LIS_synlstId),"LSM")
    call registerdaobssetup(trim(LIS_synlstId)//char(0),syntheticlstobs_setup)
    call registerreaddaobs(trim(LIS_synlstId)//char(0),read_syntheticlstobs)
 
-!multi layer synthetic sm obs 
+!multi layer synthetic sm obs
    call registerdaobsclass(trim(LIS_multisynsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_multisynsmobsId)//char(0),multisynsmobs_setup)
    call registerreaddaobs(trim(LIS_multisynsmobsId)//char(0),read_multisynsmobs)
 
 
-!ISSP Tskin 
+!ISSP Tskin
    call registerdaobsclass(trim(LIS_isccpTskinId),"LSM")
    call registerdaobssetup(trim(LIS_isccpTskinId)//char(0),ISCCP_Tskin_setup)
    call registerreaddaobs(trim(LIS_isccpTskinId)//char(0),read_ISCCP_Tskin)
@@ -598,7 +597,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_SNODEP )
-!SNODEP obs 
+!SNODEP obs
    call registerdaobsclass(trim(LIS_snodepobsId),"LSM")
    call registerdaobssetup(trim(LIS_snodepobsId)//char(0),SNODEPobs_setup)
    call registerreaddaobs(trim(LIS_snodepobsId)//char(0),read_SNODEPobs)
@@ -607,7 +606,7 @@ subroutine LIS_DAobs_plugin
 
 
 #if ( defined DA_OBS_USAFSI )
-!USAFSI obs 
+!USAFSI obs
    call registerdaobsclass(trim(LIS_usafsiobsId),"LSM")
    call registerdaobssetup(trim(LIS_usafsiobsId)//char(0),USAFSIobs_setup)
    call registerreaddaobs(trim(LIS_usafsiobsId)//char(0),read_USAFSIobs)
@@ -615,7 +614,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_SNIP )
-!SNIP obs 
+!SNIP obs
    call registerdaobsclass(trim(LIS_snipobsId),"LSM")
    call registerdaobssetup(trim(LIS_snipobsId)//char(0),SNIPobs_setup)
    call registerreaddaobs(trim(LIS_snipobsId)//char(0),read_SNIPobs)
@@ -623,7 +622,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if 0
-!NASA AMSRE obs 
+!NASA AMSRE obs
    call registerdaobsclass(trim(LIS_NASA_AMSREsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_NASA_AMSREsmobsId)//char(0),NASA_AMSREsm_setup)
    call registerreaddaobs(trim(LIS_NASA_AMSREsmobsId)//char(0),read_NASA_AMSREsm)
@@ -631,7 +630,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_LPRM_AMSRESM )
-!LPRM AMSRE obs 
+!LPRM AMSRE obs
    call registerdaobsclass(trim(LIS_LPRM_AMSREsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_LPRM_AMSREsmobsId)//char(0), &
         LPRM_AMSREsm_setup)
@@ -650,7 +649,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if 0
-!ANSA SWE snow obs 
+!ANSA SWE snow obs
    call registerdaobsclass(trim(LIS_ANSASWEsnowobsId),"LSM")
    call registerdaobssetup(trim(LIS_ANSASWEsnowobsId)//char(0), &
         ANSASWEsnow_setup)
@@ -661,7 +660,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_ANSA_SCF )
-!ANSA SCF snow obs 
+!ANSA SCF snow obs
    call registerdaobsclass(trim(LIS_ANSASCFsnowobsId),"LSM")
    call registerdaobssetup(trim(LIS_ANSASCFsnowobsId)//char(0), &
         ANSASCFsnow_setup)
@@ -683,7 +682,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_ANSA_SNWD )
-!ANSA SNWD snow obs 
+!ANSA SNWD snow obs
    call registerdaobsclass(trim(LIS_ANSASNWDsnowobsId),"LSM")
    call registerdaobssetup(trim(LIS_ANSASNWDsnowobsId)//char(0), &
         ANSASNWDsnow_setup)
@@ -694,7 +693,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_SMMR_SNWD )
-!SMMR SNWD snow obs 
+!SMMR SNWD snow obs
    call registerdaobsclass(trim(LIS_SMMRSNWDsnowobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMMRSNWDsnowobsId)//char(0), &
         SMMRSNWDsnow_setup)
@@ -705,7 +704,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_SSMI_SNWD )
-!SSMI SNWD snow obs 
+!SSMI SNWD snow obs
    call registerdaobsclass(trim(LIS_SSMISNWDsnowobsId),"LSM")
    call registerdaobssetup(trim(LIS_SSMISNWDsnowobsId)//char(0), &
         SSMISNWDsnow_setup)
@@ -741,14 +740,14 @@ subroutine LIS_DAobs_plugin
    call registerwritedaobs(trim(LIS_PMWsnowobsId)//char(0),write_PMW_snowobs)
 #endif
 
-#if 0 
-!WindSat soil moisture obs 
+#if 0
+!WindSat soil moisture obs
    call registerdaobsclass(trim(LIS_WindSatsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_WindSatsmobsId)//char(0),WindSatsm_setup)
    call registerreaddaobs(trim(LIS_WindSatsmobsId)//char(0),read_WindSatsm)
    call registerwritedaobs(trim(LIS_WindSatsmobsId)//char(0),write_WindSatsmobs)
 
-!WindSat Cband (over Toulouse only) soil moisture obs 
+!WindSat Cband (over Toulouse only) soil moisture obs
    call registerdaobsclass(trim(LIS_WindSatCsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_WindSatCsmobsId)//char(0), &
         WindSatCsm_setup)
@@ -776,43 +775,55 @@ subroutine LIS_DAobs_plugin
         write_SYN_LBAND_TB)
 #endif
 
-! MN : SMOPS soil moisture ! delete 
+! MN : SMOPS soil moisture ! delete
 #if ( defined DA_OBS_SMOPSSM )
 !   call registerdaobssetup(trim(LIS_SMOPSsmobsId)//char(0),SMOPSsm_setup)
 !   call registerreaddaobs(trim(LIS_SMOPSsmobsId)//char(0),read_SMOPSsm)
 !   call registerwritedaobs(trim(LIS_SMOPSsmobsId)//char(0),write_SMOPSsmobs)
 #endif
 
-! MN : SMOPS ASCAT soil moisture 
+! MN : SMOPS ASCAT soil moisture
 #if ( defined DA_OBS_SMOPS_ASCATSM )
    call registerdaobsclass(trim(LIS_SMOPS_ASCATsmobsId),"LSM")
-   call registerdaobssetup(trim(LIS_SMOPS_ASCATsmobsId)//char(0),SMOPS_ASCATsm_setup)
-   call registerreaddaobs(trim(LIS_SMOPS_ASCATsmobsId)//char(0),read_SMOPS_ASCATsm)
-   call registerwritedaobs(trim(LIS_SMOPS_ASCATsmobsId)//char(0),write_SMOPS_ASCATsmobs)
+   call registerdaobssetup(trim(LIS_SMOPS_ASCATsmobsId)//char(0), &
+        SMOPS_ASCATsm_setup)
+   call registerreaddaobs(trim(LIS_SMOPS_ASCATsmobsId)//char(0), &
+        read_SMOPS_ASCATsm)
+   call registerwritedaobs(trim(LIS_SMOPS_ASCATsmobsId)//char(0), &
+        write_SMOPS_ASCATsmobs)
 #endif
 
-! MN : SMOPS SMOS soil moisture 
+! MN : SMOPS SMOS soil moisture
 #if ( defined DA_OBS_SMOPS_SMOSSM )
    call registerdaobsclass(trim(LIS_SMOPS_SMOSsmobsId),"LSM")
-   call registerdaobssetup(trim(LIS_SMOPS_SMOSsmobsId)//char(0),SMOPS_SMOSsm_setup)
-   call registerreaddaobs(trim(LIS_SMOPS_SMOSsmobsId)//char(0),read_SMOPS_SMOSsm)
-   call registerwritedaobs(trim(LIS_SMOPS_SMOSsmobsId)//char(0),write_SMOPS_SMOSsmobs)
+   call registerdaobssetup(trim(LIS_SMOPS_SMOSsmobsId)//char(0), &
+        SMOPS_SMOSsm_setup)
+   call registerreaddaobs(trim(LIS_SMOPS_SMOSsmobsId)//char(0), &
+        read_SMOPS_SMOSsm)
+   call registerwritedaobs(trim(LIS_SMOPS_SMOSsmobsId)//char(0), &
+        write_SMOPS_SMOSsmobs)
 #endif
 
-! MN : SMOPS AMSR2 soil moisture 
+! MN : SMOPS AMSR2 soil moisture
 #if ( defined DA_OBS_SMOPS_AMSR2SM )
    call registerdaobsclass(trim(LIS_SMOPS_AMSR2smobsId),"LSM")
-   call registerdaobssetup(trim(LIS_SMOPS_AMSR2smobsId)//char(0),SMOPS_AMSR2sm_setup)
-   call registerreaddaobs(trim(LIS_SMOPS_AMSR2smobsId)//char(0),read_SMOPS_AMSR2sm)
-   call registerwritedaobs(trim(LIS_SMOPS_AMSR2smobsId)//char(0),write_SMOPS_AMSR2smobs)
+   call registerdaobssetup(trim(LIS_SMOPS_AMSR2smobsId)//char(0), &
+        SMOPS_AMSR2sm_setup)
+   call registerreaddaobs(trim(LIS_SMOPS_AMSR2smobsId)//char(0), &
+        read_SMOPS_AMSR2sm)
+   call registerwritedaobs(trim(LIS_SMOPS_AMSR2smobsId)//char(0), &
+        write_SMOPS_AMSR2smobs)
 #endif
 
-! MN : SMOPS SMAP soil moisture 
+! MN : SMOPS SMAP soil moisture
 #if ( defined DA_OBS_SMOPS_SMAPSM )
    call registerdaobsclass(trim(LIS_SMOPS_SMAPsmobsId),"LSM")
-   call registerdaobssetup(trim(LIS_SMOPS_SMAPsmobsId)//char(0),SMOPS_SMAPsm_setup)
-   call registerreaddaobs(trim(LIS_SMOPS_SMAPsmobsId)//char(0),read_SMOPS_SMAPsm)
-   call registerwritedaobs(trim(LIS_SMOPS_SMAPsmobsId)//char(0),write_SMOPS_SMAPsmobs)
+   call registerdaobssetup(trim(LIS_SMOPS_SMAPsmobsId)//char(0), &
+        SMOPS_SMAPsm_setup)
+   call registerreaddaobs(trim(LIS_SMOPS_SMAPsmobsId)//char(0), &
+        read_SMOPS_SMAPsm)
+   call registerwritedaobs(trim(LIS_SMOPS_SMAPsmobsId)//char(0), &
+        write_SMOPS_SMAPsmobs)
 #endif
 
 #if ( defined DA_OBS_SMOS_NESDIS )
@@ -847,7 +858,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_GRACE )
-! GRACE TWS obs 
+! GRACE TWS obs
    call registerdaobsclass(trim(LIS_GRACEtwsobsId),"LSM")
     call registerdaobssetup(trim(LIS_GRACEtwsobsId)//char(0),GRACEobs_setup)
     call registerreaddaobs(trim(LIS_GRACEtwsobsId)//char(0),read_GRACEobs)
@@ -855,7 +866,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_PILDAS )
-!pildas (synthetic soil moisture)    
+!pildas (synthetic soil moisture)
    call registerdaobsclass(trim(LIS_pildassmobsId),"LSM")
    call registerdaobssetup(trim(LIS_pildassmobsId)//char(0),pildassmobs_setup)
    call registerreaddaobs(trim(LIS_pildassmobsId)//char(0),read_pildassmobs)
@@ -1018,11 +1029,14 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_HYDROWEBWL )
-!synthetic noah soil moisture    
+!synthetic noah soil moisture
    call registerdaobsclass(trim(LIS_hydrowebwlId),"Routing")
-   call registerdaobssetup(trim(LIS_hydrowebwlId)//char(0),hydrowebwlobs_setup)
-   call registerreaddaobs(trim(LIS_hydrowebwlId)//char(0),read_hydrowebwlobs)
-   call registerwritedaobs(trim(LIS_hydrowebwlId)//char(0),write_hydrowebwlobs)
+   call registerdaobssetup(trim(LIS_hydrowebwlId)//char(0), &
+        hydrowebwlobs_setup)
+   call registerreaddaobs(trim(LIS_hydrowebwlId)//char(0), &
+        read_hydrowebwlobs)
+   call registerwritedaobs(trim(LIS_hydrowebwlId)//char(0), &
+        write_hydrowebwlobs)
 #endif
 
 #if ( defined DA_OBS_SWOTWL )
@@ -1041,25 +1055,25 @@ subroutine LIS_DAobs_plugin
         read_WUS_UCLAsnow)
    call registerwritedaobs(trim(LIS_wusUCLAobsId)//char(0), &
         write_WUS_UCLAsnow)
-#endif   
+#endif
 #endif
  end subroutine LIS_DAobs_plugin
 
  subroutine registerdaobsclass(funcName, funcClass)
-   
+
    implicit none
-   
+
    character(len=*) :: funcName
    character(len=*) :: funcClass
-   
+
    type(DAobsFuncEntry), pointer :: dataEntry,current
-   
+
    allocate(dataEntry)
-   
+
    dataEntry%name = funcName
    dataEntry%class = funcClass
-   
-   if(.not.associated(LIS_DAobsFuncEntry%head_daobsfunc_list)) then 
+
+   if(.not.associated(LIS_DAobsFuncEntry%head_daobsfunc_list)) then
       LIS_DAobsFuncEntry%head_daobsfunc_list => dataEntry
    else
       current => LIS_DAobsFuncEntry%head_daobsfunc_list
@@ -1069,44 +1083,44 @@ subroutine LIS_DAobs_plugin
       current%next =>dataEntry
    endif
    dataEntry%next => null()
-   
+
  end subroutine registerdaobsclass
- 
+
 !BOP
 !
 ! !ROUTINE: LIS_isDAinstanceValid
 ! \label{LIS_isDAinstanceValid}
 !
-! !INTERFACE: 
+! !INTERFACE:
  subroutine LIS_isDAinstanceValid(funcName, funcClass,flag)
 !
-! !DESCRIPTION: 
-!  
+! !DESCRIPTION:
+!
 !  This subroutine checks if the DA class instance is among
-!  the supported list of DA class types. 
-! 
+!  the supported list of DA class types.
+!
 !EOP
    implicit none
-   
+
    character(len=*) :: funcName
    character(len=*) :: funcClass
    logical          :: flag
-   
+
    type(DAobsFuncEntry), pointer :: dataEntry
-   
-   flag = .false. 
+
+   flag = .false.
    dataEntry => LIS_DAobsFuncEntry%head_daobsfunc_list
-   
+
    do while(associated(dataEntry))
-      
+
       if(dataEntry%name.eq.funcName.and.&
-           dataEntry%class.eq.funcClass) then 
-         flag = .true. 
+           dataEntry%class.eq.funcClass) then
+         flag = .true.
          exit
       endif
       dataEntry => dataEntry%next
    enddo
-   
+
  end subroutine LIS_isDAinstanceValid
- 
+
 end module LIS_DAobs_pluginMod
