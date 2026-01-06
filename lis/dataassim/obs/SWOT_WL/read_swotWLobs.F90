@@ -97,7 +97,8 @@ subroutine read_swotWLobs(n, k, OBS_State, OBS_Pert_state)
       if(file_exists) then
          write(LIS_logunit,*)  '[INFO] Reading SWOT WL data ',trim(filename)
          call read_swotWL(filename)
-         swot_wl_struc(n)%time_file = calculate_seconds_since_2000(yyyy, mm, dd, hh, mn, ss) !since 2000-01-01
+         swot_wl_struc(n)%time_file = &
+              calculate_seconds_since_2000(yyyy, mm, dd, hh, mn, ss) !since 2000-01-01
       else
          write(LIS_logunit,*)'[WARN] Cannot find file ',trim(filename)
       end if
