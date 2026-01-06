@@ -6305,6 +6305,7 @@ contains
     real, allocatable :: gtmp_ens(:,:,:)
     real, allocatable :: gtmp1(:)
     real, allocatable :: gtmp1_ens(:,:)
+    real, allocatable :: gtmplat(:),gtmplon(:)
     integer :: gdeltas
     integer :: count1 ,c,r,m,gid,ntiles,ierr,i,t
 
@@ -6365,13 +6366,47 @@ contains
              enddo
           enddo
           
-          if(PRESENT(dim1)) then 
-             iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
-                                 (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
-          else            
-             iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
-                                 (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
-          endif 
+          ! Writing latlon fields to 1D is supported only
+          ! for equidistant cylindrical projection
+          if(LIS_rc%nlatlon_dimensions == '1D') then
+             if(nmodel_status.eq.1) then   ! lat
+                allocate(gtmplat(LIS_rc%gnr(n)))
+                gtmplat = LIS_rc%udef
+                do r=1,LIS_rc%gnr(n)
+                   gtmplat(r) = LIS_domain(n)%glat(1+(r-1)*LIS_rc%gnc(n))
+                enddo
+                iret = nf90_put_var(ftn,varid,gtmplat,(/1/),&
+                   (/LIS_rc%gnr(n)/))
+                deallocate(gtmplat)
+             elseif(nmodel_status.eq.2) then !lon
+                allocate(gtmplon(LIS_rc%gnc(n)))
+                gtmplon = LIS_rc%udef
+                do c=1,LIS_rc%gnc(n)
+                   gtmplon(c) = LIS_domain(n)%glon(c)
+                enddo
+                iret = nf90_put_var(ftn,varid,gtmplon,(/1/),&
+                   (/LIS_rc%gnc(n)/))
+                deallocate(gtmplon)
+             else
+                if(PRESENT(dim1)) then
+                   iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
+                      (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+                else
+                   iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
+                      (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
+                endif
+             endif
+          ! The latlon fields are written to 2D
+          else
+             if(PRESENT(dim1)) then
+                iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
+                   (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+             else
+                iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
+                   (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
+             endif
+          endif
+
           if(ftn_stats.ne.-1) then
              if ( LIS_rc%sout ) then
                 call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
