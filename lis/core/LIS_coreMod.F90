@@ -168,7 +168,7 @@ module LIS_coreMod
      type(griddec), allocatable :: grid(:)
      integer, allocatable       :: ntiles_pergrid(:)
   end type routing_type_dec
-  
+
   type(routing_type_dec), allocatable :: LIS_routing(:)
 
 !EOP
@@ -393,7 +393,7 @@ contains
     allocate(LIS_rc%minLon(LIS_rc%nnest))
     allocate(LIS_rc%maxLat(LIS_rc%nnest))
     allocate(LIS_rc%maxLon(LIS_rc%nnest))
-    
+
     LIS_rc%gridDesc = 0
     LIS_rc%use_twelve = .false.
     LIS_rc%reset_flag = .false.
@@ -429,7 +429,7 @@ contains
 !    endif
     call LIS_update_clock(LIS_rc%ts)
     call LIS_finishDekadalAlarms(LIS_rc)
-    
+
     call LIS_updateAlarmSetups()
 
     write(LIS_logunit,*) '[INFO]: LIS timestep ',LIS_rc%ts
@@ -469,7 +469,7 @@ contains
     ! !ARGUMENTS:
     logical, optional, intent(in) :: override_end_time
     logical :: finish
-    
+
 ! !DESCRIPTION:
 !  This function checks to see if the runtime clock has reached the
 !  specified stop time of the simulation.
@@ -545,8 +545,8 @@ contains
           finish = .true.
        endif
 ! Assuming that all nests are in sync
-!       if(LIS_rc%endtime.eq.1.and.LIS_rc%DAincrMode(1).eq.1) then 
-!          finish = .true. 
+!       if(LIS_rc%endtime.eq.1.and.LIS_rc%DAincrMode(1).eq.1) then
+!          finish = .true.
 !       endif
 
     endif
@@ -670,6 +670,7 @@ contains
 !
 !EOP
     implicit none
+
     type(ESMF_VM)     :: lisvm
     logical           :: init_esmf
     integer, optional :: liscomm
@@ -953,7 +954,7 @@ contains
        else
           finish = .false.
        endif
-       
+
     else
        write(LIS_logunit,*) '[WARN] : LIS_isatAfinerResolution check ' // &
                             '[WARN] is NOT supported'
@@ -1006,7 +1007,7 @@ contains
 !EOP
     character(len=16) :: finish
     real    :: targetres, dom
-    
+
     if ( LIS_rc%gridDesc(n,1) .eq. 0 ) then
        ! Compare the larger of dlon and dlat against datares.
        if ( LIS_rc%gridDesc(n,9) > LIS_rc%gridDesc(n,10) ) then
@@ -1017,7 +1018,7 @@ contains
 
        dom = max(targetres, datares)
 
-       if ( ( abs(targetres - datares) / dom ) <= 0.2 ) then 
+       if ( ( abs(targetres - datares) / dom ) <= 0.2 ) then
           finish = 'neighbor'
        else
           if ( targetres <= datares ) then
@@ -1035,7 +1036,6 @@ contains
        finish = 'interpolate'
     endif
   end function LIS_howtoTransform
-
 
 !BOP
 !
@@ -1079,28 +1079,25 @@ contains
        dx = LIS_rc%gridDesc(n,8)/100.0
        dy = LIS_rc%gridDesc(n,9)/100.0
     else
-       
        write(LIS_logunit,*) '[ERR] LIS_getDomainResolutions routine ' // &
                             '[ERR] is NOT supported'
        write(LIS_logunit,*) '[ERR] for this map projection.'
        call LIS_endrun()
-
     endif
   end subroutine LIS_getDomainResolutions
 
-
 !BOP
-! 
+!
 ! !ROUTINE: LIS_updateAlarmSetups
 ! \label{LIS_updateAlarmSetups}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_updateAlarmSetups()
 !
-! !DESCRIPTION: 
-!   This subroutine registers alarms after 
+! !DESCRIPTION:
+!   This subroutine registers alarms after
 !   the updated LIS clock timestep has been determined
-! 
+!
 !EOP
 
     integer                 :: i
@@ -1113,14 +1110,14 @@ contains
        call LIS_registerAlarm("LIS DA output "//trim(fda),&
             LIS_rc%ts,&
             LIS_rc%daOutInterval(i))
-       
+
     enddo
 
-    if(LIS_rc%nperts.gt.0) then 
-       call LIS_registerAlarm("LIS pert restart alarm",&
-            LIS_rc%ts ,&  
+    if (LIS_rc%nperts.gt.0) then
+       call LIS_registerAlarm("LIS pert restart alarm", &
+            LIS_rc%ts, &
             LIS_rc%pertrestartInterval)
     endif
-    
+
   end subroutine LIS_updateAlarmSetups
 end module LIS_coreMod
