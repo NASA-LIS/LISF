@@ -14,7 +14,7 @@
 ! !REVISION HISTORY:
 ! 07 Nov 2019: Sujay Kumar, Initial specification
 ! 15 Apr 2024: Yeosang Yoon; Update the code to fit the SWOT DA
-! 
+!
 ! !INTERFACE:
 subroutine HYMAP2_setWL(n, Routing_State)
 ! !USES:
@@ -25,16 +25,16 @@ subroutine HYMAP2_setWL(n, Routing_State)
   use HYMAP2_modelMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
 !
 ! !DESCRIPTION:
-!  
+!
 !  This routine assigns the water level prognostic variables to the HyMAP2
-!  model space. 
-! 
-!  The arguments are: 
+!  model space.
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
@@ -67,28 +67,28 @@ subroutine HYMAP2_setWL(n, Routing_State)
   call ESMF_FieldGet(sfcelvField,localDE=0,farrayPtr=sfcelv,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for sfcelv in HYMAP2_getWL')
 
-  ensCheck = .true. 
+  ensCheck = .true.
   diffCheck = .false.
 
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
-        sfcelv(t)  = sfcelv(t) + HYMAP2_routing_struc(n)%rivelv(i)           
+        sfcelv(t)  = sfcelv(t) + HYMAP2_routing_struc(n)%rivelv(i)
      enddo
   enddo
 
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
-        if(sfcelv(t).le.HYMAP2_routing_struc(n)%rivelv(i)) then 
-           ensCheck(i) = .false. 
+        if(sfcelv(t).le.HYMAP2_routing_struc(n)%rivelv(i)) then
+           ensCheck(i) = .false.
         endif
 
-        if(sfcelv(t).ne.sfcelv(i*LIS_rc%nensem(n))) then 
-           diffCheck(i) = .true. 
+        if(sfcelv(t).ne.sfcelv(i*LIS_rc%nensem(n))) then
+           diffCheck(i) = .true.
         endif
      enddo
-     if(.not.ensCheck(i).and.diffCheck(i)) then 
+     if(.not.ensCheck(i).and.diffCheck(i)) then
         call reorderEnsForOutliers(&
              LIS_rc%nensem(n),&
              sfcelv((i-1)*LIS_rc%nensem(n)+1:i*LIS_rc%nensem(n)),&
@@ -99,11 +99,11 @@ subroutine HYMAP2_setWL(n, Routing_State)
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
-        HYMAP2_routing_struc(n)%sfcelv(i,m) = sfcelv(t)  
+        HYMAP2_routing_struc(n)%sfcelv(i,m) = sfcelv(t)
      enddo
   enddo
-  
-  !update surface level and then update the storage. 
+
+  !update surface level and then update the storage.
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
         t = (i-1)*LIS_rc%nensem(n)+m
@@ -129,7 +129,7 @@ subroutine HYMAP2_setWL(n, Routing_State)
              rivlen,&
              rivwth,&
              elv,&
-             vol) 
+             vol)
         HYMAP2_routing_struc(n)%rivsto(i,m) = real(vol)
         HYMAP2_routing_struc(n)%fldsto(i,m) = 0.0
      enddo
@@ -138,17 +138,17 @@ subroutine HYMAP2_setWL(n, Routing_State)
 end subroutine HYMAP2_setWL
 
 subroutine reorderEnsForOutliers(nensem, statevec, minvalue)
-  
+
   implicit none
-  
+
   integer              :: nensem
   real                 :: statevec(nensem)
   real                 :: minvalue
-  
+
   real                 :: minvT, maxvT, minvG, maxvG
   integer              :: k
   real                 :: spread_total, spread_good, spread_ratio
-  
+
   !Ensemble spread (total and with 'good' ensemble members
   minvT = 1E10
   maxvT = -1E10
@@ -157,36 +157,36 @@ subroutine reorderEnsForOutliers(nensem, statevec, minvalue)
 
   do k=1,nensem
 
-     if(statevec(k).lt.minvT) then 
+     if(statevec(k).lt.minvT) then
         minvT = statevec(k)
      endif
-     if(statevec(k).gt.maxvT) then 
+     if(statevec(k).gt.maxvT) then
         maxvT = statevec(k)
      endif
 
-     if(statevec(k).gt.minvalue) then 
-        if(statevec(k).lt.minvG) then 
+     if(statevec(k).gt.minvalue) then
+        if(statevec(k).lt.minvG) then
            minvG = statevec(k)
         endif
-        if(statevec(k).gt.maxvG) then 
+        if(statevec(k).gt.maxvG) then
            maxvG = statevec(k)
         endif
      endif
   enddo
-  
-  if(minvG.eq.1E10.and.maxvG.eq.-1E10) then 
+
+  if(minvG.eq.1E10.and.maxvG.eq.-1E10) then
      statevec = minvalue
   else
      spread_total = (maxvT - minvT)
      spread_good  = (maxvG - minvG)
-     
+
      spread_ratio = spread_good/spread_total
-     
-     !rescale the ensemble 
-     
+
+     !rescale the ensemble
+
      do k=1,nensem-1
         statevec(k) = statevec(nensem) + &
-             (statevec(k) - statevec(nensem))*spread_ratio 
+             (statevec(k) - statevec(nensem))*spread_ratio
      enddo
   endif
 
