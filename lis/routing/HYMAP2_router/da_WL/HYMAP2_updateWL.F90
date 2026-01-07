@@ -26,16 +26,17 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
   use HYMAP2_daWL_Mod
 
   implicit none
-! !ARGUMENTS: 
+
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
   type(ESMF_State)       :: Routing_Incr_State
 !
 ! !DESCRIPTION:
-!  
-!  This routine updates the water level prognostic variables 
-! 
-!  The arguments are: 
+!
+!  This routine updates the water level prognostic variables
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
@@ -130,16 +131,22 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
                           if(sfcelev(t1).ne.-9999.0.and.&
                              localweight(c,r).ne.-9999.0.and.&
                              localweight(ix,iy).ne.-9999.0) then
-                             
+
                              nsfcelevIncr_tmp(t1) = nsfcelevIncr_tmp(t1) + 1
-                             checkWeight(t1, nsfcelevIncr_tmp(t1)) = localweight(c,r)
+                             checkWeight(t1, nsfcelevIncr_tmp(t1)) = &
+                                  localweight(c,r)
                              if (nsfcelevIncr_tmp(t1) > 1) then
-                                max_index=maxloc(checkWeight(t1,:nsfcelevIncr_tmp(t1)), dim=1)
-                                if (max_index .eq. nsfcelevIncr_tmp(t1)) then
-                                    sfcelevIncr_tmp(t1) = sfcelevIncr(t)*localweight(c,r)
+                                max_index= &
+                                     maxloc(checkWeight(t1, &
+                                     :nsfcelevIncr_tmp(t1)), dim=1)
+                                if (max_index .eq. &
+                                     nsfcelevIncr_tmp(t1)) then
+                                   sfcelevIncr_tmp(t1) = &
+                                        sfcelevIncr(t)*localweight(c,r)
                                 endif
                              else
-                                sfcelevIncr_tmp(t1) = sfcelevIncr(t)*localweight(c,r)
+                                sfcelevIncr_tmp(t1) = &
+                                     sfcelevIncr(t)*localweight(c,r)
                              endif
                          endif
                        endif
@@ -163,7 +170,7 @@ subroutine HYMAP2_updateWL(n, Routing_State, Routing_Incr_State)
         endif
      enddo
   enddo
- 
+
  deallocate(sfcelevIncr_tmp)
  deallocate(nsfcelevIncr_tmp)
  deallocate(checkWeight)
