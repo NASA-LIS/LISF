@@ -121,7 +121,7 @@ contains
 !   \end{description}
 !EOP
     real, parameter        ::  minssdev =0.001
-    integer                ::  n,i,t,kk,jj
+    integer                ::  n, i
     integer                ::  ftn
     integer                ::  status
     type(ESMF_Field)       ::  obsField(LIS_rc%nnest)
@@ -130,7 +130,6 @@ contains
     type(ESMF_ArraySpec)   ::  pertArrSpec
     character(len=LIS_CONST_PATH_LEN) ::  rtsmopssmobsdir
     character*100          ::  temp
-    real,  allocatable     ::  obsstd(:)
     character*1            ::  vid(2)
     character*40, allocatable  ::  vname(:)
     real        , allocatable  ::  varmin(:)
@@ -139,14 +138,10 @@ contains
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
     real, allocatable      :: ssdev(:)
-
-    real, allocatable      ::  obserr(:,:)
-    real, allocatable      ::  lobserr(:,:)
-    integer                :: c,r
-    real, allocatable      :: ssdev_grid(:,:)
-    integer                :: ngrid
     real, allocatable      :: target_precip_climo(:,:,:)
 
+    external :: neighbor_interp_input_withgrid
+    
     allocate(cdfT_SMAPsm_struc(LIS_rc%nnest))
 
     call ESMF_ArraySpecSet(intarrspec,rank=1,typekind=ESMF_TYPEKIND_I4,&
@@ -224,13 +219,13 @@ contains
        call LIS_verify(status, 'Reference domain model CDF file: is missing')
     enddo
 
-    call ESMF_ConfigFindLabel(LIS_config,"Reference domain obs CDF file:",&
+    call ESMF_ConfigFindLabel(LIS_config,"Target domain obs CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,&
             cdfT_SMAPsm_struc(n)%obscdffile,&
             rc=status)
-       call LIS_verify(status, 'Reference domain obs CDF file: is missing')
+       call LIS_verify(status, 'Target domain obs CDF file: is missing')
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,"Reference domain precipitation climatology data source:",&
