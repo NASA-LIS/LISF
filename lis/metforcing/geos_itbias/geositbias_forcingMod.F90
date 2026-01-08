@@ -166,10 +166,14 @@
 !  \end{description}
 !EOP
       real :: gridDesci(LIS_rc%nnest,50)
-      integer :: updoy,yr1,mo1,da1,hr1,mn1,ss1
-      real :: upgmt
       integer :: n
-      
+
+      external :: readcrd_geositbias
+      external :: bilinear_interp_input
+      external :: conserv_interp_input
+      external :: neighbor_interp_input
+      external :: read_geositbias_elev
+
       allocate(geositbias_struc(LIS_rc%nnest))
 
       do n = 1,LIS_rc%nnest
@@ -186,7 +190,7 @@
          geositbias_struc(n)%ts = 3600 !check
          call LIS_update_timestep(LIS_rc,n,geositbias_struc(n)%ts)
       enddo
-      
+
       gridDesci = 0
       do n = 1,LIS_rc%nnest
          gridDesci(n,1)  = 0
