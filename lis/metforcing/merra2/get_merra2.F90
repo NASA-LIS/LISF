@@ -181,7 +181,9 @@ subroutine get_merra2(n, findex)
 
   character(len=LIS_CONST_PATH_LEN) :: lapseratefname
   character*8                       :: fdate
-  
+
+  external :: merra2files
+  external :: read_merra2
 ! _________________________________________________________
 
 ! Please note that the timing logic has been tested only for
@@ -554,12 +556,7 @@ subroutine merra2files(n, kk, findex, merra2dir, yr, mo, da, slvname, flxname, l
   character*10 :: prefix
   character*17 :: slv_spec, flx_spec, lfo_spec, rad_spec
   character*20 :: dir
-  integer      :: seed
-  real         :: rand
   integer      :: hr, mn, ss
-  real*8       :: time
-  integer      :: doy
-  real         :: gmt
 
   hr = 0 
   mn = 0 
