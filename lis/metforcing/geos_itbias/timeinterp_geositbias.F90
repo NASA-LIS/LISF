@@ -24,7 +24,7 @@
       use LIS_metforcingMod, only : LIS_forc,LIS_FORC_Base_State
       use LIS_constantsMod,  only : LIS_CONST_SOLAR
       use LIS_timeMgrMod,    only : LIS_tick
-      use LIS_logMod,        only : LIS_logunit,LIS_verify,LIS_endrun
+      use LIS_logMod,        only : LIS_verify,LIS_endrun
       use geositbias_forcingMod,   only : geositbias_struc
       use LIS_forecastMod,   only : LIS_get_iteration_index
       use LIS_ran2_gasdev
@@ -49,14 +49,14 @@
 !    zenith-angle based interpolation
 !  \end{description}
 !EOP
-      integer :: t,zdoy,k,kk
+      integer :: t,k,kk
       integer :: index1
       integer :: bdoy,byr,bmo
       integer :: bda,bhr,bmn
       integer :: bss
       real*8  :: btime
-      real    :: wt1,wt2,czb,cze,czm,gmt1,gmt2
-      real    :: zw1,zw2,bts
+      real    :: gmt1,gmt2
+      real    :: bts
       integer          :: status
       integer          :: mfactor,m
       type(ESMF_Field) :: tairField,qairField,psField,lwgabField
