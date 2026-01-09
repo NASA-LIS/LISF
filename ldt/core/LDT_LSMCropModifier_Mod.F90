@@ -454,16 +454,6 @@ contains
                   !endif
                  endif
 
-                   ! CHECKS:
-!                   print *, "LSMCrop module: ", LDT_LSMCrop_struc(n)%croptype%value(218,128,:)
-!                   print *, "LSMCrop sum:    ", &
-!                    sum(LDT_LSMCrop_struc(n)%croptype%value(218,128,:), &
-!                     mask=LDT_LSMCrop_struc(n)%croptype%value(218,128,:).ne.LDT_rc%udef) 
-!                   print *, "VEGETATION FRACS: ",LDT_LSMparam_struc(n)%landcover%value(218,128,:)
-!                   print *, "VEG-CROP TYPE FRAC: ",LDT_LSMparam_struc(n)%landcover%value(218,128,LDT_rc%cropclass1)
-!                   print *, "SURFACE TYPES: ",LDT_LSMparam_struc(n)%sfctype%value(218,128,:)
-!                   print *, "SURFACE-CROP TYPE: ",LDT_LSMparam_struc(n)%sfctype%value(218,128,LDT_rc%cropclass1)
-
 !HKB              ! Merge crop types with irrigation fraction 
                   ! if user opted in ldt.config
                   ! modfy crop calendar information in the merging routine
@@ -746,11 +736,6 @@ contains
                       endif  ! landmask = 1
                     end do  ! c
                   end do   ! r
-
-!                  print *, "LSMCrop module(2): ", LDT_LSMCrop_struc(n)%croptype%value(218,128,:)
-!                  print *, "LSMCrop sum(2):    ", &
-!                   sum(LDT_LSMCrop_struc(n)%croptype%value(218,128,:), &
-!                    mask=LDT_LSMCrop_struc(n)%croptype%value(218,128,:).ne.LDT_rc%udef)
 
 !HKB: output croptype fractions in 3D if source is MIRCA 
                  if ( LDT_LSMCrop_struc(n)%croptype%source .eq. "MIRCA" ) then  

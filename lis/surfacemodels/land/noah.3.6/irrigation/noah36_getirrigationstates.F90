@@ -84,7 +84,7 @@ subroutine noah36_getirrigationstates(nest,irrigState)
   real                 :: sfctmp
   real                 :: sfctemp_avg
   real                 :: shdfac_avg
-  real                 :: tile_sat_target, smcpaddy, SICE
+  real                 :: tile_sat_target, SICE
   type(ESMF_Field)   :: tmpField
   real,pointer       :: tmp(:)
   integer            :: status

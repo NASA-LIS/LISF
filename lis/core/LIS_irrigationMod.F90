@@ -29,6 +29,7 @@ module LIS_irrigationMod
   use ESMF
   use LIS_coreMod
   use LIS_logMod
+  use LIS_surfaceModelDataMod
 
   implicit none
   
@@ -52,7 +53,6 @@ module LIS_irrigationMod
      logical            :: stats_file_open
      character*50       :: cropcalendar
      integer            :: cropseasons
-     real               :: veg_thresh    ! growing season threshold
      real               :: sprinkler_start  !sprinkler start time
      real               :: sprinkler_duration   !sprinkler duration
      real               :: sprinkler_thresh  !sprinkler threshold
@@ -165,12 +165,6 @@ contains
             label="Irrigation GVF parameter 2:",default = 0.4,rc=rc)
        write(LIS_logunit,*) "[INFO] Irrigation GVF parameter 2:  ",&
                              LIS_irrig_struc(n)%irrigation_GVFparam2
-       ! Dynamic vegetation trigger parameters
-       call ESMF_ConfigGetAttribute(LIS_config,             &
-            LIS_irrig_struc(n)%veg_thresh,                  &
-            label="Growing season vegetation threshold:", default=1., rc=rc)
-       write(LIS_logunit,*) "[INFO] Growing season vegetation threshold:  ", &
-                            LIS_irrig_struc(n)%veg_thresh
 
        ! Max. soil layer depth for irrigation to reach to (used for flood only):
        call ESMF_ConfigGetAttribute(LIS_config,             &
@@ -342,10 +336,15 @@ contains
      enddo    ! n
          
      ! Register irrigation output interval:
+!HKB-- issue398--issue when monthly interval is chosen (1/9/2026).
+!      monthly output is written out every 30-day when registerAlarm is called
+!      with LIS_irrig_struc(n)%outInterval. 
+!      use LSM timestep so output is written at the last model time step
+!      of the month (with LIS_sfmodel_struc(n)%ts). 
        do n=1,LIS_rc%nnest
           call LIS_parseTimeString(time,LIS_irrig_struc(n)%outInterval)
           call LIS_registerAlarm("LIS irrigation output interval",&
-               real(LIS_irrig_struc(n)%outInterval), &
+               LIS_sfmodel_struc(n)%ts, &
                LIS_irrig_struc(n)%outInterval)
           LIS_irrig_struc(n)%models_used = trim(LIS_rc%irrigation_type)
           LIS_irrig_struc(n)%stats_file_open = .true.

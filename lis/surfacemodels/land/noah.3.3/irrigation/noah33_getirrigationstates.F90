@@ -61,7 +61,8 @@ subroutine noah33_getirrigationstates(nest,irrigState)
 ! May 2023: Hiroko Beaudoing; Adopted Wanshu's implementations in NoahMP4.0.1
 !                             using ensemble mean when running with DA
 !                             for frozen soil temperature check.
-
+! Sep 2024: Hiroko Beaudoing; Introduce Runoff Recycling of Irrigation (QRI)
+!                             and modify Paddy scheme
 !                             
 !EOP
   implicit none
@@ -83,6 +84,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   real                 :: sfctmp
   real                 :: sfctemp_avg
   real                 :: shdfac_avg
+  real                 :: tile_sat_target, SICE
   type(ESMF_Field)   :: tmpField
   real,pointer       :: tmp(:)
   integer            :: status
@@ -231,7 +233,26 @@ subroutine noah33_getirrigationstates(nest,irrigState)
            
                  croptype = vegt - nlctypes
 
-                 call IM%update_irrigrate (                                             &
+                 ! distinguish paddy from others
+                 ! ----------------------------------------------
+                 PADDY: if ( IM%irrigType(TileNo) == 3 .and. croptype == LIS_rc%ricecrop) then
+                   ! PADDY-- use sh2o and soil layer depths for irrigateinput
+                    ! make sure surface soil is not frozen
+                    SICE = noah33_struc(nest)%noah(TileNo)%smc(1)-noah33_struc(nest)%noah(TileNo)%sh2o(1)
+                    if ( SICE .eq. 0 ) then
+                     call IM%update_irrigrate (                                  &
+                      nest,TileNo, croptype, LIS_domain(nest)%grid(gid)%lon,     &
+                      noah33_struc(nest)%noah(TileNo)%shdfac,gsthresh,                  &
+                      noah33_struc(nest)%noah(TileNo)%smcwlt,                           &
+                      noah33_struc(nest)%noah(TileNo)%smcmax,                           &
+                      noah33_struc(nest)%noah(TileNo)%smcref,                           &
+                      noah33_struc(nest)%noah(TileNo)%sh2o(:lroot),                      &
+                      sldpth(:lroot),noah33_struc(nest)%noah(TileNo)%soiltype)
+                    else
+                     IM%irrigRate(TileNo) = 0.0
+                    endif
+                 else
+                     call IM%update_irrigrate (                                  &
                       nest,TileNo, croptype, LIS_domain(nest)%grid(gid)%lon,     &
                       noah33_struc(nest)%noah(TileNo)%shdfac,gsthresh,                  &
                       noah33_struc(nest)%noah(TileNo)%smcwlt,                           &
@@ -239,6 +260,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                       noah33_struc(nest)%noah(TileNo)%smcref,                           &
                       noah33_struc(nest)%noah(TileNo)%smc(:lroot),                      &
                       rdpth(:lroot),noah33_struc(nest)%noah(TileNo)%soiltype)
+                 endif PADDY
                                    
               endif VEGIF
            endif IRRS
@@ -252,6 +274,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   TILE_LOOP2: do i=1,LIS_rc%npatch(nest,LIS_rc%lsm_index)/LIS_rc%nensem(nest)
    ENS_LOOP2: do m=1,LIS_rc%nensem(nest)
         TileNo = (i-1)*LIS_rc%nensem(nest)+m
+        gid = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%index
         vegt = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%vegt  
         croptype = vegt - nlctypes
         ! Process only irrigated tiles
@@ -276,16 +299,24 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                    noah33_struc(nest)%noah(TileNo)%smc(1) =  &
                         IM%IrrigScale(TileNo)*(amount + noah33_struc(nest)%noah(TileNo)%smc(1)) &
                         + (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)      
+                   noah33_struc(nest)%noah(TileNo)%sh2o(1) =  &
+                        IM%IrrigScale(TileNo)*(amount + noah33_struc(nest)%noah(TileNo)%sh2o(1)) &
+                        + (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%sh2o(1)
                    IM%irrigAppRate(TileNo) = IM%irrigRate(TileNo)
                 endif DRIP
 
                 FLOOD: if ( IM%irrigType(TileNo) == 3 ) then
                    if ( croptype == LIS_rc%ricecrop ) then   ! rice
                    ! PADDY-- surface layer only
-                     noah33_struc(nest)%noah(TileNo)%smc(1) =  &
-                           IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
-                           (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)
-                     IM%irrigAppRate(TileNo) = (noah33_struc(nest)%noah(TileNo)%smcmax-noah33_struc(nest)%noah(TileNo)%smc(1))*sldpth(1)*1000./LIS_rc%ts
+                   ! Bug fix--compute applied amount first!!!!! qri, qritest2
+                   ! NEW PADDY-- if smc is below target, irrigRate > 0. Reset smc to target.
+                      tile_sat_target = IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax+&
+                                  (1.0-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smcref
+
+
+                      noah33_struc(nest)%noah(TileNo)%smc(1) = tile_sat_target
+                      noah33_struc(nest)%noah(TileNo)%sh2o(1) = tile_sat_target
+
                    else
                    ! NON-PADDY -- surface only or  multiple layers
                    ! BZ modification 4/2/2015 to account for ippix and all soil layers:
