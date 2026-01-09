@@ -14,20 +14,21 @@
 ! !REVISION HISTORY:
 !
 ! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
+! 09 Jan 2026: Eric Kemp, reformatted.
 !
 ! !INTERFACE:
-      subroutine read_geositbias_elev(n,findex)
+subroutine read_geositbias_elev(n,findex)
 ! !USES:
-      use LIS_coreMod,       only : LIS_rc, LIS_domain
-      use LIS_metforcingMod, only : LIS_forc
-      use LIS_fileIOMod,     only : LIS_read_param
-      use LIS_logMod,        only : LIS_logunit
+  use LIS_coreMod,       only : LIS_rc, LIS_domain
+  use LIS_metforcingMod, only : LIS_forc
+  use LIS_fileIOMod,     only : LIS_read_param
+  use LIS_logMod,        only : LIS_logunit
 
-      implicit none
+  implicit none
 
 ! !ARGUMENTS:
-      integer, intent(in) :: n
-      integer, intent(in) :: findex
+  integer, intent(in) :: n
+  integer, intent(in) :: findex
 
 ! !DESCRIPTION:
 !
@@ -55,23 +56,24 @@
 !  \end{description}
 !EOP
 
-      integer :: c,r
-      real    :: go(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  integer :: c,r
+  real    :: go(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
-      if (trim(LIS_rc%met_ecor(findex)).ne."none") then
-         write(LIS_logunit,*)                                          &
-                      'Reading the GEOS-ITbias/MERRA-2 elevation map ...'
+  if (trim(LIS_rc%met_ecor(findex)).ne."none") then
+     write(LIS_logunit,*)                                          &
+          'Reading the GEOS-ITbias/MERRA-2 elevation map ...'
 
-         call LIS_read_param(n,"ELEV_MERRA2",go)
+     call LIS_read_param(n,"ELEV_MERRA2",go)
 
-         do r = 1,LIS_rc%lnr(n)
-            do c = 1,LIS_rc%lnc(n)
-               if (LIS_domain(n)%gindex(c,r).ne.-1) then
-                  LIS_forc(n,findex)%modelelev(LIS_domain(n)%gindex(c,r)) = go(c,r)
-               endif
-            enddo
-         enddo
-      endif
+     do r = 1,LIS_rc%lnr(n)
+        do c = 1,LIS_rc%lnc(n)
+           if (LIS_domain(n)%gindex(c,r).ne.-1) then
+              LIS_forc(n,findex)%modelelev(LIS_domain(n)%gindex(c,r)) = &
+                   go(c,r)
+           endif
+        enddo
+     enddo
+  endif
 
-      end subroutine read_geositbias_elev
+end subroutine read_geositbias_elev
 

@@ -13,30 +13,31 @@
 !
 ! !REVISION HISTORY:
 ! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
+! 09 Jan 2026: Eric Kemp, reformatting.
 !
 ! !INTERFACE:
-      subroutine reset_geositbias
+subroutine reset_geositbias()
 ! !USES:
-      use LIS_coreMod,  only   : LIS_rc
-      use LIS_timeMgrMod, only : LIS_date2time
-      use geositbias_forcingMod
+  use LIS_coreMod,  only   : LIS_rc
+  use LIS_timeMgrMod, only : LIS_date2time
+  use geositbias_forcingMod
 !
 ! !DESCRIPTION:
 !  Routine to cleanup allocated structures for GEOS-ITbias forcing.
 !
 !EOP
-      implicit none
+  implicit none
 
-      integer :: n
+  integer :: n
 
-      do n = 1,LIS_rc%nnest
-         geositbias_struc(n)%startFlag = .true.
-         geositbias_struc(n)%dayFlag = .true.
-         geositbias_struc(n)%geositbiastime1 = 3000.0
-         geositbias_struc(n)%geositbiastime2 = 0.0
-         geositbias_struc(n)%ringtime = 0.0
-         geositbias_struc(n)%reset_flag = .true.
-      enddo
+  do n = 1,LIS_rc%nnest
+     geositbias_struc(n)%startFlag = .true.
+     geositbias_struc(n)%dayFlag = .true.
+     geositbias_struc(n)%geositbiastime1 = 3000.0
+     geositbias_struc(n)%geositbiastime2 = 0.0
+     geositbias_struc(n)%ringtime = 0.0
+     geositbias_struc(n)%reset_flag = .true.
+  enddo
 
-      end subroutine reset_geositbias
+end subroutine reset_geositbias
 
