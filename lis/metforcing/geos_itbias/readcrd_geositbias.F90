@@ -32,7 +32,7 @@
 !EOP
   implicit none
 
-  integer :: n,t,rc,m
+  integer :: n,rc
   logical :: usedynlapserate
   
   call ESMF_ConfigFindLabel(LIS_config,                            &
