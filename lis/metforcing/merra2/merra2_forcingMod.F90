@@ -186,9 +186,13 @@ contains
 !  \end{description}
 !EOP
     real :: gridDesci(LIS_rc%nnest,50)
-    integer :: updoy, yr1,mo1,da1,hr1,mn1,ss1
-    real :: upgmt
     integer :: n
+
+    external :: readcrd_merra2
+    external :: bilinear_interp_input
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
+    external :: read_merra2_elev
 
     allocate(merra2_struc(LIS_rc%nnest))
 
