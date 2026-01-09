@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -207,7 +207,8 @@ contains
        gridDesci(n,10) = 0.5
        gridDesci(n,20) = 0
 
-       geositbias_struc(n)%mi = geositbias_struc(n)%ncold*geositbias_struc(n)%nrold
+       geositbias_struc(n)%mi = geositbias_struc(n)%ncold * &
+            geositbias_struc(n)%nrold
 
        ! Setting up weights for Interpolation
        if (trim(LIS_rc%met_interp(findex)).eq."bilinear") then
