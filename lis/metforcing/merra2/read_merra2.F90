@@ -25,7 +25,7 @@ subroutine read_merra2(n, order, month, findex,  &
      lapseratefname,                             &
      merraforc, ferror)
 ! !USES:
-  use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_coreMod,       only : LIS_rc
   use LIS_logMod
   use LIS_FORC_AttributesMod
   use LIS_metforcingMod, only : LIS_forc
@@ -94,15 +94,13 @@ subroutine read_merra2(n, order, month, findex,  &
   
   integer   :: ftn_slv, ftn_flx, ftn_lfo,ftn_rad
   integer   :: tmpId, qId, uId, vId, psId
-  integer   :: prectotId, precconId, swgdnId, lwgabId, emisId
+  integer   :: prectotId, precconId, swgdnId, lwgabId
   integer   :: precsnoId, hlmlID
   integer   :: swlandId, pardrId, pardfId
   integer   :: nr_index, nc_index
   logical   :: file_exists, file_exists1
-  integer   :: c,r,t,k,iret
   integer   :: mo
   logical   :: read_lnd
-
   real      :: tair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: qair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: uwind(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
@@ -111,8 +109,6 @@ subroutine read_merra2(n, order, month, findex,  &
   real      :: prectot(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: precsno(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: preccon(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
-  real      :: prectot_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
-  real      :: preccon_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: swgdn(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: lwgab(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: swland(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
@@ -132,6 +128,8 @@ subroutine read_merra2(n, order, month, findex,  &
   integer :: i0, j0
   integer :: latid, lonid
 
+  external :: interp_merra2_var
+  external :: interp_lapserate_merra2
 !_______________________________________________________________________
 
 #if (defined USE_NETCDF3) 
@@ -563,7 +561,6 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
 !EOP
 
   integer   :: t,c,r,k,iret
-  integer   :: doy
   integer   :: ftn
   integer   :: pcp1Id, pcp2Id, pcp3Id, pcp4Id,pcp5Id, pcp6Id
   real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
@@ -571,6 +568,12 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   logical   :: scal_read_flag
+
+  external :: rescaleWithCDFmatching
+  external :: conserv_interp
+  external :: bilinear_interp
+  external :: neighbor_interp
+
 ! _____________________________________________________________
 
   input_size = merra2_struc(n)%ncold*merra2_struc(n)%nrold
@@ -867,14 +870,15 @@ subroutine interp_lapserate_merra2(n,order,input_var)
 !EOP
 
   integer   :: t,c,r,k,iret
-  integer   :: doy
-  integer   :: ftn,gid
+  integer   :: gid
   real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
   logical*1 :: lb(merra2_struc(n)%ncold*merra2_struc(n)%nrold)
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   real      :: output_var(LIS_rc%lnc(n)*LIS_rc%lnr(n),24)
 
+  external :: bilinear_interp
+  
 ! _____________________________________________________________
 
   input_size = merra2_struc(n)%ncold*merra2_struc(n)%nrold
@@ -1068,7 +1072,6 @@ end subroutine interp_lapserate_merra2
 
     integer              :: c,r,i
     integer              :: binval
-    integer              :: col,row
     real                 :: cdf_merraval
     real                 :: merra_tmp, merra_in
     integer,dimension(1) :: index_25 , index_75
