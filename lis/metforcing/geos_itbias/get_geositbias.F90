@@ -77,17 +77,19 @@
       integer           :: order
       integer           :: ferror
       character(len=LIS_CONST_PATH_LEN) :: geosname
-      integer           :: c,f,r,kk
+      integer           :: c,r,kk
       integer           :: yr1,mo1,da1,hr1,mn1,ss1,doy1
       integer           :: yr2,mo2,da2,hr2,mn2,ss2,doy2
       real*8            :: time1,time2,timenow
       real              :: gmt1,gmt2
       real              :: ts1,ts2
       integer           :: gid
-      integer           :: hr_int1,hr_int2
       integer           :: movetime ! Flag to move bookend2 files to bookend1
       character(len=LIS_CONST_PATH_LEN) :: lapseratefname
       character*20                      :: fdate
+
+      external :: geositbiasfiles
+      external :: read_geositbias
 ! _________________________________________________________
 !
 

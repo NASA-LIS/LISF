@@ -23,7 +23,7 @@
                            lapseratefname,                             &
                            geositbiasforc,ferror)
 ! !USES:
-      use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_masterproc
+      use LIS_coreMod,       only : LIS_rc
       use LIS_logMod
       use LIS_FORC_AttributesMod
       use LIS_metforcingMod, only : LIS_forc
@@ -93,11 +93,8 @@
       integer   :: tmpId,qId,psId
       integer   :: lwgabId
       integer   :: nr_index,nc_index
-      logical   :: file_exists,file_exists1
-      integer   :: c,r,t,k,iret
+      logical   :: file_exists
       integer   :: mo
-      logical   :: read_lnd
-
       real      :: tair(geositbias_struc(n)%ncold,geositbias_struc(n)%nrold)
       real      :: qair(geositbias_struc(n)%ncold,geositbias_struc(n)%nrold)
       real      :: ps(geositbias_struc(n)%ncold,geositbias_struc(n)%nrold)
@@ -111,6 +108,9 @@
       real, allocatable :: lat_full(:), lon_full(:)
       integer :: i0, j0
       integer :: latid, lonid
+
+      external :: interp_geositbias_var
+      external :: interp_lapserate_geositbias
 ! __________________________________________________________________________
 
 #if (defined USE_NETCDF3)
@@ -293,15 +293,16 @@ subroutine interp_geositbias_var(n,findex,month,input_var,var_index, &
 !  to the LIS running domain
 !
 !EOP
-   integer   :: t,c,r,k,iret
-   integer   :: doy
-   integer   :: ftn
-   integer   :: pcp1Id,pcp2Id,pcp3Id,pcp4Id,pcp5Id,pcp6Id
+   integer   :: c,r,k,iret
    real      :: f (geositbias_struc(n)%ncold*geositbias_struc(n)%nrold)
    logical*1 :: lb(geositbias_struc(n)%ncold*geositbias_struc(n)%nrold)
    logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
    integer   :: input_size
-   logical   :: scal_read_flag
+
+   external :: conserv_interp
+   external :: bilinear_interp
+   external :: neighbor_interp
+
 ! _____________________________________________________________
 
    input_size = geositbias_struc(n)%ncold*geositbias_struc(n)%nrold
@@ -405,14 +406,14 @@ subroutine interp_lapserate_geositbias(n,order,input_var)
 !EOP
 
   integer   :: c,r,k,iret
-  integer   :: doy
-  integer   :: ftn,gid
+  integer   :: gid
   real      :: f (geositbias_struc(n)%ncold*geositbias_struc(n)%nrold)
   logical*1 :: lb(geositbias_struc(n)%ncold*geositbias_struc(n)%nrold)
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   real      :: output_var(LIS_rc%lnc(n)*LIS_rc%lnr(n))
 
+  external :: bilinear_interp
 ! _____________________________________________________________
 
   input_size = geositbias_struc(n)%ncold*geositbias_struc(n)%nrold
