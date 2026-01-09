@@ -352,6 +352,7 @@ Acceptable values for the sources are:
 |"`GFS`"                       | GFS
 |"`MERRA2`"                    | MERRA2
 |"`GEOS-IT`"                   | GEOS-IT
+|"`GEOS-ITbias`"               | GEOS-ITbias
 |"`CMAP`"                      | CMAP
 |"`TRMM 3B42RT`"               | TRMM 3B42RT
 |"`TRMM 3B42RTV7`"             | TRMM 3B42RTV7
@@ -5738,6 +5739,14 @@ Acceptable values are:
 `MERRA2 dynamic lapse rate data directory:` specifies the
 directory of the pre-computed MERRA-2 lapse rate dataset.
 
+`MERRA2 dynamic lapse rate filename prefix:` specifies the prefix
+of the pre-computed MERRA-2 lapse rate files. This is an optional
+config entry; if not present, the default is `/MERRA2.lapse_rate.hourly.`.
+
+`MERRA2 dynamic lapse rate filename suffix:` specifies the suffix
+of the pre-computed MERRA-2 lapse rate files. This is an optional
+config entry; if not present, the default is `.global.nc`.
+
 `MERRA2 apply double-sided dynamic lapse rate cutoff:` specifies whether
 to apply a double-sided cutoff to the dynamic lapse rate values. This is
 an optional config entry; if not present, the default is 0. If set to 1, 
@@ -5824,6 +5833,79 @@ Acceptable values are:
 GEOS-IT forcing directory:                  ./GEOS-IT
 GEOS-IT use lowest model level forcing:     1
 GEOS-IT use 2m wind fields:                 0 
+....
+
+[[sssec_forcings_GEOS-ITbias,GEOS-ITbias]]
+==== GEOS-ITbias
+
+`GEOS-ITbias forcing directory:` specifies the location of
+the GEOS-IT bias-corrected forcing files.
+
+`GEOS-ITbias apply dynamic lapse rates:` specifies whether to read
+in and apply the pre-computed GEOS-ITbias lapse rates.  This is an
+optional config entry; if not present, the default is 0.  Note
+that one of the two lapse-rate options for the topographic
+correction method for met forcing must be chosen for this
+config entry to be used.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not apply GEOS-ITbias dynamic lapse rates (use static lapse rate).
+|1     | Apply GEOS-ITbias dynamic lapse rates
+|====
+
+`GEOS-ITbias dynamic lapse rate data directory:` specifies the
+directory of the pre-computed GEOS-ITbias lapse rate dataset.
+
+`GEOS-ITbias dynamic lapse rate filename prefix:` specifies the prefix
+of the pre-computed GEOS-ITbias lapse rate files. This is an optional
+config entry; if not present, the default is `/GEOS-ITbias.lapse_rate.hourly.`.
+
+`GEOS-ITbias dynamic lapse rate filename suffix:` specifies the suffix
+of the pre-computed MERRA-2 lapse rate files. This is an optional
+config entry; if not present, the default is `.global.nc`.
+
+`GEOS-ITbias apply double-sided dynamic lapse rate cutoff:` specifies whether
+to apply a double-sided cutoff to the dynamic lapse rate values. This is
+an optional config entry; if not present, the default is 0. If set to 1, 
+values above (below) the maximum (minimum) cutoff are replaced with the 
+maximum (minimum) cutoff value. Maximum and minimum cutoff values can
+optionally be set using the GEOS-ITbias maximum and minimum lapse rate cutoff
+aguments, or otherwise are assumed the default cutoff values, as described 
+below.
+
+|====
+|Value | Description
+
+|0     | Do not apply GEOS-ITbias double-sided dynamic lapse rate cutoff.
+|1     | Apply GEOS-ITbias double-sided dynamic lapse rate cutoff.
+|====
+
+`GEOS-ITbias maximum lapse rate cutoff (K/m):` specifies the maximum value
+for the GEOS-ITbias double-sided dynamic lapse rate cutoff range, in units
+of Kelvin per meter (K/m). This is an optional config entry; if
+not present, the default is set to 0.01 K/m. This is only applied if
+GEOS-ITbias apply double-sided dynamic lapse rate cutoff is turned on
+(i.e., set to a value of 1).
+
+`GEOS-ITbias minimum lapse rate cutoff (K/m):` specifies the minimum value
+for the GEOS-ITbias double-sided dynamic lapse rate cutoff range, in units
+of Kelvin per meter (K/m). This is an optional config entry; if
+not present, the default is set to -0.1 K/m. This is only applied if
+GEOS-ITbias apply double-sided dynamic lapse rate cutoff is turned on
+(i.e., set to a value of 1).
+
+.Example _lis.config_ entry
+
+....
+GEOS-ITbias forcing directory:                             ./GEOS-ITbias
+GEOS-ITbias apply dynamic lapse rates:                     1
+GEOS-ITbias dynamic lapse rate data directory:             ./GEOS-ITbias_lapse_rates
+GEOS-ITbias apply double-sided dynamic lapse rate cutoff:  1
+GEOS-ITbias maximum lapse rate cutoff (K/m):               0.009
+GEOS-ITbias minimum lapse rate cutoff (K/m):               -0.009
 ....
 
 [[sssec_forcings_ERA5,ERA5]]

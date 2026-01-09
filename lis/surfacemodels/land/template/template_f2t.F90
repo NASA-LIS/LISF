@@ -16,6 +16,7 @@
 ! !REVISION HISTORY: 
 ! 21 Jul 2004: Sujay Kumar   Initial Specification
 ! 23 Oct 2007: Kristi Arsenault, Implemented code for LISv5.0
+! 15 Oct 2025: Fadji Maina, Made precipitation handling optional; only assign rainf when LIS_FORC_CRainf is selected
 ! 
 ! !INTERFACE:
 subroutine template_f2t(n)
@@ -164,10 +165,12 @@ subroutine template_f2t(n)
      if(LIS_FORC_Psurf%selectOpt.eq.1) then
        template_struc(n)%template(t)%psurf=psurf(tid)
      endif
-     if(pcp(tid).ne.LIS_rc%udef) then
-        template_struc(n)%template(t)%rainf=pcp(tid)
-     else
-        template_struc(n)%template(t)%rainf=0.0
+     if(LIS_FORC_CRainf%selectOpt.eq.1) then
+       if(pcp(tid).ne.LIS_rc%udef) then
+          template_struc(n)%template(t)%rainf=pcp(tid)
+       else
+          template_struc(n)%template(t)%rainf=0.0
+       endif
      endif
      if(LIS_FORC_CRainf%selectOpt.eq.1) then 
         if(cpcp(tid).ne.LIS_rc%udef) then 

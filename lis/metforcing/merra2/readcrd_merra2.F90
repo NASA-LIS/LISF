@@ -17,6 +17,7 @@
 ! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
 ! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
 ! 18 Dec 2024: Kristen Whitney, code for using double-sided dynamic lapse rate cutoff
+! 07 Jan 2026: Kristen Whitney, added use of optional config arguments for the dynamic lapse rate input filename prefix and suffix
 !
 ! !INTERFACE:    
 subroutine readcrd_merra2()
@@ -88,12 +89,26 @@ subroutine readcrd_merra2()
              'MERRA2 dynamic lapse rate data directory: not defined')
      enddo
 
+     call ESMF_ConfigFindLabel(LIS_config,"MERRA2 dynamic lapse rate filename prefix:",rc=rc)
+     do n=1,LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config,merra2_struc(n)%dynlapseratepfx,&
+                      default='/MERRA2.lapse_rate.hourly.', rc=rc)
+        write(LIS_logunit,*) '[INFO] MERRA2 dynamic lapse rate filename prefix:', trim(merra2_struc(n)%dynlapseratepfx)
+     enddo
+
+     call ESMF_ConfigFindLabel(LIS_config,"MERRA2 dynamic lapse rate filename suffix: ",rc=rc)
+     do n=1,LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config,merra2_struc(n)%dynlapseratesfx,&
+                      default='.global.nc', rc=rc)
+        write(LIS_logunit,*) '[INFO] MERRA2 dynamic lapse rate filename suffix: ', trim(merra2_struc(n)%dynlapseratesfx)
+     enddo
+
      call ESMF_ConfigFindLabel(LIS_config,"MERRA2 apply double-sided dynamic lapse rate cutoff:",rc=rc)
      do n=1,LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config,merra2_struc(n)%applydynlapseratecutoff,&
                 default=0, rc=rc)
         call LIS_verify(rc,&
-                'MERRA2 apply double-sided dynamic lapse rate cutoff: no defined')
+                'MERRA2 apply double-sided dynamic lapse rate cutoff: not defined')
      enddo
 
      do n=1,LIS_rc%nnest 

@@ -17,6 +17,7 @@
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
 ! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
 ! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
+! 07 Jan 2026: Kristen Whitney, Update dynamic lapse rate code to accept lapse rate inputs over a smaller domain than the forcings
 !
 ! !INTERFACE:
 subroutine read_merra2(n, order, month, findex,  &
@@ -24,7 +25,7 @@ subroutine read_merra2(n, order, month, findex,  &
      lapseratefname,                             &
      merraforc, ferror)
 ! !USES:
-  use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_coreMod,       only : LIS_rc
   use LIS_logMod
   use LIS_FORC_AttributesMod
   use LIS_metforcingMod, only : LIS_forc
@@ -93,15 +94,13 @@ subroutine read_merra2(n, order, month, findex,  &
   
   integer   :: ftn_slv, ftn_flx, ftn_lfo,ftn_rad
   integer   :: tmpId, qId, uId, vId, psId
-  integer   :: prectotId, precconId, swgdnId, lwgabId, emisId
+  integer   :: prectotId, precconId, swgdnId, lwgabId
   integer   :: precsnoId, hlmlID
   integer   :: swlandId, pardrId, pardfId
   integer   :: nr_index, nc_index
   logical   :: file_exists, file_exists1
-  integer   :: c,r,t,k,iret
   integer   :: mo
   logical   :: read_lnd
-
   real      :: tair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: qair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: uwind(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
@@ -110,8 +109,6 @@ subroutine read_merra2(n, order, month, findex,  &
   real      :: prectot(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: precsno(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: preccon(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
-  real      :: prectot_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
-  real      :: preccon_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: swgdn(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: lwgab(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: swland(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
@@ -123,7 +120,16 @@ subroutine read_merra2(n, order, month, findex,  &
   integer                           :: ftn_drate
   integer                           :: lapserateid
   real, allocatable                 :: lapse_rate_in(:,:,:)
+  
+  integer :: nc_sub, nr_sub
+  real, allocatable :: lapse_rate_sub(:,:,:)
+  real, allocatable :: lat_sub(:), lon_sub(:)
+  real, allocatable :: lat_full(:), lon_full(:)
+  integer :: i0, j0
+  integer :: latid, lonid
 
+  external :: interp_merra2_var
+  external :: interp_lapserate_merra2
 !_______________________________________________________________________
 
 #if (defined USE_NETCDF3) 
@@ -224,7 +230,8 @@ subroutine read_merra2(n, order, month, findex,  &
      call interp_merra2_var(n,findex,month,uwind, 5, .false., merraforc)
      call interp_merra2_var(n,findex,month,vwind, 6, .false., merraforc)
      call interp_merra2_var(n,findex,month,ps,    7, .false., merraforc)
-
+     
+     ! Obtain lapse rates
      if ((merra2_struc(n)%usedynlapserate.eq.1).and.                   &
         ((LIS_rc%met_ecor(findex).eq."lapse-rate").or.                 &
          (LIS_rc%met_ecor(findex).eq."lapse-rate and slope-aspect").or.&
@@ -232,23 +239,75 @@ subroutine read_merra2(n, order, month, findex,  &
         inquire(file=trim(lapseratefname),exist=file_exists)
         if (file_exists) then
            write(LIS_logunit,*) 'Reading ',trim(lapseratefname)
-
-           allocate(lapse_rate_in(merra2_struc(n)%ncold,merra2_struc(n)%nrold,24))
-
+           
+           ! open file and get ID for lapse rate
            call LIS_verify(nf90_open(path=trim(lapseratefname),        &
-                    mode=NF90_NOWRITE,ncid=ftn_drate),                 &
-                    'nf90_open failed for '//trim(lapseratefname))
-           call LIS_verify(nf90_inq_varid(ftn_drate,                   &
-                    'lapse_rate',lapserateid),                         &
-                    'nf90_inq_varid failed for lapse_rate')
-           call LIS_verify(nf90_get_var(ftn_drate,                     &
-                    lapserateid,lapse_rate_in),                        &
-                    'nf90_get_var failed for lapse_rate')
-           call LIS_verify(nf90_close(ftn_drate),'nf90_close failed')
+              mode=NF90_NOWRITE,ncid=ftn_drate),                 &
+              'nf90_open failed for '//trim(lapseratefname))
+           call LIS_verify(nf90_inq_varid(ftn_drate,'lapse_rate',lapserateid), &
+              'nf90_inq_varid failed for lapse_rate')
 
-           call interp_lapserate_var(n,order,lapse_rate_in)
+           ! Get subdomain dimensions directly from dimids 2=lat, 3=lon
+           call LIS_verify(nf90_inquire_dimension(ftn_drate,2,len=nr_sub), 'inq lat dim failed (sub)')
+           call LIS_verify(nf90_inquire_dimension(ftn_drate,3,len=nc_sub), 'inq lon dim failed (sub)')
 
+           ! allocate full-size lapse rate
+           allocate(lapse_rate_in(merra2_struc(n)%ncold,merra2_struc(n)%nrold,24))
+           lapse_rate_in = 1.e+15
+           
+           ! Case 1: full global lapse-rate file
+           if (nc_sub == merra2_struc(n)%ncold .and. nr_sub == merra2_struc(n)%nrold) then
+              call LIS_verify(nf90_get_var(ftn_drate,lapserateid,lapse_rate_in), 'get lapse_rate failed')
+           
+           ! Case 2: subdomain lapse-rate file
+           else if (nc_sub <= merra2_struc(n)%ncold .and. nr_sub <= merra2_struc(n)%nrold) then
+              allocate(lapse_rate_sub(nc_sub,nr_sub,24))
+              allocate(lat_sub(nr_sub), lon_sub(nc_sub))
+              allocate(lat_full(merra2_struc(n)%nrold), lon_full(merra2_struc(n)%ncold))
+
+              ! Read subdomain values
+              call LIS_verify(nf90_get_var(ftn_drate,lapserateid,lapse_rate_sub), 'get lapse_rate_sub failed')
+              call LIS_verify(nf90_inq_varid(ftn_drate,'lat',latid),'inq lat varid failed')
+              call LIS_verify(nf90_inq_varid(ftn_drate,'lon',lonid),'inq lon varid failed')
+              call LIS_verify(nf90_get_var(ftn_drate,latid,lat_sub),'get lat_sub failed')
+              call LIS_verify(nf90_get_var(ftn_drate,lonid,lon_sub),'get lon_sub failed')
+
+              ! Read full-domain coordinates from slv file
+              call LIS_verify(nf90_open(path=trim(slvname), mode=NF90_NOWRITE, ncid=ftn_slv), &
+                              'nf90_open failed for slvfile in read_merra2')
+              call LIS_verify(nf90_inq_varid(ftn_slv,'lat',latid),'inq lat varid failed (full)')
+              call LIS_verify(nf90_inq_varid(ftn_slv,'lon',lonid),'inq lon varid failed (full)')
+              call LIS_verify(nf90_get_var(ftn_slv,latid,lat_full),'get lat_full failed')
+              call LIS_verify(nf90_get_var(ftn_slv,lonid,lon_full),'get lon_full failed')
+              call LIS_verify(nf90_close(ftn_slv),'failed to close slvfile in read_merra2')
+
+              ! Find paste offsets
+              call find_index(lon_full, lon_sub(1), i0)
+              call find_index(lat_full, lat_sub(1), j0)
+
+              ! Time consistency check
+              if (size(lapse_rate_sub,3) /= size(lapse_rate_in,3)) then
+                 write(LIS_logunit,*) '[ERR] Time dimension mismatch between sub and full lapse_rate'
+                 call LIS_endrun()
+              end if
+
+              ! Paste subdomain into full-domain buffer
+              lapse_rate_in(i0:i0+nc_sub-1, j0:j0+nr_sub-1, :) = lapse_rate_sub(:,:,:)
+
+              ! Cleanup
+              deallocate(lapse_rate_sub, lat_sub, lon_sub, lat_full, lon_full)
+
+           !  Case 3: unexpected
+           else
+              write(LIS_logunit,*) '[ERR] Unexpected lapse-rate dims: ', nc_sub, ' x ', nr_sub
+              call LIS_endrun()
+           end if
+           
+           call LIS_verify(nf90_close(ftn_drate),'close lapse-rate file failed')
+           call interp_lapserate_merra2(n,order,lapse_rate_in)
+           
            deallocate(lapse_rate_in)
+           
         else
            write(LIS_logunit,*) '[WARN] Could not find ',trim(lapseratefname)
            write(LIS_logunit,*) '[WARN] Using static lapse rate.'
@@ -449,6 +508,20 @@ subroutine read_merra2(n, order, month, findex,  &
   endif
   
 #endif
+contains
+subroutine find_index(x,val,idx)
+  real, intent(in) :: x(:), val
+  integer, intent(out) :: idx
+  real :: dmin
+  integer :: k
+  dmin = huge(1.0); idx = -1
+  do k=1,size(x)
+     if (abs(x(k)-val) < dmin) then
+        dmin = abs(x(k)-val)
+        idx = k
+     end if
+  enddo
+end subroutine find_index
 end subroutine read_merra2
 
 !BOP
@@ -488,7 +561,6 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
 !EOP
 
   integer   :: t,c,r,k,iret
-  integer   :: doy
   integer   :: ftn
   integer   :: pcp1Id, pcp2Id, pcp3Id, pcp4Id,pcp5Id, pcp6Id
   real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
@@ -496,6 +568,12 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   logical   :: scal_read_flag
+
+  external :: rescaleWithCDFmatching
+  external :: conserv_interp
+  external :: bilinear_interp
+  external :: neighbor_interp
+
 ! _____________________________________________________________
 
   input_size = merra2_struc(n)%ncold*merra2_struc(n)%nrold
@@ -647,7 +725,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
         call LIS_endrun()
      endif
 
-!Interpolate the refmean fields
+     !Interpolate the refmean fields
      if( pcp_flag .and. scal_read_flag.and. &
           merra2_struc(n)%usescalef==1.and. &
           merra2_struc(n)%usepcpsampling.eq.1) then 
@@ -698,7 +776,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
         endif
      endif
 
-!Interpolate the refstdev fields
+     !Interpolate the refstdev fields
      if( pcp_flag .and. scal_read_flag.and. &
           merra2_struc(n)%usescalef==1.and. &
           merra2_struc(n)%usepcpsampling.eq.1) then 
@@ -762,11 +840,11 @@ end subroutine interp_merra2_var
 
 !BOP
 ! 
-! !ROUTINE: interp_lapserate_var
-! \label{interp_lapserate_var}
+! !ROUTINE: interp_lapserate_merra2
+! \label{interp_lapserate_merra2}
 ! 
 ! !INTERFACE: 
-subroutine interp_lapserate_var(n,order,input_var)
+subroutine interp_lapserate_merra2(n,order,input_var)
 
 ! !USES: 
   use LIS_coreMod
@@ -792,14 +870,15 @@ subroutine interp_lapserate_var(n,order,input_var)
 !EOP
 
   integer   :: t,c,r,k,iret
-  integer   :: doy
-  integer   :: ftn,gid
+  integer   :: gid
   real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
   logical*1 :: lb(merra2_struc(n)%ncold*merra2_struc(n)%nrold)
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   real      :: output_var(LIS_rc%lnc(n)*LIS_rc%lnr(n),24)
 
+  external :: bilinear_interp
+  
 ! _____________________________________________________________
 
   input_size = merra2_struc(n)%ncold*merra2_struc(n)%nrold
@@ -859,7 +938,7 @@ subroutine interp_lapserate_var(n,order,input_var)
      endif
   enddo
 
-end subroutine interp_lapserate_var
+end subroutine interp_lapserate_merra2
 
 #if 0 
 !BOP
@@ -993,7 +1072,6 @@ end subroutine interp_lapserate_var
 
     integer              :: c,r,i
     integer              :: binval
-    integer              :: col,row
     real                 :: cdf_merraval
     real                 :: merra_tmp, merra_in
     integer,dimension(1) :: index_25 , index_75
