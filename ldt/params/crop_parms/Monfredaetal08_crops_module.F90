@@ -175,8 +175,6 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
       call readMonfredaCropfiles( n, tempfile, subpnc, subpnr, subparam_gridDesc, &
                                   lat_line, lon_line, croptype_frac(:,:,i) )
 
-!      print *, "Monfreda crops:: ",i, croptype_frac(218,128,i)
-
    end do    ! End Crop Type File Read
 
 
@@ -220,7 +218,6 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
                 endif
              enddo
           enddo
-!          print *, "Monfreda crops:: ",i, croptype_frac(218,128,i)
           exit   ! Exit main croptype loop when "others" reached
         endif    
      enddo       ! End i - "others" crop loop
@@ -373,10 +370,10 @@ subroutine readMonfredaCropfiles( n, tempfile, subpnc, subpnr, subparam_gridDesc
           enddo
 
      case default
-       write(*,*)"[WARN] Other spatial grid transformations are not currently supported"
-       write(*,*)"   for the tiled 'Monfredaetal08' crop type maps. Please select either:"
-       write(*,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
-       write(*,*)"  -- average (to upscale)"
+       write(LDT_logunit,*)"[WARN] Other spatial grid transformations are not currently supported"
+       write(LDT_logunit,*)"   for the tiled 'Monfredaetal08' crop type maps. Please select either:"
+       write(LDT_logunit,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
+       write(LDT_logunit,*)"  -- average (to upscale)"
        call LDT_endrun
 
     end select  ! End vegtype/cnt aggregation method

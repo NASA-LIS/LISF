@@ -152,7 +152,7 @@
     if( .not.gdalassociated(ds) ) then
        write(LDT_logunit,*) "[ERR] Opening dataset file, ",&       
             trim(LDT_irrig_struc(n)%irrigfracfile),", failed ..."
-       stop
+       call LDT_endrun()
     end if
 
     ierr = gdalgetgeotransform(ds, gt)
@@ -165,19 +165,17 @@
 
     band = gdalgetrasterband(ds, 1)
     if (.NOT.gdalassociated(band)) THEN
-       write(*,*) '[ERR] Failed getting raster band from TIF dataset on file,',&
+       write(LDT_logunit,*) '[ERR] Failed getting raster band from TIF dataset on file,',&
              trim(LDT_irrig_struc(n)%irrigfracfile)
        call LDT_endrun()
-       stop
     endif
     
     allocate(zval(xsize, ysize))
     ierr = gdalrasterio_f(band, GF_Read, 0, 0, zval)
     if (ierr /= 0) THEN
-       write(*,*) '[ERR] Reading data from TIF dataset on file, ', &
+       write(LDT_logunit,*) '[ERR] Reading data from TIF dataset on file, ', &
                    trim(LDT_irrig_struc(n)%irrigfracfile)
        call LDT_endrun()
-       stop
     endif
     call gdalclose(ds)
 
@@ -216,7 +214,6 @@
    call LDT_RunDomainPts( n, LDT_irrig_struc(n)%irrig_proj, param_gridDesc(:), &
            glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
 
-!   print*,'glpnc,glpnr,subpnc,subpnr:',glpnc, glpnr, subpnc, subpnr
 ! _________
    allocate( var_in(subpnc,subpnr) )
    var_in = LDT_rc%udef
@@ -225,7 +222,6 @@
           param_gridDesc(9)) + 1
    y_offset = nint((subparam_gridDesc(4)-param_gridDesc(4))/&
           param_gridDesc(10)) + 1
-!   print*,'x_offset,y_offset:',x_offset,y_offset
 
    var_in = zval2(x_offset:x_offset+subpnc-1, y_offset:y_offset+subpnr-1)
           
@@ -294,8 +290,6 @@
 
        ! Calculate gridpoint GIA pixel total:
          isum = real ( DC * DR )
-!         write(500,*) nc,nr, isum, irrigfrac_cnt(nc,nr,2),irrigfrac_cnt(nc,nr,3)
-
        ! Estimate 2-D fraction for just irrigation:
          if( isum > 0. ) then
             irrigfrac(nc,nr) = (irrigfrac_cnt(nc,nr) / isum) * 100.   

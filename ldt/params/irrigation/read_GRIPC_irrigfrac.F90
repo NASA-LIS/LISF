@@ -238,7 +238,6 @@
 
        ! Calculate gridpoint column total:
          isum = sum(irrigfrac_cnt(nc,nr,1:num_bins))
-!         write(500,*) nc,nr, isum, irrigfrac_cnt(nc,nr,2),irrigfrac_cnt(nc,nr,3)
 
        ! Estimate 2-D fraction for just irrigation:
          if( isum > 0. ) then

@@ -218,7 +218,7 @@
    ncstatus = nf90_inq_dimid(ncid,"n_countyUS",uscountyid)
    ncstatus = nf90_inquire_dimension(ncid,uscountyid,len=n_countyUS)
    if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] failed inqure dimension for n_countyUS"
-   print*, "county data dimensions: ",county, states, n_countyUS
+   write(LDT_logunit,*) "county data dimensions: ",county, states, n_countyUS
    allocate(sprinklerfr(county,states))
    allocate(dripfr(county,states))
    allocate(floodfr(county,states))
@@ -329,8 +329,6 @@
    subparam_gridDesc = 0.
    call LDT_RunDomainPts( n, LDT_irrig_struc(n)%irrig_proj, param_gridDesc(:), &
             glpnc, glpnr, subpnc, subpnr, subparam_gridDesc, lat_line, lon_line )
-!   print*,'AQUASTAT:',glpnc, glpnr, subpnc, subpnr, LDT_rc%lnc(n), LDT_rc%lnr(n)
-!   print*,'subparam_gridDesc:',subparam_gridDesc
 ! _________
    allocate( var_in(subpnc,subpnr,3) )
    var_in = float(noncrop)

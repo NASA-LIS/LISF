@@ -450,7 +450,6 @@ contains
                trim(LDT_irrig_struc(n)%irrigfrac%source)//char(0),&
                n,LDT_irrig_struc(n)%irrigfrac%value(:,:,1))
 
-!       print *, "checking mask values for:", LDT_irrig_struc(n)%irrigfrac%short_name
 !       param_waterval = 0.   !<-- CONUS map with lots of 0's ... can't work properly because of 0
 !       fill_option = "average"
 !       fill_value = 10.

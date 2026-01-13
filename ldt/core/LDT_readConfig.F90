@@ -139,10 +139,10 @@ subroutine LDT_readConfig(configfile)
         LDT_rc%sf_model_type_name_select(k) .eq. "Glacier" .or. &
         LDT_rc%sf_model_type_name_select(k) .eq. "Openwater" ) then
     else
-      write(*,*) "[ERR] Only 'LSM', 'Lake', 'Glacier' or 'Openwater' surface "
-      write(*,*) "    model type options are currently available. Please"
-      write(*,*) "    select one of these options for now."
-      write(*,*) "Stopping LDT run ..."
+      write(LDT_logunit,*) "[ERR] Only 'LSM', 'Lake', 'Glacier' or 'Openwater' surface "
+      write(LDT_logunit,*) "    model type options are currently available. Please"
+      write(LDT_logunit,*) "    select one of these options for now."
+      write(LDT_logunit,*) "Stopping LDT run ..."
       call LDT_endrun
     endif
   enddo
@@ -345,8 +345,6 @@ subroutine LDT_readConfig(configfile)
 
         endif
      end do
-!     do i = 1, LDT_rc%nmetforc; print *, i, LDT_rc%metforc(i); enddo
-!     do i = 1, LDT_rc%nmetforc_parms; print *, i, LDT_rc%metforc_parms(i); enddo
 
    ! Read in entries for metforcing processing only:
      LDT_rc%met_zterp = .false.

@@ -80,7 +80,7 @@ subroutine read_UMDCROPMAP_croptype(n, num_types, fgrd)
 
 !__________________________________________________________________
 
-   print *, " Number of CROPMAP types: ",num_types
+   write(LDT_logunit,*) " Number of CROPMAP types: ",num_types
 
    water_class  = 33
 
@@ -139,10 +139,10 @@ subroutine read_UMDCROPMAP_croptype(n, num_types, fgrd)
 
    if( file_dim == 3 .and. LDT_LSMCrop_struc(n)%crop_gridtransform == "mode" ) then  
      if( subparam_gridDesc(9) .ne. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n)) ) then
-       write(*,*) "[WARN] IF 3-D TILED CROP MAP DOES NOT HAVE THE SAME RESOLUTION "
-       write(*,*) "  AS THE LIS RUN-DOMAIN, THEN 'MODE' OPTION CANNOT BE SELECTED,"
-       write(*,*) "  OR YOU NEED TO SELECT 'TILE' AS YOUR OPTION."
-       write(*,*) " Stopping ..."
+       write(LDT_logunit,*) "[WARN] IF 3-D TILED CROP MAP DOES NOT HAVE THE SAME RESOLUTION "
+       write(LDT_logunit,*) "  AS THE LIS RUN-DOMAIN, THEN 'MODE' OPTION CANNOT BE SELECTED,"
+       write(LDT_logunit,*) "  OR YOU NEED TO SELECT 'TILE' AS YOUR OPTION."
+       write(LDT_logunit,*) " Stopping ..."
        call LDT_endrun
      endif
    endif
@@ -225,11 +225,10 @@ subroutine read_UMDCROPMAP_croptype(n, num_types, fgrd)
 
 !     case( "tile" )
      case default
-       write(*,*) "[WARN] Other spatial grid transformations are not currently supported  "
-       write(*,*) "  for the tiled UMD-CROPLAND landcover/crop map type.  Please select either:"
-!       write(*,*) "  -- Mode or Tile "
-       write(*,*) "  -- Mode "
-       write(*,*) " Stopping ..."
+       write(LDT_logunit,*) "[WARN] Other spatial grid transformations are not currently supported  "
+       write(LDT_logunit,*) "  for the tiled UMD-CROPLAND landcover/crop map type.  Please select either:"
+       write(LDT_logunit,*) "  -- Mode "
+       write(LDT_logunit,*) " Stopping ..."
        call LDT_endrun
    end select  ! End vegtype/cnt aggregation method
    deallocate( gi, li )

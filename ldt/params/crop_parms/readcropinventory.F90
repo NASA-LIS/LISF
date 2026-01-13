@@ -86,10 +86,9 @@ subroutine readcropinventory( nest, crop_classification, &
 !- Read crop inventory file:
    read(ftn,fmt=*) header1
    do i = 1, num_types
-      read(ftn,fmt=*) k, crop_array(i), read_fullname 
-!      print *, "croptype :: ",i,k, crop_array(k)
+      read(ftn,fmt=*) k, crop_array(i), read_fullname
    end do
-   
+
    call LDT_releaseUnitNumber(ftn)
 
 end subroutine readcropinventory

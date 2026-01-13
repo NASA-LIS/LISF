@@ -676,13 +676,11 @@ contains
                        ! Both croptypes and veg-crop class present:
                        elseif( croptypes_sumfrac > 0. .and. vegtype_cropfrac1 > 0. ) then
                          ratio = vegtype_cropfrac1 / croptypes_sumfrac 
-!                         write(500,*) c, r, croptypes_sumfrac, vegtype_cropfrac1, ratio
                          do i = 1, LDT_rc%numcrop(n)                  
                             if( LDT_LSMCrop_struc(n)%croptype%value(c,r,i).ne.LDT_rc%udef ) then
                                fractemp = LDT_LSMCrop_struc(n)%croptype%value(c,r,i)
                                LDT_LSMCrop_struc(n)%croptype%value(c,r,i) = &
                                    LDT_LSMCrop_struc(n)%croptype%value(c,r,i) * ratio
-!                               write(501,*) c, r, i, LDT_LSMCrop_struc(n)%croptype%value(c,r,i), fractemp
                             endif
                          enddo
                          LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%cropclass1) = 0.
@@ -726,7 +724,6 @@ contains
 !                           croptypes_sumfrac = sum(LDT_LSMparam_struc(n)%landcover%value(c,r,:), &
 !                                     mask=LDT_LSMparam_struc(n)%landcover%value(c,r,:).ne.LDT_rc%udef)
 !                           if( croptypes_sumfrac > 1.05 .or. croptypes_sumfrac < 0.95 ) then
-!                              write(503,*) c,r,croptypes_sumfrac
 !                           endif
                          enddo
                        endif
@@ -786,8 +783,8 @@ contains
                    call assigncroptype( n, LDT_rc%crop_classification(n),   &
                         LDT_rc%numcrop(n), croptemp, crop_index ) ! default - most common crop
 
-                   print *, "Crop_index:: ",crop_index
-                   print *, " Crop class 1 and 2 :: ",LDT_rc%cropclass1, LDT_rc%cropclass2
+                   write(LDT_logunit,*) "Crop_index:: ",crop_index
+                   write(LDT_logunit,*) " Crop class 1 and 2 :: ",LDT_rc%cropclass1, LDT_rc%cropclass2
 
                 !  Like in Ozdogan et al (2010):
                    do r = 1, LDT_rc%lnr(n)

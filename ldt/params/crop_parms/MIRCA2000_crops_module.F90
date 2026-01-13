@@ -539,11 +539,11 @@ end subroutine read_MIRCA2000_croptype
       deallocate(gi1p, li1p)
 
      case default
-       write(*,*)"[ERR] Other spatial grid transformations are not currently supported"
-       write(*,*)"   for the tiled 'MIRCA2000' crop type maps. Please select either:"
-       write(*,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
-       write(*,*)"  -- average (to upscale) or none"
-       write(*,*)" Stopping program ..."
+       write(LDT_logunit,*)"[ERR] Other spatial grid transformations are not currently supported"
+       write(LDT_logunit,*)"   for the tiled 'MIRCA2000' crop type maps. Please select either:"
+       write(LDT_logunit,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
+       write(LDT_logunit,*)"  -- average (to upscale) or none"
+       write(LDT_logunit,*)" Stopping program ..."
        call LDT_endrun
 
     end select  ! End vegtype/cnt aggregation method
@@ -615,8 +615,6 @@ end subroutine read_MIRCA2000_croptype
           day1_2 = 998
           dayL_2 = 998
 
-         ! print '(a20, 2i4)', 'INPUT nc=12 : at ',c,r
-         ! print *, '..................................'
          else
 
           fmonth  = 0
@@ -627,8 +625,6 @@ end subroutine read_MIRCA2000_croptype
           dayL_2 = 998
 
           forall (m=1:12) fmonth(m) = ceiling (var_out (c,r,m))
-         ! print '(a15, 12i2, a4, 2i4)', 'INPUT fmonth : ',  fmonth, ' at ',c,r
-         ! print *, '..................................'
 
           fmonth2(1) = 1
           do m = 2,12
@@ -731,7 +727,6 @@ end subroutine read_MIRCA2000_croptype
        plantday(c,r,2) = float(day1_2)
        harvestday(c,r,1) = float(dayL)
        harvestday(c,r,2) = float(dayL_2)
-       !print  '(a18, 4i4)', 'Plant & Harvest : ', day1, dayL, day1_2, dayL_2
 
        endif  ! nc > 0
      endif  ! var_in > 0
@@ -949,11 +944,11 @@ end subroutine read_MIRCA2000_croptype
       deallocate(gi1p, li1p)
 
      case default
-       write(*,*)"[ERR] Other spatial grid transformations are not currently supported"
-       write(*,*)"   for the tiled 'MIRCA2000' crop type maps. Please select either:"
-       write(*,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
-       write(*,*)"  -- average (to upscale) or none"
-       write(*,*)" Stopping program ..."
+       write(LDT_logunit,*)"[ERR] Other spatial grid transformations are not currently supported"
+       write(LDT_logunit,*)"   for the tiled 'MIRCA2000' crop type maps. Please select either:"
+       write(LDT_logunit,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
+       write(LDT_logunit,*)"  -- average (to upscale) or none"
+       write(LDT_logunit,*)" Stopping program ..."
        call LDT_endrun
 
     end select  ! End vegtype/cnt aggregation method

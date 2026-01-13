@@ -21,13 +21,13 @@ subroutine set_irrigation_attribs( n, source )
 
 ! !USES:
   use LDT_irrigationMod
-
+  use LDT_logMod, only: LDT_logunit, LDT_endrun
   implicit none
 
   integer,         intent(in) :: n
   character(len=*),intent(in) :: source
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
 
 ! !DESCRIPTION:
 !
@@ -38,7 +38,7 @@ subroutine set_irrigation_attribs( n, source )
 !   \item[source]
 !     Irrigation dataset source
 !   \end{description}
-!EOP      
+!EOP
 !
    select case( source )
 
@@ -53,11 +53,10 @@ subroutine set_irrigation_attribs( n, source )
       LDT_irrig_struc(n)%irrigtype%num_times = 1
 
     case default
-      print *, "[ERR] Irrigation type source not recognized: ",trim(source)
-      print *, " Please select:   GRIPC or AQUASTAT"
-      print *, " Program stopping ..."
-      stop
-!      call LDT_endrun
+      write(LDT_logunit,*) "[ERR] Irrigation type source not recognized: ",trim(source)
+      write(LDT_logunit,*) " Please select:   GRIPC or AQUASTAT"
+      write(LDT_logunit,*) " Program stopping ..."
+      call LDT_endrun()
 
    end select
 

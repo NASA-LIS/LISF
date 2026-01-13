@@ -108,9 +108,9 @@ subroutine setCropParmsFullnames(n,datatype,source)
       end select
 
     case default
-      print *, "[ERR] Crop data type not recognized: ",trim(source)
-      print *, " Program stopping ..."
-      stop
+      write(LDT_logunit,*) "[ERR] Crop data type not recognized: ",trim(source)
+      write(LDT_logunit,*) " Program stopping ..."
+      call LDT_endrun()
    end select
 
 

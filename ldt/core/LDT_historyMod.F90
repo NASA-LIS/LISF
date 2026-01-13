@@ -2357,7 +2357,6 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
       enddo
      enddo
       if(LDT_masterproc) then 
-!         print*, 'writing att ',trim(paramEntry%short_name), LDT_localPet
          count =1 
          do l=1,LDT_npes
             do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
@@ -2446,7 +2445,6 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
       enddo
      enddo
       if(LDT_masterproc) then 
-!         print*, 'writing att ',trim(paramEntry%short_name), LDT_localPet
          count =1 
          do l=1,LDT_npes
             do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
@@ -2536,7 +2534,6 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
       enddo
      enddo
       if(LDT_masterproc) then 
-!         print*, 'writing att ',trim(paramEntry%short_name), LDT_localPet
          count =1 
          do l=1,LDT_npes
             do r=LDT_nss_ind(n,l), LDT_nse_ind(n,l)
@@ -2740,9 +2737,9 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
     if(LDT_rc%lis_wopt.eq.1) then 
        
-       write(*,*) '[ERR] Reading in tile space format is not yet supported'
-       write(*,*) '[ERR] program stopping ...'
-       stop
+       write(LDT_logunit,*) '[ERR] Reading in tile space format is not yet supported'
+       write(LDT_logunit,*) '[ERR] program stopping ...'
+       call LDT_endrun()
        
     elseif(LDT_rc%lis_wopt.eq.2) then 
        
@@ -2838,9 +2835,9 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
     if(LDT_rc%lis_wopt.eq.1) then 
        
-       write(*,*) '[ERR] Reading in tile space format is not yet supported'
-       write(*,*) '[ERR] program stopping ...'
-       stop
+       write(LDT_logunit,*) '[ERR] Reading in tile space format is not yet supported'
+       write(LDT_logunit,*) '[ERR] program stopping ...'
+       call LDT_endrun()
        
     elseif(LDT_rc%lis_wopt.eq.2) then 
        
@@ -2939,9 +2936,9 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
     if(LDT_rc%lis_wopt.eq.1) then 
        
-       write(*,*) '[ERR] Reading in tile space format is not yet supported'
-       write(*,*) '[ERR] program stopping ...'
-       stop
+       write(LDT_logunit,*) '[ERR] Reading in tile space format is not yet supported'
+       write(LDT_logunit,*) '[ERR] program stopping ...'
+       call LDT_endrun()
        
     elseif(LDT_rc%lis_wopt.eq.2) then 
        
@@ -2958,9 +2955,9 @@ subroutine gather_gridded_vector_output(n, gtmp, var)
        
     elseif(LDT_rc%lis_wopt.eq.3) then 
        
-       write(*,*) '[ERR] Reading in 1d grid space format is not yet supported'
-       write(*,*) '[ERR] program stopping ...'
-       stop
+       write(LDT_logunit,*) '[ERR] Reading in 1d grid space format is not yet supported'
+       write(LDT_logunit,*) '[ERR] program stopping ...'
+       call LDT_endrun()
     endif
     
 #endif

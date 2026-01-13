@@ -761,7 +761,6 @@ contains
 
     ! _____________________LU_INDEX_____________________________
        nlctypes= LDT_LSMparam_struc(n)%landcover%num_bins  !size(landcover,3)
-       !print*, "nlctypes:", nlctypes
        allocate(luindex(LDT_rc%lnc(n),LDT_rc%lnr(n)))
        allocate(landcover1(LDT_rc%lnc(n),LDT_rc%lnr(n),nlctypes))
        landcover1 = LDT_LSMparam_struc(n)%landcover%value
@@ -1228,7 +1227,6 @@ contains
 
     nr=size(LDT_LSMparam_struc(n)%luindex%value,1)
     nc=size(LDT_LSMparam_struc(n)%luindex%value,2)
-    !print *, "nr and nc", nr, nc
     call LDT_verify(nf90_put_var(ftn,&
             LDT_LSMparam_struc(n)%luindexId, LDT_LSMparam_struc(n)%luindex%value(:,:,1),&
             (/1,1/),(/nr, nc/)),&

@@ -492,9 +492,7 @@ contains
           call LDT_verify(rc,"Landcover data source: not defined")
           call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%landcover,&
                "LANDCOVER",source)
-!          print *, "LANDCOVER (LDT_set_param_attribs):", LDT_LSMparam_struc(n)%landcover%num_bins 
           call setLandcoverCategories(n,source)
-!          print *, "LANDCOVER (setLandcoverCategories):", LDT_LSMparam_struc(n)%landcover%num_bins 
         ! Note: Landcover source/classification options will be merged 
         !        and new options to be specified in future LDT versions.
        endif
@@ -530,9 +528,9 @@ contains
              case( "Bondville" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case default
-               print *, "[ERR] CONSTANT Landcover classification not recognized."
-               print *, "  Options:  UMD, IGBPNCEP, IGBP, USGS, MOSAIC, ISA "
-               print *, " Stopping ..."
+               write(LDT_logunit,*) "[ERR] CONSTANT Landcover classification not recognized."
+               write(LDT_logunit,*) "  Options:  UMD, IGBPNCEP, IGBP, USGS, MOSAIC, ISA "
+               write(LDT_logunit,*) " Stopping ..."
                call LDT_endrun
             end select
           else
@@ -584,9 +582,7 @@ contains
        enddo
        ! Determine number of crop types for classification specified:
        do n=1,LDT_rc%nnest
-!          print *, "Crop types:",LDT_rc%numcrop(n),"; for: ",LDT_rc%crop_classification(n) 
           call setCropClassCategories(n,LDT_rc%crop_classification(n))
-!          print *, "Crop types:",LDT_rc%numcrop(n),"; for: ",LDT_rc%crop_classification(n) 
           write(LDT_logunit,*) "[INFO]  Number of crop types for, ", &
                trim(LDT_rc%crop_classification(n)),", is :: ",LDT_rc%numcrop(n)
           ! 
@@ -596,7 +592,7 @@ contains
               LDT_rc%crop_classification(n) == "CROPMAP" ) then
                write(LDT_logunit,*) "[ERR] CROPMAP CLASSIFICATION ONLY WORKS ",&
                     " WITH UMD LAND CLASSIFICATION (13-land classes)."
-               write(*,*) "  Stopping ..."
+               write(LDT_logunit,*) "  Stopping ..."
                call LDT_endrun 
           endif
        enddo
@@ -617,7 +613,7 @@ contains
         index(LDT_rc%lsm,"SACHTET") == 1 ) then
       if( rc /= 0 ) then
          call LDT_warning(rc,"WARNING: Soil texture data source: not defined")
-         print *, "WARNING: Soil texture data source: not defined"
+         write(LDT_logunit,*) "WARNING: Soil texture data source: not defined"
       endif
     endif
 
@@ -764,7 +760,6 @@ contains
 !        !        and new options to be specified in future LDT versions.
        endif
     enddo
-!    print *, "LANDUSEF", source
   ! CONSTANT LC Option: Read in associated landcover classification type: 
     const_lc = .false.
     do n=1,LDT_rc%nnest
@@ -790,9 +785,9 @@ contains
              case( "ISA" )
                LDT_LSMparam_struc(n)%landcover%num_bins = 13
              case default
-               print *, "[ERR] CONSTANT Landcover classification not recognized."
-               print *, "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
-               print *, " Stopping ..."
+               write(LDT_logunit,*) "[ERR] CONSTANT Landcover classification not recognized."
+               write(LDT_logunit,*) "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
+               write(LDT_logunit,*) " Stopping ..."
                call LDT_endrun
             end select
           else
@@ -847,7 +842,7 @@ contains
         index(LDT_rc%lsm,"SACHTET") == 1 ) then
       if( rc /= 0 ) then
          call LDT_warning(rc,"WARNING: Soil texture data source: not defined")
-         print *, "WARNING: Soil texture data source: not defined"
+         write(LDT_logunit,*) "WARNING: Soil texture data source: not defined"
       endif
     endif
 
@@ -2207,7 +2202,6 @@ contains
        call LDT_verify(nf90_close(LDT_LSMparam_struc(n)%param_file_ftn))
     endif
 #endif    
-!    print*, 'reached finalize ', LDT_localPet
 #if ( defined SPMD )
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -2415,10 +2409,10 @@ contains
        LDT_LSMparam_struc(n)%lakecover%standard_name = &
             "(FLake) GLDB lake fraction map"
      case default
-       print*, "The Lake Cover Type, ",trim(source),", is not known. "
-       print*, "[ERR] Please define setLakecoverCategories" 
-       print*, "Stopping ..."
-       stop
+       write(LDT_logunit,*) "The Lake Cover Type, ",trim(source),", is not known. "
+       write(LDT_logunit,*) "[ERR] Please define setLakecoverCategories" 
+       write(LDT_logunit,*) "Stopping ..."
+       call LDT_endrun()
     end select
 
   end subroutine setLakecoverCategories
@@ -2433,10 +2427,10 @@ contains
        LDT_LSMparam_struc(n)%glaciermask%standard_name = &
             "GLIMS glacier mask map"
      case default
-       print*, "The glaciermask source ",trim(source),", is not known. "
-       print*, "Please define setGlaciermaskCategories" 
-       print*, "Stopping ..."
-       stop
+       write(LDT_logunit,*) "The glaciermask source ",trim(source),", is not known. "
+       write(LDT_logunit,*) "Please define setGlaciermaskCategories" 
+       write(LDT_logunit,*) "Stopping ..."
+       call LDT_endrun()
     end select
 
   end subroutine setGlaciermaskCategories
@@ -2482,8 +2476,8 @@ contains
             "Special soil texture map"
 
        else
-          print*, 'Please define setTextureCategories for '//trim(source)
-          stop
+          write(LDT_logunit,*) 'Please define setTextureCategories for '//trim(source)
+          call LDT_endrun()
        endif
     endif
   end subroutine setTextureCategories
@@ -2584,9 +2578,9 @@ contains
         LDT_LSMparam_struc(n)%landcover%standard_name = &
             "'CONSTANT' landcover field"
      case default
-       print*, 'Please define setLandcoverCategories '
-       print*, ' Stopping ... '
-       stop
+       write(LDT_logunit,*) 'Please define setLandcoverCategories '
+       write(LDT_logunit,*) ' Stopping ... '
+       call LDT_endrun()
     end select
 
   end subroutine setLandcoverCategories
@@ -2615,14 +2609,14 @@ contains
      case default
        write(LDT_logunit,*) "[ERR] THE CROP CLASSIFICATION TYPE, ",&
              trim(source),", IS NOT RECOGNIZED."
-       write(*,*) "  Please enter one of the following options: "
-       write(*,*) "   -- CROPMAP   "
-       write(*,*) "   -- FAOSTAT01 "
-       write(*,*) "   -- FAOSTAT05 "
-       write(*,*) "   -- MIRCA "
-       write(*,*) "   -- MIRCA52 "
-       write(*,*) "  Stopping ..."
-       stop
+       write(LDT_logunit,*) "  Please enter one of the following options: "
+       write(LDT_logunit,*) "   -- CROPMAP   "
+       write(LDT_logunit,*) "   -- FAOSTAT01 "
+       write(LDT_logunit,*) "   -- FAOSTAT05 "
+       write(LDT_logunit,*) "   -- MIRCA "
+       write(LDT_logunit,*) "   -- MIRCA52 "
+       write(LDT_logunit,*) "  Stopping ..."
+       call LDT_endrun()
 
     end select
 
