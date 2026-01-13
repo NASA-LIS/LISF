@@ -19,7 +19,7 @@
 ! !INTERFACE:
 subroutine LDT_readConfig(configfile)
 
-! !USES:
+  ! !USES:
   use ESMF
   use LDT_constantsMod,    only : LDT_CONST_PATH_LEN
   use LDT_coreMod,         only : LDT_rc, LDT_config, LDT_localPet, LDT_npes
@@ -32,15 +32,15 @@ subroutine LDT_readConfig(configfile)
   use LDT_metforcScale_pluginMod
   use LDT_pluginIndices
 
-!
-! !DESCRIPTION:
-!
-!  The code in this file initializes the LDT configuration management utility.
-!  The runtime specifications of a LDT simulation
-!  are read by this routine.
-!EOP
+  !
+  ! !DESCRIPTION:
+  !
+  !  The code in this file initializes the LDT configuration management utility.
+  !  The runtime specifications of a LDT simulation
+  !  are read by this routine.
+  !EOP
   implicit none
-  
+
   character(len=*), intent(in) :: configfile
 
   integer        :: rc
@@ -54,7 +54,7 @@ subroutine LDT_readConfig(configfile)
   character(len=LDT_CONST_PATH_LEN) :: diag_dir
   integer, external :: LDT_create_subdirs
 
-!____________________________________________________________
+  !____________________________________________________________
 
   LDT_config = ESMF_ConfigCreate(rc=rc)
   call LDT_verify(rc,'problem in creating LDT_config object')
@@ -62,18 +62,18 @@ subroutine LDT_readConfig(configfile)
   call ESMF_ConfigLoadFile(LDT_config,trim(configfile),rc=rc)
   call LDT_verify(rc,'problem in loading ldt.config')
 
-!== Read in common LDT config inputs: ==
+  !== Read in common LDT config inputs: ==
 
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%runmode,&
        label="LDT running mode:",rc=rc)
   call LDT_verify(rc,'LDT running mode: option not specified in the config file')
 
-! Read in and Set LDT run-time log-diagnostic filename path:
+  ! Read in and Set LDT run-time log-diagnostic filename path:
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%diagfile,&
        label="LDT diagnostic file:",rc=rc)
   call LDT_verify(rc,'LDT diagnostic file: not defined')
 
-! Make the diagnostic file directory names/path:
+  ! Make the diagnostic file directory names/path:
   diag_fname = LDT_rc%diagfile
   final_dirpos = scan(diag_fname, "/", BACK = .TRUE.)
   if(final_dirpos.ne.0) then
@@ -87,15 +87,15 @@ subroutine LDT_readConfig(configfile)
   LDT_rc%diagfile = trim(LDT_rc%diagfile)//"."//fproc(1)//fproc(2)//fproc(3)//fproc(4)
   open(unit=LDT_logunit,file=trim(LDT_rc%diagfile))
 
-! ---
+  ! ---
 
-! Read in Mask-Parameter Fill diagnostic filepath name:
+  ! Read in Mask-Parameter Fill diagnostic filepath name:
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%mpfillfile,&
        label="Mask-parameter fill diagnostic file:", &
        default="MaskParamFill.log",rc=rc)
   call LDT_verify(rc,'Mask-parameter fill diagnostic file: not defined')
 
-! Make the diagnostic file directory names/path:
+  ! Make the diagnostic file directory names/path:
   diag_fname = LDT_rc%mpfillfile
   final_dirpos = scan(diag_fname, "/", BACK = .TRUE.)
   if(final_dirpos.ne.0) then
@@ -103,19 +103,18 @@ subroutine LDT_readConfig(configfile)
      ios = LDT_create_subdirs(len_trim(diag_dir),trim(diag_dir))
   endif
 
-! ---
+  ! ---
 
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%odir,&
        label="LDT output directory:",&
        rc=rc)
   call LDT_verify(rc,'LDT output directory: not defined')
-!  write(unit=LDT_logunit,fmt=*) "LDT output directory: ",LDT_rc%odir
 
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%nnest,&
        label="LIS number of nests:",rc=rc)
   call LDT_verify(rc,'LIS number of nests: option not specified in the config file')
 
-!- Surface type model options:
+  !- Surface type model options:
 
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%nsf_model_types,&
        label="Number of surface model types:",rc=rc)
@@ -134,17 +133,17 @@ subroutine LDT_readConfig(configfile)
   enddo
 
   do k = 1, LDT_rc%nsf_model_types
-    if( LDT_rc%sf_model_type_name_select(k) .eq. "LSM"  .or. &
-        LDT_rc%sf_model_type_name_select(k) .eq. "Lake" .or. &
-        LDT_rc%sf_model_type_name_select(k) .eq. "Glacier" .or. &
-        LDT_rc%sf_model_type_name_select(k) .eq. "Openwater" ) then
-    else
-      write(LDT_logunit,*) "[ERR] Only 'LSM', 'Lake', 'Glacier' or 'Openwater' surface "
-      write(LDT_logunit,*) "    model type options are currently available. Please"
-      write(LDT_logunit,*) "    select one of these options for now."
-      write(LDT_logunit,*) "Stopping LDT run ..."
-      call LDT_endrun
-    endif
+     if( LDT_rc%sf_model_type_name_select(k) .eq. "LSM"  .or. &
+          LDT_rc%sf_model_type_name_select(k) .eq. "Lake" .or. &
+          LDT_rc%sf_model_type_name_select(k) .eq. "Glacier" .or. &
+          LDT_rc%sf_model_type_name_select(k) .eq. "Openwater" ) then
+     else
+        write(LDT_logunit,*) "[ERR] Only 'LSM', 'Lake', 'Glacier' or 'Openwater' surface "
+        write(LDT_logunit,*) "    model type options are currently available. Please"
+        write(LDT_logunit,*) "    select one of these options for now."
+        write(LDT_logunit,*) "Stopping LDT run ..."
+        call LDT_endrun
+     endif
   enddo
 
   LDT_rc%max_model_types = 5
@@ -169,46 +168,46 @@ subroutine LDT_readConfig(configfile)
   LDT_rc%sf_model_type_name(5) = "Openwater"
   LDT_rc%sf_model_type(5)      = LDT_rc%openwater_index
 
-!- LSM parameters:
-   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lsm,&
-        label="Land surface model:",default="none",rc=rc)
-   call LDT_verify(rc,'Land surface model: option not specified in the config file')
+  !- LSM parameters:
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lsm,&
+       label="Land surface model:",default="none",rc=rc)
+  call LDT_verify(rc,'Land surface model: option not specified in the config file')
 
-!- Lake parameters:
-   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lakemodel,&
-        label="Lake model:",default="none",rc=rc)
-   call LDT_verify(rc,'Lake model: option not specified in the config file')
+  !- Lake parameters:
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lakemodel,&
+       label="Lake model:",default="none",rc=rc)
+  call LDT_verify(rc,'Lake model: option not specified in the config file')
 
-   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%routingmodel,&
-        label="Routing model:",default="none",rc=rc)
-   call LDT_verify(rc,'Routing model: option not specified in the config file')
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%routingmodel,&
+       label="Routing model:",default="none",rc=rc)
+  call LDT_verify(rc,'Routing model: option not specified in the config file')
 
- ! LSM/Crop-specific entries:
-   allocate(LDT_rc%assimcropinfo(LDT_rc%nnest))
-   LDT_rc%assimcropinfo = .false.
-   if( trim(LDT_rc%runmode) == "LSM parameter processing" ) then
+  ! LSM/Crop-specific entries:
+  allocate(LDT_rc%assimcropinfo(LDT_rc%nnest))
+  LDT_rc%assimcropinfo = .false.
+  if( trim(LDT_rc%runmode) == "LSM parameter processing" ) then
      call ESMF_ConfigFindLabel(LDT_config,"Incorporate crop information:",rc=rc)
      do n=1,LDT_rc%nnest
         call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%assimcropinfo(n),rc=rc)
         call LDT_verify(rc,'Incorporate crop information: not specified in the config file')
      enddo
-   endif
+  endif
 
-!-- Meteorological Forcing inputs: --
+  !-- Meteorological Forcing inputs: --
 
-   LDT_rc%nmetforc = 0
-   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%nmetforc,&
-        label="Number of met forcing sources:",rc=rc)
-   call LDT_verify(rc,'Number of met forcing sources: not specified')
+  LDT_rc%nmetforc = 0
+  call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%nmetforc,&
+       label="Number of met forcing sources:",rc=rc)
+  call LDT_verify(rc,'Number of met forcing sources: not specified')
 
- ! Determine sources of metforcing options selected:
-   if( LDT_rc%nmetforc > 0 ) then
+  ! Determine sources of metforcing options selected:
+  if( LDT_rc%nmetforc > 0 ) then
 
      allocate(LDT_rc%metforc(LDT_rc%nmetforc))
      LDT_rc%metforc = "none"
      LDT_rc%nmetforc_parms = 0
 
-   ! Read in Met forcing sources:
+     ! Read in Met forcing sources:
      call ESMF_ConfigFindLabel(LDT_config,"Met forcing sources:",rc=rc)
      do i=1,LDT_rc%nmetforc
         call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%metforc(i),rc=rc)
@@ -223,7 +222,7 @@ subroutine LDT_readConfig(configfile)
         endif
      end do
 
-   ! Forcing-array
+     ! Forcing-array
      allocate(LDT_rc%met_gridtransform(LDT_rc%nmetforc))
      allocate(LDT_rc%met_ecor(LDT_rc%nmetforc))
      allocate(LDT_rc%met_nf(LDT_rc%nmetforc))
@@ -233,7 +232,7 @@ subroutine LDT_readConfig(configfile)
      allocate(LDT_rc%met_validhr(LDT_rc%nmetforc))
      allocate(LDT_rc%met_nensem(LDT_rc%nmetforc))
 
-   ! Forcing Parameter-array
+     ! Forcing Parameter-array
      allocate(LDT_rc%metforc_parms(LDT_rc%nmetforc_parms))
      allocate(LDT_rc%metforc_parmsrc(LDT_rc%nmetforc_parms))
      allocate(LDT_rc%met_gridtransform_parms(LDT_rc%nmetforc_parms))
@@ -265,21 +264,21 @@ subroutine LDT_readConfig(configfile)
      enddo
 
      k = 0
-     do i = 1, LDT_rc%nmetforc 
-     !- Account for GDAS' multi-grids:
+     do i = 1, LDT_rc%nmetforc
+        !- Account for GDAS' multi-grids:
         if( LDT_rc%metforc(i) == "GDAS" ) then
            k = k + 1
-           LDT_rc%metforc_parms(k+0) = "GDAS_T126" 
-           LDT_rc%metforc_parms(k+1) = "GDAS_T170" 
-           LDT_rc%metforc_parms(k+2) = "GDAS_T254" 
-           LDT_rc%metforc_parms(k+3) = "GDAS_T382" 
-           LDT_rc%metforc_parms(k+4) = "GDAS_T574" 
-           LDT_rc%metforc_parms(k+5) = "GDAS_T1534" 
+           LDT_rc%metforc_parms(k+0) = "GDAS_T126"
+           LDT_rc%metforc_parms(k+1) = "GDAS_T170"
+           LDT_rc%metforc_parms(k+2) = "GDAS_T254"
+           LDT_rc%metforc_parms(k+3) = "GDAS_T382"
+           LDT_rc%metforc_parms(k+4) = "GDAS_T574"
+           LDT_rc%metforc_parms(k+5) = "GDAS_T1534"
            LDT_rc%met_gridtransform_parms(k:k+5) = LDT_rc%met_gridtransform(i)
            LDT_rc%met_ecor_parms(k:k+5) = LDT_rc%met_ecor(i)
            LDT_rc%metforc_parmsrc(k:k+5) = LDT_rc%metforc_parms(k:k+5)
            k = k + 5
-     !- Account for ECMWF' multi-grids:
+           !- Account for ECMWF' multi-grids:
         elseif( LDT_rc%metforc(i) == "ECMWF" ) then
            k = k + 1
            LDT_rc%metforc_parms(k+0) = "ECMWF_S23R4"
@@ -294,7 +293,7 @@ subroutine LDT_readConfig(configfile)
            LDT_rc%met_ecor_parms(k:k+7) = LDT_rc%met_ecor(i)
            LDT_rc%metforc_parmsrc(k:k+7) = LDT_rc%metforc_parms(k:k+7)
            k = k + 7
-     !- All other forcing grids:
+           !- All other forcing grids:
         else
            k = k + 1
            LDT_rc%metforc_parms(k) = LDT_rc%metforc(i)
@@ -302,68 +301,68 @@ subroutine LDT_readConfig(configfile)
            LDT_rc%met_gridtransform_parms(k) = LDT_rc%met_gridtransform(i)
            LDT_rc%metforc_parmsrc(k) = LDT_rc%metforc_parms(k)
 
-         ! Reassign forcing dataset names with "()" for the output *netcdf file:
+           ! Reassign forcing dataset names with "()" for the output *netcdf file:
            select case( LDT_rc%metforc_parms(k) )
-             case( "AGRMET radiation (polar stereographic)" )
-               LDT_rc%metforc_parmsrc(k) = "AGRMET_radiation_ps"
-             case( "AGRMET radiation (latlon)" )
-               LDT_rc%metforc_parmsrc(k) = "AGRMET_radiation_latlon"
-             case( "GEOS5 forecast" )
-               LDT_rc%metforc_parmsrc(k) = "GEOS5_fcst"
-             case( "GDAS(LSWG)" )
-               LDT_rc%metforc_parmsrc(k) = "GDAS_LSWG"
-             case( "TRMM 3B42V6" )
-               LDT_rc%metforc_parmsrc(k) = "TRMM_3B42V6"
-             case( "TRMM 3B42V7" )
-               LDT_rc%metforc_parmsrc(k) = "TRMM_3B42V7"
-             case( "TRMM 3B42RTV7" )
-               LDT_rc%metforc_parmsrc(k) = "TRMM_3B42RTV7"
-             case( "CPC CMORPH" )
-               LDT_rc%metforc_parmsrc(k) = "CPC_CMORPH"
-             case( "CPC STAGEII" )
-               LDT_rc%metforc_parmsrc(k) = "CPC_STAGEII"
-             case( "CPC STAGEIV" )
-               LDT_rc%metforc_parmsrc(k) = "CPC_STAGEIV"
-             case( "RFE2(daily)" )
-               LDT_rc%metforc_parmsrc(k) = "RFE2_daily"
-             case( "RFE2(gdas)" )
-               LDT_rc%metforc_parmsrc(k) = "RFE2_gdas"
-             case( "Noah Bondville" )
-               LDT_rc%metforc_parmsrc(k) = "Noah_Nondville"
-             case( "FASST test" )
-               LDT_rc%metforc_parmsrc(k) = "FASST_test"
-             case( "TRIGRS test" )
-               LDT_rc%metforc_parmsrc(k) = "TRIGRS_test"
-             case( "Rhone AGG" )
-               LDT_rc%metforc_parmsrc(k) = "Rhone_AGG"
-             case( "VIC processed forcing" )
-               LDT_rc%metforc_parmsrc(k) = "VIC_forcing"
-             case default
-             ! Assign Metforcing sources from readin index options:
-               LDT_rc%metforc_parmsrc(k) = LDT_rc%metforc_parms(k)
+           case( "AGRMET radiation (polar stereographic)" )
+              LDT_rc%metforc_parmsrc(k) = "AGRMET_radiation_ps"
+           case( "AGRMET radiation (latlon)" )
+              LDT_rc%metforc_parmsrc(k) = "AGRMET_radiation_latlon"
+           case( "GEOS5 forecast" )
+              LDT_rc%metforc_parmsrc(k) = "GEOS5_fcst"
+           case( "GDAS(LSWG)" )
+              LDT_rc%metforc_parmsrc(k) = "GDAS_LSWG"
+           case( "TRMM 3B42V6" )
+              LDT_rc%metforc_parmsrc(k) = "TRMM_3B42V6"
+           case( "TRMM 3B42V7" )
+              LDT_rc%metforc_parmsrc(k) = "TRMM_3B42V7"
+           case( "TRMM 3B42RTV7" )
+              LDT_rc%metforc_parmsrc(k) = "TRMM_3B42RTV7"
+           case( "CPC CMORPH" )
+              LDT_rc%metforc_parmsrc(k) = "CPC_CMORPH"
+           case( "CPC STAGEII" )
+              LDT_rc%metforc_parmsrc(k) = "CPC_STAGEII"
+           case( "CPC STAGEIV" )
+              LDT_rc%metforc_parmsrc(k) = "CPC_STAGEIV"
+           case( "RFE2(daily)" )
+              LDT_rc%metforc_parmsrc(k) = "RFE2_daily"
+           case( "RFE2(gdas)" )
+              LDT_rc%metforc_parmsrc(k) = "RFE2_gdas"
+           case( "Noah Bondville" )
+              LDT_rc%metforc_parmsrc(k) = "Noah_Nondville"
+           case( "FASST test" )
+              LDT_rc%metforc_parmsrc(k) = "FASST_test"
+           case( "TRIGRS test" )
+              LDT_rc%metforc_parmsrc(k) = "TRIGRS_test"
+           case( "Rhone AGG" )
+              LDT_rc%metforc_parmsrc(k) = "Rhone_AGG"
+           case( "VIC processed forcing" )
+              LDT_rc%metforc_parmsrc(k) = "VIC_forcing"
+           case default
+              ! Assign Metforcing sources from readin index options:
+              LDT_rc%metforc_parmsrc(k) = LDT_rc%metforc_parms(k)
            end select
 
         endif
      end do
 
-   ! Read in entries for metforcing processing only:
+     ! Read in entries for metforcing processing only:
      LDT_rc%met_zterp = .false.
 
      call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%zterp_correction, &
           label="Enable new zterp correction (met forcing):",default=.false.,rc=rc)
 
      if( trim(LDT_rc%runmode) == "Metforce processing" .or. &
-         trim(LDT_rc%runmode) == "Metforce temporal downscaling" .or. &
-         trim(LDT_rc%runmode) == "Statistical downscaling of met forcing"  ) then
+          trim(LDT_rc%runmode) == "Metforce temporal downscaling" .or. &
+          trim(LDT_rc%runmode) == "Statistical downscaling of met forcing"  ) then
 
         LDT_rc%metforc_blend_alg = "none"
         call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%metforc_blend_alg,&
              label="Blending method for forcings:",rc=rc)
         call LDT_verify(rc,'Blending method for forcings: not specified')
- 
+
         LDT_rc%met_tinterp = "none"
         call ESMF_ConfigFindLabel(LDT_config,&
-            "Temporal interpolation method (met forcing):",rc=rc)
+             "Temporal interpolation method (met forcing):",rc=rc)
         call LDT_verify(rc,'Temporal interpolation method (met forcing): not defined')
         do i=1,LDT_rc%nmetforc
            call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%met_tinterp(i),rc=rc)
@@ -373,14 +372,14 @@ subroutine LDT_readConfig(configfile)
 
   end if  ! End met forcing check
 
-! ________________________________
+  ! ________________________________
 
   allocate(LDT_rc%lis_map_proj(LDT_rc%nnest))
   allocate(LDT_rc%lis_map_resfactor(LDT_rc%nnest))
 
   call ESMF_ConfigFindLabel(LDT_config, &
        "Map projection of the LIS domain:",rc=rc)
-  do n=1,LDT_rc%nnest     
+  do n=1,LDT_rc%nnest
      call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lis_map_proj(n),rc=rc)
      call LDT_verify(rc,'Map projection of the LIS domain: option not specified in the config file')
   enddo
@@ -389,7 +388,7 @@ subroutine LDT_readConfig(configfile)
        rc=rc)
   call LDT_verify(rc,'Undefined value: not defined')
 
-! Option to add buffer around parameter grid domain:
+  ! Option to add buffer around parameter grid domain:
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%add_buffer,&
        label="Add buffer to parameter grid domain:",&
        default=0,rc=rc)
@@ -405,8 +404,7 @@ subroutine LDT_readConfig(configfile)
        default=5,rc=rc)
   call LDT_verify(rc,'Buffer count in y-direction: not defined')
 
-
-! Set number of processors along x and y directions:
+  ! Set number of processors along x and y directions:
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%npesx,&
        label="Number of processors along x:", &
        default=1,rc=rc)
@@ -431,7 +429,7 @@ subroutine LDT_readConfig(configfile)
      call LDT_endrun()
   endif
 
-! Output file writing formats and directory/file structures:
+  ! Output file writing formats and directory/file structures:
   call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%wopt,&
        label="Output methodology:",&
        default="2d gridspace",&
@@ -450,18 +448,18 @@ subroutine LDT_readConfig(configfile)
        rc=rc)
   call LDT_verify(rc,'Output naming style: not defined')
 
-! --------------------------------
-! Allocate LDT config inputs for number of nests:
-! LIS run domain grid:
+  ! --------------------------------
+  ! Allocate LDT config inputs for number of nests:
+  ! LIS run domain grid:
   allocate(LDT_rc%gridDesc(LDT_rc%nnest,20))
 
-! Main parameter domain grids:
-  allocate(LDT_rc%lc_gridtransform(LDT_rc%nnest))    
-  allocate(LDT_rc%mask_gridtransform(LDT_rc%nnest))          
-  allocate(LDT_rc%reg_gridtransform(LDT_rc%nnest))           
-  allocate(LDT_rc%soils_gridtransform(LDT_rc%nnest))         
-  allocate(LDT_rc%soiltext_gridtransform(LDT_rc%nnest))      
-  allocate(LDT_rc%topo_gridtransform(LDT_rc%nnest))          
+  ! Main parameter domain grids:
+  allocate(LDT_rc%lc_gridtransform(LDT_rc%nnest))
+  allocate(LDT_rc%mask_gridtransform(LDT_rc%nnest))
+  allocate(LDT_rc%reg_gridtransform(LDT_rc%nnest))
+  allocate(LDT_rc%soils_gridtransform(LDT_rc%nnest))
+  allocate(LDT_rc%soiltext_gridtransform(LDT_rc%nnest))
+  allocate(LDT_rc%topo_gridtransform(LDT_rc%nnest))
 
   allocate(LDT_rc%lc_type(LDT_rc%nnest))
   allocate(LDT_rc%mask_source(LDT_rc%nnest))
@@ -500,9 +498,6 @@ subroutine LDT_readConfig(configfile)
   allocate(LDT_rc%awcfile(LDT_rc%nnest))
   allocate(LDT_rc%permabfile(LDT_rc%nnest))
 
-!  allocate(LDT_rc%tbotfile(LDT_rc%nnest))
-!  allocate(LDT_rc%slopetypefile(LDT_rc%nnest))
-
   allocate(LDT_rc%gdasT126elevfile(LDT_rc%nnest))
   allocate(LDT_rc%gdasT170elevfile(LDT_rc%nnest))
   allocate(LDT_rc%gdasT254elevfile(LDT_rc%nnest))
@@ -530,17 +525,17 @@ subroutine LDT_readConfig(configfile)
 
   allocate(LDT_rc%glaciermask(LDT_rc%nnest))
 
-  LDT_rc%tscount = 0 
+  LDT_rc%tscount = 0
   LDT_rc%rstflag = 1
   LDT_rc%gridchange = 1
 
-!== Read in LDT config model parameter inputs: ==
+  !== Read in LDT config model parameter inputs: ==
 
-!- Call each run mode and parameter module plugin routine:
+  !- Call each run mode and parameter module plugin routine:
   call LDT_runmode_plugin
   call LDT_landcover_plugin
   call LDT_soils_plugin
-  call LDT_topo_plugin    
+  call LDT_topo_plugin
   call LDT_laisai_plugin
   call LDT_gfrac_plugin
   call LDT_irrigation_plugin
@@ -559,15 +554,15 @@ subroutine LDT_readConfig(configfile)
 
   call LDT_timedscale_plugin
 
-! by default set the number of passes through the time loop as 1
+  ! by default set the number of passes through the time loop as 1
 
   allocate(LDT_DAmetricsPtr(LDT_DA_MOC_COUNT))
 
   LDT_rc%endcode = 1
-  LDT_rc%pass = 1 
+  LDT_rc%pass = 1
   LDT_rc%wout_form = 1
   LDT_rc%lis_wopt = 2
-  LDT_rc%monthlyData = .false. 
-  LDT_rc%quarterlyData = .false. 
+  LDT_rc%monthlyData = .false.
+  LDT_rc%quarterlyData = .false.
 
 end subroutine LDT_readConfig

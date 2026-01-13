@@ -20,7 +20,7 @@
 ! !INTERFACE:
 subroutine setCropParmsFullnames(n,datatype,source)
 
-! !USES:
+  ! !USES:
   use LDT_LSMCropModifier_Mod
   use LDT_logMod
   use LDT_paramDataMod
@@ -30,88 +30,87 @@ subroutine setCropParmsFullnames(n,datatype,source)
   character(len=*),intent(in) :: datatype
   character(len=*),intent(in) :: source
 
-! !ARGUMENTS: 
+  ! !ARGUMENTS:
 
-! !DESCRIPTION:
-!
-!  The arguments are:
-!  \begin{description}
-!   \item[n]
-!     index of nest
-!   \item[datatype]
-!     Crop data type
-!   \item[source]
-!     Crop dataset source
-!   \end{description}
-!EOP      
-!
+  ! !DESCRIPTION:
+  !
+  !  The arguments are:
+  !  \begin{description}
+  !   \item[n]
+  !     index of nest
+  !   \item[datatype]
+  !     Crop data type
+  !   \item[source]
+  !     Crop dataset source
+  !   \end{description}
+  !EOP
+  !
 
-   select case( datatype )
+  select case( datatype )
 
-    case( "croptype" )
-      select case( source )
-        case( "UMDCROPMAP" )
-          LDT_LSMCrop_struc(n)%croptype%standard_name =&
-              "UMD+CROPMAP crop types (based on Leff et al, 2004)"
+  case( "croptype" )
+     select case( source )
+     case( "UMDCROPMAP" )
+        LDT_LSMCrop_struc(n)%croptype%standard_name =&
+             "UMD+CROPMAP crop types (based on Leff et al, 2004)"
 
-        case( "Monfreda08" )
-          LDT_LSMCrop_struc(n)%croptype%standard_name =&
-              "Monfreda et al (2008) crop types"
+     case( "Monfreda08" )
+        LDT_LSMCrop_struc(n)%croptype%standard_name =&
+             "Monfreda et al (2008) crop types"
 
-       case( "MIRCA" )
-          LDT_LSMCrop_struc(n)%croptype%standard_name =&
-              "MIRCA-2000 crop types"
+     case( "MIRCA" )
+        LDT_LSMCrop_struc(n)%croptype%standard_name =&
+             "MIRCA-2000 crop types"
 
-       case( "MIRCA52" )
-          LDT_LSMCrop_struc(n)%croptype%standard_name =&
-              "MIRCA-2000 Irrigated+Rainfed crop types"
+     case( "MIRCA52" )
+        LDT_LSMCrop_struc(n)%croptype%standard_name =&
+             "MIRCA-2000 Irrigated+Rainfed crop types"
 
-      end select
+     end select
 
-    case( "plantday" )
-      select case( source )
-       case( "MIRCA" )
-          LDT_LSMCrop_struc(n)%plantday%standard_name =&
-              "MIRCA-2000 crop planting date"
+  case( "plantday" )
+     select case( source )
+     case( "MIRCA" )
+        LDT_LSMCrop_struc(n)%plantday%standard_name =&
+             "MIRCA-2000 crop planting date"
 
-       case( "MIRCA52" )
-          LDT_LSMCrop_struc(n)%plantday%standard_name =&
-              "MIRCA-2000 Irrigated+Rainfed crop planting date"
+     case( "MIRCA52" )
+        LDT_LSMCrop_struc(n)%plantday%standard_name =&
+             "MIRCA-2000 Irrigated+Rainfed crop planting date"
 
-      end select
+     end select
 
-    case( "harvestday" )
-      select case( source )
-       case( "MIRCA" )
-          LDT_LSMCrop_struc(n)%harvestday%standard_name =&
-              "MIRCA-2000 crop harvesting date"
+  case( "harvestday" )
+     select case( source )
+     case( "MIRCA" )
+        LDT_LSMCrop_struc(n)%harvestday%standard_name =&
+             "MIRCA-2000 crop harvesting date"
 
-       case( "MIRCA52" )
-          LDT_LSMCrop_struc(n)%harvestday%standard_name =&
-              "MIRCA-2000 Irrigated+Rainfed crop harvesting date"
-      end select
+     case( "MIRCA52" )
+        LDT_LSMCrop_struc(n)%harvestday%standard_name =&
+             "MIRCA-2000 Irrigated+Rainfed crop harvesting date"
+     end select
 
-    case( "irrigcrop" )
-      select case( source )
-       case( "MIRCA", "MIRCA52" )
-          LDT_LSMCrop_struc(n)%irrigcrop%standard_name =&
-              "MIRCA-2000 irrigation crop fraction"
+  case( "irrigcrop" )
+     select case( source )
+     case( "MIRCA", "MIRCA52" )
+        LDT_LSMCrop_struc(n)%irrigcrop%standard_name =&
+             "MIRCA-2000 irrigation crop fraction"
 
-      end select
+     end select
 
-    case( "rainfedcrop" )
-      select case( source )
-       case( "MIRCA", "MIRCA52" )
-          LDT_LSMCrop_struc(n)%rainfedcrop%standard_name =&
-              "MIRCA-2000 rainfed crop fraction"
+  case( "rainfedcrop" )
+     select case( source )
+     case( "MIRCA", "MIRCA52" )
+        LDT_LSMCrop_struc(n)%rainfedcrop%standard_name =&
+             "MIRCA-2000 rainfed crop fraction"
 
-      end select
+     end select
 
-    case default
-      write(LDT_logunit,*) "[ERR] Crop data type not recognized: ",trim(source)
-      write(LDT_logunit,*) " Program stopping ..."
-      call LDT_endrun()
-   end select
-
+  case default
+     write(LDT_logunit,*) "[ERR] Crop data type not recognized: ",trim(source)
+     write(LDT_logunit,*) " Program stopping ..."
+     call LDT_endrun()
+  end select
 
 end subroutine setCropParmsFullnames

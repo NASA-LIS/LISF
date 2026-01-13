@@ -19,145 +19,145 @@
 !
 ! !INTERFACE:
 subroutine assigncroptype( nest, crop_classification, &
-                           num_types, croptype, crop_index)
+     num_types, croptype, crop_index)
 
-! !USES:
+  ! !USES:
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
-          LDT_releaseUnitNumber, LDT_verify, LDT_endrun
+       LDT_releaseUnitNumber, LDT_verify, LDT_endrun
   use LDT_LSMCropModifier_Mod
 
   implicit none
 
-! !ARGUMENTS: 
+  ! !ARGUMENTS:
   integer,       intent(in)  :: nest
   integer,       intent(in)  :: num_types
   character(20), intent(in)  :: crop_classification
   character(20), intent(in)  :: croptype
   integer,       intent(out) :: crop_index
-!
-! !DESCRIPTION:
-!  This subroutine reads a CROP classification and single-crop
-!   entry and returns the classification's index value for that 
-!   crop type.
-!
-!  The arguments are:
-!  \begin{description}
-!   \item[num_types]
-!     number of crop types
-!   \item[crop_classification]
-!     Crop classification
-!   \item[croptype]
-!     the crop parameter name entry
-!   \item[crop_index]
-!     the returned index value for the entered crop type
-!   \end{description}
-!EOP      
-!- Local:
-   integer        :: ftn, ios1
-   integer        :: i, k
-   character(len=LDT_CONST_PATH_LEN) :: cropinv_file
-   character(100) :: header1
-   character(20)  :: read_cropname
-   character(40)  :: read_fullname
-! _____________________________________
+  !
+  ! !DESCRIPTION:
+  !  This subroutine reads a CROP classification and single-crop
+  !   entry and returns the classification's index value for that
+  !   crop type.
+  !
+  !  The arguments are:
+  !  \begin{description}
+  !   \item[num_types]
+  !     number of crop types
+  !   \item[crop_classification]
+  !     Crop classification
+  !   \item[croptype]
+  !     the crop parameter name entry
+  !   \item[crop_index]
+  !     the returned index value for the entered crop type
+  !   \end{description}
+  !EOP
+  !- Local:
+  integer        :: ftn, ios1
+  integer        :: i, k
+  character(len=LDT_CONST_PATH_LEN) :: cropinv_file
+  character(100) :: header1
+  character(20)  :: read_cropname
+  character(40)  :: read_fullname
+  ! _____________________________________
 
   write(LDT_logunit,*)"[INFO] Obtaining the crop type for given classification: ",&
-                       trim(crop_classification)
+       trim(crop_classification)
 
-!- Create filename for the crop classification inventory:
-!  e.g., FAOSTAT05_Crop.Inventory 
-   cropinv_file = trim(LDT_LSMCrop_struc(nest)%croplib_dir)//&
-                  trim(crop_classification)//"_Crop.Inventory"
+  !- Create filename for the crop classification inventory:
+  !  e.g., FAOSTAT05_Crop.Inventory
+  cropinv_file = trim(LDT_LSMCrop_struc(nest)%croplib_dir)//&
+       trim(crop_classification)//"_Crop.Inventory"
 
-   write(LDT_logunit,*) "- Reading Crop Library File: ",&
-                         trim(cropinv_file)
+  write(LDT_logunit,*) "- Reading Crop Library File: ",&
+       trim(cropinv_file)
 
-!- Open file:
-   ftn = LDT_getNextUnitNumber()
-   open(ftn, file=cropinv_file, status='old', form='formatted',&
-        iostat=ios1)
+  !- Open file:
+  ftn = LDT_getNextUnitNumber()
+  open(ftn, file=cropinv_file, status='old', form='formatted',&
+       iostat=ios1)
 
-!- Read crop inventory file:
-   read(ftn,fmt=*) header1
-   do i = 1, num_types
-      read(ftn,fmt=*) k, read_cropname, read_fullname 
-!-- special case handling for MIRCA
-      if ( trim(crop_classification) .eq. "MIRCA" .or. &
-           trim(crop_classification) .eq. "MIRCA52" ) then
-           call filetocropname (read_cropname)
-      endif
-      if( croptype == read_cropname ) then
+  !- Read crop inventory file:
+  read(ftn,fmt=*) header1
+  do i = 1, num_types
+     read(ftn,fmt=*) k, read_cropname, read_fullname
+     !-- special case handling for MIRCA
+     if ( trim(crop_classification) .eq. "MIRCA" .or. &
+          trim(crop_classification) .eq. "MIRCA52" ) then
+        call filetocropname (read_cropname)
+     endif
+     if( croptype == read_cropname ) then
         crop_index = k    ! Crop_index assignment
         exit
-      endif
-   end do
-   
-   call LDT_releaseUnitNumber(ftn)
+     endif
+  end do
+
+  call LDT_releaseUnitNumber(ftn)
 
 end subroutine assigncroptype
 
- subroutine filetocropname (cropname)
-! MIRCA filename contains number instead of cropname, so it needs to be 
-! mapped out to those found in CROPMAP and FAO
- implicit none
- character(20),intent(inout)  :: cropname
- character(20) :: temp
- 
- temp = cropname
- select case (trim(temp))
+subroutine filetocropname (cropname)
+  ! MIRCA filename contains number instead of cropname, so it needs to be
+  ! mapped out to those found in CROPMAP and FAO
+  implicit none
+  character(20),intent(inout)  :: cropname
+  character(20) :: temp
+
+  temp = cropname
+  select case (trim(temp))
   case ("01")
-    cropname = "wheat"
+     cropname = "wheat"
   case ("02")
-    cropname = "maize"
+     cropname = "maize"
   case ("03")
-    cropname = "rice"
+     cropname = "rice"
   case ("04")
-    cropname = "barley"
+     cropname = "barley"
   case ("05")
-    cropname = "rye"
+     cropname = "rye"
   case ("06")
-    cropname = "millet"
+     cropname = "millet"
   case ("07")
-    cropname = "sorghum"
+     cropname = "sorghum"
   case ("08")
-    cropname = "soybean"
+     cropname = "soybean"
   case ("09")
-    cropname = "sunflower"
+     cropname = "sunflower"
   case ("10")
-    cropname = "potato"
+     cropname = "potato"
   case ("11")
-    cropname = "cassava"
+     cropname = "cassava"
   case ("12")
-    cropname = "sugarcane"
+     cropname = "sugarcane"
   case ("13")
-    cropname = "sugarbeet"
+     cropname = "sugarbeet"
   case ("14")
-    cropname = "oilpalm"
+     cropname = "oilpalm"
   case ("15")
-    cropname = "rapeseed"
+     cropname = "rapeseed"
   case ("16")
-    cropname = "groundnut"
+     cropname = "groundnut"
   case ("17")
-    cropname = "pulsenes"
+     cropname = "pulsenes"
   case ("18")
-    cropname = "citrusnes"
+     cropname = "citrusnes"
   case ("19")
-    cropname = "datepalm"
+     cropname = "datepalm"
   case ("20")
-    cropname = "grape"
+     cropname = "grape"
   case ("21")
-    cropname = "cotton"
+     cropname = "cotton"
   case ("22")
-    cropname = "cocoa"
+     cropname = "cocoa"
   case ("23")
-    cropname = "coffee"
+     cropname = "coffee"
   case ("24")
-    cropname = "othersper"
+     cropname = "othersper"
   case ("25")
-    cropname = "grassnes"
+     cropname = "grassnes"
   case ("26")
-    cropname = "othersann"
- end select
- end subroutine filetocropname
+     cropname = "othersann"
+  end select
+end subroutine filetocropname
