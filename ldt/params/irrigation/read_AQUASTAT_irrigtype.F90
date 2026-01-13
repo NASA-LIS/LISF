@@ -18,6 +18,7 @@
  subroutine read_AQUASTAT_irrigtype(n,fgrd,num_bins) 
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod, only : LDT_rc, LDT_domain
   use LDT_logMod,  only : LDT_logunit, LDT_getNextUnitNumber, &
                           LDT_releaseUnitNumber, LDT_endrun
@@ -30,10 +31,10 @@
   use netcdf
 #endif
 
-!EOP      
+!EOP
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in) :: n
   integer, intent(in) :: num_bins
   real, intent(inout) :: fgrd(LDT_rc%lnc(n),LDT_rc%lnr(n),num_bins)
@@ -160,7 +161,7 @@
   real      :: go1(LDT_rc%lnc(n)*LDT_rc%lnr(n))           ! Output lis 1d grid
   logical*1 :: lo1(LDT_rc%lnc(n)*LDT_rc%lnr(n))           ! Output logical mask (to match go)
 
-  character(len=120) :: usfile, glbfile, polfile, countyfile
+  character(len=LDT_CONST_PATH_LEN) :: usfile, glbfile, polfile, countyfile
 
 ! -------------------------------------------------------------------
 ! Irrigation type area or fraction inputs

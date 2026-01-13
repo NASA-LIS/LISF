@@ -50,24 +50,25 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
                                    
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,     only : LDT_rc
   use LDT_logMod,      only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_verify, LDT_endrun
-  use LDT_gridmappingMod    
+  use LDT_gridmappingMod
   use LDT_fileIOMod
   use LDT_paramTileInputMod, only: param_index_fgrdcalc
   use LDT_LSMCropModifier_Mod
 
   implicit none
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in) :: n
   integer, intent(in) :: num_types
   real, intent(inout) :: fgrd(LDT_rc%lnc(n),LDT_rc%lnr(n),num_types)
 
 !
 ! !DESCRIPTION:
-!  This subroutine reads the MIRCA2000 Portmann et al. (2010) crop data 
+!  This subroutine reads the MIRCA2000 Portmann et al. (2010) crop data
 !  and returns the distribution of vegetation in each grid cell, in a lat/lon
 !  projection.  
 !  The crop fraction inputs are avaiable at monthly. Currently, the monthly
@@ -97,7 +98,7 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
    integer, parameter :: IN_NCROPS = 26 ! MIRCA crop types
 
 ! local variables
-   character(len=140) :: tempfilei,tempfiler
+   character(len=LDT_CONST_PATH_LEN) :: tempfilei,tempfiler
    logical :: file_exists
    integer :: i, ii, j, t, c, r, mc
    integer :: err
@@ -308,8 +309,9 @@ end subroutine read_MIRCA2000_croptype
 
  subroutine readMIRCA2000Cropfiles( n, tempfile, cropcaflag, croptypefrac, &
                                     plantday, harvestday )
-                                  
+
 ! !USES:
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod
     use LDT_gridmappingMod
     use LDT_paramTileInputMod
@@ -320,7 +322,7 @@ end subroutine read_MIRCA2000_croptype
     implicit none
 ! !ARGUMENTS:
    integer,       intent(in) :: n
-   character(140),intent(in) :: tempfile
+   character(len=LDT_CONST_PATH_LEN),intent(in) :: tempfile
    logical,       intent(in) :: cropcaflag
    real,         intent(out) :: croptypefrac(LDT_rc%lnc(n),LDT_rc%lnr(n))
    real,intent(out) :: plantday(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_LSMCrop_struc(n)%multicroppingmax) ! lon x lat x seasons
@@ -745,8 +747,9 @@ end subroutine read_MIRCA2000_croptype
 ! in the same grid.
 ! This routine is called only with 26 crop tiling (irrigated crops), not with 52 crops
 ! (irrigated + rainfed crops).
-                                  
+
 ! !USES:
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod
     use LDT_gridmappingMod
     use LDT_paramTileInputMod
@@ -757,7 +760,7 @@ end subroutine read_MIRCA2000_croptype
     implicit none
 ! !ARGUMENTS:
    integer,       intent(in) :: n
-   character(140),intent(in) :: tempfilei,tempfiler
+   character(len=LDT_CONST_PATH_LEN),intent(in) :: tempfilei,tempfiler
    logical,       intent(in) :: cropcaflag
    real,intent(inout) :: plantday(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_LSMCrop_struc(n)%multicroppingmax)
    real,intent(inout) :: harvestday(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_LSMCrop_struc(n)%multicroppingmax)

@@ -74,13 +74,13 @@ module LDT_LSMCropModifier_Mod
      character*20      :: assign_cropvalue
      logical           :: mergecropirr
      character*20      :: cropirrmergesource
-     character*140     :: cropirrmergefile
+     character(len=LDT_CONST_PATH_LEN)     :: cropirrmergefile
      character*50      :: cropirrmerge_gridtransform
    ! Crop Calendar entries:
      logical           :: cropcalendar
      integer           :: multicroppingmax ! mutliple cropping max seasons
      character*20      :: cropcalendarsource
-     character*140     :: cropcalendarfile
+     character(len=LDT_CONST_PATH_LEN)     :: cropcalendarfile
      character*50      :: cropcalendar_gridtransform
      character*20      :: crop_classification
 
