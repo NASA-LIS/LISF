@@ -1,7 +1,3 @@
-!TODO Replace these preprocessor statements
-#define VERIFY_(A)   IF(A/=0)THEN;PRINT *,'ERROR AT LINE ', __LINE__;STOP;ENDIF
-#define ASSERT_(A)   if(.not.A)then;print *,'Error:',__FILE__,__LINE__;stop;endif
-
 ! -----------------------------------------------------------------
 #include "LIS_misc.h"
 module getCropIrrigTypes
@@ -172,8 +168,11 @@ contains
     DX = SIZE (ADMU_GRID,1)
     DY = SIZE (ADMU_GRID,2)
 
-    call MPI_COMM_Size(LIS_mpi_comm,comm_size,status)  ; VERIFY_(STATUS)
-    call MPI_COMM_Rank(LIS_mpi_comm,comm_rank,status)  ; VERIFY_(STATUS)
+    call MPI_COMM_Size(LIS_mpi_comm,comm_size,status)
+    call LIS_verify(status, "[ERR] Error from MPI_COMM_Size")
+    call MPI_COMM_Rank(LIS_mpi_comm,comm_rank,status)
+    call LIS_verify(status, "[ERR] Error from MPI_COMM_Rank")
+
     if (comm_rank /= 0) root_proc = .false.
 
     NCNTY_MAX = 0
@@ -192,7 +191,7 @@ contains
 
        ! Check whether US counties actually exist within the global domain
        call MPI_AllReduce(NCNTY,NCNTY_MAX,1,MPI_INTEGER,MPI_MAX,LIS_mpi_comm,STATUS)
-       VERIFY_(STATUS)
+       call LIS_verify(status, "[ERR] Error from MPI_AllReduce")
 
        if (NCNTY_MAX == 0) then
           ! Leave SUBROUTINE get_irrig_type because there is nothing to do in the US.
@@ -236,11 +235,14 @@ contains
        if (j > 1) then
           if(j-1 == comm_rank) then
              ! Sends ADMU_GRID(DX,DY) to root
-             call MPI_ISend(ADMU_GRID, DX*DY,MPI_REAL,0,990,LIS_mpi_comm,req,STATUS); VERIFY_(STATUS)
-             call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS) ; VERIFY_(STATUS)
+             call MPI_ISend(ADMU_GRID, DX*DY,MPI_REAL,0,990,LIS_mpi_comm,req,STATUS)
+             call LIS_verify(status, "[ERR] Error from MPI_ISend")
+             call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS)
+             call LIS_verify(status, "[ERR] Error from MPI_Wait")
           else if (comm_rank == 0) then
              ! root receives ADMU_GRID from the jth processor
-             call MPI_RECV(GDUMMY (c1:c2,R1:R2),DX*DY , MPI_REAL, j-1,990,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS); VERIFY_(STATUS)
+             call MPI_RECV(GDUMMY (c1:c2,R1:R2),DX*DY , MPI_REAL, j-1,990,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS)
+             call LIS_verify(status, "[ERR] Error from MPI_Recv")
           endif
        endif
     end do PROC_LOOP_1
@@ -271,8 +273,8 @@ contains
        AdminUnit = pack(loc_int,mask =unq_mask)
     endif
 
-    call MPI_BCAST (n_AdminUnit, 1, MPI_INTEGER, 0,LIS_mpi_comm, STATUS); VERIFY_(STATUS)
-
+    call MPI_BCAST (n_AdminUnit, 1, MPI_INTEGER, 0,LIS_mpi_comm, STATUS)
+    call LIS_verify(status, "[ERR] Error from MPI_BCAST")
     allocate (NCELLS_PROC (1: comm_size))
     allocate (DISPL       (1: comm_size))
     allocate (BUF_CNT     (1: comm_size))
@@ -303,8 +305,8 @@ contains
        NCELLS_PROC = 0
 
        if(root_proc) thisAdmUnit = AdminUnit(i_cnt)
-       call MPI_BCAST (thisAdmUnit, 1, MPI_REAL, 0,LIS_mpi_comm, STATUS); VERIFY_(STATUS)
-
+       call MPI_BCAST (thisAdmUnit, 1, MPI_REAL, 0,LIS_mpi_comm, STATUS)
+       call LIS_verify(status, "[ERR] Error from MPI_BCAST")
        ! compute sum of cell areas that make up the county fraction in the local processor
 
        nplus     = count (ADMU_GRID == thisAdmUnit)
@@ -323,13 +325,15 @@ contains
        ! total county area and number of grid cells provided by each processor to form the county
 
        call MPI_Reduce(local_area,county_area,1,MPI_REAL,MPI_SUM,0,LIS_mpi_comm,STATUS)
+       call LIS_verify(status, "[ERR} Error from MPI_Reduce")
        call MPI_ALLGATHERV(nplus, BUF_CNT, MPI_integer, NCELLS_PROC, BUF_CNT,displ, MPI_integer, &
-            LIS_mpi_comm, status ) ; VERIFY_(STATUS)
-
+            LIS_mpi_comm, status )
+       call LIS_verify(status, "[ERR] Error from MPI_ALLGATHERV")
        NT_CNTY = SUM (NCELLS_PROC)
        if(NT_CNTY > 0) run_alg = .true.
 
        call MPI_Barrier(LIS_mpi_comm, STATUS)
+       call LIS_verify(status, "[ERR] Error from MPI_Barrier")
 
        ! (4) Assign PREFTYPE for CROPTYPES
 
@@ -387,26 +391,44 @@ contains
                       ! inter processor communication
                       if(j-1 == comm_rank) then
                          ! send to root
-                         call MPI_ISend(cnty_var, nplus,MPI_REAL,0,991,LIS_mpi_comm,req,STATUS); VERIFY_(STATUS)
-                         call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS) ; VERIFY_(STATUS)
+                         call MPI_ISend(cnty_var, nplus,MPI_REAL,0,991,LIS_mpi_comm,req,STATUS)
+                         call LIS_verify(status, &
+                              "[ERR] Error from MPI_ISend")
+                         call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS)
+                         call LIS_verify(status, &
+                              "[ERR] Error from MPI_Wait")
                          if (nt <= this%N_IRRIGTYPES) then
-                            call MPI_ISend(cnty_var1, nplus,MPI_REAL,0,994,LIS_mpi_comm,req,STATUS); VERIFY_(STATUS)
-                            call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS) ; VERIFY_(STATUS)
+                            call MPI_ISend(cnty_var1, nplus,MPI_REAL,0,994,LIS_mpi_comm,req,STATUS)
+                            call LIS_verify(status, &
+                                 "[ERR] Error from MPI_ISend")
+                            call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS)
+                            call LIS_verify(status, &
+                                 "[ERR] Error from MPI_Wait")
                          endif
                          if (nt == 1) then
-                            call MPI_ISend(cnty_var2, nplus,MPI_REAL,0,995,LIS_mpi_comm,req,STATUS); VERIFY_(STATUS)
-                            call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS) ; VERIFY_(STATUS)
+                            call MPI_ISend(cnty_var2, nplus,MPI_REAL,0,995,LIS_mpi_comm,req,STATUS)
+                            call LIS_verify(status, &
+                                 "[ERR] Error from MPI_ISend")
+                            call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS)
+                            call LIS_verify(status, &
+                                 "[ERR] Error from MPI_Wait")
                          endif
                       else if (comm_rank == 0) then
                          ! root receives
                          t1 = SUM (NCELLS_PROC(1:j-1)) + 1
                          t2 = SUM (NCELLS_PROC(1:j))
-                         call MPI_RECV(CNTY_CROPTYPE (t1:t2, nt), NCELLS_PROC(j), MPI_REAL, j-1,991,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS); VERIFY_(STATUS)
+                         call MPI_RECV(CNTY_CROPTYPE (t1:t2, nt), NCELLS_PROC(j), MPI_REAL, j-1,991,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS)
+                         call LIS_verify(status, &
+                              "[ERR] Error from MPI_RECV")
                          if (nt <= this%N_IRRIGTYPES) then
-                            call MPI_RECV(CNTY_IRRIGFRAC (t1:t2, nt), NCELLS_PROC(j), MPI_REAL, j-1,994,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS); VERIFY_(STATUS)
+                            call MPI_RECV(CNTY_IRRIGFRAC (t1:t2, nt), NCELLS_PROC(j), MPI_REAL, j-1,994,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS)
+                            call LIS_verify(status, &
+                                 "[ERR] Error from MPI_RECV")
                          endif
                          if (nt == 1) then
-                            call MPI_RECV(CNTY_CELLAREA (t1:t2),      NCELLS_PROC(j), MPI_REAL, j-1,995,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS); VERIFY_(STATUS)
+                            call MPI_RECV(CNTY_CELLAREA (t1:t2),      NCELLS_PROC(j), MPI_REAL, j-1,995,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS)
+                            call LIS_verify(status, &
+                                 "[ERR] Error from MPI_RECV")
                          endif
                       endif
                    endif
@@ -528,8 +550,9 @@ contains
                       if(j-1 == comm_rank) then
 
                          !   1st receives the subset of CNTY_IRRIGTYPE  from root
-                         call MPI_RECV(cnty_var,NPLUS, MPI_REAL,0,992,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS); VERIFY_(STATUS)
-
+                         call MPI_RECV(cnty_var,NPLUS, MPI_REAL,0,992,LIS_mpi_comm,MPI_STATUS_IGNORE,STATUS)
+                         call LIS_verify(status, &
+                              "[ERR] Error from MPI_RECV")
                          ! unpack and send back the 2D array to root
                          RDUMMY = UNPACK(cnty_var,mask = (ADMU_GRID == thisAdmUnit), field=-1.)
                          where (RDUMMY > 0)
@@ -538,14 +561,20 @@ contains
 
                       else if (comm_rank == 0) then
                          !  root sends jth portion of CNT_IRRIGTYPE to the jth processor
-                         call MPI_ISend(CNTY_IRRIGTYPE(t1:t2, nt), NCELLS_PROC(j),MPI_REAL,j-1,992,LIS_mpi_comm,req,STATUS); VERIFY_(STATUS)
-                         call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS) ; VERIFY_(STATUS)
+                         call MPI_ISend(CNTY_IRRIGTYPE(t1:t2, nt), NCELLS_PROC(j),MPI_REAL,j-1,992,LIS_mpi_comm,req,STATUS)
+                         call LIS_verify(status, &
+                              "[ERR] Error from MPI_ISend")
+                         call MPI_WAIT (req,MPI_STATUS_IGNORE,STATUS)
+                         call LIS_verify(status, &
+                              "[ERR] Error from MPI_Wait")
 
                       endif
                    endif
                 end do NUM_CROPS2
              endif CHECK_ACTIVE_PROCS2
              call MPI_Barrier(LIS_mpi_comm, STATUS)
+             call LIS_verify(status, &
+                  "[ERR] Error from MPI_Barrier")
           end do UNPACK_TO_PROCS
 
           if(root_proc) then
