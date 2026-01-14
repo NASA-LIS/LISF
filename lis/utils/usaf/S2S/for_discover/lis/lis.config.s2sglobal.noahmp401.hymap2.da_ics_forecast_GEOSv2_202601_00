@@ -7,6 +7,7 @@ Surface model types:                    "LSM"  "Openwater"
 Land surface model:                     "Noah-MP.4.0.1"
 Open water model:                       "template open water"
 Surface model output interval:          1da
+Number of dimensions in the lat/lon output fields:  "2D"
 
 Blending method for forcings:           overlay
 Number of met forcing sources:          2
@@ -22,7 +23,7 @@ Topographic correction method (met forcing):  "none"       "none"
 
 
 # Number of hindcast ensemble members:
-Number of ensembles per tile:           10    
+Number of ensembles per tile:           4    
 
 # Initial Condition (IC) mode for the LSM:
 Start mode:                             restart
@@ -35,21 +36,21 @@ Output data format:                     netcdf
 Output naming style:                    "3 level hierarchy"
 Enable output statistics:               .false.
 
-Starting year:                          2022
-Starting month:                         09
+Starting year:                          2026
+Starting month:                         01
 Starting day:                              1
 Starting hour:                             0 
 Starting minute:                           0 
 Starting second:                           0
-Ending year:                             2023
+Ending year:                             2026
 Ending month:                            06   # End of 9-month hindcast
 Ending day:                                1
 Ending hour:                               0
 Ending minute:                             0
 Ending second:                             0
 Undefined value:                       -9999
-Output directory:                       202209/GNEMO52
-Diagnostic output file:                 202209/GNEMO52/logs/lislog
+Output directory:                       202601/GEOSv2
+Diagnostic output file:                 202601/GEOSv2/logs/lislog
 
 #The following options are used for subgrid tiling based on vegetation
 Maximum number of surface type tiles per grid:    1
@@ -146,13 +147,13 @@ TBOT skin temperature lag days:           0
 
 # Ensemble Forecast (user-generated):
 # NOTE:  Below directories paths are temporary placeholders:
-Generic ensemble forecast directory:  bcsd_fcst/NMME/final/6-Hourly/GNEMO52
-Generic ensemble forecast initial date: 20220901
-Generic ensemble forecast number of ensemble members:  10
+Generic ensemble forecast directory:  bcsd_fcst/CFSv2_25km/final/6-Hourly/
+Generic ensemble forecast initial date: 20260101
+Generic ensemble forecast number of ensemble members:  4
 
-Precipitation ensemble forecast directory: bcsd_fcst/NMME/final/6-Hourly/GNEMO52
-Precipitation ensemble forecast initial date: 20220901
-Precipitation ensemble forecast number of ensemble members: 10 
+Precipitation ensemble forecast directory: bcsd_fcst/NMME/final/6-Hourly/GEOSv2
+Precipitation ensemble forecast initial date: 20260101
+Precipitation ensemble forecast number of ensemble members: 4 
 
 # Example:
 #Generic ensemble forecast directory:  ./GEOS5/Shrad_BCSD/6-hourly/1982/may01/ens#/GEOS5.all_forc_198205.nc4
@@ -162,7 +163,7 @@ Precipitation ensemble forecast number of ensemble members: 10
 Noah-MP.4.0.1 model timestep:                15mn
 
 # Restart ICs for hindcast/forecast runs:
-Noah-MP.4.0.1 restart file:                ./input/LDT_ICs/GNEMO52/LIS_RST_NOAHMP401_202208312345.ICS_Sep2022.ens10.nc
+Noah-MP.4.0.1 restart file:                ./input/LDT_ICs/GEOSv2/LIS_RST_NOAHMP401_202512312345.ICS_Jan2026.ens4.nc
 # Note: Above 12-member restart file is a placeholder for now ...
 Noah-MP.4.0.1 restart output interval:       1mo
 Noah-MP.4.0.1 restart file format:           netcdf
@@ -211,7 +212,7 @@ Routing model:                          "HYMAP2 router"
 
 # Restart ICs for hindcast/forecast runs:
 HYMAP2 routing model start mode:         restart
-HYMAP2 routing model restart file:     ./input/LDT_ICs/GNEMO52/LIS_RST_HYMAP2_router_202208312345.ICS_Sep2022.ens1.nc
+HYMAP2 routing model restart file:     ./input/LDT_ICs/GEOSv2/LIS_RST_HYMAP2_router_202512312345.ICS_Jan2026.ens1.nc
 # Note: Above 12-member restart file is a placeholder for now ...
 HYMAP2 routing model restart interval:  "1mo"
 

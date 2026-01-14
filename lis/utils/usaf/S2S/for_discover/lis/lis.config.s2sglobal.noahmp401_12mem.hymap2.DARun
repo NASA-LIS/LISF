@@ -4,19 +4,18 @@ Map projection of the LIS domain:       latlon
 Number of nests:                        1
 Number of surface model types:          2
 Surface model types:                    "LSM"  "Openwater"
-Surface model output interval:          1da
+Surface model output interval:          1da 
 Land surface model:                     "Noah-MP.4.0.1"
 Open water model:                       "template open water"
 
 Number of met forcing sources:          1
 Blending method for forcings:           overlay
-# AGRMET USAF+NAFPA offline forcing (2012-Present):
-Met forcing sources:                         "AGRMET"
-Spatial interpolation method (met forcing):   average
-Spatial upscaling method (met forcing):       average
-Temporal interpolation method (met forcing):  linear
-Enable spatial downscaling of precipitation:  0
+Met forcing sources:                    "AGRMET"
 Topographic correction method (met forcing):  "none"
+Enable spatial downscaling of precipitation:  0
+Spatial upscaling method (met forcing):       average
+Spatial interpolation method (met forcing):   average
+Temporal interpolation method (met forcing):  linear
 
 #Runtime options
 Forcing variables list file:            ./input/forcing_variables.txt
@@ -27,22 +26,21 @@ Output naming style:                    "3 level hierarchy"
 Enable output statistics:               .false.
 
 Start mode:                             restart
-Starting year:                             2022
-Starting month:                            8 
-Starting day:                              1 
-Starting hour:                             0 
-Starting minute:                           0
-Starting second:                           0
-Ending year:                              2022  
-Ending month:                              9  
-Ending day:                                1
-Ending hour:                               0
-Ending minute:                             0
-Ending second:                             0
+Starting year:                          2025
+Starting month:                         12
+Starting day:                           1
+Starting hour:                          0
+Starting minute:                        0
+Starting second:                        0
+Ending year:                            2026 
+Ending month:                           1 
+Ending day:                             1 
+Ending hour:                            0
+Ending minute:                          0
+Ending second:                          0
 Undefined value:                       -9999
-
 Output directory:                       ./output/
-Diagnostic output file:                 ./output/logs/lislog
+Diagnostic output file:                 /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202601/lis_darun/logs_202512/lislog
 
 Number of ensembles per tile:           12
 
@@ -62,68 +60,71 @@ Minimum cutoff percentage (aspect bands):         0.05
 
 #Processor layout
 #Should match the total number of processors used
-# Global specs:
+# S2S-Global specs:
 # Nodes: 12; Proc: 24 ==> 288
 Number of processors along x:          4
 Number of processors along y:          72
-
-Halo size along x:                      0
-Halo size along y:                      0
+Halo size along x:                     0
+Halo size along y:                     0
 
 #Sub-models
-Radiative transfer model:               none
-Number of application models:           0
+Radiative transfer model:              none
+Number of application models:          0
 
 #---------------------DATA ASSIMILATION ----------------------------------
 #Data assimilation options
 Number of data assimilation instances:                1
-Data assimilation algorithm:                          "EnKF"
-Data assimilation set:                                "SMAP(NRT) soil moisture"
+Data assimilation algorithm:                         "EnKF"
+Data assimilation set:                               "SMAP(NRT) soil moisture"
 Data assimilation exclude analysis increments:        0                                       
-Data assimilation number of observation types:        1                                                                              
-Data assimilation output interval for diagnostics:    1mo                                                                          
-Data assimilation output processed observations:      0                                                                             
-Data assimilation output innovations:                 0                                                                              
-Data assimilation output ensemble spread:             0                                                                              
+Data assimilation number of observation types:        1                                       
+Data assimilation output interval for diagnostics:    1mo                                     
+Data assimilation output processed observations:      0                                       
+Data assimilation output innovations:                 0                                       
+Data assimilation output ensemble spread:             0                                     
 
-Data assimilation observation domain file:    ./input/lis_input.s2s_global.noahmp401_hymap2.25km.nc 
-Data assimilation scaling strategy:                   "CDF matching"                         
+# Check LDT-generated domain mask path:
+# S2S-Global domain:
+Data assimilation observation domain file:   ./input/lis_input.s2s_global.noahmp401_hymap2.25km.nc
+##
+Data assimilation scaling strategy:                   "CDF matching"
 
-Data assimilation use a trained forward model:        0                                       0                                     
-Data assimilation trained forward model output file:  none                                    none                                    
+Data assimilation use a trained forward model:        0
+Data assimilation trained forward model output file:  none
 
 #Bias estimation options
-Bias estimation algorithm:                            none                                    none                                    
-Bias estimation attributes file:                      none                                    none                                    
-Bias estimation restart output frequency:             1da                                     1da                                     
-Bias estimation start mode:                           none                                    none                                    
-Bias estimation restart file:                         none                                    none                                    
+Bias estimation algorithm:                            none                                    
+Bias estimation attributes file:                      none                                  
+Bias estimation restart output frequency:             1da                                  
+Bias estimation start mode:                           none                                 
+Bias estimation restart file:                         none                                
 
 #Perturbation options
-#Perturbations start mode:                             coldstart                               coldstart
-Perturbations restart output interval:                1mo                                     1mo                                 
-Perturbations restart filename:                       ./output/DAPERT/202205/LIS_DAPERT_202205312345.d01.bin 
-Apply perturbation bias correction:                   1                                       0
+Perturbations start mode:                             restart                            
+Perturbations restart filename:                   ./output/DAPERT/202512/LIS_DAPERT_202512010000.d01.bin 
+Perturbations restart output interval:                1mo                                    
+Apply perturbation bias correction:                   1                                      
 
-Forcing perturbation algorithm:                       "GMAO scheme"                           "none"                           
-Forcing perturbation frequency:                       1hr                                     1hr                                   
-Forcing attributes file:                              ./input/attribs/forcing_attribs.txt           ./attribs/forcing_attribs.txt          
-Forcing perturbation attributes file:                 ./input/attribs/forcing_pertattribs.txt       ./attribs/forcing_pertattribs.txt     
+Forcing perturbation algorithm:                       "GMAO scheme"                        
+Forcing perturbation frequency:                       1hr                                 
+Forcing attributes file:                              ./input/attribs/forcing_attribs.txt   
+Forcing perturbation attributes file:                 ./input/attribs/forcing_pertattribs.txt  
 
-State perturbation algorithm:                         "GMAO scheme"                           "none"          
-State perturbation frequency:                         6hr                                     6hr                                    
-State attributes file:                                ./input/attribs/noahmp_sm_attribs.txt         ./attribs/noahmp_sm_attribs.txt
-State perturbation attributes file:                   ./input/attribs/noahmp_sm_pertattribs.txt     ./attribs/noahmp_sm_pertattribs.txt
+State perturbation algorithm:                         "GMAO scheme"                           
+State perturbation frequency:                         6hr                                    
+State attributes file:                                ./input/attribs/noahmp_sm_attribs.txt 
+State perturbation attributes file:                   ./input/attribs/noahmp_sm_pertattribs.txt 
 
-Observation perturbation algorithm:                   "GMAO scheme"                           "none"
-Observation perturbation frequency:                   6hr                                     6hr                                    
+Observation perturbation algorithm:                   "GMAO scheme" 
+Observation perturbation frequency:                   6hr          
 Observation attributes file:                          ./input/attribs/smap_attribs.txt
 Observation perturbation attributes file:             ./input/attribs/smap_pertattribs.txt
 
-# Used for the S2S retrospective runs and CDF generation:
+# SMAP L3 SM:  Used for the hindcast DA cases:
+# Also: Files used to generate the CDF files for the SMAP-NRT DA operational runs:
 #SMAP(NASA) soil moisture data designation:            SPL3SMP
 #SMAP(NASA) soil moisture Composite Release ID:        R17
-#SMAP(NASA) soil moisture data directory:              ./lisdata/RS_DATA/SMAP/SPL3SMP.007/
+#SMAP(NASA) soil moisture data directory:              ./input/RS_DATA/SMAP/SPL3SMP.007/
 #SMAP(NASA) model CDF file:                            ./input/cdf/noahmp401_cdf_200obs.nc
 #SMAP(NASA) observation CDF file:                      ./input/cdf/smap_c007_cdf_100obs.nc
 #SMAP(NASA) soil moisture number of bins in the CDF:             100
@@ -131,18 +132,17 @@ Observation perturbation attributes file:             ./input/attribs/smap_perta
 #SMAP(NASA) CDF read option:                                     1
 
 # SMAP NRT - Operations-based SM data directory:
-SMAP(NRT) soil moisture data directory:               ./MET_FORCING/SMAP_L2_SM_NRT/
-SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc
+SMAP(NRT) soil moisture data directory:               ./USAF_FORCING/SMAP_L2_SM_NRT/
+SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc  
 SMAP(NRT) observation CDF file:                       ./input/cdf/smap_c007_cdf_100obs.nc
 SMAP(NRT) soil moisture number of bins in the CDF:              100
 SMAP(NRT) soil moisture use scaled standard deviation model:    0
 SMAP(NRT) CDF read option:                                      1
 
-
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
 
-LIS domain and parameter data file:     ../LDT_Params/lis_input.s2s_global.noahmp401_hymap2.25km.nc
+LIS domain and parameter data file:     ./input/lis_input.s2s_global.noahmp401_hymap2.25km.nc
 
 Landmask data source:                   LDT
 Landcover data source:                  LDT
@@ -170,8 +170,6 @@ TBOT skin temperature lag days:           0
 
 #--------------------------------FORCINGS----------------------------------
 
-#### AGRMET Offline Forcing Fields (Oct-2012 to Present):
-
 # 10-km global domain
 AGRMET forcing map projection:             latlon
 AGRMET forcing domain lower left lat:       -89.9531250
@@ -182,7 +180,7 @@ AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-AGRMET forcing directory:                  /discover/nobackup/projects/usaf_lis/MET_FORCING/usaf_lis75s2s_gfs2galwem
+AGRMET forcing directory:                  ./USAF_FORCING/usaf_lis75s2s_gfs2galwem/
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings
@@ -208,8 +206,6 @@ AGRMET use GALWEM precip:                  1               # Set to 1 if using G
 AGRMET GALWEM data directory:              GALWEM          # Always GALWEM
 AGRMET GALWEM nominal resolution (km):     17              # 17 or 10
 AGRMET nogaps wind weight:                 1.0             # Applied for all NWP sources, keep at 1.0
-
-AGRMET PPT Background bias correction option:   0          # Apply bias-correction to PPT background field
 
 # Rain gauge data.  Use JMOBS until 2012032700, use NONE from
 # 2012032700 until 2012040912, use CDMS beginning 2012040912.
@@ -262,55 +258,48 @@ AGRMET skip backQC:                        0               # 0 = do not skip bac
 AGRMET skip superstatQC:                   0               # 0 = do not skip superstatQC check in Bratseth
 AGRMET 3hr maximum precip ceiling:         200.0
 
+# New LIS 7.6 entries:
+AGRMET PPT Background bias correction option: 0            # 0 = turn off (not ready yet)
+AGRMET precip obs file format:             2               # 2 = WIGOS; 1 = Legacy
+AGRMET number of gauge networks to use:    6
+AGRMET gauge networks to use::
+AMIL CANA FAA ICAO WMO MOBL
+::
+AGRMET sfc obs file format:                2               # 2 = WIGOS; 1 = Legacy
+
 # EMK...New recommended settings based on sample NWP and observations
 # for 2 Feb - 7 Mar 2020 and no Box-Cox transformation.
 
 # Bratseth error covariance settings for GALWEM-17km background field.
-# Replace with commented entries below when GALWEM switches to 10-km.
-AGRMET GALWEM Precip background error scale length (m):            102000.
-AGRMET GALWEM Precip background error variance:                         0.83
-AGRMET GALWEM Precip Gauge observation error variance:                  0.86
+AGRMET GALWEM Precip correlation function type: 1 # Gaussian
 AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): 132000.
 AGRMET GALWEM Precip GEOPRECIP observation error variance:              1.24
 AGRMET GALWEM Precip SSMI observation error scale length (m):      133000.
 AGRMET GALWEM Precip SSMI observation error variance:                   2.58
 AGRMET GALWEM Precip CMORPH observation error scale length (m):     89000.
 AGRMET GALWEM Precip CMORPH observation error variance:                 1.15
-AGRMET GALWEM Precip IMERG observation error scale length (m):     101000.
-AGRMET GALWEM Precip IMERG observation error variance:                  1.93
-AGRMET GALWEM T2M background error scale length (m):               110000.
-AGRMET GALWEM T2M background error variance:                            1.48
-AGRMET GALWEM T2M station observation error variance:                   2.30
-AGRMET GALWEM RH2M background error scale length (m):              119000.
-AGRMET GALWEM RH2M background error variance:                          30.7
-AGRMET GALWEM RH2M station observation error variance:                 65.8
-AGRMET GALWEM SPD10M background error scale length (m):             53000.
-AGRMET GALWEM SPD10M background error variance:                         0.62
-AGRMET GALWEM SPD10M station observation error variance:                2.37
+AGRMET GALWEM T2M correlation function type:    1 # Gaussian
+AGRMET GALWEM RH2M correlation function type:   1 # Gaussian
+AGRMET GALWEM SPD10M correlation function type: 1 # Gaussian
 
-# Bratseth error covariance settings for GALWEM-10km background field.
-# AGRMET GALWEM Precip background error scale length (m):            110000.
-# AGRMET GALWEM Precip background error variance:                         0.81
-# AGRMET GALWEM Precip Gauge observation error variance:                  1.22
-# AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): 139000.
-# AGRMET GALWEM Precip GEOPRECIP observation error variance:              1.45
-# AGRMET GALWEM Precip SSMI observation error scale length (m):      135000.
-# AGRMET GALWEM Precip SSMI observation error variance:                   2.68
-# AGRMET GALWEM Precip CMORPH observation error scale length (m):     88000.
-# AGRMET GALWEM Precip CMORPH observation error variance:                 1.38
-# AGRMET GALWEM Precip IMERG observation error scale length (m):     102000.
-# AGRMET GALWEM Precip IMERG observation error variance:                  2.52
-# AGRMET GALWEM T2M background error scale length (m):               115000.
-# AGRMET GALWEM T2M background error variance:                            1.29
-# AGRMET GALWEM T2M station observation error variance:                   2.42
-# AGRMET GALWEM RH2M background error scale length (m):              129000.
-# AGRMET GALWEM RH2M background error variance:                          27.2
-# AGRMET GALWEM RH2M station observation error variance:                 68.6
-# AGRMET GALWEM SPD10M background error scale length (m):             56000.
-# AGRMET GALWEM SPD10M background error variance:                         0.48
-# AGRMET GALWEM SPD10M station observation error variance:                2.43
+# NEW AUTOTUNED ERROR COVARIANCE SETTINGS
+AGRMET GALWEM Precip background error scale length (m): 94368.36506326153
+AGRMET GALWEM Precip background error variance: 0.6586632892470315
+AGRMET GALWEM Precip Gauge observation error variance: 1.4866804528703506
+AGRMET GALWEM Precip IMERG observation error scale length (m): 70301.71006098029
+AGRMET GALWEM Precip IMERG observation error variance: 1.373020856962049
+AGRMET GALWEM T2M background error scale length (m): 88385.26158120963
+AGRMET GALWEM T2M background error variance: 0.33319803850581065
+AGRMET GALWEM T2M station observation error variance: 1.2835683851126716
+AGRMET GALWEM RH2M background error scale length (m): 30000.000000000004
+AGRMET GALWEM RH2M background error variance: 8.109153907540295
+AGRMET GALWEM RH2M station observation error variance: 45.65518758551446
+AGRMET GALWEM SPD10M background error scale length (m): 82504.37534617611
+AGRMET GALWEM SPD10M background error variance: 0.1736058558226681
+AGRMET GALWEM SPD10M station observation error variance: 1.182785372301848
 
 # GFSFV3 Bratseth error covariance settings. Used if GALWEM is unavailable.
+AGRMET GFS Precip correlation function type: 1 # Gaussian
 AGRMET GFS Precip background error scale length (m):             93000.
 AGRMET GFS Precip background error variance:                         0.47
 AGRMET GFS Precip Gauge observation error variance:                  0.70
@@ -322,12 +311,15 @@ AGRMET GFS Precip CMORPH observation error scale length (m):     91000.
 AGRMET GFS Precip CMORPH observation error variance:                 0.92
 AGRMET GFS Precip IMERG observation error scale length (m):     100000.
 AGRMET GFS Precip IMERG observation error variance:                  1.62
+AGRMET GFS T2M correlation function type: 1 # Gaussian
 AGRMET GFS T2M background error scale length (m):               125000.
 AGRMET GFS T2M background error variance:                            1.36
 AGRMET GFS T2M station observation error variance:                   2.38
+AGRMET GFS RH2M correlation function type: 1 # Gaussian
 AGRMET GFS RH2M background error scale length (m):              197000.
 AGRMET GFS RH2M background error variance:                          51.3
 AGRMET GFS RH2M station observation error variance:                 66.8
+AGRMET GFS SPD10M correlation function type: 1 # Gaussian
 AGRMET GFS SPD10M background error scale length (m):             86000.
 AGRMET GFS SPD10M background error variance:                         0.57
 AGRMET GFS SPD10M station observation error variance:                2.48
@@ -378,16 +370,11 @@ AGRMET median cloud cover percentage1:              15.0
 AGRMET median cloud cover percentage2:               0.60
 AGRMET overcast percentage:                          0.30
 
-
-Template open water timestep:           30mn
-TEMPLATE model timestep:                30mn
-
-
 #-----------------------LAND SURFACE MODELS--------------------------
 # Noah-MP.4.0.1 LSM:
 Noah-MP.4.0.1 model timestep:                15mn
 Noah-MP.4.0.1 restart output interval:       1mo
-Noah-MP.4.0.1 restart file:      ./output/SURFACEMODEL/202208/LIS_RST_NOAHMP401_202208010000.d01.nc
+Noah-MP.4.0.1 restart file:                  ./output/SURFACEMODEL/202512/LIS_RST_NOAHMP401_202512010000.d01.nc
 Noah-MP.4.0.1 restart file format:           netcdf
 
 Noah-MP.4.0.1 soil parameter table:          ./input/noahmp401_parms/SOILPARM.TBL
@@ -425,25 +412,27 @@ Noah-MP.4.0.1 initial water in the aquifer:                 4900.0
 Noah-MP.4.0.1 initial water in aquifer and saturated soil:  4900.0
 Noah-MP.4.0.1 reference height of temperature and humidity:   10.0
 
+Template open water timestep:             15mn
+
 
 #----------------------- ROUTING --------------------------
-# ROUTING MODEL:  HYMAP
+# ROUTING MODEL:  HYMAP-2
 Routing model:                          "HYMAP2 router"
 
+HYMAP2 routing model start mode:         restart
+HYMAP2 routing model restart file:      ./output/ROUTING/202512/LIS_RST_HYMAP2_router_202512010000.d01.nc
+
 HYMAP2 routing model time step:         "15mn"
-HYMAP2 routing model output interval:   "1mo"
+HYMAP2 routing model output interval:   "1da"
 HYMAP2 routing model restart interval:  "1mo"
 HYMAP2 enable 2-way coupling:            0
-HYMAP2 run in ensemble mode:             0      # Run HYMAP in single member mode
+HYMAP2 run in ensemble mode:             0         # Run HYMAP in single member mode
 
-HYMAP2 routing method:                   "kinematic"  #"local inertia"
+HYMAP2 routing method:                   "kinematic"  # "local inertia"
 HYMAP2 routing model time step method:   "constant"   # "adaptive" 
 HYMAP2 routing model adaptive time step alfa coefficient: 1.0
 HYMAP2 floodplain dynamics:              1
 HYMAP2 routing model dwi flag:           0
-
-HYMAP2 routing model start mode:         restart
-HYMAP2 routing model restart file:     ./output/ROUTING/202208/LIS_RST_HYMAP2_router_202208010000.d01.nc
 
 HYMAP2 routing model evaporation option:      none     # "penman"
 HYMAP2 routing model linear reservoir flag:   0
@@ -453,6 +442,8 @@ HYMAP2 reservoir operation input time series size: 2
 HYMAP2 reservoir operation input directory:  ./
 HYMAP2 reservoir operation header filename: ./header_test.txt
 HYMAP2 reservoir operation input data type: "water level" # "streamflow" #
+
+TEMPLATE model timestep:               "15mn"
 
 
 #---------------------------MODEL OUTPUT CONFIGURATION-----------------------
