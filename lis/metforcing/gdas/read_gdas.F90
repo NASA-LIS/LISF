@@ -14,19 +14,19 @@
 !
 ! !REVISION HISTORY:
 !  14 Dec 2000: Urszula Jambor; Rewrote geteta.f to use GDAS forcing in GLDAS
-!  15 Mar 2001: Jon Gottschalck; Added additional parameters and octets in 
+!  15 Mar 2001: Jon Gottschalck; Added additional parameters and octets in
 !               which to search in GRIB files
-!  01 Jun 2001: Urszula Jambor; Added option to get forcing from different 
+!  01 Jun 2001: Urszula Jambor; Added option to get forcing from different
 !               files (F00 instantaneous and F06 six hour means)
 !  29 Jan 2003: Urszula Jambor; Rewrote code, uses GETGB call to replace
-!               ungribgdas.  Interpolation now occurs in interp_gdas.  
-!               Using GETGB avoids problems with the Oct2002 GDAS 
+!               ungribgdas.  Interpolation now occurs in interp_gdas.
+!               Using GETGB avoids problems with the Oct2002 GDAS
 !               grid update.
 !  12 Nov 2003: Matt Rodell; Check to make sure input file exists before
 !		opening and thereby creating a new, empty file.
 !  14 Nov 2003: Matt Rodell; Ensure lugb varies in call to baopen
 !  05 Feb 2004: James Geiger; Added GrADS-DODS Server functionality
-!  29 Apr 2010: Sujay Kumar: Fixed the mixing of instantaneous and time 
+!  29 Apr 2010: Sujay Kumar: Fixed the mixing of instantaneous and time
 !               averaged fields.
 !  25 Jan 2012: Sujay Kumar; Switched to the use of grib-api library
 !  18 Jun 2019: Hiroko Beaudoing; Separated reading routine for f00 analysis
@@ -35,7 +35,7 @@
 ! !INTERFACE:
 subroutine read_gdas( order, n, findex, &
      name00, name03, name06, F06flag, ferror,try )
-! !USES:  
+! !USES:
   use LIS_coreMod,        only : LIS_rc, LIS_domain
   use LIS_timeMgrMod,     only : LIS_get_nstep, LIS_date2time
   use LIS_metforcingMod,  only : LIS_forc
@@ -46,25 +46,25 @@ subroutine read_gdas( order, n, findex, &
 
   implicit none
 ! !ARGUMENTS:
-  integer, intent(in)          :: order    
+  integer, intent(in)          :: order
   integer, intent(in)          :: n
   integer, intent(in)          :: findex
   character(len=*), intent(in) :: name00
   character(len=*), intent(in) :: name03
   character(len=*), intent(in) :: name06
   logical, intent(in)          :: F06flag
-  integer, intent(out)         :: ferror 
+  integer, intent(out)         :: ferror
   integer, intent(inout)       :: try
 !
 ! !DESCRIPTION:
 !  For the given time, reads parameters from
-!  GDAS forecast datasets, transforms into 9 LIS forcing 
+!  GDAS forecast datasets, transforms into 9 LIS forcing
 !  parameters and interpolates to the LIS domain.
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !  \item[order]
-!    flag indicating which data to be read (order=1, read for the previous 
+!    flag indicating which data to be read (order=1, read for the previous
 !    3hr bookend, order=2, read for the next 3 hr bookend)
 !  \item[n]
 !    index of the nest
@@ -81,15 +81,15 @@ subroutine read_gdas( order, n, findex, &
 !  \item[try]
 !    index of the tries (in case of missing data)
 !  \end{description}
-! 
-!  The routines invoked are: 
+!
+!  The routines invoked are:
 !  \begin{description}
 !  \item[interp\_gdas](\ref{interp_gdas}) \newline
 !    spatially interpolates a GDAS variable
 !  \end{description}
 !EOP
 !==== Local Variables=======================
-  
+
   character(len=LIS_CONST_PATH_LEN) :: fname
   integer :: iv, c,r,t
   integer :: ferror1, ferror2, ferror3
@@ -141,7 +141,7 @@ subroutine read_gdas( order, n, findex, &
   iv = 0
 
 !--------------------------------------------------------------------------
-! Set up to open file and retrieve specified field 
+! Set up to open file and retrieve specified field
 !--------------------------------------------------------------------------
   fname = name00
   if(gdas_struc(n)%dstrucchange1 .AND.  gdas_struc(n)%gdastime1 .ge. gdas_struc(n)%datastructime1) then
@@ -157,20 +157,20 @@ subroutine read_gdas( order, n, findex, &
   call retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata_a, ferror2)
 
 !--------------------------------------------------------------------------
-! read 6hr forecast for time averaged fields, if required. 
+! read 6hr forecast for time averaged fields, if required.
 !--------------------------------------------------------------------------
 
-  if(F06flag) then 
+  if(F06flag) then
      fname = name06
      call retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata_a_f06, ferror3)
   end if
-  
+
   ferror = 1
-  if(ferror1.eq.0.or.ferror2.eq.0) then 
+  if(ferror1.eq.0.or.ferror2.eq.0) then
      ferror = 0
   endif
   if(F06flag) then
-     if(ferror.eq.0.or.ferror3.eq.0) then 
+     if(ferror.eq.0.or.ferror3.eq.0) then
         ferror = 0
      endif
   endif
@@ -180,15 +180,15 @@ subroutine read_gdas( order, n, findex, &
 
   do iv=1,9
      do t=1,LIS_rc%ngrid(n)
-        if(F06flag) then 
+        if(F06flag) then
            if(iv.eq.3.or.iv.eq.4.or.iv.eq.8.or.iv.eq.9) then! these are time avgd fields
-              if(order.eq.1) then 
+              if(order.eq.1) then
                  gdas_struc(n)%metdata1(iv,t) = 2*glbdata_a_F06(iv,t)-glbdata_a(iv,t)
               else
                  gdas_struc(n)%metdata2(iv,t) = 2*glbdata_a_F06(iv,t)-glbdata_a(iv,t)
               endif
            else ! these are instantaneous
-              if(order.eq.1) then 
+              if(order.eq.1) then
                  gdas_struc(n)%metdata1(iv,t) = glbdata_i(iv,t)
               else
                  gdas_struc(n)%metdata2(iv,t) = glbdata_i(iv,t)
@@ -196,16 +196,16 @@ subroutine read_gdas( order, n, findex, &
            endif
         else
            if(iv.eq.3.or.iv.eq.4.or.iv.eq.8.or.iv.eq.9) then! these are time avgd fields
-              if(order.eq.1) then 
-                 gdas_struc(n)%metdata1(iv,t) = glbdata_a(iv,t)                         
+              if(order.eq.1) then
+                 gdas_struc(n)%metdata1(iv,t) = glbdata_a(iv,t)
               else
-                 gdas_struc(n)%metdata2(iv,t) = glbdata_a(iv,t)                         
+                 gdas_struc(n)%metdata2(iv,t) = glbdata_a(iv,t)
               endif
            else
-              if(order.eq.1) then 
-                 gdas_struc(n)%metdata1(iv,t) = glbdata_i(iv,t)                         
+              if(order.eq.1) then
+                 gdas_struc(n)%metdata1(iv,t) = glbdata_i(iv,t)
               else
-                 gdas_struc(n)%metdata2(iv,t) = glbdata_i(iv,t)                         
+                 gdas_struc(n)%metdata2(iv,t) = glbdata_i(iv,t)
               endif
            endif
         endif
@@ -217,15 +217,15 @@ subroutine read_gdas( order, n, findex, &
 end subroutine read_gdas
 
 !BOP
-! 
+!
 ! !ROUTINE: retrieve_gdas_variables
 ! \label{retrieve_gdas_variables}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
 subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, errorcode)
-! !USES: 
+! !USES:
   use LIS_coreMod,        only : LIS_rc, LIS_domain
-  use LIS_logMod,         only : LIS_logunit,LIS_getNextUnitNumber,& 
+  use LIS_logMod,         only : LIS_logunit,LIS_getNextUnitNumber,&
        LIS_releaseUnitNumber, LIS_verify, LIS_warning
   use gdas_forcingMod,    only : gdas_struc
 
@@ -234,18 +234,18 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
 #endif
 
   implicit none
-! !ARGUMENTS: 
-  integer               :: n 
+! !ARGUMENTS:
+  integer               :: n
   integer               :: findex
   character(len=*)      :: fname
   logical               :: dataStrucflag
   real                  :: glbdata(10,LIS_rc%ngrid(n))
   integer               :: errorcode
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !   This subroutine retrieves GDAS forcing variables, and interpolates
-!  them to the LIS grid. 
-! 
+!  them to the LIS grid.
+!
 !EOP
 
   integer               :: ngdas
@@ -253,9 +253,9 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
   real, dimension(LIS_rc%lnc(n), LIS_rc%lnr(n)) :: varfield
   integer :: igrib
   integer :: iv,ivmax,c,r,t
-  real    :: missingValue 
+  real    :: missingValue
   integer :: iret
-  integer :: ftn 
+  integer :: ftn
   integer, dimension(gdas_struc(n)%nmif) :: pds5, pds7, pds6,pds16
   integer :: pds5_val, pds7_val, pds16_val
   logical*1, allocatable :: lb(:)
@@ -268,12 +268,12 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
   logical :: pcp_flag, var_found
   integer :: grid_size
 
-#if(defined USE_GRIBAPI) 
+#if(defined USE_GRIBAPI)
 !  pds5 = (/ 011,051,204,205,033,034,001,059,214,084 /) !parameter
 !  pds6 = -1
 !  pds7 = (/ 002,002,000,000,010,010,000,000,000,000 /) !htlev2
 !! index 10 indicates instantaneous, 003 indicates time average
-!  pds16 = (/010,010,003,003,010,010,010,003,003,003 /) 
+!  pds16 = (/010,010,003,003,010,010,010,003,003,003 /)
 
 ! EMK...Drop last entry (for albedo); not used, and it exceeds array dimension
   pds5 = (/ 011,051,204,205,033,034,001,059,214 /) !parameter
@@ -286,21 +286,21 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
     ivmax = 7
   else
     ! index 10 indicates instantaneous, 003 indicates time average
-    pds16 = (/010,010,003,003,010,010,010,003,003 /) 
+    pds16 = (/010,010,003,003,010,010,010,003,003 /)
     ivmax = 9
   endif
 
   ngdas = (gdas_struc(n)%ncold*gdas_struc(n)%nrold)
 
-  varfield = 0 
+  varfield = 0
   errorcode = 1
-  var_status = .false. 
+  var_status = .false.
 
   inquire (file=fname, exist=file_exists)
-  if (file_exists) then      
+  if (file_exists) then
 
      call grib_open_file(ftn,trim(fname),'r',iret)
-     if(iret.ne.0) then 
+     if(iret.ne.0) then
         write(LIS_logunit,*) '[ERR] Could not open file: ',trim(fname)
         errorcode = 0
         return
@@ -308,24 +308,24 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
 
      call grib_count_in_file(ftn,nvars,iret)
      call LIS_warning(iret, 'error in grib_count_in_file in read_gdas')
-     if(iret.ne.0) then 
+     if(iret.ne.0) then
         errorcode = 0
-        return 
+        return
      endif
 
      allocate(lb(gdas_struc(n)%ncold*gdas_struc(n)%nrold))
      allocate(f(gdas_struc(n)%ncold*gdas_struc(n)%nrold))
-     
+
      do kk=1,nvars
         call grib_new_from_file(ftn, igrib, iret)
         call LIS_warning(iret, 'error in grib_new_from_file in read_gdas')
-        if(iret.ne.0) then 
+        if(iret.ne.0) then
            write(LIS_logunit,*) &
                 '[ERR] Could not retrieve entries in file: ',trim(fname)
            errorcode = 0
            deallocate(lb)
            deallocate(f)
-           return           
+           return
         endif
 
         ! Trap the old "Could not find correct forcing parameter in file"
@@ -355,14 +355,14 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
         call grib_get(igrib,'timeRangeIndicator',pds16_val,rc)
         call LIS_verify(rc, 'error in grib_get: timeRangeIndicator in read_gdas')
 
-        var_found = .false. 
+        var_found = .false.
         do iv=1,ivmax
            if((pds5_val.eq.pds5(iv)).and.&
                 (pds7_val.eq.pds7(iv)).and.&
                 (pds16_val.eq.pds16(iv))) then
               var_found = .true.
               var_index = iv
-              var_status(iv) = .true. 
+              var_status(iv) = .true.
               exit
            endif
         enddo
@@ -370,13 +370,13 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
         call grib_get(igrib,'values',f,rc)
         call LIS_warning(rc, 'error in grib_get:values in read_gdas')
 
-        if(rc.ne.0) then 
+        if(rc.ne.0) then
            write(LIS_logunit,*) &
                 '[ERR] Could not retrieve entries in file: ',trim(fname)
            errorcode = 0
            deallocate(lb)
            deallocate(f)
-           return           
+           return
         endif
 
         call grib_get(igrib,'missingValue',missingValue,rc)
@@ -384,23 +384,23 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
 
         call grib_release(igrib,rc)
         call LIS_verify(rc, 'error in grib_release in read_gdas')
-        
-        if(var_found) then 
+
+        if(var_found) then
            lb = .false.
            do t=1,ngdas
-              if(f(t).ne.missingValue) lb(t) = .true. 
+              if(f(t).ne.missingValue) lb(t) = .true.
            enddo
-           
-           pcp_flag = .false. 
-           if(var_index.eq.8.or.var_index.eq.9) pcp_flag = .true. 
-           
+
+           pcp_flag = .false.
+           if(var_index.eq.8.or.var_index.eq.9) pcp_flag = .true.
+
            call interp_gdas(n, findex,pcp_flag,ngdas,f,&
                 lb,LIS_rc%gridDesc(n,:), &
                 LIS_rc%lnc(n),LIS_rc%lnr(n),varfield)
-           
+
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
-                 if(LIS_domain(n)%gindex(c,r).ne.-1) then 
+                 if(LIS_domain(n)%gindex(c,r).ne.-1) then
                     glbdata(var_index,LIS_domain(n)%gindex(c,r)) =&
                          varfield(c,r)
                  endif
@@ -412,14 +412,14 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
      call grib_close_file(ftn)
 
      deallocate(lb)
-     deallocate(f)     
-         
+     deallocate(f)
+
      do kk=1,ivmax
-        if(.not.var_status(kk)) then 
+        if(.not.var_status(kk)) then
            write(LIS_logunit,*) &
                 '[ERR] Could not retrieve entries in file: ',trim(fname)
            errorcode = 0
-           
+
            return
         endif
      enddo
@@ -428,18 +428,18 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
           '[ERR] Could not find file: ',trim(fname)
      errorcode = 0
   endif
-#endif     
+#endif
 end subroutine retrieve_gdas_variables
 !BOP
-! 
+!
 ! !ROUTINE: retrieve_gdas_noprecip
 ! \label{retrieve_gdas_noprecip}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
 subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
-! !USES: 
+! !USES:
   use LIS_coreMod,        only : LIS_rc, LIS_domain
-  use LIS_logMod,         only : LIS_logunit,LIS_getNextUnitNumber,& 
+  use LIS_logMod,         only : LIS_logunit,LIS_getNextUnitNumber,&
        LIS_releaseUnitNumber, LIS_verify, LIS_warning
   use gdas_forcingMod,    only : gdas_struc
 
@@ -448,17 +448,17 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
 #endif
 
   implicit none
-! !ARGUMENTS: 
-  integer               :: n 
+! !ARGUMENTS:
+  integer               :: n
   integer               :: findex
   character(len=*)      :: fname
   real                  :: glbdata(10,LIS_rc%ngrid(n))
   integer               :: errorcode
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !   This subroutine retrieves GDAS forcing variables, and interpolates
-!  them to the LIS grid. 
-! 
+!  them to the LIS grid.
+!
 !EOP
 
   integer               :: ngdas
@@ -466,9 +466,9 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
   real, dimension(LIS_rc%lnc(n), LIS_rc%lnr(n)) :: varfield
   integer :: igrib
   integer :: iv,c,r,t
-  real    :: missingValue 
+  real    :: missingValue
   integer :: iret
-  integer :: ftn 
+  integer :: ftn
   integer, dimension(gdas_struc(n)%nmif) :: pds5, pds7, pds6,pds16
   integer :: pds5_val, pds7_val, pds16_val
   logical*1, allocatable :: lb(:)
@@ -481,26 +481,26 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
   logical :: pcp_flag, var_found
   integer :: grid_size
 
-#if(defined USE_GRIBAPI) 
+#if(defined USE_GRIBAPI)
 ! HKB...Drop last two entries (precip)
   pds5 = (/ 011,051,204,205,033,034,001 /) !parameter
   pds6 = -1
   pds7 = (/ 002,002,000,000,010,010,000 /) !htlev2
 ! index 10 indicates instantaneous, 003 indicates time average
 ! HKB...All instantaneous fiedls in f00 files
-  pds16 = (/010,010,010,010,010,010,010 /) 
+  pds16 = (/010,010,010,010,010,010,010 /)
 
   ngdas = (gdas_struc(n)%ncold*gdas_struc(n)%nrold)
 
-  varfield = 0 
+  varfield = 0
   errorcode = 1
-  var_status = .false. 
+  var_status = .false.
 
   inquire (file=fname, exist=file_exists)
-  if (file_exists) then      
+  if (file_exists) then
 
      call grib_open_file(ftn,trim(fname),'r',iret)
-     if(iret.ne.0) then 
+     if(iret.ne.0) then
         write(LIS_logunit,*) '[ERR] Could not open file: ',trim(fname)
         errorcode = 0
         return
@@ -508,24 +508,24 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
 
      call grib_count_in_file(ftn,nvars,iret)
      call LIS_warning(iret, 'error in grib_count_in_file in read_gdas')
-     if(iret.ne.0) then 
+     if(iret.ne.0) then
         errorcode = 0
-        return 
+        return
      endif
 
      allocate(lb(gdas_struc(n)%ncold*gdas_struc(n)%nrold))
      allocate(f(gdas_struc(n)%ncold*gdas_struc(n)%nrold))
-     
+
      do kk=1,nvars
         call grib_new_from_file(ftn, igrib, iret)
         call LIS_warning(iret, 'error in grib_new_from_file in read_gdas')
-        if(iret.ne.0) then 
+        if(iret.ne.0) then
            write(LIS_logunit,*) &
                 '[ERR] Could not retrieve entries in file f00a: ',trim(fname)
            errorcode = 0
            deallocate(lb)
            deallocate(f)
-           return           
+           return
         endif
 
         ! Trap the old "Could not find correct forcing parameter in file"
@@ -554,17 +554,15 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
 
         call grib_get(igrib,'timeRangeIndicator',pds16_val,rc)
         call LIS_verify(rc, 'error in grib_get: timeRangeIndicator in read_gdas')
-!HKB        write(LIS_logunit,*) '[INFO] f00 pds: ',kk,pds5_val,pds7_val,pds16_val
 
-        var_found = .false. 
-!HKB        do iv=1,9
+        var_found = .false.
         do iv=1,7
            if((pds5_val.eq.pds5(iv)).and.&
                 (pds7_val.eq.pds7(iv)).and.&
                 (pds16_val.eq.pds16(iv))) then
               var_found = .true.
               var_index = iv
-              var_status(iv) = .true. 
+              var_status(iv) = .true.
               exit
            endif
         enddo
@@ -572,13 +570,13 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
         call grib_get(igrib,'values',f,rc)
         call LIS_warning(rc, 'error in grib_get:values in read_gdas')
 
-        if(rc.ne.0) then 
+        if(rc.ne.0) then
            write(LIS_logunit,*) &
                 '[ERR] Could not retrieve entries in file f00a: ',trim(fname),kk,rc
            errorcode = 0
            deallocate(lb)
            deallocate(f)
-           return           
+           return
         endif
 
         call grib_get(igrib,'missingValue',missingValue,rc)
@@ -586,23 +584,23 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
 
         call grib_release(igrib,rc)
         call LIS_verify(rc, 'error in grib_release in read_gdas')
-        
-        if(var_found) then 
+
+        if(var_found) then
            lb = .false.
            do t=1,ngdas
-              if(f(t).ne.missingValue) lb(t) = .true. 
+              if(f(t).ne.missingValue) lb(t) = .true.
            enddo
-           
-           pcp_flag = .false. 
-           if(var_index.eq.8.or.var_index.eq.9) pcp_flag = .true. 
-           
+
+           pcp_flag = .false.
+           if(var_index.eq.8.or.var_index.eq.9) pcp_flag = .true.
+
            call interp_gdas(n, findex,pcp_flag,ngdas,f,&
                 lb,LIS_rc%gridDesc(n,:), &
                 LIS_rc%lnc(n),LIS_rc%lnr(n),varfield)
-           
+
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
-                 if(LIS_domain(n)%gindex(c,r).ne.-1) then 
+                 if(LIS_domain(n)%gindex(c,r).ne.-1) then
                     glbdata(var_index,LIS_domain(n)%gindex(c,r)) =&
                          varfield(c,r)
                  endif
@@ -614,15 +612,13 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
      call grib_close_file(ftn)
 
      deallocate(lb)
-     deallocate(f)     
-         
-!HKB     do kk=1,9
+     deallocate(f)
+
      do kk=1,7
-        if(.not.var_status(kk)) then 
+        if(.not.var_status(kk)) then
            write(LIS_logunit,*) &
                 '[ERR] Could not retrieve entries in file f00b: ',trim(fname),kk
            errorcode = 0
-           
            return
         endif
      enddo
@@ -631,7 +627,7 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
           '[ERR] Could not find file: ',trim(fname)
      errorcode = 0
   endif
-#endif     
+#endif
 end subroutine retrieve_gdas_noprecip
 !BOP
 ! !ROUTINE: interp_gdas
@@ -646,8 +642,8 @@ subroutine interp_gdas(n, findex, pcp_flag, ngdas,f,lb,lis_gds,nc,nr, &
   use LIS_logMod,        only : LIS_logunit, LIS_endrun
 
   implicit none
-! !ARGUMENTS: 
-  integer, intent(in) :: n 
+! !ARGUMENTS:
+  integer, intent(in) :: n
   integer, intent(in) :: findex
   logical, intent(in) :: pcp_flag
   integer, intent(in) :: ngdas
@@ -659,9 +655,9 @@ subroutine interp_gdas(n, findex, pcp_flag, ngdas,f,lb,lis_gds,nc,nr, &
   real, intent(out)   :: varfield(nc,nr)
 !
 ! !DESCRIPTION:
-!   This subroutine interpolates a given GDAS field 
-!   to the LIS grid. 
-!  The arguments are: 
+!   This subroutine interpolates a given GDAS field
+!   to the LIS grid.
+!  The arguments are:
 !  \begin{description}
 ! \item[n]
 !  index of the nest
@@ -679,10 +675,10 @@ subroutine interp_gdas(n, findex, pcp_flag, ngdas,f,lb,lis_gds,nc,nr, &
 !  number of rows (in the north-south dimension) in the LIS grid
 ! \item[varfield]
 !  output interpolated field
-!  \end{description} 
-! 
+!  \end{description}
 !
-!  The routines invoked are: 
+!
+!  The routines invoked are:
 !  \begin{description}
 !  \item[bilinear\_interp](\ref{bilinear_interp}) \newline
 !    spatially interpolate the forcing data using bilinear interpolation
@@ -712,9 +708,9 @@ subroutine interp_gdas(n, findex, pcp_flag, ngdas,f,lb,lis_gds,nc,nr, &
 ! Initialize output bitmap. Important for soil moisture and temp.
 !-----------------------------------------------------------------------
   lo = .true.
-!-----------------------------------------------------------------------  
+!-----------------------------------------------------------------------
 ! Interpolate to LIS grid
-!-----------------------------------------------------------------------  
+!-----------------------------------------------------------------------
   if ( gdas_struc(n)%met_interp == "bilinear" ) then
      call bilinear_interp(lis_gds,lb,f,lo,lis1d,gdas_struc(n)%mi,mo,&
           LIS_domain(n)%lat, LIS_domain(n)%lon,&
@@ -723,14 +719,14 @@ subroutine interp_gdas(n, findex, pcp_flag, ngdas,f,lb,lis_gds,nc,nr, &
           gdas_struc(n)%n111,gdas_struc(n)%n121,&
           gdas_struc(n)%n211,gdas_struc(n)%n221,LIS_rc%udef, iret)
   elseif ( gdas_struc(n)%met_interp == "budget-bilinear" ) then
-     if (pcp_flag) then 
-        call conserv_interp(lis_gds,lb,f,lo,lis1d,gdas_struc(n)%mi,mo, & 
+     if (pcp_flag) then
+        call conserv_interp(lis_gds,lb,f,lo,lis1d,gdas_struc(n)%mi,mo, &
              LIS_domain(n)%lat, LIS_domain(n)%lon,&
              gdas_struc(n)%w112,gdas_struc(n)%w122,&
              gdas_struc(n)%w212,gdas_struc(n)%w222,&
              gdas_struc(n)%n112,gdas_struc(n)%n122,&
              gdas_struc(n)%n212,gdas_struc(n)%n222,LIS_rc%udef,iret)
-     else 
+     else
         call bilinear_interp(lis_gds,lb,f,lo,lis1d,gdas_struc(n)%mi,mo,&
              LIS_domain(n)%lat, LIS_domain(n)%lon,&
              gdas_struc(n)%w111,gdas_struc(n)%w121,&
@@ -748,11 +744,11 @@ subroutine interp_gdas(n, findex, pcp_flag, ngdas,f,lb,lis_gds,nc,nr, &
      call LIS_endrun()
   endif
 
-!-----------------------------------------------------------------------    
+!-----------------------------------------------------------------------
 ! Create 2D array for main program. Also define a "soil" mask
-! due to different geography between GDAS & LDAS. For LDAS land 
+! due to different geography between GDAS & LDAS. For LDAS land
 ! points not included in GDAS geography dataset only.
-!-----------------------------------------------------------------------    
+!-----------------------------------------------------------------------
   count1 = 0
   do j = 1, nr
      do i = 1, nc

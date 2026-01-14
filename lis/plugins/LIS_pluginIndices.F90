@@ -30,7 +30,7 @@ module LIS_pluginIndices
 !  27 Jan 2014: Shugong Wang, added HRAP projection
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF
 !               for Noah
-!  16 Aug 2016: Mahdi Navari, added PILDAS  
+!  16 Aug 2016: Mahdi Navari, added PILDAS
 !  18 Mar 2020: Sarith Mahanam, added Concurrent irrigation
 !
 !EOP
