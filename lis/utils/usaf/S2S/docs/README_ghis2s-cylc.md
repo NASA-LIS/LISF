@@ -7,7 +7,7 @@
 **GHIREPOS**: Operational software developed by 16WS  
 **LISFDIR**: The path to LISF installation  
 
-![GHI-S2S Workflow Diagram](https://github.com/smahanam/FileSharing/blob/main/workflow.png)
+![GHI-S2S Workflow Diagram](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/docs/workflow.png)
 **Figure Caption**: This figure depicts the information flow in GHIREPOS/ghis2s_program.py coupled with GHI-S2S, along with the output E2ES directory tree. The embedded Cylc-generated workflow graph illustrates the complexity of the end-to-end GHI-S2S forecast system, which involves 7 main steps (LISDA, LDT-ICS, BCSD, FCST, S2SPOST, S2SMETRICS, and S2SPLOTS) executed on a predefined schedule. To maintain organization, each month's forecast-related scripts and links are created in the scratch/YYYYMM/ directory, keeping the main E2ESDIR clean and tidy.
 
 # (1) The ghis2s Python Package
@@ -26,7 +26,7 @@ The `S2Srun` class provides the following functionality:
    - Symbolic links
    - Job scripts for forecast-related tasks
 
-2. **Workflow Generation**: Writes the `flow.cylc` file for Cylc workflow management based on ([for example](https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202401/CYLC-202401/flow.cylc)):
+2. **Workflow Generation**: Writes the `flow.cylc` file for Cylc workflow management based on ([for example](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/docs/flow.cylc_example)):
    - Selected NMME models 
    - Requirements specified in the forecast configuration file
      
@@ -106,7 +106,7 @@ This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/cylc_{S2S_
 
 As shown in the figure above, the end-to-end S2S forecast involves more than 150 tasks, each generating multiple log files in a disorganized manner as multiple processors write concurrent output within loops. Additionally, Cylc's native log files do not contain meaningful information about the underlying tasks being performed. 
 
-To address this challenge, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file at **SCRATCH/YYYYMM/ghis2s_main.log** [see for example](https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202401/ghis2s_main.log). This centralized log file can be easily integrated with monitoring dashboards like **SPLUNK** to track forecast progression in real-time.
+To address this challenge, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file at **SCRATCH/YYYYMM/ghis2s_main.log** [see for example](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/docs/ghis2s_main.log_example). This centralized log file can be easily integrated with monitoring dashboards like **SPLUNK** to track forecast progression in real-time.
 
 ## Log Monitoring Workflow
 
@@ -219,8 +219,6 @@ While the shell scripts (*.sh) avoid hardcoded SLURM directives, certain tasks b
 
 This approach has been more effective than using Cylc’s native mechanisms in such cases.  
 That said, ghis2s includes a feature to generate fully system-agnostic shell scripts (i.e., no **srun**), although this feature is currently disabled for performance reasons.
-An example of a **SLURM's srun-free** shell script can be found here:   
-*https://github.com/smahanam/FileSharing/blob/main/E2ESDIR/scratch/202401/s2spost/s2spost_01_run.sh*  
 
 **e) How does ghis2s differ from other GHI subsystems (GHI-NRT, GHI-MR)?**  
   
