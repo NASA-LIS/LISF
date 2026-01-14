@@ -8,14 +8,15 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: HYMAP2_getWL
-! \label{HYMAP2_getWL}
+! !ROUTINE: HYMAP2_getSWOT
+! \label{HYMAP2_getSWOT}
 !
 ! !REVISION HISTORY:
-!  07 Nov 2019: Sujay Kumar, Initial specification
+! 15 Apr 24: Yeosang Yoon; Initial specification;
+!                          copied from HYMAP2_getWL
 !
 ! !INTERFACE:
-subroutine HYMAP2_getWL(n, Routing_State)
+subroutine HYMAP2_getSWOT(n, Routing_State)
 
 ! !USES:
   use ESMF
@@ -25,7 +26,7 @@ subroutine HYMAP2_getWL(n, Routing_State)
   use HYMAP2_modelMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
 !
@@ -33,8 +34,8 @@ subroutine HYMAP2_getWL(n, Routing_State)
 !
 !  Returns the water level DA related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
@@ -44,49 +45,22 @@ subroutine HYMAP2_getWL(n, Routing_State)
   integer                :: t,i,m
   integer                :: status
   real, pointer          :: sfcelev(:)
-  character*100          :: lsm_state_objs(4)
-
-#if 0 
-  integer                :: ielevtn
-  integer                :: ifldhgt(HYMAP2_routing_struc(n)%nz)
-  real                   :: fldstomax(HYMAP2_routing_struc(n)%nz)
-  real                   :: grarea
-  real                   :: rivstomax
-  real                   :: rivlen
-  real                   :: rivwth
-  integer                :: ielv
-  integer                :: irivelv
-  real*8                 :: vol
-
-  real*8                 :: grarea1
-  real*8                 :: fldstomax1(HYMAP2_routing_struc(n)%nz)
-  real*8                 :: rivstomax1
-  real*8                 :: rivlen1
-  real*8                 :: rivwth1
-#endif
-  real*8                :: elevtn
-  real*8                :: fldhgt(HYMAP2_routing_struc(n)%nz)
-  real*8                   :: fldstomax(HYMAP2_routing_struc(n)%nz)
-  real*8                   :: grarea
-  real*8                   :: rivstomax
-  real*8                   :: rivlen
-  real*8                   :: rivwth
-  real*8                   :: elv
+  real*8                 :: elevtn
+  real*8                 :: fldhgt(HYMAP2_routing_struc(n)%nz)
+  real*8                 :: fldstomax(HYMAP2_routing_struc(n)%nz)
+  real*8                 :: grarea
+  real*8                 :: rivstomax
+  real*8                 :: rivlen
+  real*8                 :: rivwth
+  real*8                 :: elv
   real*8                 :: rivelv
   real*8                 :: vol
 
-  real*8                 :: grarea1
-  real*8                 :: fldstomax1(HYMAP2_routing_struc(n)%nz)
-  real*8                 :: rivstomax1
-  real*8                 :: rivlen1
-  real*8                 :: rivwth1
-
-
   call ESMF_StateGet(Routing_State,"Surface elevation",sfcelevField,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm1 in HYMAP2_getWL')
+  call LIS_verify(status,'ESMF_StateGet failed for sfcelev in HYMAP2_getSWOT')
 
   call ESMF_FieldGet(sfcelevField,localDE=0,farrayPtr=sfcelev,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sfcelev in HYMAP2_getWL')
+  call LIS_verify(status,'ESMF_FieldGet failed for sfcelev in HYMAP2_getSWOT')
 
   do i=1,HYMAP2_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
@@ -117,7 +91,7 @@ subroutine HYMAP2_getWL(n, Routing_State)
              vol)
         sfcelev(t) = real(elv) - HYMAP2_routing_struc(n)%rivelv(i)
      enddo
-     
+
   enddo
 
-end subroutine HYMAP2_getWL
+end subroutine HYMAP2_getSWOT
