@@ -25,7 +25,7 @@ subroutine read_AQUASTAT_irrigtype(n,fgrd,num_bins)
 
   ! !USES:
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
-  use LDT_coreMod, only : LDT_rc, LDT_domain
+  use LDT_coreMod, only : LDT_rc
   use LDT_logMod,  only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
   use LDT_paramDataMod
@@ -126,7 +126,6 @@ subroutine read_AQUASTAT_irrigtype(n,fgrd,num_bins)
   integer*2, dimension(N_COUNTRIES)              :: loc_index
   ! USGS county data variables:
   integer*2, allocatable, dimension(:,:)         :: fid
-  integer*2, allocatable, dimension(:,:)         :: temp
   integer                                        :: input_rows2
   integer                                        :: county
   integer                                        :: states
@@ -137,7 +136,7 @@ subroutine read_AQUASTAT_irrigtype(n,fgrd,num_bins)
   integer, allocatable, dimension(:)             :: geoid
   integer                                        :: SS,CCC
 
-  integer                             :: i,j,ii,jj
+  integer                             :: i,j,ii
   integer                             :: ncid,ncstatus,varid
   integer                             :: countyid,stateid,uscountyid
   integer                             :: cindex

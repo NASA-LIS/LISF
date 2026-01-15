@@ -105,7 +105,7 @@ CONTAINS
     ! local variables
     character(len=LDT_CONST_PATH_LEN) :: tempfilei,tempfiler
     logical :: file_exists
-    integer :: i, ii, j, t, c, r, mc
+    integer :: i, c, r, mc
     integer :: err
 
     real      :: irrigated(LDT_rc%lnc(n),LDT_rc%lnr(n))
@@ -122,6 +122,8 @@ CONTAINS
     !     planting/harvesting dates per season for irrigated and rainfed crops
     real, allocatable, dimension (:,:,:) :: irrigplant, irrigharvest, &
          rainfedplant, rainfedharvest
+
+    external :: readcropinventory
 
     !==========================================================
     cropcaflag = LDT_LSMCrop_struc(n)%cropcalendar
@@ -147,7 +149,8 @@ CONTAINS
        write(LDT_logunit,*) "Program stopping ..."
        call LDT_endrun
     endif
-    write(LDT_logunit,*)"[INFO] Reading MIRCA2000 crop file: ",trim(LDT_LSMCrop_struc(n)%croptfile)
+    write(LDT_logunit,*)"[INFO] Reading MIRCA2000 crop file: ", &
+         trim(LDT_LSMCrop_struc(n)%croptfile)
 
     !- Retrieve the croptype array for user-selected classification:
     allocate( croptype_array(LDT_rc%numcrop(n)), STAT=err )
@@ -347,9 +350,8 @@ CONTAINS
     real    :: subparam_gridDesc(20)    ! Input parameter grid desc array
     integer, allocatable  :: lat_line(:,:), lon_line(:,:)
 
-    logical :: file_exists
-    integer :: ftn, ierr, nrec, ios
-    integer :: i, j, t, c, r, m, nc, nr
+    integer :: ftn, nrec, ios
+    integer :: i, j, c, r, m, nc, nr
     integer :: mi                       ! Total number of input param grid array points
     integer :: mo                       ! Total number of output LIS grid array points
     real,    allocatable  :: gi1(:)     ! Input parameter 1d grid
@@ -361,10 +363,9 @@ CONTAINS
     real, allocatable :: var_in(:,:,:)         ! Read in parameter
     real, allocatable :: read_crop_ann(:,:)    ! Read input annual mean
 
-    real              :: latc, lonc, area, d2r
+    real              :: latc, area, d2r
     ! crop calendar varibles
     integer :: mc   ! crop seasons-- hard-coded to two for now
-    integer :: mci
     real,    allocatable  :: gi1p(:)   ! Input parameter 1d grid
     logical*1,allocatable :: li1p(:)   ! Input logical mask (to match gi)
     real      :: var_out(LDT_rc%lnc(n),LDT_rc%lnr(n),12)  ! 12-mon croptype frac
@@ -591,7 +592,7 @@ CONTAINS
     integer :: r,c,m
     integer :: nc, day1, dayL, day1_2, dayL_2
     integer, dimension (12) :: fmonth, fmonth2, fmonth3
-    integer, dimension (12)  :: DOY_MidMonth, DOY_BegMonth, DOY_EndMonth
+    integer, dimension (12) :: DOY_MidMonth, DOY_BegMonth, DOY_EndMonth
     integer, allocatable , dimension (:) :: crop_mons
     logical, dimension (4)  :: found = .false.
 
@@ -778,9 +779,8 @@ CONTAINS
     real    :: subparam_gridDesc(20)    ! Input parameter grid desc array
     integer, allocatable  :: lat_line(:,:), lon_line(:,:)
 
-    logical :: file_exists
-    integer :: ftn, ierr, nrec, ios
-    integer :: i, j, t, c, r, m, nc, nr
+    integer :: ftn, nrec, ios
+    integer :: i, j, c, r, m, nc, nr
     integer :: mi                       ! Total number of input param grid array points
     integer :: mo                       ! Total number of output LIS grid array points
 
@@ -788,10 +788,9 @@ CONTAINS
     real, allocatable :: var_in_i(:,:,:)         ! Read in parameter
     real, allocatable :: var_in_r(:,:,:)         ! Read in parameter
 
-    real              :: latc, lonc, area, d2r
+    real              :: latc, area, d2r
     ! crop calendar varibles
     integer :: mc   ! crop seasons-- hard-coded to two for now
-    integer :: mci
     real,    allocatable  :: gi1p(:)   ! Input parameter 1d grid
     logical*1,allocatable :: li1p(:)   ! Input logical mask (to match gi)
     real      :: var_out(LDT_rc%lnc(n),LDT_rc%lnr(n),12)  ! 12-mon croptype frac

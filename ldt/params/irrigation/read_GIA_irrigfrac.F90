@@ -20,7 +20,7 @@
 subroutine read_GIA_irrigfrac(n, fgrd)
 
   ! !USES:
-  use LDT_coreMod, only : LDT_rc, LDT_domain
+  use LDT_coreMod, only : LDT_rc
   use LDT_logMod,  only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
   use LDT_gridmappingMod
@@ -90,8 +90,7 @@ subroutine read_GIA_irrigfrac(n, fgrd)
   !  real,    parameter :: IN_yres = 0.0083333333333333
   integer, parameter :: num_bins = 1
 
-  integer   :: nc, nr, i, t, nrec
-  integer   :: ftn
+  integer   :: nc, nr, i
   logical   :: file_exists
   integer   :: mi                     ! Total number of input param grid array points
   integer   :: mo                     ! Total number of output LIS grid array points
@@ -105,7 +104,7 @@ subroutine read_GIA_irrigfrac(n, fgrd)
   real,    allocatable  :: gi(:)      ! Input parameter 1d grid
   logical*1,allocatable :: li(:)      ! Input logical mask (to match gi)
 
-  real, allocatable :: var_read(:), var_in(:,:)
+  real, allocatable :: var_in(:,:)
   real      :: go2(LDT_rc%lnc(n)*LDT_rc%lnr(n), num_bins)    ! Output lis 1d grid
   logical*1 :: lo2(LDT_rc%lnc(n)*LDT_rc%lnr(n), num_bins)    ! Output logical mask (to match go)
   real      :: irrigfrac_cnt(LDT_rc%lnc(n),LDT_rc%lnr(n))
@@ -120,7 +119,7 @@ subroutine read_GIA_irrigfrac(n, fgrd)
   real                   :: dres
   REAL,ALLOCATABLE       :: zval(:,:)
   REAL,ALLOCATABLE       :: zval2(:,:)
-  integer                :: c, r, line
+  integer                :: c, r
 
 #if (defined USE_GDAL)
   TYPE(gdaldriverh)      :: driver
@@ -132,6 +131,9 @@ subroutine read_GIA_irrigfrac(n, fgrd)
 #endif
 
   integer               :: x_offset, y_offset
+
+  external :: upscaleByAveraging_input
+  external :: upscaleByCnt
   ! ______________________________________________________________
 
   noncrop = 0

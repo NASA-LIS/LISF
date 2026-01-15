@@ -100,6 +100,8 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
   integer            :: imn,imx,jmn,jmx,l,c,r
   logical            :: foundPt
 
+  external :: read_GRIPC_irrigtype
+
   ! _____________________________________
 
   write(LDT_logunit,*)"[INFO] Merging the crop type and irrigation for given classification: ",trim(crop_classification)
@@ -116,7 +118,8 @@ subroutine mergeirrigationcrop( crop_classification, nest, num_types, &
         ! overwrite irrig_struc variables
         LDT_irrig_struc(nest)%irrigtypefile = trim(mergefile)
         LDT_irrig_struc(nest)%irrigtype_gridtransform = trim(merge_gridtransform)
-        write(LDT_logunit,*)"[INFO] Overwritten irrigtypefile: ",trim(LDT_irrig_struc(nest)%irrigtypefile)
+        write(LDT_logunit,*)"[INFO] Overwritten irrigtypefile: ", &
+             trim(LDT_irrig_struc(nest)%irrigtypefile)
         call read_GRIPC_irrigtype(nest, LDT_irrig_struc(nest)%cropwatsrc%value, &
              LDT_irrig_struc(nest)%cropwatsrc%num_bins )
         RFRAC = LDT_irrig_struc(nest)%cropwatsrc%value(:,:,1) !Rain-fed croplands
