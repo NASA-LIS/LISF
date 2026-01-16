@@ -83,6 +83,7 @@ module LIS_lsmMod
   public :: LIS_lsm_DAsetFreshIncrementsStatus
   public :: LIS_lsm_DAgetFreshIncrementsStatus
   public :: LIS_lsm_DAsetAnlysisUpdates
+  public :: LIS_lsm_DAscaleAnlysisUpdates
   public :: LIS_lsm_DAmapTileSpaceToObsSpace
   public :: LIS_lsm_DAgetStateVarNames
   public :: LIS_lsm_DAobsTransform
@@ -180,6 +181,37 @@ contains
     character*20         :: alglist(10)
     logical              :: LSM_DAvalid
     integer              :: rc
+
+    external :: lsminit
+    external :: perturbinit
+    external :: perturbsetup
+    external :: sublsminit
+    external :: lsmsetup
+    external :: sublsmsetup
+    external :: lsmrun
+    external :: lsm2sublsmgetexport
+    external :: sublsmsetlsmimport
+    external :: sublsmrun
+    external :: sublsm2lsmgetexport
+    external :: lsmsetsublsmimport
+    external :: perturbmethod
+    external :: lsmdagetstatevar
+    external :: lsmdaqcstate
+    external :: lsmdasetstatevar
+    external :: lsmrestart
+    external :: sublsmrestart
+    external :: lsmdynsetup
+    external :: sublsmdynsetup
+    external :: lsmf2t
+    external :: sublsmf2t
+    external :: lsmwrst
+    external :: sublsmwrst
+    external :: lsmfinalize
+    external :: sublsmfinalize
+    external :: lsmcplsetexport
+    external :: lsmreset
+    external :: lsmdadiagnosevars
+    external :: lsmdagetobspred
 
     TRACE_ENTER("lsm_init")
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%lsm,&
@@ -575,6 +607,9 @@ contains
     
     integer              :: i 
 
+    external :: lsmsetup
+    external :: sublsmsetup
+    
     TRACE_ENTER("lsm_setup")
     call lsmsetup(trim(LIS_rc%lsm)//char(0))
 
@@ -615,6 +650,13 @@ contains
 !EOP
     integer              :: i 
 
+    external :: lsmrun
+    external :: lsm2sublsmgetexport
+    external :: sublsmsetlsmimport
+    external :: sublsmrun
+    external :: sublsm2lsmgetexport
+    external :: lsmsetsublsmimport
+    
     TRACE_ENTER("lsm_run")
     call lsmrun(trim(LIS_rc%lsm)//char(0), n)
 
@@ -693,6 +735,11 @@ contains
     real                    :: curr_time
     integer                 :: k 
 
+    external :: perturbmethod
+    external :: lsmdagetstatevar
+    external :: lsmdaqcstate
+    external :: lsmdasetstatevar
+
     TRACE_ENTER("lsm_perturb")
     do k=1, LIS_rc%nperts
        if(LIS_rc%LSM_DAinst_valid(k)) then
@@ -748,6 +795,9 @@ contains
 !EOP
     integer              :: i 
 
+    external :: lsmrestart
+    external :: sublsmrestart
+
     TRACE_ENTER("lsm_readrst")
     call lsmrestart(trim(LIS_rc%lsm)//char(0))
 
@@ -789,6 +839,9 @@ contains
 !EOP
     integer              :: i 
 
+    external :: lsmdynsetup
+    external :: sublsmdynsetup
+
     TRACE_ENTER("lsm_dynsetup")
     call lsmdynsetup(trim(LIS_rc%lsm)//char(0),n)
 
@@ -829,6 +882,9 @@ contains
 ! \end{description}
 !EOP
     integer              :: i 
+
+    external :: lsmf2t
+    external :: sublsmf2t
 
     TRACE_ENTER("lsm_f2t")
     call lsmf2t(trim(LIS_rc%lsm)//"+"//trim(LIS_rc%runmode)//char(0),&
@@ -873,6 +929,9 @@ contains
 
     integer              :: i 
 
+    external :: lsmwrst
+    external :: sublsmwrst
+    
     TRACE_ENTER("lsm_writerst")
     call lsmwrst(trim(LIS_rc%lsm)//char(0),n)
 
@@ -905,6 +964,9 @@ contains
 !EOP
 
     integer              :: i 
+
+    external :: lsmfinalize
+    external :: sublsmfinalize
 
     call lsmfinalize(trim(LIS_rc%lsm)//char(0))
 
@@ -943,15 +1005,14 @@ contains
 ! \end{description}
 !EOP
 
+    external :: lsmcplsetexport
+
     TRACE_ENTER("lsm_setexp")
     call lsmcplsetexport(trim(LIS_rc%lsm)//"+"&
          //trim(LIS_rc%runmode)//char(0), n)
     TRACE_EXIT("lsm_setexp")
 
   end subroutine lsm_setexport_noesmf
-
-
-
 
 !BOP
 ! !ROUTINE: LIS_lsm_reset
@@ -974,6 +1035,9 @@ contains
 !    LSM related datastructures    
 ! \end{description}
 !EOP
+
+    external :: lsmreset
+
     TRACE_ENTER("lsm_reset")
     call lsmreset(trim(LIS_rc%lsm)//char(0))
     TRACE_EXIT("lsm_reset")
@@ -1235,6 +1299,8 @@ contains
 !EOP   
    integer     :: k 
 
+   external :: lsmdadiagnosevars
+
    TRACE_ENTER("lsm_diagDA")
    if(LIS_rc%ndas.gt.0) then
       do k=1, LIS_rc%nperts
@@ -1245,8 +1311,6 @@ contains
    TRACE_EXIT("lsm_diagDA")
 
  end subroutine LIS_lsm_diagnoseVarsForDA
-
-
 
 !BOP
 !
@@ -1273,8 +1337,7 @@ contains
 !  \end{description}
 !EOP
 
-
-    integer                :: m
+    external :: lsmdagetobspred
 
     if(LIS_rc%LSM_DAinst_valid(k)) then
        call lsmdagetobspred(trim(LIS_rc%lsm)//"+"//&
@@ -1308,6 +1371,8 @@ contains
 !  \end{description}
 !EOP
 
+    external :: lsmdagetstatevar
+
     if(LIS_rc%LSM_DAinst_valid(k)) then
        call lsmdagetstatevar(trim(LIS_rc%lsm)//"+"//&
             trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
@@ -1338,6 +1403,8 @@ contains
 !   \item[k]    index of the data assimilation instance   
 !  \end{description}
 !EOP
+
+    external :: lsmdasetstatevar
 
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        call lsmdasetstatevar(trim(LIS_rc%lsm)//"+"//&
@@ -1370,6 +1437,8 @@ contains
 !  \end{description}
 !EOP
 
+    external :: lsmdascalestatevar
+
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        call lsmdascalestatevar(trim(LIS_rc%lsm)//"+"//&
             trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k))
@@ -1398,6 +1467,8 @@ contains
 !   \item[k]    index of the data assimilation instance   
 !  \end{description}
 !EOP
+
+    external :: lsmdadescalestatevar
 
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        call lsmdadescalestatevar(trim(LIS_rc%lsm)//"+"//&
@@ -1431,6 +1502,8 @@ contains
 !  \end{description}
 !EOP
 
+    external :: lsmdaupdatestate
+
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        call lsmdaupdatestate(trim(LIS_rc%lsm)//"+"//&
             trim(LIS_rc%daset(k))//char(0), n, LIS_LSM_State(n,k), &
@@ -1461,6 +1534,8 @@ contains
 !   \item[k]    index of the data assimilation instance   
 !  \end{description}
 !EOP
+
+    external :: lsmdaqcstate
 
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        call lsmdaqcstate(trim(LIS_rc%lsm)//"+"//&
@@ -1528,7 +1603,6 @@ contains
     character*100,    allocatable     :: lsm_state_objs(:)
     type(ESMF_Field)                  :: lsm_field(LIS_rc%nstvars(k))
     real,         pointer             :: stdata(:)
-    real,         pointer             :: stincrdata(:)
 
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        allocate(lsm_state_objs(LIS_rc%nstvars(k)))
@@ -1706,10 +1780,76 @@ contains
     endif
   end subroutine LIS_lsm_DAsetAnlysisUpdates
 
+!BOP
+!
+!ROUTINE: LIS_lsm_DAscaleAnlysisUpdates
+! \label{LIS_lsm_DAscaleAnlysisUpdates}
+!
+! !INTERFACE:
+  subroutine LIS_lsm_DAscaleAnlysisUpdates(n,k,state_size,scalef)
+
+! !ARGUMENTS:
+    integer                :: n
+    integer                :: k
+    integer                :: state_size
+    real                   :: scalef
+!
+! !DESCRIPTION:
+!
+!  This interface sets the variables the state vector
+!  and state increments vector objects after assimilation
+!
+!  The arguments are:
+!  \begin{description}
+!   \item[n]      index of the nest
+!   \item[k]      index of the data assimilation instance
+!   \item[stvar]  state vector variables
+!   \item[stincr] state increments vector variables
+!  \end{description}
+!EOP
+
+    integer                :: status
+    integer                :: v,t
+    character*100,    allocatable     :: lsm_state_objs(:)
+    type(ESMF_Field)                  :: lsm_incr_field(LIS_rc%nstvars(k))
+    real, pointer                     :: stincrdata(:)
+
+    if(LIS_rc%LSM_DAinst_valid(k)) then
+       allocate(lsm_state_objs(LIS_rc%nstvars(k)))
+
+       call ESMF_StateGet(LIS_LSM_State(n,k),itemNameList=lsm_state_objs,&
+            rc=status)
+       call LIS_verify(status, &
+            "ESMF_StateGet failed in enkf_increments")
+
+       do v=1,LIS_rc%nstvars(k)
+
+          call ESMF_StateGet(LIS_LSM_Incr_State(n,k),trim(lsm_state_objs(v)),&
+               lsm_incr_field(v),rc=status)
+          call LIS_verify(status, &
+               "ESMF_StateGet failed in enkf_increments")
+
+          call ESMF_FieldGet(lsm_incr_field(v),localDE=0,farrayPtr=stincrdata,&
+               rc=status)
+          call LIS_verify(status, &
+               'ESMF_FieldGet failed in enkf_increments')
+
+          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+             stincrdata(t) = stincrdata(t)/scalef
+          enddo
+
+       enddo
+
+       deallocate(lsm_state_objs)
+    endif
+  end subroutine LIS_lsm_DAscaleAnlysisUpdates
+
   subroutine LIS_lsm_DAobsTransform(n,k)
 ! !ARGUMENTS:
     integer                :: n
     integer                :: k
+
+    external :: Lsmdaobstransform
 
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        call Lsmdaobstransform(trim(LIS_rc%lsm)//"+"//&
@@ -1722,6 +1862,8 @@ contains
 ! !ARGUMENTS:
     integer                :: n
     integer                :: k
+
+    external :: lsmdamapobstolsm
 
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        call lsmdamapobstolsm(trim(LIS_rc%lsm)//"+"//&
@@ -1736,6 +1878,8 @@ contains
 ! !ARGUMENTS:
     integer                :: n
     integer                :: k
+
+    external :: lsmdaqcobsstate
 
     if(LIS_rc%LSM_DAinst_valid(k)) then 
 
@@ -1867,6 +2011,7 @@ contains
 !EOP
 
     integer             :: i,gid
+
     if(LIS_rc%LSM_DAinst_valid(k)) then 
        do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
           
