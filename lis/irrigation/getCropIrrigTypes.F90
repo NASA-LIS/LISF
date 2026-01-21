@@ -67,7 +67,7 @@ contains
 
     class(matt_algorithm), intent (inout) :: ma
     type (itype_params)                   :: ip
-    integer                               :: rc, i, j
+    integer                               :: rc
     integer, intent (in), optional        :: ncrops, nitypes
     logical, intent (in), optional        :: global
     character(len=LIS_CONST_PATH_LEN)     :: crop_irrig_file
@@ -164,9 +164,9 @@ contains
     logical            :: isusa = .false.
     integer            :: DX, DY, NX, NY, C1, C2, R1,R2, n, i_cnt, i,j,NCNTY, NPLUS, &
          NCNTY_MAX,n_AdminUnit, NT_CNTY, nt, t1, t2
-    integer            :: comm_rank, comm_size, status, mpistatus(MPI_STATUS_SIZE),INFOS, req,index_of_country,n_lctypes
+    integer            :: comm_rank, comm_size, status, req,index_of_country,n_lctypes
     logical            :: root_proc = .true., run_alg
-    real, allocatable, dimension (:,:):: RDUMMY, GDUMMY, G_COUNTY, CNTY_CROPTYPE, CNTY_IRRIGTYPE, CNTY_IRRIGFRAC
+    real, allocatable, dimension (:,:):: RDUMMY, GDUMMY, CNTY_CROPTYPE, CNTY_IRRIGTYPE, CNTY_IRRIGFRAC
     real, allocatable, dimension (:)  :: CNTY_CELLAREA
     real, ALLOCATABLE, DIMENSION (:)  :: loc_int, AdminUnit, cnty_var, cnty_var1,cnty_var2, AIRRIGFRAC
     logical, dimension(:),allocatable :: unq_mask
@@ -633,8 +633,7 @@ contains
     real,    dimension (NT_CNTY    , this%N_CROPTYPES),      target :: CROPTYPE_TMP, PREFTYPE_TMP
     integer, allocatable                  :: cr_lct (:)
     real, save                            :: original_area
-    integer    :: hcr, hcr_nxt, i
-    logical                               :: look_nearest
+    integer    :: hcr, hcr_nxt
     real, dimension (:), allocatable      :: tile_size
 
     if (present (first)) then

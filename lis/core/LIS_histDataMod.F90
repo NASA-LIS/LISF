@@ -6845,7 +6845,6 @@ end subroutine get_moc_attributes
   subroutine LIS_diagnoseSurfaceOutputVar(n, t, index, vlevel, value, unit,&
                                           direction, valid_min, valid_max, &
                                           surface_type)
-    use  LIS_coreMod, only : LIS_domain
     implicit none
 ! !ARGUMENTS:
     integer, intent(in)           :: n
@@ -6913,7 +6912,6 @@ end subroutine get_moc_attributes
     integer :: gindex
     type(LIS_metadataEntry), pointer :: dataEntry
     logical :: model_patch
-    integer         :: tid
 
     model_patch = .true.
    
@@ -6948,7 +6946,6 @@ end subroutine get_moc_attributes
 ! !INTERFACE: 
   subroutine LIS_diagnoseRTMOutputVar(n, t, index, vlevel, value, unit,&
                                       direction,valid_min,valid_max)
-    use  LIS_coreMod, only : LIS_domain
     implicit none
 ! !ARGUMENTS:
     integer, intent(in)           :: n    
@@ -6981,7 +6978,6 @@ end subroutine get_moc_attributes
 ! !INTERFACE: 
   subroutine LIS_diagnoseIrrigationOutputVar(n, t, index, vlevel, value, unit,&
                                       direction,valid_min,valid_max)
-    use  LIS_coreMod, only : LIS_domain
     implicit none
 ! !ARGUMENTS:
     integer, intent(in)           :: n    
@@ -7018,7 +7014,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
                                    direction,valid_min,valid_max,&
                                    model_patch)
     use  LIS_coreMod, only : LIS_domain
-    use  LIS_logMod, only : LIS_logunit, LIS_endrun
+    use  LIS_logMod, only : LIS_endrun
     implicit none
 ! !ARGUMENTS:
     type(LIS_metadataEntry), pointer, intent(in) :: head_dataEntry
@@ -7392,7 +7388,6 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !   \item[group]  output group (1- LSM, 2-ROUTING, 3-RTM) \newline
 !   \end{description}
 !EOP
-    integer :: index
     type(LIS_metadataEntry), pointer :: dataEntry 
 
     if(group.eq.1) then !LSM output
@@ -7484,7 +7479,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 
      type(LIS_metadataEntry), pointer :: dataEntry 
      integer :: count
-     integer :: k, m
+     integer :: k
      integer :: ierr
      
      if(group.eq.1) then !LSM output

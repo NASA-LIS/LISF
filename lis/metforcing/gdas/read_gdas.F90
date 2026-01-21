@@ -36,7 +36,7 @@
 subroutine read_gdas( order, n, findex, &
      name00, name03, name06, F06flag, ferror,try )
 ! !USES:
-  use LIS_coreMod,        only : LIS_rc, LIS_domain
+  use LIS_coreMod,        only : LIS_rc
   use LIS_timeMgrMod,     only : LIS_get_nstep, LIS_date2time
   use LIS_metforcingMod,  only : LIS_forc
   use gdas_forcingMod,    only : gdas_struc
@@ -91,7 +91,7 @@ subroutine read_gdas( order, n, findex, &
 !==== Local Variables=======================
 
   character(len=LIS_CONST_PATH_LEN) :: fname
-  integer :: iv, c,r,t
+  integer :: iv, t
   integer :: ferror1, ferror2, ferror3
   integer :: nforce
   integer :: ngdas
@@ -100,6 +100,9 @@ subroutine read_gdas( order, n, findex, &
   real    :: glbdata_a_f06(10,LIS_rc%ngrid(n))
   integer :: nstep
   logical :: dataStrucflag
+
+  external :: retrieve_gdas_variables
+
 !=== End Variable Definition =======================
   glbdata_i = LIS_rc%udef
   glbdata_a = LIS_rc%udef
@@ -267,6 +270,8 @@ subroutine retrieve_gdas_variables(n, findex, fname, dataStrucflag, glbdata, err
   logical :: var_status(gdas_struc(n)%nmif)
   logical :: pcp_flag, var_found
   integer :: grid_size
+
+  external :: interp_gdas
 
 #if(defined USE_GRIBAPI)
 !  pds5 = (/ 011,051,204,205,033,034,001,059,214,084 /) !parameter
@@ -480,6 +485,8 @@ subroutine retrieve_gdas_noprecip(n, findex, fname, glbdata, errorcode)
   logical :: var_status(gdas_struc(n)%nmif)
   logical :: pcp_flag, var_found
   integer :: grid_size
+
+  external :: interp_gdas
 
 #if(defined USE_GRIBAPI)
 ! HKB...Drop last two entries (precip)
@@ -695,6 +702,10 @@ subroutine interp_gdas(n, findex, pcp_flag, ngdas,f,lb,lis_gds,nc,nr, &
   real, dimension(nc*nr) :: lis1d
 
   logical*1 :: lo(nc*nr)
+
+  external :: bilinear_interp
+  external :: conserv_interp
+  external :: upscaleByAveraging
 
 !=== End variable declarations
 !-----------------------------------------------------------------------

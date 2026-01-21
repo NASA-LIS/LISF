@@ -148,7 +148,7 @@ contains
     class (irrigation_model), intent(inout) :: IM
     integer, intent(in)                     :: nest
     type(ESMF_State)                        :: irrigState
-    type(ESMF_Field)                        :: irrigRateField,irrigFracField,irrigTypeField,prcpField
+    type(ESMF_Field)                        :: irrigRateField,irrigFracField,irrigTypeField
     type(ESMF_Field)                        :: irrigRootDepthField,irrigScaleField,irriggwratioField
     type(ESMF_Field)                        :: irrigAppRateField
     type(ESMF_Field)                        :: irrigScheduleTimerField
@@ -299,7 +299,7 @@ contains
     logical  :: season_active
     logical  :: irrigOn, irrigStart
     real*8   :: curtime
-    real     :: tile_sat_target, smcpaddy
+    real     :: tile_sat_target
 
     asmc    = 0.0
     tsmcwlt = 0.0
@@ -470,7 +470,6 @@ contains
     implicit none
 
     real, intent (in)                    :: SMCNT(:), RDPTH(:), SMREF
-    real                                 :: twater
     integer                              :: layer
 
     !---------------------------------------------------------------
@@ -522,7 +521,6 @@ contains
     REAL                                    :: H1, H2
     REAL                                    :: IT
     REAL*8                                  :: time2
-    type(ESMF_Time)                         :: irrigTime
     LOGICAL                                 :: sprinklerOn, dripOn, floodOn
     INTEGER                                 :: doy,yr,mo,da,hr,mn,ss
     REAL                                    :: gmt
@@ -837,7 +835,6 @@ contains
     REAL                                    :: H1, H2, IT
     REAL, intent (out)                      :: IRATE
     REAL                                    :: SRATE, DRATE, FRATE
-    REAL                                    :: maxinfrate
 
     SPRINKLER: if( irrigType == 1. ) then
        ! The rate and duration are fixed

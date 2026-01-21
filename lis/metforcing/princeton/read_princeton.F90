@@ -131,7 +131,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   character :: cyr*4
   integer :: timestep
 
-  integer :: i, j, v, ii, r, k, eindex, x, y
+  integer :: i, j, v, r, k, eindex, x, y
   integer :: ios                   ! set to non-zero if there's an error
   integer :: gldas, nprinceton     ! Size of I/O 1D fields
   integer :: iret, c
@@ -148,6 +148,11 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   real,allocatable :: tg(:,:)      ! Interpolated 2D data field
   logical*1,allocatable :: lb(:)   ! input bitmap
   logical*1,allocatable :: lo(:)   ! output bitmaps
+
+  external :: princetongrid_2_lisgrid
+  external :: bilinear_interp
+  external :: conserv_interp
+  
   ! ______________________________
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)

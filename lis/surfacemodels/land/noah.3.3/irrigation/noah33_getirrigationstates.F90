@@ -68,7 +68,6 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   implicit none
 
   integer, intent(in)  :: nest
-  integer              :: rc
   integer              :: TileNo,tid,gid,vegt,l
   type(ESMF_State)     :: irrigState
   real                 :: sldpth(noah33_struc(nest)%nslay)
@@ -81,7 +80,6 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   real                 :: amount,added,totamount
   integer              :: i, m
   real                 :: tempcheck
-  real                 :: sfctmp
   real                 :: sfctemp_avg
   real                 :: shdfac_avg
   real                 :: tile_sat_target, SICE

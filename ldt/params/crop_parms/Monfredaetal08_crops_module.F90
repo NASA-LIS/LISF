@@ -95,7 +95,7 @@ CONTAINS
     ! Other
     character(len=LDT_CONST_PATH_LEN) :: tempfile
     logical :: file_exists
-    integer :: i, i2, j, t, c, r
+    integer :: i, i2, c, r
     integer :: glpnc, glpnr             ! Parameter (global) total columns and rows
     integer :: subpnc, subpnr           ! Parameter subsetted columns and rows
     real    :: param_gridDesc(20)       ! Input parameter grid desc fgrd
@@ -105,6 +105,8 @@ CONTAINS
     character(20), allocatable :: croptype_array(:)
     real      :: croptype_frac(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_rc%numcrop(n))
     real      :: subcroptype_frac(LDT_rc%lnc(n),LDT_rc%lnr(n),14)
+
+    external :: readcropinventory
 
     !__________________________________________________________________
 
@@ -258,9 +260,8 @@ CONTAINS
     integer :: latid, lonid
     integer :: nrows, ncols
     ! Other
-    logical :: file_exists
     integer :: ftn, ierr
-    integer :: j, t, c, r
+    integer :: j, c, r
     integer :: mi                       ! Total number of input param grid array points
     integer :: mo                       ! Total number of output LIS grid array points
     real,    allocatable  :: gi1(:)     ! Input parameter 1d grid

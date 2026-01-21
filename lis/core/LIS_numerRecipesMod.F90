@@ -693,7 +693,7 @@ contains
     implicit none
 
     integer, dimension (:), intent (inout) :: a
-    INTEGER            :: Head, Tail, i, n, temp
+    INTEGER            :: Head, Tail, n, temp
 
     n = size (a)
 

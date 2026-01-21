@@ -126,6 +126,8 @@ contains
     character*10  :: time
     character*1   :: nestid(2)
     logical       :: file_exists
+
+    external :: irrigationschemeinit
     ! ___________________________________________________
 
     !- Read in Config file irrigation inputs:
@@ -404,6 +406,9 @@ contains
 
     ! !ARGUMENTS:
     integer  :: n
+
+    external :: getirrigationlsmstates
+    external :: applyirrigationupdates
 
     ! !DESCRIPTION:
     ! This routine runs the specified irrigation model.

@@ -40,8 +40,12 @@ subroutine LIS_irrigationmodel_plugin
 !EOP
 
    use LIS_pluginIndices
-
    use alltypes_irrigationMod
+
+   implicit none
+
+   external :: registerirrigationschemeinit
+   external :: registerirrigationupdate
 
    call registerirrigationschemeinit(trim(LIS_concurrentIrrigationId)//char(0),&
                                      alltypes_irrigation_init)

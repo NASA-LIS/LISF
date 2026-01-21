@@ -53,7 +53,6 @@ contains
 
     integer              :: n
     integer              :: rc, status
-    integer              :: i
     type(ESMF_ArraySpec) :: arrspec1,arrspec2
     type(ESMF_Field)     :: irrigRateField, irrigFracField
     type(ESMF_Field)     :: irrigAppRateField
@@ -642,7 +641,7 @@ contains
     real                 :: frac(LIS_rc%npatch(n,LIS_rc%lsm_index))
 
     integer              :: t,col,row
-    integer              :: nid,ios,status,fracId
+    integer              :: nid,ios,fracId
     logical              :: file_exists
     real,  allocatable   :: l_frac(:,:)
     real,  allocatable   :: glb_frac(:,:)
@@ -704,7 +703,7 @@ contains
     real                 :: gwratio(LIS_rc%npatch(n,LIS_rc%lsm_index))
 
     integer              :: t,col,row
-    integer              :: nid,ios,status,gwratioId
+    integer              :: nid,ios,gwratioId
     logical              :: file_exists
     real,  allocatable   :: l_gwratio(:,:)
     real,  allocatable   :: glb_gwratio(:,:)
@@ -778,7 +777,7 @@ contains
     real, allocatable      :: rootd(:)
     integer                :: ftn
     integer                :: t,j,col,row
-    integer                :: nid, ios, status, croptypeId, cropdimid
+    integer                :: nid, ios, croptypeId, cropdimid
     logical                :: file_exists
     real,   allocatable    :: l_croptype(:,:)
     real,   allocatable    :: glb_croptype(:,:)
@@ -952,7 +951,7 @@ contains
     integer,  intent(in) :: cropseasons
     integer,  intent(in) :: nlctypes      !land cover index for veg
     integer              :: t,col,row,j,i
-    integer              :: nid,ios,status,pdayId,hdayId
+    integer              :: nid,ios,pdayId,hdayId
     logical              :: file_exists
     real,  allocatable   :: l_frac_p(:,:,:)
     real,  allocatable   :: l_frac_h(:,:,:)
@@ -1051,7 +1050,7 @@ contains
     real,intent(inout)   :: itype(LIS_rc%npatch(n,LIS_rc%lsm_index))
 
     integer              :: t,col,row,j
-    integer              :: nid,ios,status,itypeId
+    integer              :: nid,ios,itypeId
     integer              :: nirrigtypes, irrigdimid
     integer              :: nsfctypes,   sfcdimid, lcoverid
     integer              :: countyId, countryId
@@ -1317,7 +1316,7 @@ contains
 
     integer, parameter   :: total_countries = 257
     integer      :: nid, ios
-    integer      :: t, c, r, col, row
+    integer      :: t, col, row
     integer      :: irrqsbId, noirrqsbId, countryId
     logical      :: file_exists, file_exists2
     integer      :: j, ftn, ftn2, error, error2, polyid

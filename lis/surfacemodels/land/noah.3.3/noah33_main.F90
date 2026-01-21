@@ -84,7 +84,6 @@ subroutine noah33_main(n)
   real        :: q2sat      ! SAT SPECIFIC HUMIDITY AT HEIGHT ZLVL ABOVE GROUND (KG KG-1)
   real        :: lwdn       ! LW DOWNWARD RADIATION (W M-2; POSITIVE, NOT NET LONGWAVE)
   real        :: sfcspd     ! WIND SPEED (M S-1) AT HEIGHT ZLVL_WIND ABOVE GROUND
-  real        :: esat       ! Saturation vapor pressure for water (Pa)
   integer     :: nsoil      ! number of soil layers
   real, allocatable :: sldpth(:)  ! thickness values for soil layers(meters)
   integer     :: ice        ! flag to invoke sea-ice physics (0=land)
@@ -102,9 +101,6 @@ subroutine noah33_main(n)
   real        :: t2v       ! Virtual temp. at 1st mid. lev. above grnd (2)
   real        :: dqsdt2    ! Slope of sat. specific hum. curve for Penman
   real        :: slope     ! slope estimate of linear reservoir coefficient  
-  real        :: shdfac    ! 12-month green vegetation fraction
-  real        :: shdmin    ! minimum areal fractional coverage of annual green vegetation
-  real        :: shdmax    ! maximum areal fractional coverage of annual green vegetation
   real        :: tbot      ! annually-fixed, soil-temp condition at zbot
   real        :: evp
   real        :: eta       ! actual latent heat flux (w m-2) (neg: up from sfc)
@@ -162,7 +158,6 @@ subroutine noah33_main(n)
   character*256 ::  llanduse, lsoil
 
   real        :: frzk, frzfact
-  real        :: t2diag, q2diag, rho
   real        :: relsmc   ! Relative "wetness" soil moisture (fraction) (smc - smcwlt) / (porosity - smcwlt)
   integer     :: t,i,k
   real        :: wchange_prev
@@ -188,12 +183,8 @@ subroutine noah33_main(n)
   REAL, PARAMETER :: A2=17.67,A3=273.15,A4=29.65, A23M4=A2*(A3-A4)
   REAL     :: soilhtc, soilmtc
   REAL     :: startht, startsm, startswe, startint
-  REAL     :: SFCTSNO
-  REAL     :: E2SAT
-  REAL     :: Q2SATI
   real     :: cm, ch
   logical  :: alarmCheck, Bondvillecheck
-  integer  :: iret
 
   real     :: julian_in
   integer  :: yr
@@ -216,7 +207,6 @@ subroutine noah33_main(n)
 ! J.Case -- end mod (9/11/2014)
 ! HKB: added below (1/8/2026)
   type(irrigation_model) :: IM
-  integer                                 :: status
   integer                                 :: croptype
 
   write(fnest,'(i3.3)') n
