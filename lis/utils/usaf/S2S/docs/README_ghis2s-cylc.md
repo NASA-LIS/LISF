@@ -7,7 +7,7 @@
 **GHIREPOS**: Operational software developed by 16WS  
 **LISFDIR**: The path to LISF installation  
 
-![GHI-S2S Workflow Diagram](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.7/lis/utils/usaf/S2S/docs/workflow.png)
+![GHI-S2S Workflow Diagram](https://github.com/NASA-LIS/LISF/blob/support/lisf-557ww-7.7/lis/utils/usaf/S2S/docs/workflow.png)
 **Figure Caption**: This figure depicts the information flow in GHIREPOS/ghis2s_program.py coupled with GHI-S2S, along with the output E2ES directory tree. The embedded Cylc-generated workflow graph illustrates the complexity of the end-to-end GHI-S2S forecast system, which involves 7 main steps (LISDA, LDT-ICS, BCSD, FCST, S2SPOST, S2SMETRICS, and S2SPLOTS) executed on a predefined schedule. To maintain organization, each month's forecast-related scripts and links are created in the scratch/YYYYMM/ directory, keeping the main E2ESDIR clean and tidy.
 
 # (1) The ghis2s Python Package
