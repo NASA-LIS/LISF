@@ -89,9 +89,6 @@ def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_fo
     monthly_commands = []
     # process months
     for _ in range(0, total_months):
-        txt = "[INFO] Submitting batch job for"
-        txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:02d}"
-        print(txt)
         cmd = "python"
         cmd += f" {scriptdir}/process_fcst_files.py"
         cmd += f" {configfile} {topdatadir}"

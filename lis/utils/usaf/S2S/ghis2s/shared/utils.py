@@ -100,6 +100,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
                         if 'mil' in cfg['SETUP']['CONSTRAINT']:
                             _f.write('#SBATCH --partition=packable'  + '\n')
                         mpc = str(math.ceil(240 / parallel_run['TPN'])) + 'GB'
+                        if parallel_run['MEM'] == '480GB':
+                            mpc = '480GB'
                         _f.write('#SBATCH --mem-per-cpu=' + mpc + '\n')
                     _f.write('#SBATCH --cpus-per-task=' + parallel_run['CPT'] + '\n')
                 else:
@@ -498,7 +500,7 @@ def get_chunk_sizes(dataset, dim_in=None):
     else:
         lat_size, lon_size = dim_in[0], dim_in[1]
 
-    if lat_size == 3600:
+    if lat_size == 3600 or lat_size == 3000:
         lat_chunk = 600
         lon_chunk = 1200
     elif lat_size == 1800:
@@ -551,11 +553,17 @@ def write_ncfile(out_xr, outfile, encoding, logger):
                             '_FillValue': -9999.0
                         }
 
-                    updated_encoding[var_name]['chunksizes'] = (
-                        1,
-                        out_xr.sizes[lat_dim],
-                        out_xr.sizes[lon_dim]
-                    )
+                    chunk_tuple = []
+                    for dim in out_xr[var_name].dims:
+                        if dim == lat_dim:
+                            chunk_tuple.append(out_xr.sizes[lat_dim])
+                        elif dim == lon_dim:
+                            chunk_tuple.append(out_xr.sizes[lon_dim])
+                        else:
+                            # For time/ensemble dimensions, use chunk size of 1
+                            chunk_tuple.append(1)
+
+                    updated_encoding[var_name]['chunksizes'] = tuple(chunk_tuple)                    
 
                 logger[0].info(f"Updated encoding for variables: {list(updated_encoding.keys())}", subtask=logger[1])
 

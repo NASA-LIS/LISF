@@ -20,6 +20,7 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
+import yaml
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
@@ -177,6 +178,8 @@ UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
 
 latsg, _ = get_domain_info(CONFIG_FILE, coord=True)
 resol = round((latsg[1] - latsg[0])*100.)/100.
+with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
+    config = yaml.safe_load(file)
 
 def process_ensemble(_ens):
     ''' process each ensemble member '''
@@ -239,13 +242,14 @@ def links():
     outdir = outdir_template.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)
 
     os.chdir(outdir)
-    logger.info(f"Creating ens13, ens14, ens15 links in {outdir}")
-    cmd = "ln -sfn ens1 ens13"
-    rc = subprocess.call(cmd, shell=True)
-    cmd = "ln -sfn ens2 ens14"
-    rc = subprocess.call(cmd, shell=True)
-    cmd = "ln -sfn ens3 ens15"
-    rc = subprocess.call(cmd, shell=True)
+    if config['BCSD']['source']['metforce'] == 'CFSv2':
+        logger.info(f"Creating ens13, ens14, ens15 links in {outdir}")
+        cmd = "ln -sfn ens1 ens13"
+        rc = subprocess.call(cmd, shell=True)
+        cmd = "ln -sfn ens2 ens14"
+        rc = subprocess.call(cmd, shell=True)
+        cmd = "ln -sfn ens3 ens15"
+        rc = subprocess.call(cmd, shell=True)
 
     logger.info(f"Creating symbolic links for month {LEAD_FINAL +1}")
     init_datetime = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1)

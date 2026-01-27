@@ -95,7 +95,7 @@ class Ghis2sProgram():
                     sys.path.insert(0, path)
 
         try:
-            from ghis2s.s2s_app.s2s_run import S2Srun
+            from ghis2s.main.experiment_setup import S2Srun
             return S2Srun
         except ImportError as err:
             logging.error("Failed to import ghis2s: %s", err)

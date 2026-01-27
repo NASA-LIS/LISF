@@ -58,7 +58,7 @@ LAT_LDT, LON_LDT = get_domain_info(CONFIG_FILE, coord=True)
 RESOL = f'{round((LAT_LDT[1] - LAT_LDT[0])*100)}km'
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
-FCST_MODEL = config['BCSD']['metforce_source']
+FCST_MODEL = config['BCSD']['source']['metforce']
 MONTHLY_BC_FCST_DIR = str(sys.argv[13])
 SUBDAILY_RAW_FCST_DIR = str(sys.argv[14])
 BASE_OUTDIR = str(sys.argv[15])

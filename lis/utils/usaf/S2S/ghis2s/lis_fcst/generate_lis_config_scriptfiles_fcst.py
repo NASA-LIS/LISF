@@ -204,7 +204,7 @@ def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
 
         print(lisconfig_template)
 
-        nseg = config['FCST']['JOB_SEGMENTS'][0].get(nmme_model)
+        nseg = config['FCST']['JOB_SEGMENTS'].get(nmme_model)
         input_numfcstmons = int(config['EXP']['lead_months'])
         lseg = -(-input_numfcstmons//nseg)
 

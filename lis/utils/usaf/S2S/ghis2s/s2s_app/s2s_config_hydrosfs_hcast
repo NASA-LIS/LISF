@@ -5,16 +5,19 @@
 #######################################################################
 
 SETUP:
-  E2ESDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/
-  LISFDIR: /discover/nobackup/projects/ghilis/S2S/LISF/
+  E2ESDIR: /discover/nobackup/projects/ghilis/smahanam/SERVIR/SERVIR_5km/
+  LISFDIR: /discover/nobackup/projects/usaf_lis/smahanam/S2S/LISF-1/
   LISFMOD: lisf_7.5_intel_2023.2.1_s2s
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
-  supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
-  ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
+  supplementarydir: /discover/nobackup/projects/ghilis/smahanam/SERVIR/supplementary_files/
+  ldtinputfile: lis_input.global_5km_hydroscs_mask_topo_merit1km_wclimppt.nc
   SPCODE:  s1189
   CONSTRAINT: mil
-  DATATYPE: forecast
- 
+  DATATYPE: hindcast
+  #AF10KM: /discover/nobackup/projects/servir-s2s/svkumar/HydroSCSbc/
+  AF10KM: /discover/nobackup/projects/ghilis/smahanam/SERVIR/HydroSCS_monthly/
+  LISDADIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/DA_Run_Hist/output/
+   
 #######################################################################
 #                       Experiment Configuration
 #######################################################################
@@ -25,7 +28,7 @@ EXP:
   lsm:    noahmp401
   routing_name: hymap2
   pertmode: restart
-  lead_months: 9
+  lead_months: 4 
   NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]
 
 #######################################################################
@@ -33,13 +36,13 @@ EXP:
 #######################################################################
 
 BCSD:
-  fcst_download_dir: /discover/nobackup/projects/lis/MET_FORCING/CFSv2/
+  fcst_download_dir: /css/servir-s2s/HydroSFS/shared_data/GEOSv3/
   nmme_download_dir: /discover/nobackup/projects/usaf_lis/GHI_S2S/NMME/
-  clim_start_year: 1991
-  clim_end_year: 2020
-  nof_raw_ens: 12
-  source: {metforce: CFSv2, precip: nmme, obs: USAF-LIS7.3rc8}
-  force_corr: {lapsrate: false, aspect: false}
+  clim_start_year: 2002
+  clim_end_year: 2023
+  nof_raw_ens: 10
+  source: {metforce: GEOSv3, precip: null, obs: HydroSCS}
+  force_corr: {lapsrate: false, aspect: false} 
 
 #######################################################################
 #                            LIS Forecast
@@ -63,6 +66,6 @@ POST:
   var_tavg_twsgws_list: [TWS_tavg, GWS_tavg]
   var_tair_max_list: [Tair_f_max]
   var_tair_min_list: [Tair_f_min]
-  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, atime, Landmask_inst, LANDMASK, Landcover_inst, Soiltype_inst, Elevation_inst, Greenness_inst]
-  metric_vars: [RZSM, TOP40SM, SFCSM, TWS, Precip, AirT, ET, Streamflow]
-  weekly_vars: [SWE, SnowDepth, SFCRELSM, SFCST, TOP40RELSM, TOP40ST, RZSM, Streamflow]
+  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, atime, LANDMASK]
+  metric_vars: [RZSM, SFCSM, TWS, Precip, AirT, ET, Streamflow]
+

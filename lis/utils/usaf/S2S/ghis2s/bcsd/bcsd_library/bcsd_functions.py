@@ -7,6 +7,14 @@ import sys
 import math
 import numpy as np
 import xarray as xr
+from ghis2s.shared.utils import load_ncdata
+
+BB = 2016
+TDRY = 287.
+LIS_CONST_G = 9.80616
+LIS_CONST_TKFRZ = 273.16
+LAPSE_RATE = -0.0065
+DEG2RAD = math.pi / 180.0
 
 class VarLimits:
     '''
@@ -394,3 +402,232 @@ def apply_regridding_with_mask(data, regridder, source_land_mask,
                 result[var_name] = result[var_name].where(target_mask)
 
     return result
+
+def read_geosv3_elevation(static_file, logger):
+    ''' reads GEOS5 surface geopotential (PHIS) and returns the height at the surface '''
+    phyis = load_ncdata(static_file, logger, var_name='PHIS').isel(time = 0)
+    return phyis/LIS_CONST_G
+
+def apply_lapse_rate_correction_to_data():
+    # HydroSFS Names
+    tmp_name = get_hydrosfs_name('T')
+    hum_name = get_hydrosfs_name('Q')
+    lwd_name = get_hydrosfs_name('LWdown')
+    prs_name = get_hydrosfs_name('PS')
+
+    for itime in range(ds_in.time.size):
+
+        # Convert to numpy values
+        force_tmp = ds_in[tmp_name].values[itime,:,:]
+        force_hum = ds_in[hum_name].values[itime,:,:]
+        force_lwd = ds_in[lwd_name].values[itime,:,:]
+        force_prs = ds_in[prs_name].values[itime,:,:]
+
+        # Temperature
+        tcforce = force_tmp + (lapse*elevdiff)
+
+        # Pressure
+        tbar = (force_tmp + tcforce)/2
+        pcforce = force_prs / (np.exp((LIS_CONST_G * elevdiff) / (rdry * tbar)))
+
+        # Humidity
+        force_hum = np.where(force_hum == 0, 1e-08, force_hum)
+        ee = (force_hum * force_prs) / 0.622               
+        esat = 611.2 * np.exp(
+            (17.67 * (force_tmp - LIS_CONST_TKFRZ)) / ((force_tmp - LIS_CONST_TKFRZ) + 243.5)
+        )
+        qsat = (0.622 * esat) / (force_prs - (0.378 * esat))
+        rh = (force_hum / qsat) * 100.0
+        fesat = 611.2 * np.exp(
+            (17.67 * (tcforce - LIS_CONST_TKFRZ))/((tcforce - LIS_CONST_TKFRZ) + 243.5)
+        )
+        fqsat = (0.622 * fesat) / (pcforce - (0.378 * fesat))
+        hcforce = (rh * fqsat) / 100.0
+
+        # Longwave Radiation
+        fe = (hcforce * pcforce) / 0.622
+        mee = ee / 100.0
+        mfe = fe / 100.0
+        
+        # Correct for negative vapor pressure at very low temperatures at high latitudes
+        mee = np.where(mee < 0, 1e-08, mee)
+        mfe = np.where(mfe < 0, 1e-08, mfe)
+        emiss  = 1.08 * (1 - np.exp(-mee**(force_tmp / bb)))
+        femiss = 1.08 * (1 - np.exp(-mfe**(tcforce / bb)))
+        ratio = (femiss * (tcforce**4))/(emiss * (force_tmp**4))
+        lcforce = force_lwd * ratio
+        
+        # Output
+        ds_out[tmp_name].values[itime,:,:] = tcforce
+        ds_out[hum_name].values[itime,:,:] = hcforce
+        ds_out[lwd_name].values[itime,:,:] = lcforce
+        ds_out[prs_name].values[itime,:,:] = pcforce
+
+    return ds_out
+
+def apply_slope_aspect_correction_to_data(ds_in : xr.Dataset):
+    
+    ds_out = ds_in.copy(deep=True)
+    
+    # HydroSFS Names
+    swd_name = get_hydrosfs_name('SWdown')
+    
+    # Constants
+    deg2rad = math.pi / 180.0
+
+    # Read in Sl
+    file_directory_merit = f"{dir_supplementary}/lis_darun"
+    file_path_merit = f"{file_directory_merit}/{file_name_landmask}"
+    ds_merit = xr.open_dataset(file_path_merit)
+
+    lon_d  = ds_merit.lon.values
+    lat_d  = ds_merit.lat.values
+    lat_r  = lat_d*deg2rad
+    slope  = ds_merit['SLOPE'].values / deg2rad
+    aspect = ds_merit['ASPECT'].values / deg2rad
+
+    for index_time in range(ds_in.time.size):
+        # Setup variables
+        swd = ds_in[swd_name].isel(time = index_time).values
+
+        # We include the full calculation here, even though minute & second are 0
+        timestamp = pd.Timestamp(ds_in.time.isel(time = index_time).values)
+        gmt = timestamp.hour + timestamp.minute / 60 + timestamp.second / 3600
+        hr = timestamp.hour
+        yr = timestamp.year
+        mn = timestamp.minute
+        doy = timestamp.day_of_year
+
+        # Calculate time zone (1-24)
+        zone = np.vectorize(get_timezone)(lon_d)
+
+        # Calculate local hour (0-23) 0 = midnight, 23 = 11:00 p.m.
+        change = zone - 13
+        lhour = gmt + change
+        lhour = np.where(lhour < 0, lhour + 24, lhour)
+        lhour = np.where(lhour > 23, lhour - 24, lhour)
+
+        # Generate cosz and decl
+        gamma = 2 * math.pi * (doy - 1) / 365.
+        decl = (
+            0.006918
+            - 0.399912 * math.cos(gamma)
+            + 0.070257 * math.sin(gamma)
+            - 0.006758 * math.cos(2 * gamma)
+            + 0.000907 * math.sin(2 * gamma)
+            - 0.002697 * math.cos(3 * gamma)
+            + 0.00148 * math.sin(3 * gamma)
+        )
+        
+        # Equation of Time
+        et = 229.18 * (
+            0.000075
+            + 0.001868 * math.cos(gamma)
+            - 0.032077 * math.sin(gamma)
+            - 0.014615 * math.cos(2 * gamma)
+            - 0.04089 * math.sin(2 * gamma)
+        )
+
+        #
+        ls = ((zone - 1) * 15) - 180.
+        lcorr = 4.*(ls - lon_d) * (-1)
+
+        #
+        latime = lhour + lcorr / 60. + et / 60.
+        latime = np.where(latime < 0, latime + 24, latime)
+        latime = np.where(latime > 24, latime - 24, latime)
+
+        #
+        omegad = (latime - 12) * (-15)
+        omega = omegad * deg2rad
+
+        #
+        cosz = math.sin(decl) * np.sin(lat_r) + math.cos(decl) * np.cos(lat_r) * np.cos(omega)
+        cosz = np.where(cosz < 0, 0, cosz)
+        cosz = np.where(cosz > 1, 1, cosz)
+
+        #
+        sunang = np.where(cosz < 0.01764, 0.01764, cosz)
+        cloud  = (1160.0 * sunang - swd) / (963.0 * sunang)
+        cloud  = np.where(cloud < 0, 0, cloud)
+        cloud  = np.where(cloud > 1, 1, cloud)
+
+        #
+        difrat = np.where(abs(sunang - 0.0223) > 0.0001, 0.0604 / (sunang - 0.0223) + 0.0683, 1)
+        difrat = np.where(difrat < 0, 0, difrat)
+        difrat = np.where(difrat > 1, 1, difrat)
+        difrat = difrat + (1.0 - difrat) * cloud
+
+        #
+        vnrat = (580.0 - cloud * 464.0) / ((580.0 - cloud * 499.0) + (580.0 - cloud * 464.0))
+        swddirect  = swd * ((1.0 - difrat) * vnrat + (1.0 - difrat)*(1.0 - vnrat))
+        swddiffuse = swd * (difrat * vnrat + difrat * (1.0 - vnrat))
+
+        #
+        thour = 0 if (hr - 24) <= 0 else hr
+        mody = yr - math.floor(yr * .25)*4
+        if abs(mody) > 0:
+            fyear = (2.0*math.pi / 365.0) * (doy - 1.0 + (thour - 12.0) / 24.0)
+        else:
+            fyear = (2.0*math.pi / 366.0) * (doy - 1.0 + (thour - 12.0) / 24.0)
+
+        # Calculate the equation of time in minutes
+        eqtime = 229.18 * (
+            7.5e-5
+            + 1.868e-3 * math.cos(fyear)
+            - 3.2077e-2 * math.sin(fyear)
+            - 1.4615e-2 * math.cos(2 * fyear)
+            - 4.0849e-2 * math.sin(2 * fyear)
+        )
+
+        # Calculate the true solar time 
+        time_offset = eqtime + 4.0 * lon_d + 60.0 * abs(lhour - hr)
+        tst = thour * 60.0 + mn + time_offset
+
+        # Solar hour angle
+        ha = (tst * 0.25 - 180.0) * deg2rad
+
+        cosphi = np.sin(lat_r) * math.sin(decl) + np.cos(lat_r) * math.cos(decl) * np.cos(ha)
+        phi = np.acos(cosphi)
+
+        #
+        costheta = np.where(np.cos(lat_r) * np.sin(phi) == 0,
+                            np.where(np.sin(lat_r)*cosphi - math.sin(decl) > 0, 1, -1),
+                            np.sin(lat_r) * cosphi - math.sin(decl)) / (np.cos(lat_r) * np.sin(phi))
+        
+        # Avoid floating point errors
+        costheta = np.where(abs(costheta) > 1,
+                            np.where(costheta > 0, 1, -1),
+                            costheta)
+
+        #
+        saz = np.where(lat_r >= 0,
+                       np.where(ha < 0,
+                                180.0 - np.acos(costheta) / deg2rad,
+                                180.0 + np.acos(costheta) / deg2rad),
+                       np.where(ha < 0,
+                                np.acos(costheta) / deg2rad,
+                                360 - np.acos(costheta) / deg2rad))
+
+
+        #
+        aslope = np.vectorize(min)(1.57, slope * deg2rad)
+        aslope = np.vectorize(max)(0, aslope)
+        solzen = np.acos(cosz)
+
+        swddirect = np.where((swd > 0) & (aslope > 0) & (aslope < 90 * deg2rad),
+                       correct_swddirect(aslope, aspect, saz, solzen, swddirect),
+                       swddirect)
+
+        #
+        ds_out[swd_name].values[index_time, :, :] = swddirect + swddiffuse
+
+    return ds_out
+
+    
+    
+
+
+
+
+

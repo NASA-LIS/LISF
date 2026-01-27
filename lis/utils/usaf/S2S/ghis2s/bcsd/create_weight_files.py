@@ -11,7 +11,7 @@ from ghis2s.bcsd.bcsd_library import convert_forecast_data_to_netcdf as cfdn
 
 CFSV2_file = '/discover/nobackup/projects/lis/MET_FORCING/CFSv2//Oper_TS/2024/20241217/tmp2m.01.2024121706.daily.grb2'
 NMME_file = '/discover/nobackup/projects/usaf_lis/GHI_S2S/NMME//CanSIPS-IC4/prec.CanESM5.mon_Jan.2025.nc'
-GEOS5_file = '/discover/nobackup/projects/usaf_lis/smahanam/MET_FORCING/GEOSv3/sfc_tavg_3hr_glo_L720x361_sfc/202410/ens01/geos_s2s_v3.200210.nc'
+GEOS5_file = '/discover/nobackup/projects/usaf_lis/smahanam/MET_FORCING/GEOSv3/sfc_tavg_3hr_glo_L720x361_sfc/200210/ens01/geos_s2s_v3.200210.nc'
 
 def get_land_mask(config, cfsv2_data):
     """

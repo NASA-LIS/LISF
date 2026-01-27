@@ -58,7 +58,7 @@ print("INIT FCST MON:", INIT_FCST_MON)
 MONTH_NAME = calendar.month_abbr[INIT_FCST_MON].lower() + "01"
 print("month name is:",MONTH_NAME)
 
-INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
+INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.{}.{:04d}{:02d}.nc'
 OUTFILE_TEMPLATE = '{}/{}_fcst_clim.nc'
 
 if not os.path.exists(OUTDIR):
@@ -84,7 +84,7 @@ for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
             FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + relativedelta(months=LEAD_NUM)
             FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
             INFILE = INFILE_TEMPLATE.format(INDIR, MONTH_NAME, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
-                                            FCST_YEAR, FCST_MONTH)
+                                            config["BCSD"]['source']['metforce'].lower(), FCST_YEAR, FCST_MONTH)
             logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
             FCST_TS_LEAD[COUNT_DATA, ] = load_ncdata(INFILE, [logger,SUBTASK], var_name=VAR).values
             COUNT_DATA+=1

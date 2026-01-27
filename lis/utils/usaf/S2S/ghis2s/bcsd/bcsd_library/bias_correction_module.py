@@ -71,7 +71,7 @@ if METFORCE:
             FCST_CLIM_INFILE = f'{FCST_DIR}/raw/Climatology/{FCST_INIT_DATE}/'\
             f'{alternate_name[FCST_VAR]}_fcst_clim.nc'
     FCST_INFILE_TEMPLATE = '{}/raw/Monthly/{}/{:04d}/ens{:01d}/{}.{}.{:04d}{:02d}.nc'
-    FCST_MODEL = config['BCSD']['metforce_source']
+    FCST_MODEL = config['BCSD']['source']['metforce']
 else:
     FCST_CLIM_INFILE = \
         f'{FCST_DIR}/raw/Climatology/{FCST_INIT_DATE}/{MODEL_NAME}/{FCST_VAR}_fcst_clim.nc'

@@ -77,7 +77,7 @@ LAT_LDT, LON_LDT = get_domain_info(CONFIG_FILE, coord=True)
 RESOL = f'{round((LAT_LDT[1] - LAT_LDT[0])*100)}km'
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
-FCST_DATA_TYPE = config['BCSD']['metforce_source']
+FCST_DATA_TYPE = config['BCSD']['source']['metforce']
 FORCE_DT = 21600
 if FCST_DATA_TYPE == 'CFSv2':
     FORCE_DT = 21600

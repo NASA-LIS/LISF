@@ -40,8 +40,9 @@ BCSD:
   clim_start_year: 1991
   clim_end_year: 2020
   nof_raw_ens: 12
-  metforce_source: CFSv2
-  
+  source: {metforce: CFSv2, precip: nmme, obs: USAF-LIS7.3rc8}
+  force_corr: {lapsrate: false, aspect: false}
+
 #######################################################################
 #                            LIS Forecast
 #######################################################################
@@ -49,13 +50,8 @@ BCSD:
 FCST:
   numprocx: 4
   numprocy: 72
-  JOB_SEGMENTS:
-  - CanESM5: 3
-    CESM1: 3
-    GNEMO52: 3
-    GEOSv2: 2
-    CFSv2: 5
-    GFDL: 9
+  JOB_SEGMENTS: {CanESM5: 3, CESM1: 3, GNEMO52: 3, GEOSv2: 2, CFSv2: 5,
+                 GFDL: 9}
   
 #######################################################################
 #                          Post-processor
