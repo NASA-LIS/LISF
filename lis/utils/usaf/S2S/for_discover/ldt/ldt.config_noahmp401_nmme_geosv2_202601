@@ -1,7 +1,7 @@
 
 LDT running mode:                       "Ensemble restart processing"
 
-Processed LSM parameter filename:       ../LDT_Params/lis_input.s2s_global.noahmp401_hymap2.25km.nc
+Processed LSM parameter filename:       ./input/lis_input.s2s_global.noahmp401_hymap2.25km.nc
 LIS number of nests:                    1
 Number of surface model types:          2
 Surface model types:                    "LSM"  "Openwater"
@@ -20,14 +20,12 @@ LIS restart source:                               "LSM"
 Ensemble restart generation mode:                 downscale
 Ensemble restart generation sampling strategy:    "random sampling"
 
-Input restart filename:                        ./output/SURFACEMODEL/202208/LIS_RST_NOAHMP401_202208312345.d01.nc
-Output restart filename:                       ./GNEMO52/LIS_RST_NOAHMP401_202208312345.ICS_Sep2022.ens10.nc 
+Input restart filename:                        ./lisda_output/SURFACEMODEL/202512/LIS_RST_NOAHMP401_202512312345.d01.nc
+Output restart filename:                       ./GEOSv2/LIS_RST_NOAHMP401_202512312345.ICS_Jan2026.ens4.nc 
 Number of ensembles per tile (input restart):     12
-#Number of ensembles per tile (input restart):     1
-Number of ensembles per tile (output restart):    10
+Number of ensembles per tile (output restart):    4
 
 Number of ensembles per tile:                     12
-#Number of ensembles per tile:                     1
 
 Maximum number of surface type tiles per grid:     1
 Minimum cutoff percentage (surface type tiles):    0.05
@@ -42,13 +40,22 @@ Minimum cutoff percentage (slope bands):           0.05
 Maximum number of aspect bands per grid:           1
 Minimum cutoff percentage (aspect bands):          0.05
 
-LDT diagnostic file:                    ./GNEMO52/ldtlog_noahmp401_Sep2022
-Mask-parameter fill diagnostic file:    ./GNEMO52/MaskParamFill.log
-LDT output directory:                   ./GNEMO52/
+LDT diagnostic file:                    ./GEOSv2/ldtlog_noahmp401_Jan2026
+Mask-parameter fill diagnostic file:    ./GEOSv2/MaskParamFill.log
+LDT output directory:                   ./GEOSv2/
 
 #--
  
 #AFRICOM 25KM domain:
+#Map projection of the LIS domain:       latlon
+#Run domain lower left lat:             -39.8750
+#Run domain upper right lat:             39.875
+#Run domain lower left lon:             -19.8750
+#Run domain upper right lon:             59.875
+#Run domain resolution (dx):              0.25
+#Run domain resolution (dy):              0.25
+
+#S2S-Global 25KM domain:
 Map projection of the LIS domain:       latlon
 Run domain lower left lat:             -89.875
 Run domain upper right lat:             89.875
@@ -70,7 +77,7 @@ Landcover fill value:                   10
 #Landmask parameter inputs
 Create or readin landmask:              "readin"
 Landmask data source:                   "UKMO_CAP_Netcdf"
-Landmask file:                          ./input/data/cap2ldt_ps41.nc
+Landmask file:                          ./input/LS_PARAMETERS/cap2ldt_ps41.nc
 Landmask spatial transform:             mode    # Go from ~10 KM to 25KM domain ...
 Landmask map projection:                latlon
 Landmask lower left lat:               -89.9531250
@@ -89,7 +96,7 @@ Porosity data source:                   none
 Porosity map:                           none
  
 #Soil texture map:
-Soil texture data source:    none
+Soil texture data source:               none
 #Soil texture data source:               "STATSGOFAO_Native"
 Soil texture map:                       ./input/LS_PARAMETERS/noah_2dparms/topsoil30snew
 Soil texture spatial transform:         mode

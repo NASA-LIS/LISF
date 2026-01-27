@@ -3,7 +3,7 @@
   Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 1 Dec 2025
+  Last Modified 12 Jan 2026
 
 		TABLE OF CONTENTS
 		_________________
@@ -356,13 +356,12 @@
  lis/utils/usaf/S2S/ghis2s/s2s_app/
  ---------------------------------
  ├── s2s_run.py
- ├── cylc_walltime.sh
  ├── s2s_api.py
- ├── s2s_run.sh
+ ├── walltime.py
  └── s2s_config_global_fcast
 
  (Note: Only listing main scripts and files
-         mostly needed for E2ES runs.)
+         mostly needed for E2ES forecast runs.)
 
  lis/utils/usaf/S2S/ghis2s/
  --------------------------
@@ -519,8 +518,9 @@
       - customize_lis_config.py
       - store_lis_output.py
 
-    - Set entries in run_lis_global_usaf_forcing.sh for output directory and
-      scripts path; instructions can be found in the README file there.
+    - Set entries in run_lis_global_usaf_forcing.sh for output directory, slurm
+      settings for specific OS, and scripts path; instructions can be found
+      in the README file there.
 
     - Submit script via SLURM (sbatch), e.g.,:
     sbatch /absolute/path/to/run_lis_global_usaf_forcing.sh 20251003
@@ -575,6 +575,9 @@
     using the USAF-LIS7.7-S2S (e.g., NAFPA precipitation) dataset, and covers
     up to 9 months of forecast as input data to LIS.
 
+  - This step occurs now just before the LIS FCST step and runs
+    separate from the LIS DA run and LDT_ICS steps
+
   - Scripts located in:  ghis2s/bcsd and ghis2s/bcsd/bcsd_library
 
   - Higher level BCSD scripts include:
@@ -621,6 +624,10 @@
 
      == Main NMME models, since 01-Aug-2024 ==
      CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52
+
+     -- NOTE: GFDL model has not been considered fully operational,
+              since late-summer of 2025. It is available on occasion,
+              like with the Jan-2026 forecast.
 
      In the s2s_config_global_fcst file, there is a section also for
       the "FCST" runs. One of the key inputs is for how many job 
@@ -772,28 +779,31 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
 
  lis/utils/usaf/S2S/ghis2s/s2s_app/
  ----------------------------------
- ├── s2s_run.py
- ├── cylc_walltime.sh
+ ├── check_cfsv2_bcsd.py
+ ├── check_disaggr_bcsd.py
+ ├── check_nmme_bcsd.py
+ ├── check_nmme_ncep.py
+ ├── convert_tiff.py
  ├── download_nmme_hindcasts.sh
  ├── download_nmme_precip.sh
+ ├── lis_s2s_monthly.py
  ├── nctool.py
  ├── README_CFSv2_PATCHING
  ├── s2s_api.py
  ├── s2s_config_global_fcast
- ├── s2s_config_global_hcast
- ├── s2s_hcst_preprocess.sh
- ├── s2s_run.sh
+ ├── s2s_hcst.py
+ ├── s2s_run.py
  ├── submit_hcast.sh
+ ├── verify_tiff.py
+ ├── walltime.py
  └── wget_cfsv2_oper_ts_e2es.sh
 
  lis/utils/usaf/S2S/ghis2s/
  --------------------------
  ├── bcsd
  │   ├── bcsd_library
- │   │   ├── bcsd_function.py
- │   │   ├── bcsd_stats_functions.py
- │   │   ├── bias_correction_modulefast.py
- │   │   ├── bias_correction_nmme_modulefast.py
+ │   │   ├── bcsd_functions.py
+ │   │   ├── bias_correction_module.py
  │   │   ├── calc_and_write_forecast_climatology.py
  │   │   ├── calc_and_write_nmme_forecast_climatology.py
  │   │   ├── calc_and_write_observational_climatology.py
@@ -816,6 +826,7 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │
  ├── cylc_script
  │   ├── ghis2s_program.py
+ │   ├── global.cylc
  │   └── test_ghis2s.sh
  │
  ├── ldt_ics
