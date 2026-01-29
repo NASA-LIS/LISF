@@ -214,21 +214,16 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
     # clip limits
-    ds_out["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out["PRECTOT"].values[:]),
-                                                     var_name = "PRECTOT", precip=True)
-    ds_out["PS"].values[:] = limits.clip_array(np.array(ds_out["PS"].values[:]),
-                                                var_name = "PS")
-    ds_out["T2M"].values[:] = limits.clip_array(np.array(ds_out["T2M"].values[:]),
-                                                 var_name = "T2M")
-    ds_out["LWGAB"].values[:] = limits.clip_array(np.array(ds_out["LWGAB"].values[:]),
-                                                 var_name = "LWGAB")
-    ds_out["SWGDN"].values[:] = limits.clip_array(np.array(ds_out["SWGDN"].values[:]),
-                                                   var_name = "SWGDN")
-    ds_out["QV2M"].values[:] = limits.clip_array(np.array(ds_out["QV2M"].values[:]),
-                                                 var_name = "QV2M")
-    ds_out["WIND10M"].values[:] = limits.clip_array(np.array(ds_out["WIND10M"].values[:]),
-                                                     var_name = "WIND")
-
+    var_configs = {
+        'PRECTOT': {'precip': True},
+        'PS': {},
+        'T2M': {},
+        'LWGAB': {},
+        'SWGDN': {},
+        'QV2M': {},
+        'WIND10M': {'var_name': 'WIND'}
+    }
+    ds_out = limits.clip_forcing_variables(ds_out, var_configs)
     dt1 = dt1 + relativedelta(months=rank)
     file_6h = outdir_6hourly + '/' + \
         final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
