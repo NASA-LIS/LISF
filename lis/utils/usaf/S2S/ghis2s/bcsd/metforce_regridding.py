@@ -112,7 +112,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     ic_dates = calc_ic_dates(imon)
 
     # Process 6-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
-    print("[INFO] Processing CFSv2 6-hrly forecast variables")
+    print(f"[INFO] Processing {fcst_model} X-hrly forecast variables")
     nof_raw_ens = config['BCSD']['nof_raw_ens']
 
     # if the call came from s2s_run.py the method returns 3 lists
@@ -171,7 +171,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
                 utils.job_script(config_file, jobfile, jobname, ntasks,
                                  hours, cwd, None, in_command=cmd)
 
-    print(f"[INFO] Write command to process CFSv2 files for {imon}")
+    print(f"[INFO] Write command to process {fcst_model} files for {imon}")
     if py_call:
         return slurm_commands
 

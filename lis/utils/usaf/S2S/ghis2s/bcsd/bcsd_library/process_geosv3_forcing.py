@@ -8,13 +8,19 @@ import numpy as np
 import xarray as xr
 import xesmf as xe
 import yaml
-from ghis2s.shared.utils import get_domain_info, load_ncdata, get_chunk_sizes, log_memory_usage, write_ncfile
-from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask, read_geosv3_elevation
+from ghis2s.shared.utils import get_domain_info, load_ncdata, get_chunk_sizes, write_ncfile
+from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask, add_fcorr_vars, apply_fcorr
 from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
 
 limits = lim()
 # Internal functions
+def read_geosv3_elevation(static_file, logger):
+    ''' reads GEOS5 surface geopotential (PHIS) and returns the height at the surface '''
+    LIS_CONST_G = 9.80616
+    phyis = load_ncdata(static_file, logger, var_name='PHIS').isel(time = 0)
+    phyis = phyis.rename({'lat': 'latitude', 'lon': 'longitude'})
+    return phyis/LIS_CONST_G
 
 def magnitude(_a, _b):
     ''' computes wind magnitude u^2 + v^2'''
@@ -53,14 +59,13 @@ def _read_cmd_args():
 def write_monthly_files(this_6h, file_6h, file_mon, logger):
     ''' writes regridded raw Monthly and 3-hourly files '''
     encoding = {
-        var: {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
+        var: {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+              'least_significant_digit': 8, "missing_value": -9999.}
         for var in ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "WIND10M"]
     }
 
-    #this_6h.to_netcdf(file_6h, format="NETCDF4", encoding=encoding)
-    write_ncfile(this_6h.chunk({'time':1,'lat':-1, 'lon':-1}), file_6h, encoding, logger)
+    write_ncfile(this_6h, file_6h, encoding, logger)
     this_mon = this_6h.mean(dim="time")
-    #this_mon.to_netcdf(file_mon, format="NETCDF4", encoding=encoding)
     write_ncfile(this_mon, file_mon, encoding, logger)
     this_6h.close()
     this_mon.close()
@@ -70,16 +75,13 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
     ''' regrids raw GEOSv3 '''
     regrid_method = {
         '25km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
-                 'QV2M':'bilinear', 'T2M':'bilinear', 'WIND10M':'bilinear',
-                 'ELEVATION':'bilinear'},
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'WIND10M':'bilinear'},
         '10km': {'PRECTOT':'conservative', 'SWGDN':'bilinear', 'LWGAB':'bilinear','PS':'bilinear',
-                 'QV2M':'bilinear', 'T2M':'bilinear', 'WIND10M':'bilinear',
-                 'ELEVATION':'bilinear'},
+                 'QV2M':'bilinear', 'T2M':'bilinear', 'WIND10M':'bilinear'},
         '5km': {'PRECTOT':'conservative', 'SWGDN':'conservative', 'LWGAB':'conservative',
                 'PS':'conservative','QV2M':'conservative', 'T2M':'bilinear',
-                'WIND10M':'bilinear', 'ELEVATION':'bilinear'}}
+                'WIND10M':'bilinear'}}
 
-    log_memory_usage("Top of migrate_to_monthly_files: ", [logger, subtask])
     outdir_6hourly = outdirs["outdir_6hourly"]
     outdir_monthly = outdirs["outdir_monthly"]
     final_name_pfx = f"{fcst_init['monthday']}.geosv3."
@@ -101,15 +103,18 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
     # check for optional keywords
     lapsrate_corr = False
     aspect_corr = False
+    n_outvar = 0
     if args["config"].get('BCSD', {}).get('force_corr', {}).get('lapsrate') is True:
         lapsrate_corr = True
         static_file = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/geosv3_staticfields_20150401.nc'
         logger.info(f"Reading GEOSv3 static file: {static_file}", subtask = subtask)
         geos_elev = read_geosv3_elevation(static_file, [logger, subtask])
-        ldt_elev = target_land_mask["ELEVATION"]
+        geos_elev = xr.Dataset({'ELEVATION': geos_elev})
+        n_outvar +=4
 
     if args["config"].get('BCSD', {}).get('force_corr', {}).get('aspect') is True:
         aspect_corr = True
+        n_outvar +=1
 
     # read GEOSv3 land mask
     geosv3_land_mask = xr.open_dataset(weightdir + f'GEOSv3_{resol}_landmask.nc4')
@@ -131,9 +136,6 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
 
     geosv3_masked = geosv3_in.copy()
     geosv3_masked['mask'] = geosv3_land_mask['LANDMASK']
-    if lapsrate_corr:
-        geosv3_masked['ELEVATION'] = geos_elev
-
     weight_file = weightdir + f'GEOSv3_{resol}_bilinear_land.nc'
     bil_regridder = xe.Regridder(geosv3_masked, ds_out, "bilinear", periodic=True,
                                  reuse_weights=True,
@@ -163,31 +165,74 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
                                                          geosv3_land_mask, None, 'conservative')
         for var in conservative_vars:
             ds_out[var] = result_conservative[var]
-    log_memory_usage("After regridding: ", [logger, subtask])
+
+    if lapsrate_corr or aspect_corr:
+        # Apply forcing corrections
+        # Regrid elevation and add ELEVATION Difference for lapserate correction
+        elevation_regridded = bil_regridder(geos_elev['ELEVATION'].where(geosv3_land_mask['LANDMASK'] > 0))
+        elevation_regridded = elevation_regridded.where(target_land_mask['LANDMASK'] > 0)
+        ds_out["ELEV_DIFF"] = target_land_mask["ELEVATION"] - elevation_regridded
+        
+        # Add local hour, doy, lat_2d for ASPECT correction
+        ds_out = add_fcorr_vars(ds_out)
+
+        # Apply forcing correction
+        result = xr.apply_ufunc(
+            apply_fcorr,
+            target_land_mask["LANDMASK"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            target_land_mask["SLOPE"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            target_land_mask["ASPECT"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),            
+            ds_out["ELEV_DIFF"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["LAT_2D"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["T2M"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["QV2M"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["LWGAB"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["PS"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["SWGDN"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["LHOUR"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            ds_out["DOY"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
+            input_core_dims=[[],[],[],[],[], ['time'],['time'],['time'],['time'],
+                             ['time'],['time'],['time']],
+            kwargs={'force_corr': args["config"]["BCSD"]["force_corr"]},
+            output_core_dims=[['variable', 'time']],
+            vectorize=True,
+            dask='parallelized',
+            output_dtypes=[np.float32],
+            dask_gufunc_kwargs={
+                'output_sizes': {'time': ds_out.sizes['time'], 'variable': n_outvar},
+                'allow_rechunk': True  
+            }
+        ).transpose('variable', 'time', 'lat', 'lon')
+
+        # update ds_out
+        var_no = 0
+        if lapsrate_corr:
+            ds_out["T2M"] = result.isel(variable = var_no + 0)
+            ds_out["QV2M"] = result.isel(variable = var_no + 1)
+            ds_out["LWGAB"] = result.isel(variable = var_no + 2)
+            ds_out["PS"] = result.isel(variable = var_no + 3)
+            var_no = 4
+        if aspect_corr:
+            ds_out["SWGDN"] = result.isel(variable = var_no)
+            
+        # remove temporary variables
+        ds_out = ds_out.drop_vars(["ELEV_DIFF", "LHOUR", "DOY", "LAT_2D"])
+
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
 
-    # apply lapse_rate
-    #if lapsrate_corr or aspect_corr:
-    #print(ldt_elev)
-    #print(ds_out)
-    #sys.exit()
-    # clip limits
-    ds_out["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out["PRECTOT"].values[:]),
-                                                     var_name = "PRECTOT", precip=True)
-    ds_out["PS"].values[:] = limits.clip_array(np.array(ds_out["PS"].values[:]),
-                                                var_name = "PS")
-    ds_out["T2M"].values[:] = limits.clip_array(np.array(ds_out["T2M"].values[:]),
-                                                 var_name = "T2M")
-    ds_out["LWGAB"].values[:] = limits.clip_array(np.array(ds_out["LWGAB"].values[:]),
-                                                 var_name = "LWGAB")
-    ds_out["SWGDN"].values[:] = limits.clip_array(np.array(ds_out["SWGDN"].values[:]),
-                                                   var_name = "SWGDN")
-    ds_out["QV2M"].values[:] = limits.clip_array(np.array(ds_out["QV2M"].values[:]),
-                                                 var_name = "QV2M")
-    ds_out["WIND10M"].values[:] = limits.clip_array(np.array(ds_out["WIND10M"].values[:]),
-                                                     var_name = "WIND")
-    log_memory_usage("After clipping: ", [logger, subtask])
+    # Clip array
+    var_configs = {
+        'PRECTOT': {'precip': True},
+        'PS': {},
+        'T2M': {},
+        'LWGAB': {},
+        'SWGDN': {},
+        'QV2M': {},
+        'WIND10M': {'var_name': 'WIND'}
+    }
+    ds_out = limits.clip_forcing_variables(ds_out, var_configs)
+    ds_out = ds_out.chunk({'time':1, 'lat': -1, 'lon': -1})
     dt1 = dt1 + relativedelta(months=rank)
     file_6h = outdir_6hourly + '/' + \
         final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
@@ -195,7 +240,6 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
         final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
 
     write_monthly_files(ds_out, file_6h, file_mon, [logger, subtask])
-    log_memory_usage("After writing files: ", [logger, subtask])
     logger.info(f"Writing: 3h GEOSv3 file: {file_6h}", subtask = subtask)
     logger.info(f"Writing: monthly GEOSv3 file: {file_mon}", subtask = subtask)
     ds_out.close()
@@ -203,7 +247,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
     del ds_out, geosv3_masked
     logger.info(f"Done processing GEOSv3 forecast files for {rank}", subtask = subtask)
     
-def driver(rank):
+def driver(rank, logger_task=None):
     """Main driver. rank = forecast month"""
     new_name = {'PRECTOTCORR': 'PRECTOT', 'T2M': 'T2M', 'PS': 'PS',
                 'Q2M': 'QV2M', 'LWS': 'LWGAB', 'SWGDWN': 'SWGDN'}
@@ -219,22 +263,26 @@ def driver(rank):
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt0 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
     dt1 = dt0 + relativedelta(months=rank)
-
-    task_name = os.environ.get('SCRIPT_NAME')
     subtask = f'{dt1.year:04d}{dt1.month:02d}'
-    logger = TaskLogger(task_name,
-                        os.getcwd(),
-                        f'bcsd/process_forecast_data.py processing GEOSv3 ens{ens_num:01d}')
+    
+    if logger_task is None:
+        task_name = os.environ.get('SCRIPT_NAME')
+        logger = TaskLogger(task_name,
+                            os.getcwd(),
+                            f'bcsd/bcsd_library/process_geosv3_forcing.py processing GEOSv3 ens{ens_num:01d} {subtask}')
+    else:
+        logger = logger_task
 
     yyyymm_ic = f'{dt0.year:04d}{dt0.month:02d}'
     yyyymm_fc = f'{dt1.year:04d}{dt1.month:02d}'
+    ens_geos = f'ens{ens_num:02d}/'
     ens_num = f'ens{ens_num:01d}/'
     fcst_init["month"] = int(dt0.month)
     fcst_init["day"] = int(dt0.day)
     fcst_init["hour"] = 0
 
-    geos_file = args["forcedir"] + yyyymm_ic + '/' + ens_num + f'geos_s2s_v3.{yyyymm_fc}.nc'
-    rad_file = args["forcedir"] + yyyymm_ic + '/' + ens_num + f'rad_geos_s2s_v3.{yyyymm_fc}.nc'
+    geos_file = args["forcedir"] + yyyymm_ic + '/' + ens_geos + f'geos_s2s_v3.{yyyymm_fc}.nc'
+    rad_file = args["forcedir"] + yyyymm_ic + '/' + ens_geos + f'rad_geos_s2s_v3.{yyyymm_fc}.nc'
     logger.info(f"Reading GEOS file: {geos_file}", subtask = subtask)
     logger.info(f"Reading Radiation file: {rad_file}", subtask = subtask)
     geos_full = load_ncdata(geos_file, [logger, subtask])[['PRECTOTCORR', 'T2M', 'PS',
@@ -304,11 +352,15 @@ if __name__ == "__main__":
     if SIZE==1:
         with open(sys.argv[5], 'r', encoding="utf-8") as _file:
             _config = yaml.safe_load(_file)
+        TASK_NAME = os.environ.get('SCRIPT_NAME')
+        LOGGER = TaskLogger(TASK_NAME,
+                            os.getcwd(),
+                            f'bcsd/bcsd_library/process_geosv3_forcing.py processing GEOSv3 ens{args["ens_num"]}')
         loop = [0, _config["EXP"]["lead_months"]]
         if len(sys.argv) == 7:
             start_rank = int(sys.argv[7])
             loop = [start_rank, start_rank + 1]
         for _rank in range(loop[0], loop[1]):
-            driver(_rank)
+            driver(_rank, logger_task=LOGGER)
     else:
         driver(RANK)

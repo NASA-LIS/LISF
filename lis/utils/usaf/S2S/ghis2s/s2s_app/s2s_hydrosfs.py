@@ -138,12 +138,12 @@ if __name__ == "__main__":
         elif args.preprocess.lower() == 'monthly':
             s2s.monthly_hydroscs()
         elif args.preprocess.lower() == 'clim':
-            #hcast.clim_metforce()
+            #s2s.clim_metforce()
             s2s.clim_hydroscs()
         else:
             print(f"Invalid preprocessor {args.preprocess}")
             sys.exit()
-        s2s.schedule.update(hcast.schedule)
+        s2s.schedule.update(s2s.schedule)
     else:
         s2s.bcsd()
 

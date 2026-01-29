@@ -1304,6 +1304,10 @@ class S2Srun(DownloadForecasts):
         par_info['NT'] = info['NT']
         par_info['TPN'] = info['TPN']
         par_info['MP'] = False
+        if self.fcst_model.upper() == 'GEOSV3' and self._resol == '5km':
+            par_info['MEM'] = '480GB'
+            info['HOURS'] = '12'
+            
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, self._cwd)

@@ -253,7 +253,7 @@ def _print_reftime(fcst_init, ens_num):
         f"{fcst_init['hour']} cycle"
     return txt
 
-def _driver(rank):
+def _driver(rank, logger_task=None):
     """Main driver."""
     args = _read_cmd_args()
     fcst_init = {}
@@ -274,9 +274,13 @@ def _driver(rank):
     dt2 = dt1 + relativedelta(months=1)
     task_name = os.environ.get('SCRIPT_NAME')
     subtask = f'{dt1.year:04d}{dt1.month:02d}'
-    logger = TaskLogger(task_name,
-                        os.getcwd(),
-                        f'bcsd/process_cfsv2_forcing.py processing CFSv2 forcings for {subtask}')
+
+    if logger_task is None:
+        logger = TaskLogger(task_name,
+                            os.getcwd(),
+                            f'bcsd/process_cfsv2_forcing.py processing CFSv2 ens{ens_num:01d} {subtask}')
+    else:
+        logger = logger_task
 
     dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
     dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
@@ -351,12 +355,16 @@ if __name__ == "__main__":
     if SIZE==1:
         with open(sys.argv[5], 'r', encoding="utf-8") as _file:
             _config = yaml.safe_load(_file)
+        TASK_NAME = os.environ.get('SCRIPT_NAME')
+        LOGGER = TaskLogger(TASK_NAME,
+                            os.getcwd(),
+                            f'bcsd/bcsd_library/process_geosv3_forcing.py processing CFSv2 ens{args["ens_num"]}')
         loop = [0, _config["EXP"]["lead_months"]]
         if len(sys.argv) == 10:
             start_rank = int(sys.argv[9])
             loop = [start_rank, start_rank + 1]
 
         for _rank in range(loop[0], loop[1]):
-            _driver(_rank)
+            _driver(_rank, logger_task=LOGGER)
     else:
         _driver(RANK)
