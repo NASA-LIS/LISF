@@ -232,7 +232,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
         'WIND10M': {'var_name': 'WIND'}
     }
     ds_out = limits.clip_forcing_variables(ds_out, var_configs)
-    ds_out = ds_out.chunk({'time':1, 'lat': -1, 'lon': -1})
+    ds_out = ds_out.chunk({'time':-1, 'lat': -1, 'lon': -1})
     dt1 = dt1 + relativedelta(months=rank)
     file_6h = outdir_6hourly + '/' + \
         final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
@@ -355,7 +355,7 @@ if __name__ == "__main__":
         TASK_NAME = os.environ.get('SCRIPT_NAME')
         LOGGER = TaskLogger(TASK_NAME,
                             os.getcwd(),
-                            f'bcsd/bcsd_library/process_geosv3_forcing.py processing GEOSv3 ens{args["ens_num"]}')
+                            f'bcsd/bcsd_library/process_geosv3_forcing.py processing GEOSv3 ens{sys.argv[2]}')
         loop = [0, _config["EXP"]["lead_months"]]
         if len(sys.argv) == 7:
             start_rank = int(sys.argv[7])
