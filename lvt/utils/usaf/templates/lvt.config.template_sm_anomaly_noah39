@@ -39,7 +39,7 @@ Run domain upper right lon:           179.9296875
 Run domain resolution (dx):             0.140625
 Run domain resolution (dy):             0.093750
 
-Input domain and mask data file:   ./static/lis_input.global.noah39.nc
+Input domain and mask data file:   ./input/lis_input.nrt_streamflow.noah39.nc
 Spatial transform method for generating the LVT analysis domain: "neighbor"
 
 #model soil moisture vs obs soil moisture
@@ -88,10 +88,11 @@ LIS output analysis data class:               "LSM"
 LIS output number of surface model types:      2
 LIS output surface model types:               "LSM" "Openwater"
 LIS output model name:              "NOAH.3.9"
-LIS output domain and parameter file:  ./static/lis_input.global.noah39.nc
+LIS output domain and parameter file:  ./input/lis_input.nrt_streamflow.noah39.nc
 
-LIS output directory:                lisout_3hr
-LIS output naming style:            "WMO convention"
+LIS output directory:                noah39_output_old
+#LIS output naming style:            "WMO convention"
+LIS output naming style:            "557WW streamflow convention"
 
 LIS output methodology:            "1d tilespace"
 LIS output format:                  netcdf
@@ -125,6 +126,7 @@ LIS output soil temperature layer thickness:  0.1 0.3 0.6 1.0
 #LIS output soil moisture layer thickness: 0.1 0.25 0.65 2.0
 #LIS output soil temperature layer thickness:  0.1 0.25 0.65 2.0
 
+LIS Streamflow Generating Process: 'LIS-NOAH-RAPID'
 
 # EMK
 LIS model timestep: "15mn"

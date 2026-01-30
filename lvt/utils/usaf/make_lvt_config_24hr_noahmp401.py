@@ -21,8 +21,8 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.noahmp401"
 
-_STARTDT = datetime.datetime(2024, 9, 25, 12)
-_ENDDT = datetime.datetime(2024, 9, 26, 12)
+_STARTDT = datetime.datetime(2025, 1, 20, 12)
+_ENDDT = datetime.datetime(2025, 1, 22, 12)
 
 #_OUTPUT = "netcdf"
 _OUTPUT = "grib2"

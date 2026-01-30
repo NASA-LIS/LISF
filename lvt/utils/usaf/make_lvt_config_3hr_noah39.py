@@ -20,8 +20,8 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.noah39"
 
-_STARTDT = datetime.datetime(2024, 9, 26, 0)
-_ENDDT = datetime.datetime(2024, 9, 26, 12)
+_STARTDT = datetime.datetime(2025, 1, 20, 12)
+_ENDDT = datetime.datetime(2025, 1, 22, 12)
 
 _OUTPUT = "grib2" # For 557 operations
 #_OUTPUT = "netcdf" # For testing

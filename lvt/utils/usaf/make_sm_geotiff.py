@@ -37,6 +37,7 @@
 #               output.
 # 02 Jun 2023:  Eric Kemp (SSAI), further updates for 557 WW file
 #               convention for output.
+# 30 Jan 2026:  Eric Kemp (SSAI), updated for LSM-ROUTING match.
 #
 #------------------------------------------------------------------------------
 """
@@ -58,30 +59,27 @@ _MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
 _SOIL_LAYERS = {
-    "NOAH" :    ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
-    "NOAHMP" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
-    "JULES" :   ["0-0.1 m", "0.1-0.35 m", "0.35-1.0 m", "1.0-3.0 m"],
+    "NOAH-RAPID" :   ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
+    "NOAHMP-RAPID" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
 }
 
 _557WW_SOIL_LAYERS = {
-    "NOAH" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
-              "D100CM-D200CM"],
-    "NOAHMP" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
-                "D100CM-D200CM"],
-    "JULES" : ["D0CM-D10CM", "D10CM-D35CM", "D35CM-D100CM",
-                "D100CM-D300CM"],
+    "NOAH-RAPID" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+                    "D100CM-D200CM"],
+    "NOAHMP-RAPID" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+                      "D100CM-D200CM"],
 }
 
 def _usage():
     """Print command line usage."""
     txt = f"[INFO] Usage: {sys.argv[0]} ldtfile tsfile finalfile"
-    txt += " LSM yyyymmddhh"
+    txt += " lsm_routing yyyymmddhh"
     print(txt)
     print("[INFO]  where:")
     print("[INFO]   ldtfile: LDT parameter file with full lat/lon data")
     print("[INFO]   tsfile: LVT 'TS' soil moisture anomaly file")
     print("[INFO]   finalfile: LVT 'FINAL' soil moisture anomaly file")
-    print("[INFO]   LSM: land surface model")
+    print("[INFO]   lsm_routing: land surface model-routing model combo")
     print("[INFO]   yyyymmddhh: Valid date and time (UTC)")
 
 def _read_cmd_args():
@@ -107,19 +105,19 @@ def _read_cmd_args():
     ncid_lvt = nc4_dataset(finalfile, mode='r', format='NETCDF4_CLASSIC')
     ncid_lvt.close()
 
-    lsm = sys.argv[4]
+    lsm_routing = sys.argv[4]
     yyyymmddhh = sys.argv[5]
 
-    if lsm not in ["NOAH", "NOAHMP", "JULES"]:
-        print(f"[ERR] Unknown LSM {lsm}")
-        print("Options are NOAH, NOAHMP, JULES")
+    if lsm_routing not in ["NOAH-RAPID", "NOAHMP-RAPID"]:
+        print(f"[ERR] Unknown LSM-Routing match {lsm_routing}")
+        print("Options are NOAH-RAPID, NOAHMP-RAPID")
         sys.exit(1)
 
     cmd_args = {
         "ldtfile" : ldtfile,
         "tsfile" : tsfile,
         "finalfile" : finalfile,
-        "lsm" : lsm,
+        "lsm_routing" : lsm_routing,
         "yyyymmddhh" : yyyymmddhh,
     }
     return cmd_args
@@ -168,7 +166,7 @@ def _set_metadata(varname, soil_layer, model, \
     metadata = { 'varname' : f'{varname}',
                  'units' : 'm3/m3',
                  'soil_layer' : f'{soil_layer}',
-                 'land_surface_model' : f'{model}' }
+                 'land_surface_and_routing_models' : f'{model}' }
     if climomonth is None:
         time_string = f"Valid {validdt.hour:02}Z {validdt.day} "
         time_string += f"{_MONTHS[validdt.month-1]} {validdt.year:04}"
@@ -181,12 +179,12 @@ def _set_metadata(varname, soil_layer, model, \
 
     return metadata
 
-def _make_outfile_anomaly(lsm, i, yyyymmddhh):
+def _make_outfile_anomaly(lsm_routing, i, yyyymmddhh):
     """Create anomaly filename"""
     filename = "PS.557WW_SC.U_DI.C"
-    filename += f"_GP.LIS-{lsm}"
+    filename += f"_GP.LIS-{lsm_routing}"
     filename += "_GR.C0P09DEG_AR.GLOBAL"
-    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm][i]}"
+    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm_routing][i]}"
     filename += f"_PA.SM-ANOMALY"
     filename += f"_DD.{yyyymmddhh[0:8]}"
     filename += f"_DT.{yyyymmddhh[8:10]}00_DF.TIF"
@@ -200,13 +198,13 @@ def _proc_sm_anomalies(cmd_args, longitudes, latitudes):
         sm_anomalies = ncid.variables["SoilMoist"][i,:,:]
         nrows, ncols = sm_anomalies.shape
 
-        soil_layer = _SOIL_LAYERS[cmd_args["lsm"]][i]
+        soil_layer = _SOIL_LAYERS[cmd_args["lsm_routing"]][i]
 
         # Write soil moisture anomalies to GeoTIFF
         sm1 = sm_anomalies[::-1, :]
         geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
         outfile_anomaly = \
-            _make_outfile_anomaly(cmd_args["lsm"], i,
+            _make_outfile_anomaly(cmd_args["lsm_routing"], i,
                                   cmd_args["yyyymmddhh"])
         varname = "Soil Moisture Anomaly"
         output_raster = _create_output_raster(outfile_anomaly,
@@ -214,19 +212,19 @@ def _proc_sm_anomalies(cmd_args, longitudes, latitudes):
                                               sm1)
         metadata = _set_metadata(varname=varname,
                                  soil_layer=soil_layer,
-                                 model=cmd_args["lsm"],
+                                 model=cmd_args["lsm_routing"],
                                  yyyymmddhh=cmd_args["yyyymmddhh"])
         output_raster.GetRasterBand(1).SetMetadata(metadata)
         output_raster.FlushCache() # Write to disk
         del output_raster
     ncid.close()
 
-def _make_outfile_climo(lsm, i, month, yyyymmddhh):
+def _make_outfile_climo(lsm_routing, i, month, yyyymmddhh):
     """Create climatology filename"""
     filename = "PS.557WW_SC.U_DI.C_DC.CLIMO"
-    filename += f"_GP.LIS-{lsm}"
+    filename += f"_GP.LIS-{lsm_routing}"
     filename += "_GR.C0P09DEG_AR.GLOBAL"
-    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm][i]}"
+    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm_routing][i]}"
     filename += f"_PA.SM-{month}"
     filename += f"_DP.20080101-{yyyymmddhh[0:8]}"
     filename += f"_DF.TIF"
@@ -245,7 +243,7 @@ def _proc_sm_climo(cmd_args, longitudes, latitudes):
             geotransform = _make_geotransform(longitudes, latitudes,
                                               ncols, nrows)
             outfile_climo = \
-                _make_outfile_climo(cmd_args["lsm"], i,
+                _make_outfile_climo(cmd_args["lsm_routing"], i,
                                     month, cmd_args["yyyymmddhh"])
             varname = "Climatological Soil Moisture"
             output_raster = \
@@ -254,8 +252,8 @@ def _proc_sm_climo(cmd_args, longitudes, latitudes):
                                       ncid.variables[climo_name][i,::-1,:])
             metadata = \
                 _set_metadata(varname=varname,
-                              soil_layer=_SOIL_LAYERS[cmd_args["lsm"]][i],
-                              model=cmd_args["lsm"],
+                              soil_layer=_SOIL_LAYERS[cmd_args["lsm_routing"]][i],
+                              model=cmd_args["lsm_routing"],
                               yyyymmddhh=cmd_args["yyyymmddhh"],
                               climomonth=month)
             output_raster.GetRasterBand(1).SetMetadata(metadata)
