@@ -443,6 +443,11 @@ contains
 
     character*20 :: model_name ! EMK
 
+    character(len=10)       :: fres
+    character(len=10)       :: fres2
+    character*1             :: fres1(10)
+    character(len=1)        :: fproj
+
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
 
@@ -728,14 +733,54 @@ contains
              call LVT_endrun()
           end if
 
+          if(LVT_rc%domain.eq."polar") then
+             fproj = 'P'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."lambert") then
+             fproj = 'L'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."mercator") then
+             fproj = 'M'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."gaussian") then
+             fproj = 'G'
+             write(unit=fres, fmt='(i2.2)') &
+                  LVT_LIS_rc(1)%gridDesc(9)*100
+             fres1 = '0P'//trim(fres)//'DEG'
+          else
+             fproj = 'C'
+             write(unit=fres, fmt='(i10)') &
+                  nint(LVT_LIS_rc(1)%gridDesc(10)*100)
+             read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
+             c = 0
+             do i=1,10
+                if(fres1(i).ne.' '.and.c==0) c = i
+             enddo
+             ! EMK...Make code consistent with LIS
+             if (LVT_LIS_rc(1)%gridDesc(10) .lt. 0.1) then
+                fres2 = '0P0'
+             else
+                fres2 = '0P'
+             end if
+             do i=c,10
+                fres2 = trim(fres2)//trim(fres1(i))
+             enddo
+             fres2 = trim(fres2)//'DEG'
+          endif
+
           ! EMK...Different file name convention for 24-hr data
           if (LVT_rc%tavgInterval == 86400) then
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
+                  //'_GP.'//trim(LVT_rc%generating_process) &
+                  !//'_GP.'//trim(model_name) &
+                  !//'_GR.C0P09DEG' &
+                  //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS24' &
                   //'_DD.'//trim(cdate2) &
@@ -747,7 +792,8 @@ contains
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
-                     //'_GP.'//trim(model_name) &
+                     //'_GP.'//trim(LVT_rc%generating_process) &
+                     !//'_GP.'//trim(model_name) &
                      //'_GR.C0P09DEG' &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.LIS24-SSDEV' &
@@ -757,12 +803,23 @@ contains
              end if
           else
              ! EMK...Assume 3-hr
+             ! fname_mean = trim(LVT_rc%statsodir) &
+             !      //'/PS.557WW' &
+             !      //'_SC.'//trim(LVT_rc%security_class) &
+             !      //'_DI.'//trim(LVT_rc%data_category) &
+             !      //'_GP.'//trim(model_name) &
+             !      //'_GR.C0P09DEG' &
+             !      //'_AR.'//trim(LVT_rc%area_of_data) &
+             !      //'_PA.LIS' &
+             !      //'_DD.'//trim(cdate2) &
+             !      //'_DT.'//trim(cdate3) &
+             !      //'_DF.GR2'
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
+                  //'_GP.'//trim(LVT_rc%generating_process) &
+                  //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS' &
                   //'_DD.'//trim(cdate2) &
@@ -770,17 +827,29 @@ contains
                   //'_DF.GR2'
 
              if (LVT_rc%nensem > 1) then
+                ! fname_ssdev = trim(LVT_rc%statsodir) &
+                !      //'/PS.557WW' &
+                !      //'_SC.'//trim(LVT_rc%security_class) &
+                !      //'_DI.'//trim(LVT_rc%data_category) &
+                !      //'_GP.'//trim(model_name) &
+                !      //'_GR.C0P09DEG' &
+                !      //'_AR.'//trim(LVT_rc%area_of_data) &
+                !      //'_PA.SSDEV' &
+                !      //'_DD.'//trim(cdate2) &
+                !      //'_DT.'//trim(cdate3) &
+                !      //'_DF.GR2'
                 fname_ssdev = trim(LVT_rc%statsodir) &
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
-                     //'_GP.'//trim(model_name) &
-                     //'_GR.C0P09DEG' &
+                     //'_GP.'//trim(LVT_rc%generating_process) &
+                     //'_GR.'//trim(fproj)//trim(fres2) &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.SSDEV' &
                      //'_DD.'//trim(cdate2) &
                      //'_DT.'//trim(cdate3) &
                      //'_DF.GR2'
+
              end if
           end if
           ! Setup of GRIB-1 and GRIB-2 Metadata Section

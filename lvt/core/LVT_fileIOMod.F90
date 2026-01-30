@@ -191,7 +191,8 @@ subroutine LVT_create_output_directory(mname,dir_name,style)
          call system("mkdir -p "//trim(out_dname))
       endif      
    elseif((style_temp.eq."WMO convention").or.  &
-          (style_temp.eq."WMO convention (AFW OPS)")) then 
+        (style_temp.eq."WMO convention (AFW OPS)").or. &
+        (style_temp.eq."557WW streamflow convention")) then 
       out_dname = trim(LVT_rc%odir)
 
       if ( present(dir_name) ) then
@@ -220,7 +221,7 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
 ! !USES:
    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
-   use LVT_logMod,   only : LVT_log_msg, LVT_endrun
+   use LVT_logMod,   only : LVT_log_msg, LVT_endrun, LVT_logunit
 
    implicit none 
 !
@@ -483,7 +484,8 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
               call LVT_endrun 
            endselect
         endif
-     elseif(style_temp.eq."WMO convention") then 
+     elseif(style_temp.eq."WMO convention" .or. &
+          style_temp .eq. "557WW streamflow convention") then 
         write(unit=fint,fmt='(i2.2)') writeint/3600
         write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
              LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
@@ -510,12 +512,11 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
            fproj = 'C'
            write(unit=fres, fmt='(i10)') nint(LVT_LIS_rc(source)%gridDesc(10)*100)
            read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
-           c = 0 
+           c = 0
            do i=1,10
               if(fres1(i).ne.' '.and.c==0) c = i
            enddo
            ! EMK...Make code consistent with LIS
-!           fres3 = '0P'
            if (LVT_LIS_rc(source)%gridDesc(10) .lt. 0.1) then
               fres3 = '0P0'
            else
@@ -529,17 +530,28 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
         endif
 
         ! EMK TEST...Remove date directory
-!        dname = trim(odir_temp)//'/'//trim(cdate1)//&
-        dname = trim(odir_temp)//'/'//&
+        if(style_temp.eq."WMO convention") then
 
-             '/PS.AFWA_SC.' &
-             //trim(LVT_rc%security_class)//'_DI.' &
-             //trim(LVT_rc%distribution_class)//'_DC.' &
-!             //trim(LVT_rc%data_category)//'_GP.LIS_GR.' &
-             //'ANLYS'//'_GP.LIS_GR.' &
-             //trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
-             '_PA.'//trim(fint)//'-HR-SUM_DD.'// &
-             trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+           dname = trim(odir_temp)//'/'//&
+                '/PS.AFWA_SC.' &
+                //trim(LVT_rc%security_class)//'_DI.' &
+                //trim(LVT_rc%distribution_class)//'_DC.' &
+                //'ANLYS'//'_GP.LIS_GR.' &
+                //trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
+                '_PA.'//trim(fint)//'-HR-SUM_DD.'// &
+                trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+        else if (style_temp .eq. "557WW streamflow convention") then
+           dname = trim(odir_temp)//'/'//&
+                '/PS.557WW_SC.' &
+                //trim(LVT_rc%security_class)//'_DI.' &
+                //trim(LVT_rc%distribution_class)//'_GP.' &
+                //trim(LVT_rc%generating_process)//'_GR.' &
+                //trim(fproj)//trim(fres2)//'_AR.' &
+                //trim(LVT_rc%area_of_data)//'_PA.' &
+                //'SURFACEMODEL' // '_DD.' & ! EMK FIXME
+                //trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+        end if
+
         select case (LVT_LIS_rc(source)%format)
         case ( "binary" )
            out_fname = trim(dname)//'.DAT'
@@ -547,6 +559,9 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
            out_fname = trim(dname)//'.GR1'
         case ( "netcdf" )
            out_fname = trim(dname)//'.nc'
+           if (style_temp .eq. "557WW streamflow convention") then
+              out_fname = trim(dname)//'.NC'
+           endif
         case ( "grib2" )
            out_fname = trim(dname)//'.GR2'
         case default            
