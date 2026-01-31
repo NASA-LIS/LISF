@@ -14,8 +14,13 @@ class VarLimits:
     This function adjusts minimum and maximum values of a variable to recorded max and minimum.
     Below limits are 6h based
     '''
+    def __init__ (self, enable_rounding=False, missing_value=-9999.):
+        self.precip_thres = self.clip_array(np.empty(1), 'PRECTOT', min_thres = True)
+        self.enable_rounding = enable_rounding
+        self.missing_value = missing_value
+
     def clip_array (self, data_array, var_name=None, min_val=None, max_val=None,
-                    missing=None, min_thres=None, precip=None):
+                    missing=None, min_thres=None, precip=None, round_decimals=None):
         ''' Below limits are 6h based'''
         min_limit={'PRECTOT': 1.e-7,
                   'PS': 30000.,
@@ -35,6 +40,17 @@ class VarLimits:
                   'WIND': 70.
         }
 
+        # Optimal rounding for each variable (balances precision vs file size)
+        round_precision = {
+            'PRECTOT': 9,   # ~1e-9 kg/m²/s = 0.00009 mm/day
+            'PS': 1,        # ~10 Pa = 0.1 hPa
+            'T2M': 3,       # ~0.001 K
+            'LWGAB': 2,     # ~0.01 W/m²
+            'SWGDN': 2,     # ~0.01 W/m²
+            'QV2M': 8,      # ~1e-8 kg/kg
+            'WIND': 3       # ~0.001 m/s
+        }
+
         if min_thres is not None:
             return min_limit.get('PRECTOT')
         if min_val is None:
@@ -42,7 +58,7 @@ class VarLimits:
         if max_val is None:
             max_val = max_limit.get(var_name)
         if missing is None:
-            missing = -9999.
+            missing = self.missing_value
 
         if precip is None:
             clipped_array = np.where(data_array == missing, data_array,
@@ -57,6 +73,17 @@ class VarLimits:
             data_array[mask_gt_max] = max_val
             clipped_array = data_array
 
+        # Apply rounding if specified
+        if self.enable_rounding and var_name in round_precision:
+            round_decimals = round_precision[var_name]
+        
+        if round_decimals is not None:
+            # Only round non-missing values
+            mask_valid = clipped_array != missing
+            clipped_array = np.where(mask_valid,
+                                    np.round(clipped_array, round_decimals),
+                                    clipped_array)
+            
         return clipped_array
 
     def clip_forcing_variables(self, ds_out, var_configs):
@@ -79,10 +106,6 @@ class VarLimits:
                 ds_out[var_name] = clipped
 
         return ds_out
-
-    def __init__ (self):
-        self.precip_thres = self.clip_array(np.empty(1), 'PRECTOT', min_thres = True)
-
 
 def calc_stats(data, tiny): #,int n,float *mean,float *sd,float *skew)
     """ calculates statistics """

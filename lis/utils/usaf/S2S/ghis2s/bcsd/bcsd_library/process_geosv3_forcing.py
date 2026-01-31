@@ -13,13 +13,12 @@ from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask, 
 from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
 
-limits = lim()
+limits = lim(enable_rounding=True)
 # Internal functions
 def read_geosv3_elevation(static_file, logger):
     ''' reads GEOS5 surface geopotential (PHIS) and returns the height at the surface '''
     LIS_CONST_G = 9.80616
     phyis = load_ncdata(static_file, logger, var_name='PHIS').isel(time = 0)
-    phyis = phyis.rename({'lat': 'latitude', 'lon': 'longitude'})
     return phyis/LIS_CONST_G
 
 def magnitude(_a, _b):
@@ -59,9 +58,20 @@ def _read_cmd_args():
 def write_monthly_files(this_6h, file_6h, file_mon, logger):
     ''' writes regridded raw Monthly and 3-hourly files '''
     encoding = {
-        var: {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-              'least_significant_digit': 8, "missing_value": -9999.}
-        for var in ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "WIND10M"]
+        "PRECTOT": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+                    "missing_value": -9999.},
+        "PS": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+               "missing_value": -9999.},
+        "T2M": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+                "missing_value": -9999.},
+        "LWGAB": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+                  "missing_value": -9999.},
+        "SWGDN": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+                  "missing_value": -9999.},
+        "QV2M": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+                 "missing_value": -9999.},
+        "WIND10M": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
+                    "missing_value": -9999.},
     }
 
     write_ncfile(this_6h, file_6h, encoding, logger)
@@ -91,7 +101,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
 
     # resample to the S2S grid
     # build regridder
-    weightdir = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/'
+    weightdir = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/LDT_mask/'
     target_land_mask = xr.open_dataset(args["config"]['SETUP']['supplementarydir'] +
                                        '/lis_darun/' + args["config"]['SETUP']['ldtinputfile'])
     target_land_mask = target_land_mask.rename({'north_south': 'lat', 'east_west': 'lon'})
@@ -142,7 +152,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
                                  extrap_method='nearest_s2d',
                                  filename=weight_file)
 
-    weight_file = weightdir + f'GEOSv3_{resol}_conservative.nc'
+    weight_file = weightdir + f'GEOSv3_{resol}_conservative_land.nc'
     con_regridder = xe.Regridder(geosv3_in, ds_out, "conservative", periodic=True,
                                  reuse_weights=True,
                                  filename=weight_file)
@@ -222,6 +232,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
     dt1 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
 
     # Clip array
+    ds_out = ds_out.fillna(-9999.)
     var_configs = {
         'PRECTOT': {'precip': True},
         'PS': {},
@@ -288,9 +299,13 @@ def driver(rank, logger_task=None):
     geos_full = load_ncdata(geos_file, [logger, subtask])[['PRECTOTCORR', 'T2M', 'PS',
                                                            'Q2M', 'U10M', 'V10M','time',
                                                            'lat','lon']].load()
-    geos_full =  geos_full.rename({'lat': 'latitude', 'lon': 'longitude'})
     rad_full = load_ncdata(rad_file, [logger, subtask])[['LWS', 'SWGDWN']].load()
-    rad_full =  rad_full.rename({'lat': 'latitude', 'lon': 'longitude'})
+    # Ensure the same coordinates
+    rad_full = rad_full.assign_coords({
+        'lat': geos_full['lat'],
+        'lon': geos_full['lon'],
+        'time': geos_full['time']
+    })
 
     # Create new dataset with renamed variables
     geos_ds = xr.Dataset()
@@ -299,8 +314,8 @@ def driver(rank, logger_task=None):
         geos_ds[new_name[var]] = geos_full[var]
 
     geos_ds['time'] = geos_full['time']
-    geos_ds['latitude'] = geos_full['latitude']
-    geos_ds['longitude'] = geos_full['longitude']
+    geos_ds['lat'] = geos_full['lat']
+    geos_ds['lon'] = geos_full['lon']
 
     # Calculate wind magnitude
     u10 = magnitude(geos_full['U10M'], geos_full['V10M'])

@@ -12,6 +12,117 @@ from ghis2s.bcsd.bcsd_library import convert_forecast_data_to_netcdf as cfdn
 CFSV2_file = '/discover/nobackup/projects/lis/MET_FORCING/CFSv2//Oper_TS/2024/20241217/tmp2m.01.2024121706.daily.grb2'
 NMME_file = '/discover/nobackup/projects/usaf_lis/GHI_S2S/NMME//CanSIPS-IC4/prec.CanESM5.mon_Jan.2025.nc'
 GEOS5_file = '/discover/nobackup/projects/usaf_lis/smahanam/MET_FORCING/GEOSv3/sfc_tavg_3hr_glo_L720x361_sfc/200210/ens01/geos_s2s_v3.200210.nc'
+#GEOS5_file = '/discover/nobackup/projects/servir-s2s/smahanam/supplementary_files/bcsd_fcst/20250819.sfc_tavg_3hr_glo_L720x361_sfc.daily.202508.ensmean.nc4'
+import xarray as xr
+import numpy as np
+
+def create_geos_source_mask_from_tsurf(geos_ds):
+    """
+    Create a source grid mask for xESMF using FRLAND from GEOS surface file.
+    Cells with FRLAND > 0 are marked as land (mask=1).
+    """
+    print(f"Creating GEOS source mask from FRLAND in: {GEOS5_file}")
+    
+    # Load GEOS surface file
+    #geos_ds = xr.open_dataset(GEOS5_file)
+    
+    # Get FRLAND (fraction of land)
+    tsurf = geos_ds['TSURF'].isel(time=0)  
+    
+    print(f"\nTSURF statistics:")
+    print(f"  Min: {tsurf.min().values:.6f}")
+    print(f"  Max: {tsurf.max().values:.6f}")
+    print(f"  Mean: {tsurf.mean().values:.6f}")
+    
+    # Create binary land mask: 1 where TSURF > 200 and tsurf < 500, else 0
+    land_mask = ((tsurf > 200) & (tsurf < 500)).astype(np.uint8)
+    
+    print(f"\nMask statistics:")
+    print(f"  Total cells: {land_mask.size}")
+    print(f"  Land cells (TSURF>200 and TSURF< 500): {land_mask.sum().values}")
+    print(f"  Ocean cells (TSURF=0): {(land_mask == 0).sum().values}")
+    print(f"  Land fraction: {land_mask.sum().values / land_mask.size:.4f}")
+    
+    # Check the problematic meridian
+    if 0.0 in geos_ds['lon'].values:
+        lon_0_mask = land_mask.sel(lon=0.0).values
+        print(f"\nMask at lon=0.0°:")
+        print(f"  Total: {len(lon_0_mask)}")
+        print(f"  Land: {lon_0_mask.sum()}")
+        print(f"  Ocean: {(lon_0_mask == 0).sum()}")
+        
+        # Show latitude range where there's land at lon=0
+        land_lats = geos_ds['lat'].values[lon_0_mask == 1]
+        if len(land_lats) > 0:
+            print(f"  Land latitude range: {land_lats.min():.1f}° to {land_lats.max():.1f}°")
+    
+    # Create dataset with CLEAN coordinates
+    mask_ds = xr.Dataset(
+        {
+            "LANDMASK": (["lat", "lon"], land_mask.values,
+                        {'long_name': 'GEOS land mask from TSURF', 
+                         'units': '1',
+                         'description': '1 where TSURF>0 (land), 0 where TSURF=0 (ocean)'})
+        },
+        coords={
+            "lat": (["lat"], geos_ds['lat'].values, 
+                   {'units': 'degrees_north', 'long_name': 'latitude'}),
+            "lon": (["lon"], geos_ds['lon'].values, 
+                   {'units': 'degrees_east', 'long_name': 'longitude'})
+        }
+    )
+    
+    # Save with explicit clean encoding
+    encoding = {
+        "LANDMASK": {
+            'dtype': 'uint8',
+            'zlib': True,
+            'complevel': 6,
+            'shuffle': True,
+            '_FillValue': None
+        },
+        "lat": {
+            'dtype': 'float64',
+            '_FillValue': None  
+        },
+        "lon": {
+            'dtype': 'float64',
+            '_FillValue': None  
+        }
+    }
+    
+    #mask_ds.to_netcdf(output_file, format="NETCDF4", encoding=encoding)
+    #print(f"\n✓ Saved: {output_file}")
+    
+    # Verify the saved file
+    #print("\nVerifying saved file...")
+    #verify = xr.open_dataset(output_file)
+    #print(f"  Coordinate names: {list(verify.coords)}")
+    #print(f"  LANDMASK dtype: {verify['LANDMASK'].dtype}")
+    #print(f"  LANDMASK unique values: {np.unique(verify['LANDMASK'].values)}")
+    
+    # Check coordinate encoding
+    #import netCDF4 as nc4
+    #nc_check = nc4.Dataset(output_file, 'r')
+    #print(f"\nNetCDF4 coordinate check:")
+    #print(f"  lat has _FillValue: {hasattr(nc_check['lat'], '_FillValue')}")
+    #print(f"  lon has _FillValue: {hasattr(nc_check['lon'], '_FillValue')}")
+    #nc_check.close()
+    
+    # Test at problem location
+    #test_val = verify['LANDMASK'].sel(lat=5.5, lon=0.0, method='nearest').values
+    #test_lat = verify['lat'].sel(lat=5.5, method='nearest').values
+    #test_lon = verify['lon'].sel(lon=0.0, method='nearest').values
+    #print(f"\nTest at lat={test_lat}, lon={test_lon}:")
+    #print(f"  LANDMASK value: {test_val}")
+    
+    # Also check TSURF at same location for comparison
+    #tsurf_val = geos_ds['TSURF'].isel(time=0).sel(lat=5.5, lon=0.0, method='nearest').values
+    #print(f"  Original TSURF: {tsurf_val}")
+    
+    #verify.close()
+    
+    return mask_ds
 
 def get_land_mask(config, cfsv2_data):
     """
@@ -44,15 +155,21 @@ def get_land_mask(config, cfsv2_data):
 
     # target CFSv2 grid
     cfsv2_grid = xr.Dataset({
-        "latitude": (["latitude"], cfsv2_lat),
-        "longitude": (["longitude"], cfsv2_lon),
+        "latitude": (["latitude"], cfsv2_lat, {'units': 'degrees_north'}),
+        "longitude": (["longitude"], cfsv2_lon, {'units': 'degrees_east'}),
     })
     
     mask_regridder = xe.Regridder(ldt_mask_ds, cfsv2_grid, "conservative_normed", periodic=True)
     regridded_landmask = mask_regridder(ldt_mask_ds.LANDMASK)
     
     # Create output dataset
-    regridded_ds = xr.Dataset({"LANDMASK": (regridded_landmask > 0).astype(np.uint8)})
+    regridded_ds = xr.Dataset(
+        {"LANDMASK": (regridded_landmask > 0).astype(np.uint8)},
+        coords={
+            "latitude": (["latitude"], cfsv2_lat, {'units': 'degrees_north', 'long_name': 'latitude'}),
+            "longitude": (["longitude"], cfsv2_lon, {'units': 'degrees_east', 'long_name': 'longitude'})
+        }
+    )
     print(f"Regridded mask range: {regridded_ds.LANDMASK.min().values:.4f} to {regridded_ds.LANDMASK.max().values:.4f}")
     print(f"Land fraction (>0): {(regridded_ds.LANDMASK > 0).sum().values / regridded_ds.LANDMASK.size:.4f}")
     
@@ -68,7 +185,7 @@ if __name__ == "__main__":
     with open(args.config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    weightdir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
+    weightdir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/LDT_mask/'
     lats, lons = get_domain_info(args.config_file, coord=True)
     resol = round((lats[1] - lats[0])*100)
 
@@ -87,8 +204,9 @@ if __name__ == "__main__":
         # GEOSv3
         force = xr.open_dataset(GEOS5_file)
         force = force.rename({'lat': 'latitude', 'lon': 'longitude'})
+        #land_mask = create_geos_source_mask_from_tsurf(force)
         land_mask = get_land_mask(config, force)
-
+        land_mask = land_mask.rename({'latitude': 'lat', 'longitude': 'lon'})
 
     land_mask.to_netcdf(weightdir + f'{args.forcing}_{resol}km_landmask.nc4', format="NETCDF4",
                         encoding = {"LANDMASK": {'dtype': 'uint8', "zlib":True, "complevel":6, "shuffle":True, "missing_value":255}})
@@ -107,7 +225,7 @@ if __name__ == "__main__":
     run_xe= xe.Regridder(force_masked, ds_out, "bilinear", periodic=True, 
                          filename=weight_file, extrap_method='nearest_s2d')
     # conservative
-    weight_file = weightdir + f'{args.forcing}_{resol}km_conservative.nc'
+    weight_file = weightdir + f'{args.forcing}_{resol}km_conservative_land.nc'
     print(weight_file)
     ds_out = xr.Dataset(
             {
