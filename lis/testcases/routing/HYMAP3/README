@@ -1,0 +1,31 @@
+HyMAP3 Testcase
+
+This is a testcase that uses:
+  (a) NLDAS2 grib forecast forcing
+  (b) The NoahMP version 4.0.1 land surface model
+  (c) Colorado river basin
+  (e) A time period from 23:30Z 31 Dec 1989 to 00:15Z 1 Jan 1991
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file used to generate the parameters using LDT
+  (c) The "lis.config" file used for this testcase
+  (d) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+
+Note that the "ldt.config" and "lis.config" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables
+  (b) Run the LDT executable using the "ldt.config" file
+      with the testcase input data
+  (c) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+  (b) This does not produce any surface module output, only HyMAP3 router output.
