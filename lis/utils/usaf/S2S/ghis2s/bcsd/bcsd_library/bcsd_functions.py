@@ -42,13 +42,11 @@ class VarLimits:
 
         # Optimal rounding for each variable (balances precision vs file size)
         round_precision = {
-            'PRECTOT': 9,   # ~1e-9 kg/m²/s = 0.00009 mm/day
             'PS': 1,        # ~10 Pa = 0.1 hPa
             'T2M': 3,       # ~0.001 K
             'LWGAB': 2,     # ~0.01 W/m²
             'SWGDN': 2,     # ~0.01 W/m²
             'QV2M': 8,      # ~1e-8 kg/kg
-            'WIND': 3       # ~0.001 m/s
         }
 
         if min_thres is not None:
@@ -613,10 +611,10 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
             lcforce = force_lwd * ratio
         
             # lapse rate corrected forcings
-            corrected_force[var_no + 0,:] = tcforce
-            corrected_force[var_no + 1,:] = hcforce
-            corrected_force[var_no + 2,:] = lcforce
-            corrected_force[var_no + 3,:] = pcforce
+            corrected_force[var_no + 0,:] = np.round(tcforce,2)
+            corrected_force[var_no + 1,:] = np.round(hcforce,6)
+            corrected_force[var_no + 2,:] = np.round(lcforce,1)
+            corrected_force[var_no + 3,:] = np.round(pcforce,0)
             var_no = 4
 
         # (1) Aspect correction
@@ -695,7 +693,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
                                  correct_swddirect(aslope, aspect, saz, solzen, swddirect),
                                  swddirect)
 
-            corrected_force[var_no,:] = swddirect + swddiffuse
+            corrected_force[var_no,:] = np.round(swddirect,1) + np.round(swddiffuse,1)
     
     return corrected_force
 

@@ -13,7 +13,7 @@ from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask, 
 from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
 
-limits = lim(enable_rounding=True)
+limits = lim()
 # Internal functions
 def read_geosv3_elevation(static_file, logger):
     ''' reads GEOS5 surface geopotential (PHIS) and returns the height at the surface '''
@@ -58,20 +58,8 @@ def _read_cmd_args():
 def write_monthly_files(this_6h, file_6h, file_mon, logger):
     ''' writes regridded raw Monthly and 3-hourly files '''
     encoding = {
-        "PRECTOT": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-                    "missing_value": -9999.},
-        "PS": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-               "missing_value": -9999.},
-        "T2M": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-                "missing_value": -9999.},
-        "LWGAB": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-                  "missing_value": -9999.},
-        "SWGDN": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-                  "missing_value": -9999.},
-        "QV2M": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-                 "missing_value": -9999.},
-        "WIND10M": {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True,
-                    "missing_value": -9999.},
+        var: {'dtype': 'float32', "zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
+        for var in ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "WIND10M"]
     }
 
     write_ncfile(this_6h, file_6h, encoding, logger)
