@@ -53,7 +53,7 @@ module HYMAP_parmsMod
      character*50  :: hymap_proj
      character*50  :: hymap_gridtransform
      integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode, &
-          leveehgtcode,landareacode,nodeloncode,nodelatcode
+          leveehgtcode,landareacode,nodeloncode,nodelatcode,runoffbiascode
      integer       :: baseflowdelaycode,runoffdelaycode,runoffdelaymcode
      character(LDT_CONST_PATH_LEN) :: riverwidthfile
      character(LDT_CONST_PATH_LEN) :: riverheightfile
@@ -81,6 +81,7 @@ module HYMAP_parmsMod
      character(LDT_CONST_PATH_LEN) :: landgridareafile
      character(LDT_CONST_PATH_LEN) :: nodelonfile
      character(LDT_CONST_PATH_LEN) :: nodelatfile
+     character(LDT_CONST_PATH_LEN) :: runoffbiasfile
      type(LDT_paramEntry) :: hymap_river_width
      type(LDT_paramEntry) :: hymap_river_height
      type(LDT_paramEntry) :: hymap_river_length
@@ -106,6 +107,7 @@ module HYMAP_parmsMod
      type(LDT_paramEntry) :: land_grid_area
      type(LDT_paramEntry) :: hymap_node_lon
      type(LDT_paramEntry) :: hymap_node_lat
+     type(LDT_paramEntry) :: hymap_runoff_bias
   end type hymap_type_dec
 
   type(hymap_type_dec), allocatable :: HYMAP_struc(:)
@@ -144,7 +146,7 @@ contains
     integer       :: n
     integer       :: rc
     integer       :: bfdwicode, rundwicode, rivflocode,urbdroutcode, &
-         leveehgtcode,landareacode,nodeloncode,nodelatcode
+         leveehgtcode,landareacode,nodeloncode,nodelatcode,runoffbiascode
     integer       :: baseflowdelaycode,runoffdelaycode,runoffdelaymcode
     integer, allocatable :: nextx(:,:)
     integer, allocatable :: nexty(:,:)
@@ -233,6 +235,8 @@ contains
             "HYMAP_node_lon")
        call set_param_attribs(HYMAP_struc(n)%hymap_node_lat,&
             "HYMAP_node_lat")
+       call set_param_attribs(HYMAP_struc(n)%hymap_runoff_bias,&
+            "HYMAP_runoff_bias_correction")
     end do
 
     call ESMF_ConfigFindLabel(LDT_config, &
@@ -347,6 +351,10 @@ contains
        allocate(HYMAP_struc(n)%hymap_node_lat%value( &
             LDT_rc%lnc(n),LDT_rc%lnr(n), &
             HYMAP_struc(n)%hymap_node_lat%vlevels))
+
+       allocate(HYMAP_struc(n)%hymap_runoff_bias%value( &
+            LDT_rc%lnc(n),LDT_rc%lnr(n), &
+            HYMAP_struc(n)%hymap_runoff_bias%vlevels))
 
     enddo
 
@@ -565,6 +573,16 @@ contains
           call LDT_verify(rc,'HYMAP node lat: not specified')
        endif
        HYMAP_struc(n)%nodelatcode = nodelatcode
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config,"HYMAP runoff bias correction map:",rc=runoffbiascode)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            HYMAP_struc(n)%runoffbiasfile,rc=rc)
+       if (runoffbiascode.eq.0) then
+          call LDT_verify(rc,'HYMAP runoff bias correction map: not specified')
+       endif
+       HYMAP_struc(n)%runoffbiascode = runoffbiascode
     enddo
 
     write(LDT_logunit,*) &
@@ -889,6 +907,18 @@ contains
                'Done reading '//trim(HYMAP_struc(n)%nodelatfile)
        endif
 
+       if (HYMAP_struc(n)%runoffbiascode.eq.0) then
+          call LDT_gridOptChecks( n, "HYMAP runoff bias correction", &
+               HYMAP_struc(n)%hymap_gridtransform, hymap_proj, &
+               hymapparms_gridDesc(n,9) )
+          write(LDT_logunit,*) &
+               'reading '//trim(HYMAP_struc(n)%runoffbiasfile)
+          call read_HYMAP_runoff_bias( &
+               n,HYMAP_struc(n)%hymap_runoff_bias%value(:,:,1))
+          write(LDT_logunit,*) &
+               'Done reading '//trim(HYMAP_struc(n)%runoffbiasfile)
+       endif
+
     enddo
 
   end subroutine HYMAPparms_init
@@ -995,6 +1025,11 @@ contains
        call LDT_writeNETCDFdataHeader(n,ftn,dimID, &
             HYMAP_struc(n)%land_grid_area)
     endif
+               
+    if (HYMAP_struc(n)%runoffbiascode.eq.0) then
+       call LDT_writeNETCDFdataHeader(n,ftn,dimID, &
+            HYMAP_struc(n)%hymap_runoff_bias)
+    endif      
 
   end subroutine HYMAPparms_writeHeader
 
@@ -1064,6 +1099,9 @@ contains
     endif
     if (HYMAP_struc(n)%nodelatcode.eq.0) then
       call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_node_lat)
+    endif
+    if (HYMAP_struc(n)%runoffbiascode.eq.0) then
+      call LDT_writeNETCDFdata(n,ftn,HYMAP_struc(n)%hymap_runoff_bias)
     endif
 
   end subroutine HYMAPparms_writeData
