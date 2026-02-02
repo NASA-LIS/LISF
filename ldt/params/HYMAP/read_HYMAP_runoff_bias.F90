@@ -13,7 +13,7 @@
 ! \label{read_HYMAP_runoff_bias}
 !
 ! !REVISION HISTORY:
-!  25 Jul 2005: Sujay Kumar; Initial Specification
+!  13 Nov 2025: Augusto Getirana; Initial Specification
 !
 ! !INTERFACE:
 subroutine read_HYMAP_runoff_bias(n, array)
