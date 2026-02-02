@@ -23035,6 +23035,34 @@ active restart file.</p>
 <p><code>HYMAP3 2-way coupling flooded fraction threshold:</code> specifies the flooded fraction
 threshold used in the 2-way coupling mode.</p>
 </div>
+<div class="paragraph">
+<p><code>HYMAP3 runoff bias correction:</code> specifies whether to account for a runoff bias correction. This option is elective and, if not defined, HYMAP3 does not account for runoff bias correction. This option requires a runoff bias correction field provided in the LIS domain and parameter data file (HYMAP_runoff_bias_correction).</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use</p></td>
+</tr>
+</tbody>
+</table>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
@@ -23057,7 +23085,8 @@ HYMAP3 routing model start mode: "coldstart"
 HYMAP3 routing model restart interval: "1mo"
 HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_197901030000.d01.nc
 HYMAP3 enable 2-way coupling: 0
-HYMAP3 2-way coupling flooded fraction threshold: 0.1</pre>
+HYMAP3 2-way coupling flooded fraction threshold: 0.1
+HYMAP3 runoff bias correction: 1</pre>
 </div>
 </div>
 </div>
@@ -25364,7 +25393,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 4.1<br>
-Last updated 2026-01-16 17:18:43 UTC
+Last updated 2026-02-02 18:53:29 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

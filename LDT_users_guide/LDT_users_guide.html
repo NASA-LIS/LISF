@@ -9414,6 +9414,9 @@ LPRM vegetation optical depth data designation:      'X-band'</pre>
 <div class="paragraph">
 <p><code>HYMAP node lat:</code> specifies the name of the grid node latitude data file. This parameter is optional and not used in HYMAP routing models. But it is a "good-to-have" for post-processing purposes.</p>
 </div>
+<div class="paragraph">
+<p><code>HYMAP runoff bias correction map:</code> specifies the name of the runoff bias correction data file. This is an optional parameter that is required only when &#8220;HYMAP3 runoff bias correction:&#8221; is set to &#8220;1&#8221;. If the runoff bias correction option is set to &#8220;0&#8221; or is not specified, the runoff bias correction map is not required.</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>ldt.config</em> entry</div>
 <div class="content">
@@ -9442,7 +9445,8 @@ HYMAP urban drainage outlet map:         ../HYMAP_parms/lis_urban_0125.bin
 HYMAP levee height map:                  ../HYMAP_parms/lis_levee_0125.bin
 Land grid area map:                      ../HYMAP_parms/lis_lgrdare_0125.bin
 HYMAP node lon:                          ../HYMAP_parms/lis_nodelon_0125.bin
-HYMAP node lat:                          ../HYMAP_parms/lis_nodelat_0125.bin</pre>
+HYMAP node lat:                          ../HYMAP_parms/lis_nodelat_0125.bin
+HYMAP runoff bias correction map:        ../HYMAP_parms/lis_runoff_bc_0125.bin</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -18340,7 +18344,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.1<br>
-Last updated 2026-01-16 17:18:43 UTC
+Last updated 2026-02-02 18:53:29 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
