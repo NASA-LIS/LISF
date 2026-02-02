@@ -33,7 +33,6 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   integer,          intent(in) :: n
   real                         :: surface_runoff(LIS_rc%lnc(n),LIS_rc%lnr(n))
   real                         :: baseflow(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  real                         :: total_evapotranspiration(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
   !caveats 
   ! 1) assumes the LIS outputs are the same output interval as that of
@@ -46,7 +45,6 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   ! 
   ! 5) LIS outputs are in NETCDF format. 
   !
-  !Added total evapotranspiration (Evap)
   integer                       :: c,r,t
   integer, allocatable      :: nqs(:,:)
 
@@ -54,12 +52,12 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   !real,   allocatable       :: qs(:,:),qs_t(:)
   real                  :: qs2d(LISrunoffdata_struc(n)%nc,LISrunoffdata_struc(n)%nr)
   real                  :: qsb2d(LISrunoffdata_struc(n)%nc,LISrunoffdata_struc(n)%nr)
-  real,   allocatable   :: qs_t(:),qsb_t(:),evap_t(:)
+  real,   allocatable   :: qs_t(:),qsb_t(:)
   logical*1             :: lb(LISrunoffdata_struc(n)%nc*LISrunoffdata_struc(n)%nr)
   real                  :: var_input(LISrunoffdata_struc(n)%nc*LISrunoffdata_struc(n)%nr)
   logical*1             :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real                  :: var_out(LIS_rc%lnc(n)*LIS_rc%lnr(n))
-  integer               :: ios, nid,qsid,qsbid,evapid
+  integer               :: ios, nid,qsid,qsbid
   character(len=LIS_CONST_PATH_LEN) :: filename
   logical               :: file_exists
   logical               :: check_Flag
@@ -94,9 +92,6 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
       ios = nf90_inq_varid(nid,'Qsb_tavg',qsbid)
       call LIS_verify(ios,'failed to read Qsb_tavg field in readLISrunoffdata')
      
-      ios = nf90_inq_varid(nid,'Evap_tavg',evapid)
-      call LIS_verify(ios,'failed to read Evap_tavg field in readLISrunoffdata')
-
       if(LISrunoffdata_struc(n)%domainCheck) then 
          if(LIS_rc%wopt.eq."2d gridspace") then 
             ios = nf90_get_var(nid,qsid,LISrunoffdata_struc(n)%qs, &
@@ -109,10 +104,6 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
                  count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
             call LIS_verify(ios, 'failed to read Qsb_tavg field in readLISrunoffdata')
             
-            ios = nf90_get_var(nid,evapid,LISrunoffdata_struc(n)%evap,&
-                 start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
-                 count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
-            call LIS_verify(ios, 'failed to read Evap_tavg field in readLISrunoffdata')
          else
             write(LIS_logunit,*) "Stand-alone HYMAP is only supported for '2d gridspace' outputs currently"
             call LIS_endrun()
@@ -247,11 +238,9 @@ endif
   where(LISrunoffdata_struc(n)%qs/=LIS_rc%udef)
     surface_runoff = LISrunoffdata_struc(n)%qs
     baseflow = LISrunoffdata_struc(n)%qsb
-    total_evapotranspiration = LISrunoffdata_struc(n)%evap
   else where
     surface_runoff = 0.0
     baseflow = 0.0
-    total_evapotranspiration = 0.0
   end where
 
 end subroutine readLISrunoffdata

@@ -11163,6 +11163,17 @@ active restart file.
 `HYMAP3 2-way coupling flooded fraction threshold:` specifies the flooded fraction
 threshold used in the 2-way coupling mode.
 
+`HYMAP3 runoff bias correction:` specifies whether to account for a runoff bias correction. This option is elective and, if not defined, HYMAP3 does not account for runoff bias correction. This option requires a runoff bias correction field provided in the LIS domain and parameter data file (HYMAP_runoff_bias_correction).
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use
+|1     | Use 
+|====
+
 .Example _lis.config_ entry
 ....
 HYMAP3 routing model time step: "30mn"
@@ -11185,6 +11196,7 @@ HYMAP3 routing model restart interval: "1mo"
 HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_197901030000.d01.nc
 HYMAP3 enable 2-way coupling: 0
 HYMAP3 2-way coupling flooded fraction threshold: 0.1
+HYMAP3 runoff bias correction: 1
 ....
 
 

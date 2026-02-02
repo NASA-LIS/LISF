@@ -361,6 +361,15 @@ subroutine HYMAP3_routing_run(n)
                 HYMAP3_routing_struc(n)%seqx,&
                 HYMAP3_routing_struc(n)%seqy,tmpb,baseflow)
 
+           !bias correct runoff fields
+           if(HYMAP3_routing_struc(n)%rbiasflag>0)then
+             where(HYMAP3_routing_struc(n)%rbias_ratio/=HYMAP3_routing_struc(n)%imis.and.&
+               surface_runoff/=HYMAP3_routing_struc(n)%imis)
+               surface_runoff=surface_runoff*HYMAP3_routing_struc(n)%rbias_ratio
+               baseflow=baseflow*HYMAP3_routing_struc(n)%rbias_ratio
+             end where
+           endif
+
            call HYMAP3_model(n,real(HYMAP3_routing_struc(n)%imis),&
                 LIS_rc%lnc(n),&
                 LIS_rc%lnr(n),&
@@ -568,6 +577,15 @@ subroutine HYMAP3_routing_run(n)
                 HYMAP3_routing_struc(n)%seqx,&
                 HYMAP3_routing_struc(n)%seqy,tmpb,baseflow)
 
+        endif
+
+        !bias correct runoff fields
+        if(HYMAP3_routing_struc(n)%rbiasflag>0)then
+          where(HYMAP3_routing_struc(n)%rbias_ratio/=HYMAP3_routing_struc(n)%imis.and.&
+            surface_runoff/=HYMAP3_routing_struc(n)%imis)
+            surface_runoff=surface_runoff*HYMAP3_routing_struc(n)%rbias_ratio
+            baseflow=baseflow*HYMAP3_routing_struc(n)%rbias_ratio
+          end where
         endif
 
         call HYMAP3_model(n,real(HYMAP3_routing_struc(n)%imis),&
