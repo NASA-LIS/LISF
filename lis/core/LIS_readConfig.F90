@@ -984,10 +984,20 @@ subroutine LIS_readConfig()
         call LIS_verify(rc,'Bias restart file: not defined')
      endif
   enddo
-  
+
   call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%routingmodel, &
        label="Routing model:",default="none", rc=rc)
 
+  ! EMK Add separate support for output of routing models.
+  if (LIS_rc%routingmodel .ne. "none") then
+     call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%wopt_routing, &
+          label="Routing output methodology:", rc=rc)
+     if (rc .ne. 0) then
+        write(LIS_logunit,*)'[INFO] Routing output methodology: not found in config file'
+        write(LIS_logunit,*)'[INFO] Will use general Output methodology: setting'
+        LIS_rc%wopt_routing = trim(LIS_rc%wopt)
+     endif
+  endif
  LIS_rc%endcode = 1
 
 88 format(a4,25x,a3,5x,16a)
