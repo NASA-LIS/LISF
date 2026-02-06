@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 import xesmf as xe
 import yaml
-from ghis2s.shared.utils import get_domain_info, load_ncdata, get_chunk_sizes, write_ncfile
+from ghis2s.shared.utils import get_domain_info, load_ncdata, get_chunk_sizes, write_ncfile, get_optimized_encoding
 from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask, add_fcorr_vars, apply_fcorr
 from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
@@ -55,6 +55,16 @@ def _read_cmd_args():
 
     return args
 
+def write_monthly_optimized(this_6h, file_6h, file_mon, logger):
+    ''' writes regridded raw Monthly and 3-hourly files '''
+    encoding = get_optimized_encoding()
+    write_ncfile(this_6h, file_6h, encoding, logger)
+    this_mon = this_6h.mean(dim="time")
+    write_ncfile(this_mon, file_mon, encoding, logger)
+    this_6h.close()
+    this_mon.close()
+    del this_6h, this_mon
+    
 def write_monthly_files(this_6h, file_6h, file_mon, logger):
     ''' writes regridded raw Monthly and 3-hourly files '''
     encoding = {
@@ -238,7 +248,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
     file_mon = outdir_monthly + '/' + \
         final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
 
-    write_monthly_files(ds_out, file_6h, file_mon, [logger, subtask])
+    write_monthly_optimized(ds_out, file_6h, file_mon, [logger, subtask])
     logger.info(f"Writing: 3h GEOSv3 file: {file_6h}", subtask = subtask)
     logger.info(f"Writing: monthly GEOSv3 file: {file_mon}", subtask = subtask)
     ds_out.close()
@@ -361,7 +371,7 @@ if __name__ == "__main__":
                             f'bcsd/bcsd_library/process_geosv3_forcing.py processing GEOSv3 ens{sys.argv[2]}')
         loop = [0, _config["EXP"]["lead_months"]]
         if len(sys.argv) == 7:
-            start_rank = int(sys.argv[7])
+            start_rank = int(sys.argv[6])
             loop = [start_rank, start_rank + 1]
         for _rank in range(loop[0], loop[1]):
             driver(_rank, logger_task=LOGGER)

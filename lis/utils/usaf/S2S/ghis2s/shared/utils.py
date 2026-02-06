@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
@@ -619,3 +620,74 @@ def log_memory_usage(message, logger):
         logger[0].info(full_message, subtask=logger[1])
     except Exception as e:
         logger[0].error(f"Error logging memory usage: {e}", subtask=logger[1])
+
+def get_optimized_encoding():
+    """
+    Returns encoding dictionary for optimized saving.
+    """
+    return {
+        'T2M': {
+            'dtype': 'int16',
+            'scale_factor': 0.01,
+            'add_offset': 288.0,  
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 8,
+            'shuffle': True,
+        },
+        'PS': {
+            'dtype': 'int16',
+            'scale_factor': 10.0,
+            'add_offset': 85000.0,  
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 7,
+            'shuffle': True,
+        },
+        'QV2M': {
+            'dtype': 'int16',
+            'scale_factor': 1e-6,
+            'add_offset': 0.01,  
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 8,
+            'shuffle': True,
+        },
+        'LWGAB': {
+            'dtype': 'int16',
+            'scale_factor': 0.2,  
+            'add_offset': 300.0,
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 9,
+            'shuffle': True,
+            'chunksizes': (120, 75, 150)
+        },
+        'SWGDN': {
+            'dtype': 'int16',
+            'scale_factor': 1.0,  
+            'add_offset': 400.0,
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 9,
+            'shuffle': True,
+        },
+        'PRECTOT': {
+            'dtype': 'int16',
+            'scale_factor': 1e-6,
+            'add_offset': 0.0005,
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 6,
+            'shuffle': True,
+        },
+        'WIND10M': {
+            'dtype': 'int16',
+            'scale_factor': 0.01,
+            'add_offset': 5.0,
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 6,
+            'shuffle': True,
+        },
+    }

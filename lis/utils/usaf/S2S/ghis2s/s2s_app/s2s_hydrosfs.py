@@ -3,7 +3,9 @@ Python main script for HydroSFS
 '''
 import os
 import sys
+import glob
 import argparse
+from ghis2s.main.hcast_module import S2SHcast
 from ghis2s.main.experiment_setup import S2Srun
 from ghis2s.main import s2s_api, walltime
 from ghis2s.shared import utils, logging_utils
@@ -119,6 +121,7 @@ if __name__ == "__main__":
 
     if  args.preprocess is not None:
         s2s = HydroSFS(month=args.month, config_file=args.config_file, pre_process=True)
+        hcst = S2SHcast(month=args.month, config_file=args.config_file, pre_process=True)
     else:
         s2s = HydroSFS(month=args.month, config_file=args.config_file, year=args.year)
 
@@ -138,12 +141,13 @@ if __name__ == "__main__":
         elif args.preprocess.lower() == 'monthly':
             s2s.monthly_hydroscs()
         elif args.preprocess.lower() == 'clim':
-            #s2s.clim_metforce()
-            s2s.clim_hydroscs()
+            hcst.clim_metforce()
+            if not glob.glob(f'{s2s.e2esroot}/hindcast/bcsd_fcst/{s2s.obs_model}_*/raw/Climatology/PRECTOT_obs_clim.nc'):
+                s2s.clim_hydroscs()
+            s2s.schedule.update(hcst.schedule)
         else:
             print(f"Invalid preprocessor {args.preprocess}")
             sys.exit()
-        s2s.schedule.update(s2s.schedule)
     else:
         s2s.bcsd()
 
@@ -153,4 +157,5 @@ if __name__ == "__main__":
     # Submit SLURM jobs
     # -----------------
     if  args.submit_job:
+        s2s.write_log_monitoring_script()
         s2s.submit_jobs()

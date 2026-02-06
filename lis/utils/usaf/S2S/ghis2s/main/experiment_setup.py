@@ -996,7 +996,7 @@ class S2Srun(DownloadForecasts):
             # Write runtime section
             file.write("[runtime]\n")
             file.write("    [[root]]\n")
-            file.write("        platform = slurm-ghi\n")
+            file.write("        platform = PF_SLURM\n")
             file.write("        pre-script = \"\"\"\n")
             if 'discover' in platform.node() or 'borg' in platform.node():
                 file.write("            source /etc/profile.d/modules.sh\n")
@@ -1020,16 +1020,16 @@ class S2Srun(DownloadForecasts):
 
             file.write("    [[log_monitor]]\n")
             file.write(f"        script = {self.scrdir}ghis2s_log.sh\n")
-            file.write("        platform = localhost-ghi\n")
+            file.write("        platform = PF_LHOST\n")
             file.write("  \n")
 
             file.write("    [[final_log_collect]]\n")
             file.write(f"        script = {self.scrdir}ghis2s_log.sh\n")
-            file.write("        platform = localhost-ghi\n")
+            file.write("        platform = PF_LHOST\n")
             file.write("  \n")
 
             file.write("    [[stop_log_monitor]]\n")
-            file.write("        platform = localhost-ghi\n")
+            file.write("        platform = PF_LHOST\n")
             file.write("        script = \"\"\"\n")
             file.write("            cylc stop $CYLC_WORKFLOW_ID --now\n")
             file.write("        \"\"\"\n")
