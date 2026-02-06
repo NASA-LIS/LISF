@@ -74,6 +74,8 @@ s2s_run.py -y YYYY -m M -c CONFIG_FILE -j
 - **"USER_EMAIL"**: (str, email_address)
 - **"S2S_STEP"**: (str, "E2E", )
 - **"ONE_STEP"**: (bool, False)
+- **"PF_SLURM"**: (str, "slurm-ghi") name of the slurm platform in global.cylc
+- **"PF_LHOST"**: (str, "localhost-ghi") name of the localhost platform in global.cylc
 
 ### Acceptable keys for S2S_STEP:
 - `E2E`: end-to-end S2S forecast
