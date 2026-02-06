@@ -1034,9 +1034,8 @@ contains
 
        call LVT_update_timestep(LVT_rc, LVT_LIS_rc(k)%ts)
     enddo
-
+    
     call ESMF_ConfigFindLabel(LVT_config,"LIS output surface model types:",rc=rc)
-
     do k=1,source
        do i=1,LVT_LIS_rc(k)%nsf_model_types
           call ESMF_ConfigGetAttribute(LVT_config,LVT_LIS_rc(k)%sf_model_type_name_select(i),rc=rc)
@@ -1048,7 +1047,6 @@ contains
     enddo
 
     call ESMF_ConfigFindLabel(LVT_config,"LIS output analysis data class:",rc=rc)
-
     do k=1,source       
        call ESMF_ConfigGetAttribute(LVT_config,LVT_LIS_rc(k)%anlys_data_class,rc=rc)
        call LVT_verify(rc,"LIS output analysis data class: not defined")
@@ -1065,6 +1063,7 @@ contains
        call ESMF_ConfigGetAttribute(LVT_config,LVT_LIS_rc(k)%model_name,rc=rc)
        call LVT_verify(rc,'LIS output model name: not defined')
     enddo
+
 
     call ESMF_ConfigFindLabel(LVT_config, &
          label="LIS output maximum number of surface type tiles per grid:",rc=rc)   

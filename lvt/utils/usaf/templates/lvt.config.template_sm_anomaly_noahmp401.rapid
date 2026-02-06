@@ -14,7 +14,7 @@ Smoothing filter type:        "gaussian filter"
 Start mode:                                restart
 LVT output restart files: 1
 LVT restart output interval:               "24hr"
-LVT restart filename:      restart/LVT.202104120000.rst
+LVT restart filename:      input/RST/LVT.202104120000.rst
 Starting year: 2021
 Starting month: 04
 Starting day:  12
@@ -39,7 +39,7 @@ Run domain upper right lon:           179.9296875
 Run domain resolution (dx):             0.140625
 Run domain resolution (dy):             0.093750
 
-Input domain and mask data file:   ./static/lis_input.global.noahmp401.nc
+Input domain and mask data file:   ./input/lis_input.nrt_streamflow.noahmp401.nc
 Spatial transform method for generating the LVT analysis domain: "neighbor"
 
 #model soil moisture vs obs soil moisture
@@ -87,11 +87,12 @@ LIS output analysis data class:               "LSM"
 LIS output number of surface model types:      2
 LIS output surface model types:               "LSM" "Openwater"
 LIS output model name:              "NOAHMP.4.0.1"
-LIS output domain and parameter file:  ./static/lis_input.global.noahmp401.nc
+LIS output domain and parameter file:  ./input/lis_input.nrt_streamflow.noahmp401.nc
 
 #LIS output directory:                lisout
-LIS output directory:                lisout_3hr
-LIS output naming style:            "WMO convention"
+LIS output directory:                noahmp401_output_old
+#LIS output naming style:            "WMO convention"
+LIS output naming style:            "557WW streamflow convention"
 
 LIS output methodology:            "1d tilespace"
 LIS output format:                  netcdf
