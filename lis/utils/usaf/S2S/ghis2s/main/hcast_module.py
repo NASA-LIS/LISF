@@ -17,6 +17,7 @@ class S2SHcast(S2Srun):
         if pre_process:
             self.scrdir = self.e2esdir + 'scratch/' + mm + '/'
             os.makedirs(self.scrdir + '/bcsd_fcst/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/s2smetric/logs', exist_ok=True)
         else:
             self.scrdir = self.e2esdir + 'scratch/' + self.yyyy + self.mm + '/'
             os.makedirs(self.scrdir + '/bcsd_fcst/logs', exist_ok=True)
