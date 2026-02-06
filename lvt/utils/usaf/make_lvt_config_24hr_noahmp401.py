@@ -19,7 +19,7 @@ import datetime
 import os
 
 
-_TEMPLATE = "templates/lvt.config.template.noahmp401"
+_TEMPLATE = "templates/lvt.config.template.noahmp401.rapid"
 
 _STARTDT = datetime.datetime(2025, 1, 20, 12)
 _ENDDT = datetime.datetime(2025, 1, 22, 12)

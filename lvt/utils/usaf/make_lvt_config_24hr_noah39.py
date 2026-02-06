@@ -18,10 +18,8 @@ Sample script to customize lvt.config files for noah39 postprocessing for
 import datetime
 import os
 
-_TEMPLATE = "templates/lvt.config.template.noah39"
+_TEMPLATE = "templates/lvt.config.template.noah39.rapid"
 
-#_STARTDT = datetime.datetime(2024, 9, 25, 12)
-#_ENDDT = datetime.datetime(2024, 9, 26, 12)
 _STARTDT = datetime.datetime(2025, 1, 21, 12)
 _ENDDT = datetime.datetime(2025, 1, 22, 12)
 

@@ -61,12 +61,18 @@ _MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
 _SOIL_LAYERS = {
     "NOAH-RAPID" :   ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
     "NOAHMP-RAPID" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
+    "NOAH-HYMAP" :   ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
+    "NOAHMP-HYMAP" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
 }
 
 _557WW_SOIL_LAYERS = {
     "NOAH-RAPID" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
                     "D100CM-D200CM"],
     "NOAHMP-RAPID" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+                      "D100CM-D200CM"],
+    "NOAH-HYMAP" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+                    "D100CM-D200CM"],
+    "NOAHMP-HYMAP" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
                       "D100CM-D200CM"],
 }
 
@@ -108,9 +114,10 @@ def _read_cmd_args():
     lsm_routing = sys.argv[4]
     yyyymmddhh = sys.argv[5]
 
-    if lsm_routing not in ["NOAH-RAPID", "NOAHMP-RAPID"]:
+    if lsm_routing not in ["NOAH-RAPID", "NOAHMP-RAPID",
+                           "NOAH-HYMAP", "NOAHMP-HYMAP"]:
         print(f"[ERR] Unknown LSM-Routing match {lsm_routing}")
-        print("Options are NOAH-RAPID, NOAHMP-RAPID")
+        print("Options are NOAH-RAPID, NOAHMP-RAPID, NOAH-HYMAP, NOAHMP-HYMAP")
         sys.exit(1)
 
     cmd_args = {
