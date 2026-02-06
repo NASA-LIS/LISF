@@ -95,7 +95,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    print("[INFO] Processing temporal disaggregation of CFSv2 variables")
+    print("[INFO] Processing temporal disaggregation of NMME Monthly precipitation.")
 
     slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):

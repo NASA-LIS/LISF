@@ -76,7 +76,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     # Path for the final 6-hourly forcing data:
     forcedir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}"
 
-    print("[INFO] Combining subdaily BC CFSv2 non-precip variables")
+    print(f"[INFO] Combining subdaily BC {fcst_model} non-precip variables")
     slurm_9_10 = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
@@ -107,7 +107,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
             utils.job_script(config_file, jobfile, jobname, ntasks,
                              hours, cwd, None, in_command=cmd)
 
-    print(f"[INFO] Wrote  CFSv2 combination script for: {month_abbr}")
+    print(f"[INFO] Wrote {fcst_model} combination script for: {month_abbr}")
 
     if py_call:
         return slurm_9_10

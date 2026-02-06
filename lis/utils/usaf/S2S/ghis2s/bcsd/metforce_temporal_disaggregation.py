@@ -93,7 +93,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    print("[INFO] Processing temporal disaggregation of CFSv2 variables")
+    print(f"[INFO] Processing temporal disaggregation of {fcst_model} variables")
 
     slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
@@ -146,7 +146,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
                 utils.job_script(config_file, jobfile, jobname, ntasks, hours,
                                  cwd, None, in_command=cmd)
 
-    print(f"[INFO] Completed CFSv2 temporal disaggregation for: {(month_abbr)}")
+    print(f"[INFO] Completed {fcst_model} temporal disaggregation for: {(month_abbr)}")
     if py_call:
         return slurm_commands
 #

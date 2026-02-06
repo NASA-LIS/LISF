@@ -86,7 +86,7 @@ def main(config_file, fcst_syr,  month_abbr, month_num, job_name,
     fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
     unit_list = ["kg/m^2/s", "W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
-    print("[INFO] Processing forecast bias correction of CFSv2 variables")
+    print(f"[INFO] Processing forecast bias correction of {fcst_model} variables")
 
     slurm_commands = []
 #    for var_num in range(len(obs_var_list)):
