@@ -72,7 +72,7 @@ class HydroSFS(S2Srun):
         os.chdir(self.scrdir + 'bcsd_fcst')
         self.create_symlink(self.e2esdir + 'bcsd_fcst/', 'bcsd_fcst')
         cwd=self.scrdir + 'bcsd_fcst'
-        outdir=f'{self.e2esdir}/bcsd_fcst/hydroscs_{resol}/raw/Climatology/'
+        outdir=f'{self.e2esdir}/bcsd_fcst/{self.obs_model}_{resol}/raw/Climatology/'
         os.makedirs(outdir, exist_ok=True)
 
         info = {}

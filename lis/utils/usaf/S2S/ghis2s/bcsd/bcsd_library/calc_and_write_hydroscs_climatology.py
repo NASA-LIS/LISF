@@ -159,21 +159,44 @@ for YEAR in range(CLIM_SYR, CLIM_EYR+1):
 
 ## Looping through each month and creating time series of quantiles and observed climatology
 ## (i.e. sorted observed values) for each grid cells with the mask
-CLIM_ARRAY = np.empty((13, (CLIM_EYR-CLIM_SYR)+1, len(LATS), len(LONS)))
+CLIM_ARRAY = np.full((13, (CLIM_EYR-CLIM_SYR)+1, len(LATS), len(LONS)), -9999., dtype=np.float32)
 for lat_num in range(0, len(LATS)):
     for lon_num in range(0, len(LONS)):
         ## Only work with grid cells that are within the given mask
         if ((lat1<=LATS[lat_num]) and (LATS[lat_num]<=lat2) and
             (lon1<=LONS[lon_num]) and (LONS[lon_num]<=lon2)):
-            ## 1st column is for sorted quantile array
-            ## The other twelve columns have sorted climatology values for all years
-            for MON_NUM in range(0, 12): ## Looping from month 1 to 12
-                ## First storing time series for the given month, latitude and longitude
-                OBS_TS = OBS_DATA_COARSE[MON_NUM::12, lat_num, lon_num]
-                ## Now creating sorted time series of observed data and a time series of
-                ## quantile values (ranging from 1/(n+1) to n/(n+1)
-                ## Note that we are only passing data the belongs to CLIM_SYR to CLIM_EYR
-                CLIM_ARRAY[MON_NUM+1, :, lat_num, lon_num],CLIM_ARRAY[0, :, lat_num, lon_num] = create_sorted_ts(OBS_TS)
+            # Check if this is a land pixel
+            if mask[lat_num, lon_num] > 0:
+                ## 1st column is for sorted quantile array
+                ## The other twelve columns have sorted climatology values for all years
+                for MON_NUM in range(0, 12): ## Looping from month 1 to 12
+                    ## First storing time series for the given month, latitude and longitude
+                    OBS_TS = OBS_DATA_COARSE[MON_NUM::12, lat_num, lon_num]
+                    
+                    # Filter out fill values before creating sorted time series
+                    valid_data = OBS_TS[OBS_TS != -9999.]
+                    
+                    if len(valid_data) > 0:
+                        ## Now creating sorted time series of observed data and a time series of
+                        ## quantile values (ranging from 1/(n+1) to n/(n+1)
+                        clim_sort, quant_ts = create_sorted_ts(valid_data)
+                        
+                        # For precipitation, replace any zeros with small value
+                        if VAR_NAME == 'Rainf':
+                            clim_sort = np.where(clim_sort == 0, 1.e-7, clim_sort)
+                        
+                        # Pad arrays if needed to match expected length
+                        expected_len = (CLIM_EYR-CLIM_SYR)+1
+                        if len(clim_sort) < expected_len:
+                            # Pad with the last valid value
+                            clim_sort = np.pad(clim_sort, (0, expected_len - len(clim_sort)), 
+                                             mode='edge')
+                            quant_ts = np.pad(quant_ts, (0, expected_len - len(quant_ts)), 
+                                            mode='edge')
+                        
+                        CLIM_ARRAY[MON_NUM+1, :, lat_num, lon_num] = clim_sort
+                        CLIM_ARRAY[0, :, lat_num, lon_num] = quant_ts
+
 ## finished storing climatology for all months
 OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, VAR_REPLACE.get(VAR_NAME))
 ## opening outfile to write
