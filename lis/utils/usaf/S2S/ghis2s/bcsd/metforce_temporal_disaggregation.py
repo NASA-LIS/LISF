@@ -83,6 +83,12 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     fcst_var_list = ["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
     unit_list = ["W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
+    # Precip model
+    if config['BCSD']['source']['precip'] is None:
+        obs_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
+        fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
+        unit_list = ["kg/m^2/s", "W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
+
     # Path for where forecast and bias corrected files are located:
     subdaily_raw_fcst_dir = f"{forcedir}/raw/6-Hourly/{month_abbr}01"
     monthly_raw_fcst_dir = f"{forcedir}/raw/Monthly/{month_abbr}01"
@@ -98,7 +104,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         for var_num, var_value in enumerate(obs_var_list):
-            if var_num == 1:
+            if var_value == "PRECTOT" or var_value == "SWGDN":
                 var_type = "PRCP"
             else:
                 var_type = "TEMP"

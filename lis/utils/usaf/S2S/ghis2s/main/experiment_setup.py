@@ -1557,6 +1557,8 @@ class S2Srun(DownloadForecasts):
         par_info['CPT'] = str(self.config['BCSD']['nof_raw_ens'])
         par_info['NT'] = str(1)
         par_info['MEM'] = '240GB'
+        if self.fcst_model.upper() == 'GEOSV3':
+            par_info['MEM'] = '480GB'
         par_info['TPN'] = None
         par_info['MP'] = True
 
@@ -1581,7 +1583,7 @@ class S2Srun(DownloadForecasts):
                 try:
                     s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                         jobname + f'{i+1:02d}_run.j',
-                                        jobname + f'{i+1:02d}_', 1, str(6), self._cwd, tfile.name,
+                                        jobname + f'{i+1:02d}_', 1, str(12), self._cwd, tfile.name,
                                         parallel_run=par_info)
                     self.create_dict(jobname + f'{i+1:02d}_run.j', 'bcsd_fcst', prev=prev)
                 finally:

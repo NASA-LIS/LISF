@@ -136,12 +136,18 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
                     for ic_date in ic_dates:
                         cmd += f" {ic_date}"
                 cmd_list.append(cmd)
-                slurm_commands.append(cmd)
-            jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
-            jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            if not py_call:
-                utils.job_script(config_file, jobfile, jobname, len(cmd_list),
-                                 hours, cwd, None, group_jobs=cmd_list)
+                jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
+                jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
+            
+                if py_call:
+                    if resol == '25km':
+                        slurm_commands.append(cmd)
+                    else:
+                        for lead_mon in range(config["EXP"]["lead_months"]):
+                            slurm_commands.append(cmd + f" {lead_mon}")
+                else:
+                    utils.job_script(config_file, jobfile, jobname, len(cmd_list),
+                                     hours, cwd, None, group_jobs=cmd_list)
 
         else:
             cmd = "python"

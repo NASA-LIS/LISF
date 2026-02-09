@@ -25,7 +25,7 @@ import yaml
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-from ghis2s.shared.utils import load_ncdata, get_domain_info, get_chunk_sizes
+from ghis2s.shared.utils import load_ncdata, get_domain_info, get_chunk_sizes, get_optimized_encoding
 from ghis2s.shared.logging_utils import TaskLogger
 
 
@@ -33,22 +33,21 @@ def write_bc_netcdf(outfile, var, varname, description, source, var_units, \
 var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
 north_east_corner_lon, south_west_corner_lat, south_west_corner_lon, \
 resolution_x, resolution_y, time_increment):
+
     """write netcdf"""
     n_times = len(dates)
     complevel = 6
-    lat_chunk, lon_chunk = len(lats), len(lons)
+    lat_chunk, lon_chunk, time_chunk = len(lats), len(lons), 1
     # Determine optimal chunking based on grid size
-    if len(lats) == 1800 and len(lons) == 3600:
-        # Medium resolution: ~0.1° grid
-        time_chunk = 24
-
-    elif len(lats) == 3600 and len(lons) == 7200:
-        # High resolution: ~0.05° grid
-        time_chunk = 12
-
-    else:
-        # Fallback for other grid sizes
-        time_chunk = 1
+    #if len(lats) == 1800 and len(lons) == 3600:
+    #    # Medium resolution: ~0.1° grid
+    #    time_chunk = 24
+    #elif len(lats) == 3600 and len(lons) == 7200:
+    #    # High resolution: ~0.05° grid
+    #    time_chunk = 12
+    #else:
+    #    # Fallback for other grid sizes
+    #    time_chunk = 1
 
     rootgrp = nc4_dataset(outfile, 'w', format='NETCDF4_CLASSIC')
     time = rootgrp.createDimension('time', None)
@@ -59,35 +58,53 @@ resolution_x, resolution_y, time_increment):
     latitudes = rootgrp.createVariable('latitude', 'f4', ('latitude',))
     times = rootgrp.createVariable('time', 'f4', ('time', ))
 
-    # two dimensions unlimited.
-    varname1 = rootgrp.createVariable(
-        varname[0], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
-        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
-        chunksizes=(time_chunk, lat_chunk, lon_chunk))
-    varname2 = rootgrp.createVariable(
-        varname[1], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
-        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
-        chunksizes=(time_chunk, lat_chunk, lon_chunk))
-    varname3 = rootgrp.createVariable(
-        varname[2], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
-        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
-        chunksizes=(time_chunk, lat_chunk, lon_chunk))
-    varname4 = rootgrp.createVariable(
-        varname[3], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
-        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
-        chunksizes=(time_chunk, lat_chunk, lon_chunk))
-    varname5 = rootgrp.createVariable(
-        varname[4], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
-        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
-        chunksizes=(time_chunk, lat_chunk, lon_chunk))
-    varname6 = rootgrp.createVariable(
-        varname[5], 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
-        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
-        chunksizes=(time_chunk, lat_chunk, lon_chunk))
-    varname7 = rootgrp.createVariable(
-        'V10M', 'f4', ('time', 'latitude', 'longitude',), fill_value=-9999, zlib=True,
-        least_significant_digit=sig_digit, complevel=complevel, shuffle=True,
-        chunksizes=(time_chunk, lat_chunk, lon_chunk))
+    def create_var_with_encoding(var_name, encoding_dict=None):
+        ''' Helper function to create variable with encoding '''
+        if encoding_dict:
+            enc = encoding_dict[var_name]
+            chunksizes = enc.get('chunksizes', (time_chunk, lat_chunk, lon_chunk))
+            var_obj = rootgrp.createVariable(
+                var_name, 
+                enc['dtype'], 
+                ('time', 'latitude', 'longitude',),
+                fill_value=enc['_FillValue'],
+                zlib=enc['zlib'],
+                complevel=enc['complevel'],
+                shuffle=enc['shuffle'],
+                chunksizes=chunksizes
+            )
+            # Set scale_factor and add_offset attributes
+            var_obj.scale_factor = enc['scale_factor']
+            var_obj.add_offset = enc['add_offset']
+        else:
+            # Fallback to default encoding
+            var_obj = rootgrp.createVariable(
+                var_name, 'f4', ('time', 'latitude', 'longitude',),
+                fill_value=-9999, zlib=True,
+                least_significant_digit=sig_digit, complevel=6, shuffle=True,
+                chunksizes=(time_chunk, lat_chunk, lon_chunk)
+            )
+        return var_obj
+
+    # Create variables using the encoding
+    if len(var_standard_name) == 7:
+        edict = get_optimized_encoding()
+        varname1 = create_var_with_encoding(varname[0], encoding_dict=edict)  # LWGAB
+        varname2 = create_var_with_encoding(varname[1], encoding_dict=edict)  # SWGDN
+        varname3 = create_var_with_encoding(varname[2], encoding_dict=edict)  # PS
+        varname4 = create_var_with_encoding(varname[3], encoding_dict=edict)  # QV2M
+        varname5 = create_var_with_encoding(varname[4], encoding_dict=edict)  # T2M
+        varname6 = create_var_with_encoding(varname[5], encoding_dict=edict)  # U10M
+        varname7 = create_var_with_encoding('V10M', encoding_dict=edict)
+        varname8 = create_var_with_encoding('PRECTOT', encoding_dict=edict)
+    else:
+        varname1 = create_var_with_encoding(varname[0])  # LWGAB
+        varname2 = create_var_with_encoding(varname[1])  # SWGDN
+        varname3 = create_var_with_encoding(varname[2])  # PS
+        varname4 = create_var_with_encoding(varname[3])  # QV2M
+        varname5 = create_var_with_encoding(varname[4])  # T2M
+        varname6 = create_var_with_encoding(varname[5])  # U10M
+        varname7 = create_var_with_encoding('V10M') 
 
     rootgrp.missing_value = -9999
     rootgrp.description = description
@@ -122,6 +139,9 @@ resolution_x, resolution_y, time_increment):
     varname5.standard_name = var_standard_name[4]
     varname6.standard_name = var_standard_name[5]
     varname7.standard_name = 'V10M'
+    if len(var_standard_name) == 7:
+        varname8.units = var_units[6]
+        varname6.standard_name = var_standard_name[6]
 
     string_date = datetime.strftime(sdate, "%Y-%m-%d %H:%M:%S")
     times.units = 'minutes since ' + string_date
@@ -142,6 +162,8 @@ resolution_x, resolution_y, time_increment):
         varname5[i:end_idx, :, :] = var[4, i:end_idx, :, :]
         varname6[i:end_idx, :, :] = var[5, i:end_idx, :, :]
         varname7[i:end_idx, :, :] = nzeros[i:end_idx, :, :]
+        if len(var_standard_name) == 7:
+            varname8[i:end_idx, :, :] = var[6, i:end_idx, :, :]
         times[:] = nc4_date2num(dates, units=times.units, calendar=times.calendar)
     rootgrp.close()
 
@@ -175,11 +197,20 @@ OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
 VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
 UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
-
+        
 latsg, _ = get_domain_info(CONFIG_FILE, coord=True)
 resol = round((latsg[1] - latsg[0])*100.)/100.
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
+
+# Precip model
+if config['BCSD']['source']['precip'] is None:
+    VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M', 'PRECTOT']
+    UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s', 'kg/m^2/s']
+
+if config['BCSD']['source']['obs'] == 'HydroSCS':
+    OUTDIR_TEMPLATE =  '{}/{:04d}{:02d}/ens{:01d}'
+    HYDROSFSDIR = config['SETUP']['HYDROSFSDIR']
 
 def process_ensemble(_ens):
     ''' process each ensemble member '''
@@ -192,8 +223,13 @@ def process_ensemble(_ens):
     ## Shape of the above dataset time, Lead, Ens, latitude, longitude
     indir = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
                                   INIT_FCST_YEAR, _ens+1)
-    outdir = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
+    if config['BCSD']['source']['obs'] == 'HydroSCS':
+        outdir = OUTDIR_TEMPLATE.format(HYDROSFSDIR, INIT_FCST_YEAR, \
+                                    INIT_FCST_MON, _ens+1)
+    else:
+        outdir = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
                                     INIT_FCST_YEAR, _ens+1)
+
     if os.path.isdir(outdir):
         pass
     else:
@@ -238,8 +274,13 @@ def process_ensemble(_ens):
 
 def links():
     ''' Create ens13, ens14, ens15 links '''
-    outdir_template = '{}/final/6-Hourly/{}/{:04d}/'
-    outdir = outdir_template.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)
+    if config['BCSD']['source']['obs'] == 'HydroSCS':
+        outdir_template = '{}/{:04d}{:02d}/'
+        outdir = outdir_template.format(HYDROSFSDIR, INIT_FCST_YEAR, \
+                                        INIT_FCST_MON)
+    else:
+        outdir_template = '{}/final/6-Hourly/{}/{:04d}/'
+        outdir = outdir_template.format(BASEDIR, MONTH_NAME.lower(), INIT_FCST_YEAR)
 
     os.chdir(outdir)
     if config['BCSD']['source']['metforce'] == 'CFSv2':

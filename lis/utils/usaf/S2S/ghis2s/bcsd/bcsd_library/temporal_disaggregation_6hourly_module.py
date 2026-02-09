@@ -78,6 +78,7 @@ RESOL = f'{round((LAT_LDT[1] - LAT_LDT[0])*100)}km'
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
 FCST_DATA_TYPE = config['BCSD']['source']['metforce']
+PRECIP_DATA_TYPE = config['BCSD']['source']['precip']
 FORCE_DT = 21600
 if FCST_DATA_TYPE == 'CFSv2':
     FORCE_DT = 21600
@@ -204,7 +205,7 @@ def process_ensemble(ens):
         ### First read bias corrected monthly forecast data
         bc_infile = MONTHLY_BC_INFILE_TEMPLATE.format(MONTHLY_BC_FCST_DIR, FCST_VAR, MODEL_NAME,
                                                       MONTH_NAME, fcst_year, fcst_month)
-        logger.info(f"Reading bias corrected monthly forecasts {bc_infile}", [logger, task_label])
+        logger.info(f"Reading bias corrected monthly forecasts {bc_infile}", subtask=task_label)
         mon_bc_datag = load_ncdata(bc_infile, [logger, None])
 
         lons = mon_bc_datag['longitude'].values
@@ -233,9 +234,14 @@ def process_ensemble(ens):
                 MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
                 MODEL_NAME.lower(), fcst_year, fcst_month)
         else:
-            monthly_infile = MONTHLY_NMME_INFILE_TEMPLATE.format(
-                MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
-                fcst_year, fcst_month)
+            if PRECIP_DATA_TYPE is not None:
+                monthly_infile = MONTHLY_NMME_INFILE_TEMPLATE.format(
+                    MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
+                    fcst_year, fcst_month)
+            else:
+                monthly_infile = MONTHLY_RAW_INFILE_TEMPLATE.format(
+                    MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
+                    MODEL_NAME.lower(), fcst_year, fcst_month)
 
         logger.info(f"Reading raw monthly forecast {monthly_infile}", subtask=task_label)
         monthly_input_raw_datag = load_ncdata(monthly_infile, [logger, task_label])

@@ -690,4 +690,22 @@ def get_optimized_encoding():
             'complevel': 6,
             'shuffle': True,
         },
+        'U10M': {
+            'dtype': 'int16',
+            'scale_factor': 0.01,
+            'add_offset': 5.0,
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 6,
+            'shuffle': True,
+        },
+        'V10M': {
+            'dtype': 'int16',
+            'scale_factor': 0.01,
+            'add_offset': 5.0,
+            '_FillValue': -32767,
+            'zlib': True,
+            'complevel': 6,
+            'shuffle': True,
+        },        
     }
