@@ -67,7 +67,7 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(file)
 
     sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.s2splots import plot_utils
+    from ghis2s.s2splots import plot_utils
 
     BCSD_PATH =  'bcsd_fcst/'
     if cfg['SETUP']['DATATYPE'] == 'hindcast':
@@ -88,8 +88,10 @@ if __name__ == "__main__":
                 os.makedirs(plot_dir)
 
             # Read Monthly
-            mon_file = BCSD_PATH + '/NMME/bcsd/Monthly/' +\
-                '{}/PRECTOT.{}.{}_{:04d}_{:04d}.nc'.format(mmm, nmme_model,mmm, IC_YEAR, IC_YEAR)
+            mon_file = (
+                f"{BCSD_PATH}/NMME/bcsd/Monthly/{mmm}/"
+                f"PRECTOT.{nmme_model}.{mmm}_{IC_YEAR:04d}_{IC_YEAR:04d}.nc"
+            )
             monthly_xr = xr.open_dataset(mon_file)
             print ('NMME Monthly File : ', mon_file)
 
@@ -133,8 +135,10 @@ if __name__ == "__main__":
         NENS = 12
 
         # Read Monthly
-        mon_file =  BCSD_PATH + '/CFSv2_25km/bcsd/Monthly/' + \
-            '{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'.format(mmm, VARIABLE,mmm, IC_YEAR, IC_YEAR)
+        mon_file = (
+            f"{BCSD_PATH}/CFSv2_25km/bcsd/Monthly/{mmm}/"
+            f"{VARIABLE}.CFSv2.{mmm}_{IC_YEAR:04d}_{IC_YEAR:04d}.nc"
+        )
         monthly_xr = xr.open_dataset(mon_file)
         print ('CFSv2 Monthly File : ', mon_file)
         plot_dir = OUT_PATH

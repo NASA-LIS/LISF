@@ -23,6 +23,7 @@
 """
 
 from datetime import date
+import calendar
 import time
 import os
 import sys
@@ -169,14 +170,18 @@ def process_variable(var_name, anom):
     enddate = curdate
     enddate += relativedelta(days=6)
     logger.info("Reading Hindcast statistics", subtask=var_name)
+    ENDDATE_stat = ENDDATE
+    if CURRENTDATE.month == 2 and calendar.isleap(CURRENTDATE.year):
+        ENDDATE_stat += relativedelta(days=1)
+
     mean_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "MEAN", NMME_MODEL.upper(),
                                               DOMAIN_NAME, FCST_INIT_MON,
                                               CURRENTDATE.month, CURRENTDATE.day,
-                                              ENDDATE.month, ENDDATE.day)
+                                              ENDDATE.month, ENDDATE_stat.day)
     std_file = CLIM_STATFILE_TEMPLATE.format(HINDCASTS, "STD", NMME_MODEL.upper(),
                                              DOMAIN_NAME, FCST_INIT_MON,
                                              CURRENTDATE.month, CURRENTDATE.day,
-                                             ENDDATE.month, ENDDATE.day)
+                                             ENDDATE.month, ENDDATE_stat.day)
     logger.info(f"Reading forecast climatological mean {mean_file}", subtask=var_name)
     logger.info(f"Reading forecast climatological std {std_file}", subtask=var_name)
     mean_xr = load_ncdata(mean_file, [logger, var_name])
