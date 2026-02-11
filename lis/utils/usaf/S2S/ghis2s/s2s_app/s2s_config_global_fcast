@@ -11,6 +11,7 @@ SETUP:
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
   ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
+  user_cache_dir: /[path]/nwp601/scratch/[username]/
   SPCODE:  s1189
   CONSTRAINT: mil
   DATATYPE: forecast

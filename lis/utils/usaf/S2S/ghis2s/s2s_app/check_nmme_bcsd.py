@@ -60,7 +60,7 @@ if __name__ == "__main__":
     clim_syr = int(cfg["BCSD"]["clim_start_year"])
     clim_eyr = int(cfg["BCSD"]["clim_end_year"])
     sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.s2splots import plot_utils
+    from ghis2s.s2splots import plot_utils
 
     NMME_PATH = 'bcsd_fcst/NMME/'
     if cfg['SETUP']['DATATYPE'] == 'hindcast':
