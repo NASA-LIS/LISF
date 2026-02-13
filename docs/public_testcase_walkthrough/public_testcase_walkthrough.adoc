@@ -1,6 +1,6 @@
 = LIS Public Testcase Walkthrough
 :revnumber: 2.0
-:revdate: Feb 6, 2026
+:revdate: Feb 13, 2026
 :revremark: Updated for LISF Public 7.5 release
 :imagesdir: ./images
 :title-page:
