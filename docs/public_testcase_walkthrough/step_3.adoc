@@ -27,8 +27,6 @@ In this step you will learn how to use LDT to expand a single-member *restart* f
 [NOTE]
 ====
 
-[quote, http://www.cesm.ucar.edu/models/ccsm2.0/csim/UsersGuide/ice_usrdoc/node21.html]
-
 *Restart files* contain all of the initial condition information necessary to restart from a previous simulation.
 
 ====
