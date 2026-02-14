@@ -114,6 +114,8 @@ module LDT_pluginIndices
         = "NASA SMAP soil moisture"
    character*50, public,  parameter :: LDT_SMAPEOPLsmobsId            &
         = "SMAP_E_OPL soil moisture"                                        !Y.Kwon
+   character*50, public, parameter :: LDT_WSFsmobsId                  &     !EJ
+        = "WSF soil moisture"
    character*50, public,  parameter :: LDT_THySMobsId            &
         = "THySM soil moisture"
    character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
