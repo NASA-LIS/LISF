@@ -3649,6 +3649,7 @@ LIS output timestep:          1da
 |"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM soil moisture`" | Thermal Hydraulic disaggregation of Soil Moisture
 |"`SMAP_E_OPL soil moisture`" | Operational 9-km enhanced SMAP soil moisture retrieval 
+|"`WSF soil moisture`" | Operational 10-km (ARFS grid) WSF soil moisture retrieval 
 |"`GEOS effective soil temperature`" | GEOS-FP effective soil temperature
 |"`CDFS GVF`" | CDFS green vegetation fraction (GVF) 
 |"`VIIRS GVF`" | VIIRS green vegetation fraction (GVF)
@@ -4399,6 +4400,13 @@ SMOS NRT NN search radius for openwater proximity detection: 3
 .Example _ldt.config_ entry
 ....
 THySM observation directory: ../THySM
+....
+
+`WSF soil moisture data directory:` specifies the location of the data directory containing the WSF soil moisture data data.
+
+.Example _ldt.config_ entry
+....
+WSF soil moisture data directory: ../wsf
 ....
 
 `SMAP_E_OPL soil moisture observation directory:` specifies the location of the data directory containing the SMAP_E_OPL soil moisture data

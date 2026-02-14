@@ -77,6 +77,8 @@ contains
     use CDFSGVFobsMod,             only : CDFSGVFobsinit         !Y.Kwon
     use GEOSTEFF_obsMod,           only : GEOSTeffobsinit        !Y.Kwon    
     use SMAPEOPLSMobsMod,          only : SMAPEOPLSMobsinit       !Y.Kwon
+    use WSFsm_obsMod,              only : WSFsmobsinit !EJ
+
 
     external readLISlsmSMObs
     external readLISlsmTEFFObs    !Y.Kwon
@@ -110,6 +112,8 @@ contains
     external readCDFS_GVFObs        !Y.Kwon
     external readGEOSTEFFObs        !Y.Kwon
     external readSMAPEOPL_SMObs      !Y.Kwon
+    external readWSFsmObs !EJ
+
 
     call registerdaobssetup(trim(LDT_LISlsmSMobsId)//char(0), LISlsmSM_obsInit)
     call registerdaobsread(trim(LDT_LISlsmSMobsId)//char(0), readLISlsmSMObs)
@@ -221,6 +225,7 @@ contains
          SMOSNRTNNL2sm_obsinit)
     call registerdaobsread(trim(LDT_SMOSNRTNNsmobsId)//char(0),&
          readSMOSNRTNNL2smObs)
+         
 
     call registerdaobssetup(trim(LDT_NASASMAPvodobsId)//char(0),&
          NASASMAPvod_obsinit)
@@ -231,7 +236,11 @@ contains
          GLASSlai_obsinit)
     call registerdaobsread(trim(LDT_GLASSlaiobsId)//char(0),&
          readGLASSlaiObs)
-
+    
+    call registerdaobssetup(trim(LDT_WSFsmobsId)//char(0), & !EJ
+         WSFsmobsinit)
+    call registerdaobsread(trim(LDT_WSFsmobsId)//char(0), & !EJ
+         readWSFsmObs)
 
     call registerdaobssetup(trim(LDT_LPRMvodobsId)//char(0),&
          LPRMvod_obsinit)
