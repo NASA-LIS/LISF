@@ -100,9 +100,9 @@ contains
 
        WSFsmobs(n)%smobs = -9999.0
 
-       call LDT_initializeDAobsEntry(LDT_DAobsData(n)%soil_moist_obs, &
-            "-",1,1)
-       LDT_DAobsData(n)%soil_moist_obs%selectStats = 1
+       call LDT_initializeDAobsEntry(LDT_DAobsData(n)%soilmoist_obs, &
+             "m3/m3",1,1)
+       LDT_DAobsData(n)%soilmoist_obs%selectStats = 1
 
        WSFsmobs(n)%nc = 2560
        WSFsmobs(n)%nr = 1920
