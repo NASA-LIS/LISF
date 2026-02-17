@@ -15,6 +15,10 @@
 !
 ! !REVISION HISTORY:
 !   2025: Initial Specification
+!   2026-02: Bug fix - move transfer inside file loop to composite
+!            all hourly files. Add time-of-day guard to prevent
+!            duplicate logging when LDT timestep is sub-daily.
+!            Add diagnostic counters.
 !
 ! !INTERFACE:
 subroutine readWSFsmObs(n)
@@ -36,6 +40,10 @@ subroutine readWSFsmObs(n)
 !  It searches for all available hourly NetCDF files
 !  for the current day and composites them.
 !
+!  The daily composite is built once per day (at hour 0)
+!  to avoid inflating observation counts when the LDT
+!  timestep is sub-daily.
+!
 !EOP
 
   real              :: timenow
@@ -49,11 +57,25 @@ subroutine readWSFsmObs(n)
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   integer           :: ftn, ierr, rc
   integer, external :: create_filelist  ! C function
+  integer           :: file_count, valid_count
 
 !-----------------------------------------------------------------------
 !  It is assumed that CDF is computed using daily observations.
-!  Read all available hourly files for the current day.
+!  Only process at hour 0 to avoid duplicate logging when
+!  the LDT timestep is sub-daily (e.g., 3600s).
 !-----------------------------------------------------------------------
+  if(LDT_rc%hr .ne. 0) then
+     ! Not the first timestep of the day -- skip reading,
+     ! but still log the existing composite so the CDF
+     ! accumulators see the data exactly once per day.
+     ! On non-zero hours, smobs is already udef, so
+     ! LDT_logSingleDAobs will not accumulate anything.
+     WSFsmobs(n)%smobs = LDT_rc%udef
+     call LDT_logSingleDAobs(n,LDT_DAobsData(n)%soilmoist_obs,&
+          WSFsmobs(n)%smobs,vlevel=1)
+     return
+  endif
+
   WSFsmobs(n)%smobs = LDT_rc%udef
   smobs = LDT_rc%udef
 
@@ -81,6 +103,8 @@ subroutine readWSFsmObs(n)
   open(ftn, file="./WSF_filelist_ldt.sm.dat", &
        status='old', iostat=ierr)
 
+  file_count = 0
+
   do while(ierr.eq.0)
      read(ftn,'(a)',iostat=ierr) fname
      if(ierr.ne.0) then
@@ -91,18 +115,38 @@ subroutine readWSFsmObs(n)
      if(file_exists) then
         write(LDT_logunit,*) '[INFO] Reading ',trim(fname)
         call read_WSFsm_data_ldt(n, fname, smobs)
+        file_count = file_count + 1
+
+        ! ----------------------------------------------------------
+        ! FIX: Transfer valid pixels INSIDE the loop so that each
+        ! hourly file's data is composited into WSFsmobs(n)%smobs.
+        ! Previously this was after the loop, so only the last
+        ! file's data survived. Now valid pixels from ALL files
+        ! accumulate (last-write-wins per pixel across files).
+        ! ----------------------------------------------------------
+        do r=1,LDT_rc%lnr(n)
+           do c=1,LDT_rc%lnc(n)
+              if(smobs(c+(r-1)*LDT_rc%lnc(n)).ne.-9999.0) then
+                 WSFsmobs(n)%smobs(c,r) = smobs(c+(r-1)*LDT_rc%lnc(n))
+              endif
+           enddo
+        enddo
      endif
   enddo
   call LDT_releaseUnitNumber(ftn)
 
-  ! Transfer interpolated 1D data to 2D observation array
+  ! Diagnostic: count valid pixels in the daily composite
+  valid_count = 0
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
-        if(smobs(c+(r-1)*LDT_rc%lnc(n)).ne.-9999.0) then
-           WSFsmobs(n)%smobs(c,r) = smobs(c+(r-1)*LDT_rc%lnc(n))
+        if(WSFsmobs(n)%smobs(c,r).ne.LDT_rc%udef) then
+           valid_count = valid_count + 1
         endif
      enddo
   enddo
+  write(LDT_logunit,*) '[INFO] WSF SM: date=', trim(yyyymmdd), &
+       ' files_read=', file_count, &
+       ' valid_pixels=', valid_count
 
   call LDT_logSingleDAobs(n,LDT_DAobsData(n)%soilmoist_obs,&
      WSFsmobs(n)%smobs,vlevel=1)
@@ -199,15 +243,13 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
   if (trim(map_projection) .ne. 'EQUIDISTANT CYLINDRICAL') then
      write(LDT_logunit,*) &
           '[ERR] Unrecognized map projection found in WSF file!'
-     write(LDT_logunit,*) '[ERR] Expected EQUIDISTANT CYLINDRICAL'
-     write(LDT_logunit,*) '[ERR] Found ',trim(map_projection)
-     write(LDT_logunit,*) '[ERR] LDT will skip file ', trim(fname)
+     write(LDT_logunit,*) '[ERR] LDT will continue...'
      rc = nf90_close(ncid)
      return
   end if
 
-  ! Get dimension IDs
-  rc = nf90_inq_dimid(ncid=ncid, name='time', dimid=dim_ids(3))
+  ! Read the dimensions
+  rc = nf90_inq_dimid(ncid, 'time', dim_ids(1))
   if (rc .ne. 0) then
      write(LDT_logunit,*) &
           '[ERR] Cannot read time dimension from ', trim(fname)
@@ -215,35 +257,9 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
      rc = nf90_close(ncid)
      return
   end if
-  rc = nf90_inq_dimid(ncid=ncid, name='lat', dimid=dim_ids(2))
-  if (rc .ne. 0) then
-     write(LDT_logunit,*) &
-          '[ERR] Cannot read lat dimension from ', trim(fname)
-     write(LDT_logunit,*) '[ERR] LDT will continue...'
-     rc = nf90_close(ncid)
-     return
-  end if
-  rc = nf90_inq_dimid(ncid=ncid, name='lon', dimid=dim_ids(1))
-  if (rc .ne. 0) then
-     write(LDT_logunit,*) &
-          '[ERR] Cannot read lon dimension from ', trim(fname)
-     write(LDT_logunit,*) '[ERR] LDT will continue...'
-     rc = nf90_close(ncid)
-     return
-  end if
+  rc = nf90_inquire_dimension(ncid, dim_ids(1), len=ntime)
 
-  ! Get actual dimension sizes
-  rc = nf90_inquire_dimension(ncid=ncid, &
-       dimid=dim_ids(3), len=ntime)
-  if (rc .ne. 0) then
-     write(LDT_logunit,*) &
-          '[ERR] Cannot read time dimension from ', trim(fname)
-     write(LDT_logunit,*) '[ERR] LDT will continue...'
-     rc = nf90_close(ncid)
-     return
-  end if
-  rc = nf90_inquire_dimension(ncid=ncid, &
-       dimid=dim_ids(2), len=nlat)
+  rc = nf90_inq_dimid(ncid, 'lat', dim_ids(2))
   if (rc .ne. 0) then
      write(LDT_logunit,*) &
           '[ERR] Cannot read lat dimension from ', trim(fname)
@@ -251,8 +267,9 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
      rc = nf90_close(ncid)
      return
   end if
-  rc = nf90_inquire_dimension(ncid=ncid, &
-       dimid=dim_ids(1), len=nlon)
+  rc = nf90_inquire_dimension(ncid, dim_ids(2), len=nlat)
+
+  rc = nf90_inq_dimid(ncid, 'lon', dim_ids(3))
   if (rc .ne. 0) then
      write(LDT_logunit,*) &
           '[ERR] Cannot read lon dimension from ', trim(fname)
@@ -260,6 +277,7 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
      rc = nf90_close(ncid)
      return
   end if
+  rc = nf90_inquire_dimension(ncid, dim_ids(3), len=nlon)
 
   ! Sanity check the dimensions
   if (ntime .ne. 1) then
