@@ -1,0 +1,1306 @@
+#!jinja2
+# S2S Forecast Workflow
+  
+[meta]
+    title = S2S Forecast Workflow
+    description = S2S Forecast Initialized on 2025-12
+  
+[scheduler]
+    UTC mode = True
+    cycle point format = %Y%m%dT%H%M
+  
+[scheduling]
+    initial cycle point = now
+    final cycle point = +P2D
+    runahead limit = P2D
+  
+    [[xtriggers]]
+        log_check = wall_clock(offset=PT0M)
+  
+    [[graph]]
+        R1 = """
+                lisda_run => ldtics_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run => mf_biascorr_01_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run => mf_biascorr_02_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run => mf_biascorr_03_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run => mf_biascorr_04_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run => mf_biascorr_05_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run => mf_biascorr_06_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run => mf_biascorr_07_run
+                pr_regrid_run => pr_biascorr_01_run
+                pr_regrid_run => pr_biascorr_02_run
+                pr_regrid_run => pr_biascorr_03_run
+                pr_regrid_run => pr_biascorr_04_run
+                pr_regrid_run => pr_biascorr_05_run
+                mf_biascorr_01_run & mf_biascorr_02_run & mf_biascorr_03_run & mf_biascorr_04_run & mf_biascorr_05_run & mf_biascorr_06_run & mf_biascorr_07_run => mf_tempdis_01_run
+                mf_biascorr_01_run & mf_biascorr_02_run & mf_biascorr_03_run & mf_biascorr_04_run & mf_biascorr_05_run & mf_biascorr_06_run & mf_biascorr_07_run => mf_tempdis_02_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run & pr_biascorr_01_run & pr_biascorr_02_run & pr_biascorr_03_run & pr_biascorr_04_run & pr_biascorr_05_run => pr_tempdis_01_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run & pr_biascorr_01_run & pr_biascorr_02_run & pr_biascorr_03_run & pr_biascorr_04_run & pr_biascorr_05_run => pr_tempdis_02_run
+                mf_regrid_01_run & mf_regrid_02_run & mf_regrid_03_run & mf_regrid_04_run & mf_regrid_05_run & mf_regrid_06_run & pr_biascorr_01_run & pr_biascorr_02_run & pr_biascorr_03_run & pr_biascorr_04_run & pr_biascorr_05_run => pr_tempdis_03_run
+                mf_tempdis_01_run & mf_tempdis_02_run => combine_files_run
+                ldtics_run & combine_files_run & pr_tempdis_01_run & pr_tempdis_02_run & pr_tempdis_03_run => lis_fcst_CanESM5_00_run
+                lis_fcst_CanESM5_00_run => lis_fcst_CanESM5_01_run
+                lis_fcst_CanESM5_01_run => lis_fcst_CanESM5_02_run
+                ldtics_run & combine_files_run & pr_tempdis_01_run & pr_tempdis_02_run & pr_tempdis_03_run => lis_fcst_CESM1_00_run
+                lis_fcst_CESM1_00_run => lis_fcst_CESM1_01_run
+                lis_fcst_CESM1_01_run => lis_fcst_CESM1_02_run
+                ldtics_run & combine_files_run & pr_tempdis_01_run & pr_tempdis_02_run & pr_tempdis_03_run => lis_fcst_CFSv2_00_run
+                lis_fcst_CFSv2_00_run => lis_fcst_CFSv2_01_run
+                lis_fcst_CFSv2_01_run => lis_fcst_CFSv2_02_run
+                lis_fcst_CFSv2_02_run => lis_fcst_CFSv2_03_run
+                lis_fcst_CFSv2_03_run => lis_fcst_CFSv2_04_run
+                ldtics_run & combine_files_run & pr_tempdis_01_run & pr_tempdis_02_run & pr_tempdis_03_run => lis_fcst_GEOSv2_00_run
+                lis_fcst_GEOSv2_00_run => lis_fcst_GEOSv2_01_run
+                ldtics_run & combine_files_run & pr_tempdis_01_run & pr_tempdis_02_run & pr_tempdis_03_run => lis_fcst_GNEMO52_00_run
+                lis_fcst_GNEMO52_00_run => lis_fcst_GNEMO52_01_run
+                lis_fcst_GNEMO52_01_run => lis_fcst_GNEMO52_02_run
+                lis_fcst_CanESM5_02_run & lis_fcst_CESM1_02_run & lis_fcst_CFSv2_04_run & lis_fcst_GEOSv2_01_run & lis_fcst_GNEMO52_02_run => s2spost_01_run
+                lis_fcst_CanESM5_02_run & lis_fcst_CESM1_02_run & lis_fcst_CFSv2_04_run & lis_fcst_GEOSv2_01_run & lis_fcst_GNEMO52_02_run => s2spost_02_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_01_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_02_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_03_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_04_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_05_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_06_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_07_run
+                s2spost_01_run & s2spost_02_run => s2spost_mon_08_run
+                s2spost_01_run & s2spost_02_run => s2spost_weekly_01_run
+                s2spost_01_run & s2spost_02_run => s2spost_weekly_02_run
+                s2spost_mon_01_run & s2spost_mon_02_run & s2spost_mon_03_run & s2spost_mon_04_run & s2spost_mon_05_run & s2spost_mon_06_run & s2spost_mon_07_run & s2spost_mon_08_run => s2smetric_01_run
+                s2spost_mon_01_run & s2spost_mon_02_run & s2spost_mon_03_run & s2spost_mon_04_run & s2spost_mon_05_run & s2spost_mon_06_run & s2spost_mon_07_run & s2spost_mon_08_run => s2smetric_02_run
+                s2spost_mon_01_run & s2spost_mon_02_run & s2spost_mon_03_run & s2spost_mon_04_run & s2spost_mon_05_run & s2spost_mon_06_run & s2spost_mon_07_run & s2spost_mon_08_run => s2smetric_03_run
+                s2spost_mon_01_run & s2spost_mon_02_run & s2spost_mon_03_run & s2spost_mon_04_run & s2spost_mon_05_run & s2spost_mon_06_run & s2spost_mon_07_run & s2spost_mon_08_run => s2smetric_04_run
+                s2spost_mon_01_run & s2spost_mon_02_run & s2spost_mon_03_run & s2spost_mon_04_run & s2spost_mon_05_run & s2spost_mon_06_run & s2spost_mon_07_run & s2spost_mon_08_run => s2smetric_05_run
+                s2spost_weekly_01_run & s2spost_weekly_02_run => s2smetric_weekly_01_run
+                s2spost_weekly_01_run & s2spost_weekly_02_run => s2smetric_weekly_02_run
+                s2spost_weekly_01_run & s2spost_weekly_02_run => s2smetric_weekly_03_run
+                s2spost_weekly_01_run & s2spost_weekly_02_run => s2smetric_weekly_04_run
+                s2spost_weekly_01_run & s2spost_weekly_02_run => s2smetric_weekly_05_run
+                s2smetric_01_run & s2smetric_02_run & s2smetric_03_run & s2smetric_04_run & s2smetric_05_run => s2smetric_tiff_run
+                s2smetric_weekly_01_run & s2smetric_weekly_02_run & s2smetric_weekly_03_run & s2smetric_weekly_04_run & s2smetric_weekly_05_run => s2smetric_weekly_tiff_run
+                s2smetric_tiff_run & s2smetric_weekly_tiff_run => s2splots_01_run
+                s2smetric_tiff_run & s2smetric_weekly_tiff_run => s2splots_02_run
+                s2smetric_tiff_run & s2smetric_weekly_tiff_run => s2splots_03_run
+                s2smetric_tiff_run & s2smetric_weekly_tiff_run => s2splots_04_run
+                s2splots_01_run & s2splots_02_run & s2splots_03_run & s2splots_04_run => final_log_collect => stop_log_monitor
+                stop_log_monitor => !log_monitor
+        """
+  
+        R//PT15M = """
+           @log_check => log_monitor
+        """
+  
+[runtime]
+    [[root]]
+        platform = slurm-ghi
+        pre-script = """
+            source /etc/profile.d/modules.sh
+            module load lisf_7.5_intel_2023.2.1_s2s
+        """
+        [[[environment]]]
+            USE_CYLC_ENV = 1
+            MODULEPATH = /discover/nobackup/projects/ghilis/karsenau/LISF_7.7/env/discover/:$MODULEPATH
+            PYTHONPATH = /discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+        [[[mail]]]
+            to = kristi.r.arsenault@nasa.gov
+        [[[events]]]
+            mail events = failed
+  
+    [[log_monitor]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/ghis2s_log.sh
+        platform = localhost-ghi
+  
+    [[final_log_collect]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/ghis2s_log.sh
+        platform = localhost-ghi
+  
+    [[stop_log_monitor]]
+        platform = localhost-ghi
+        script = """
+            cylc stop $CYLC_WORKFLOW_ID --now
+        """
+  
+    [[lisda_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_darun/lisda_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=300
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lisda_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_darun/logs/lisda_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_darun/logs/lisda_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[ldtics_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/ldt_ics/ldtics_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=1
+            --time=120
+            --constraint=mil
+            --mem-per-cpu=40GB
+            --partition=packable
+            --job-name=ldtics_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/ldt_ics/logs/ldtics_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/ldt_ics/logs/ldtics_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=ldtics_run.j
+    [[mf_regrid_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_regrid_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --cpus-per-task=1
+            --job-name=mf_regrid_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_regrid_01_run.j
+            NUM_WORKERS=1
+    [[mf_regrid_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_regrid_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --cpus-per-task=1
+            --job-name=mf_regrid_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_regrid_02_run.j
+            NUM_WORKERS=1
+    [[mf_regrid_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_regrid_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --cpus-per-task=1
+            --job-name=mf_regrid_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_regrid_03_run.j
+            NUM_WORKERS=1
+    [[mf_regrid_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_regrid_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --cpus-per-task=1
+            --job-name=mf_regrid_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_04_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_regrid_04_run.j
+            NUM_WORKERS=1
+    [[mf_regrid_05_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_regrid_05_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --cpus-per-task=1
+            --job-name=mf_regrid_05_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_05_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_05_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_regrid_05_run.j
+            NUM_WORKERS=1
+    [[mf_regrid_06_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_regrid_06_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --cpus-per-task=1
+            --job-name=mf_regrid_06_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_06_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_regrid_06_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_regrid_06_run.j
+            NUM_WORKERS=1
+    [[pr_regrid_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_regrid_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=5
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=48GB
+            --job-name=pr_regrid_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_regrid_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_regrid_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_regrid_run.j
+    [[mf_biascorr_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_biascorr_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=mf_biascorr_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_biascorr_01_run.j
+            NUM_WORKERS=120
+    [[mf_biascorr_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_biascorr_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=mf_biascorr_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_biascorr_02_run.j
+            NUM_WORKERS=120
+    [[mf_biascorr_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_biascorr_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=mf_biascorr_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_biascorr_03_run.j
+            NUM_WORKERS=120
+    [[mf_biascorr_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_biascorr_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=mf_biascorr_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_04_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_biascorr_04_run.j
+            NUM_WORKERS=120
+    [[mf_biascorr_05_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_biascorr_05_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=mf_biascorr_05_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_05_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_05_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_biascorr_05_run.j
+            NUM_WORKERS=120
+    [[mf_biascorr_06_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_biascorr_06_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=mf_biascorr_06_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_06_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_06_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_biascorr_06_run.j
+            NUM_WORKERS=120
+    [[mf_biascorr_07_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_biascorr_07_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=mf_biascorr_07_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_07_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_biascorr_07_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_biascorr_07_run.j
+            NUM_WORKERS=120
+    [[pr_biascorr_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_biascorr_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=pr_biascorr_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_biascorr_01_run.j
+            NUM_WORKERS=120
+    [[pr_biascorr_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_biascorr_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=pr_biascorr_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_biascorr_02_run.j
+            NUM_WORKERS=120
+    [[pr_biascorr_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_biascorr_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=pr_biascorr_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_biascorr_03_run.j
+            NUM_WORKERS=120
+    [[pr_biascorr_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_biascorr_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=pr_biascorr_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_04_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_biascorr_04_run.j
+            NUM_WORKERS=120
+    [[pr_biascorr_05_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_biascorr_05_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=120
+            --job-name=pr_biascorr_05_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_05_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_biascorr_05_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_biascorr_05_run.j
+            NUM_WORKERS=120
+    [[mf_tempdis_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_tempdis_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=3
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=12
+            --job-name=mf_tempdis_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_tempdis_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_tempdis_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_tempdis_01_run.j
+            NUM_WORKERS=12
+    [[mf_tempdis_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/mf_tempdis_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=3
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=12
+            --job-name=mf_tempdis_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_tempdis_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/mf_tempdis_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=mf_tempdis_02_run.j
+            NUM_WORKERS=12
+    [[pr_tempdis_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_tempdis_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=2
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=15
+            --job-name=pr_tempdis_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_tempdis_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_tempdis_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_tempdis_01_run.j
+            NUM_WORKERS=15
+    [[pr_tempdis_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_tempdis_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=2
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=15
+            --job-name=pr_tempdis_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_tempdis_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_tempdis_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_tempdis_02_run.j
+            NUM_WORKERS=15
+    [[pr_tempdis_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/pr_tempdis_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=15
+            --job-name=pr_tempdis_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_tempdis_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/pr_tempdis_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=pr_tempdis_03_run.j
+            NUM_WORKERS=15
+    [[combine_files_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/combine_files_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=360
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=12
+            --job-name=combine_files_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/combine_files_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/bcsd_fcst/logs/combine_files_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=combine_files_run.j
+            NUM_WORKERS=12
+    [[lis_fcst_CanESM5_00_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CanESM5_00_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CanESM5_00_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CanESM5_00_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CanESM5_00_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CanESM5_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CanESM5_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CanESM5_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CanESM5_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CanESM5_01_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CanESM5_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CanESM5_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CanESM5_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CanESM5_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CanESM5_02_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CESM1_00_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CESM1_00_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CESM1_00_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CESM1_00_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CESM1_00_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CESM1_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CESM1_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CESM1_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CESM1_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CESM1_01_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CESM1_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CESM1_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CESM1_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CESM1_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CESM1_02_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CFSv2_00_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CFSv2_00_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CFSv2_00_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_00_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_00_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CFSv2_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CFSv2_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CFSv2_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_01_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CFSv2_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CFSv2_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CFSv2_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_02_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CFSv2_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CFSv2_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CFSv2_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_03_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_CFSv2_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_CFSv2_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_CFSv2_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_CFSv2_04_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_GEOSv2_00_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_GEOSv2_00_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_GEOSv2_00_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GEOSv2_00_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GEOSv2_00_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_GEOSv2_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_GEOSv2_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_GEOSv2_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GEOSv2_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GEOSv2_01_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_GNEMO52_00_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_GNEMO52_00_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_GNEMO52_00_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GNEMO52_00_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GNEMO52_00_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_GNEMO52_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_GNEMO52_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_GNEMO52_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GNEMO52_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GNEMO52_01_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[lis_fcst_GNEMO52_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/lis_fcst_GNEMO52_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --time=420
+            --constraint=mil
+            --ntasks=288 --ntasks-per-socket=48 --ntasks-per-core=1
+            --job-name=lis_fcst_GNEMO52_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GNEMO52_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/lis_fcst/logs/lis_fcst_GNEMO52_02_%j.err
+        [[[environment]]]
+            I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so
+            I_MPI_PMI_VALUE_LENGTH_MAX=288
+    [[s2spost_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=27
+            --time=240
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=9GB
+            --job-name=s2spost_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_01_run.j
+    [[s2spost_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=240
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --job-name=s2spost_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_02_run.j
+    [[s2spost_mon_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=6
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=40GB
+            --job-name=s2spost_mon_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_01_run.j
+    [[s2spost_mon_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=6
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=40GB
+            --job-name=s2spost_mon_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_02_run.j
+    [[s2spost_mon_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=6
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=40GB
+            --job-name=s2spost_mon_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_03_run.j
+    [[s2spost_mon_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=6
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=40GB
+            --job-name=s2spost_mon_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_04_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_04_run.j
+    [[s2spost_mon_05_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_05_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=6
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=40GB
+            --job-name=s2spost_mon_05_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_05_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_05_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_05_run.j
+    [[s2spost_mon_06_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_06_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=6
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=40GB
+            --job-name=s2spost_mon_06_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_06_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_06_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_06_run.j
+    [[s2spost_mon_07_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_07_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=6
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=40GB
+            --job-name=s2spost_mon_07_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_07_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_07_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_07_run.j
+    [[s2spost_mon_08_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_mon_08_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=3
+            --time=180
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=80GB
+            --job-name=s2spost_mon_08_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_08_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_mon_08_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_mon_08_run.j
+    [[s2spost_weekly_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_weekly_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=18
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=14GB
+            --job-name=s2spost_weekly_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_weekly_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_weekly_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_weekly_01_run.j
+    [[s2spost_weekly_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/s2spost_weekly_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=12
+            --time=60
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=20GB
+            --job-name=s2spost_weekly_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_weekly_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2spost/logs/s2spost_weekly_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2spost_weekly_02_run.j
+    [[s2smetric_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=16
+            --job-name=s2smetric_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_01_run.j
+            NUM_WORKERS=16
+    [[s2smetric_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=16
+            --job-name=s2smetric_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_02_run.j
+            NUM_WORKERS=16
+    [[s2smetric_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=16
+            --job-name=s2smetric_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_03_run.j
+            NUM_WORKERS=16
+    [[s2smetric_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=16
+            --job-name=s2smetric_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_04_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_04_run.j
+            NUM_WORKERS=16
+    [[s2smetric_05_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_05_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=16
+            --job-name=s2smetric_05_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_05_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_05_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_05_run.j
+            NUM_WORKERS=16
+    [[s2smetric_weekly_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_weekly_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=10
+            --job-name=s2smetric_weekly_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_weekly_01_run.j
+            NUM_WORKERS=10
+    [[s2smetric_weekly_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_weekly_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=10
+            --job-name=s2smetric_weekly_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_weekly_02_run.j
+            NUM_WORKERS=10
+    [[s2smetric_weekly_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_weekly_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=10
+            --job-name=s2smetric_weekly_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_weekly_03_run.j
+            NUM_WORKERS=10
+    [[s2smetric_weekly_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_weekly_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=10
+            --job-name=s2smetric_weekly_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_04_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_weekly_04_run.j
+            NUM_WORKERS=10
+    [[s2smetric_weekly_05_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_weekly_05_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=10
+            --job-name=s2smetric_weekly_05_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_05_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_05_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_weekly_05_run.j
+            NUM_WORKERS=10
+    [[s2smetric_tiff_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_tiff_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=16
+            --job-name=s2smetric_tiff_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_tiff_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_tiff_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_tiff_run.j
+            NUM_WORKERS=16
+    [[s2smetric_weekly_tiff_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/s2smetric_weekly_tiff_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=60
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=10
+            --job-name=s2smetric_weekly_tiff_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_tiff_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2smetric/logs/s2smetric_weekly_tiff_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2smetric_weekly_tiff_run.j
+            NUM_WORKERS=10
+    [[s2splots_01_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/s2splots_01_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks-per-node=4
+            --time=120
+            --constraint=mil
+            --partition=packable
+            --mem-per-cpu=60GB
+            --job-name=s2splots_01_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_01_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_01_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2splots_01_run.j
+    [[s2splots_02_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/s2splots_02_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=120
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=7
+            --job-name=s2splots_02_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_02_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_02_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2splots_02_run.j
+            NUM_WORKERS=7
+    [[s2splots_03_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/s2splots_03_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=120
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=7
+            --job-name=s2splots_03_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_03_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_03_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2splots_03_run.j
+            NUM_WORKERS=7
+    [[s2splots_04_run]]
+        script = /discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/s2splots_04_run.sh
+        [[[directives]]]
+            --account=s1189
+            --nodes=1
+            --ntasks=1
+            --time=120
+            --constraint=mil
+            --mem=240GB
+            --cpus-per-task=5
+            --job-name=s2splots_04_
+            --output=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_04_%j.out
+            --error=/discover/nobackup/projects/ghilis/karsenau/E2ES_7.7_CYLC_12012025/scratch/202512/s2splots/logs/s2splots_04_%j.err
+        [[[environment]]]
+            USE_CYLC_ENV=0
+            PYTHONPATH=/discover/nobackup/projects/ghilis/karsenau/LISF_7.7/lis/utils/usaf/S2S/
+            SCRIPT_NAME=s2splots_04_run.j
+            NUM_WORKERS=5

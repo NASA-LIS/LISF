@@ -42,6 +42,24 @@ struct rmoderunnode
 } ;
 struct rmoderunnode* rmoderun_table = NULL; 
 
+struct rmodestepnode
+{
+  char *name;
+  void (*func)();
+
+  struct rmodestepnode* next;
+} ;
+struct rmodestepnode* rmodestep_table = NULL;
+
+struct rmoderesetnode
+{
+  char *name;
+  void (*func)();
+
+  struct rmoderesetnode* next;
+} ;
+struct rmoderesetnode* rmodereset_table = NULL;
+
 struct rmodefinalnode
 { 
   char *name;
@@ -200,6 +218,155 @@ void FTN(lisrun)(char *j,int len)
     }
   }
   current->func(); 
+}
+
+//BOP
+// !ROUTINE: registerlisstep
+// \label{registerlisstep}
+//
+// !INTERFACE:
+void FTN(registerlisstep)(char *j, void (*func)(),int len)
+//
+// !DESCRIPTION:
+//  Makes an entry in the registry for the LIS
+//  single step run method for a certain running mode.
+//
+// The arguments are:
+// \begin{description}
+//  \item[j]
+//   name of the running mode
+// \end{description}
+//EOP
+{
+  int len1;
+  struct rmodestepnode* current;
+  struct rmodestepnode* pnode;
+  // create node
+
+  len1 = len + 1; // ensure that there is space for terminating null
+  pnode=(struct rmodestepnode*) malloc(sizeof(struct rmodestepnode));
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
+  pnode->func = func;
+  pnode->next = NULL;
+
+  if(rmodestep_table == NULL){
+    rmodestep_table = pnode;
+  }
+  else{
+    current = rmodestep_table;
+    while(current->next!=NULL){
+      current = current->next;
+    }
+    current->next = pnode;
+  }
+}
+//BOP
+// !ROUTINE: lisstep
+// \label{lisstep}
+//
+// !INTERFACE:
+void FTN(lisstep)(char *j,int len)
+//
+// !DESCRIPTION:
+//  Invokes the LIS single step run method from the registry
+//  for the specified running mode
+//
+// The arguments are:
+// \begin{description}
+//  \item[j]
+//   name of the running mode
+// \end{description}
+//EOP
+{
+  struct rmodestepnode* current;
+
+  current = rmodestep_table;
+  while(strcmp(current->name,j)!=0){
+    current = current->next;
+    if(current==NULL) {
+      printf("****************Error****************************\n");
+      printf("run step routine for runmode %s is not defined\n",j);
+      printf("program will seg fault.....\n");
+      printf("****************Error****************************\n");
+    }
+  }
+  current->func();
+}
+
+
+//BOP
+// !ROUTINE: registerlisreset
+// \label{registerlisreset}
+//
+// !INTERFACE:
+void FTN(registerlisreset)(char *j, void (*func)(),int len)
+//
+// !DESCRIPTION:
+//  Makes an entry in the registry for the LIS
+//  reset run method for a certain running mode.
+//
+// The arguments are:
+// \begin{description}
+//  \item[j]
+//   name of the running mode
+// \end{description}
+//EOP
+{
+  int len1;
+  struct rmoderesetnode* current;
+  struct rmoderesetnode* pnode;
+  // create node
+
+  len1 = len + 1; // ensure that there is space for terminating null
+  pnode=(struct rmoderesetnode*) malloc(sizeof(struct rmoderesetnode));
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
+  pnode->func = func;
+  pnode->next = NULL;
+
+  if(rmodereset_table == NULL){
+    rmodereset_table = pnode;
+  }
+  else{
+    current = rmodereset_table;
+    while(current->next!=NULL){
+      current = current->next;
+    }
+    current->next = pnode;
+  }
+}
+//BOP
+// !ROUTINE: lisreset
+// \label{lisreset}
+//
+// !INTERFACE:
+void FTN(lisreset)(char *j,int len)
+//
+// !DESCRIPTION:
+//  Invokes the LIS reset run method from the registry
+//  for the specified running mode
+//
+// The arguments are:
+// \begin{description}
+//  \item[j]
+//   name of the running mode
+// \end{description}
+//EOP
+{
+  struct rmoderesetnode* current;
+
+  current = rmodereset_table;
+  while(strcmp(current->name,j)!=0){
+    current = current->next;
+    if(current==NULL) {
+      printf("****************Error****************************\n");
+      printf("reset run routine for runmode %s is not defined\n",j);
+      printf("program will seg fault.....\n");
+      printf("****************Error****************************\n");
+    }
+  }
+  current->func();
 }
 
 //BOP

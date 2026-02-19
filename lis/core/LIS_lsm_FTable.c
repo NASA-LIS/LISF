@@ -1962,63 +1962,6 @@ void FTN(lsmdaupdatestate)(char *j, int *n, void *LSM_State, void *LSM_Incr_Stat
 }
 
 //BOP
-// !ROUTINE: registerwritestatevar
-// \label{registerwritestatevar}
-// 
-// !INTERFACE:
-//void FTN(registerwritestatevar)(char *j, int *j, void (*func)(int *, int*, void*),int len)
-//  
-// !DESCRIPTION: 
-//  Makes an entry in the registry for the routine 
-//  for obtaining the specified prognostic variables from the 
-//  land surface model 
-// 
-//  \begin{description}
-//  \item[j]
-//   name of the LSM
-//  \item[j]
-//   index of the variable
-//  \end{description}
-//EOP
-//{ 
-//  ft_check_index(*i, FT_MAX_LSM, "registerwritestatevar");
-//  ft_check_index(*j, FT_MAX_DAVAROBS, "registerwritestatevar");
-//  wrtvar[*i][*j].func = func; 
-//}
-//BOP
-// !ROUTINE: writelsmstatevar
-// \label{writelsmstatevar}
-// 
-// !INTERFACE:
-//void FTN(writelsmstatevar)(char *j, int *j, int *ftn, int *n, void *state)
-//  
-// !DESCRIPTION: 
-//  Invokes the routine from the registry for obtaining
-//  the specified prognostic variables from the land surface model
-// 
-//  \begin{description}
-//  \item[j]
-//   name of the LSM
-//  \item[j]
-//   index of the variable
-//  \item[n]
-//   index of the nest
-//  \item[statevars]
-//   pointer to the prognostic variable array
-//  \end{description}
-//EOP
-//{ 
-//  if(wrtvar[*i][*j].func==NULL) {
-//    printf("****************Error****************************\n"); 
-//    printf("routine that writes state prognostic variables for lsm %d and variable %d is not defined \n",*i,*j); 
-//    printf("program will segfault.....\n"); 
-//    printf("****************Error****************************\n"); 
-//    exit;
-//  }
-//  wrtvar[*i][*j].func(ftn, n, state); 
-//}
-
-//BOP
 // !ROUTINE: registerlsmcplsetexport
 // \label{registerlsmcplsetexport}
 // 

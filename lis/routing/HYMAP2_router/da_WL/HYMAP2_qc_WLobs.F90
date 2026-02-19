@@ -77,6 +77,7 @@ subroutine HYMAP2_qc_WLobs(n,k,OBS_State)
 end subroutine HYMAP2_qc_WLobs
 
 
+#if 0
 !BOP
 ! !ROUTINE: HYMAP2_convertRoutingSpaceToObsSpace
 ! \label{HYMAP2_convertRoutingSpaceToObsSpace}
@@ -187,3 +188,4 @@ end subroutine HYMAP2_qc_WLobs
 
  
   end subroutine HYMAP2_convertRoutingSpaceToObsSpace
+#endif

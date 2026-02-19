@@ -67,6 +67,12 @@ module LISWRFexport_module
      real, allocatable :: infxsrt(:,:)
      real, allocatable :: soldrain(:,:)
 #endif
+#ifdef PARFLOW
+     real, allocatable :: wtrflx1(:,:)
+     real, allocatable :: wtrflx2(:,:)
+     real, allocatable :: wtrflx3(:,:)
+     real, allocatable :: wtrflx4(:,:)
+#endif
 
      real, allocatable :: avgsurft_t(:)
      real, allocatable :: qh_t(:)
@@ -110,6 +116,12 @@ module LISWRFexport_module
 #ifdef WRF_HYDRO
      real, allocatable :: infxsrt_t(:)
      real, allocatable :: soldrain_t(:)
+#endif
+#ifdef PARFLOW
+     real, allocatable :: wtrflx1_t(:)
+     real, allocatable :: wtrflx2_t(:)
+     real, allocatable :: wtrflx3_t(:)
+     real, allocatable :: wtrflx4_t(:)
 #endif
   end type liswrfexport
 

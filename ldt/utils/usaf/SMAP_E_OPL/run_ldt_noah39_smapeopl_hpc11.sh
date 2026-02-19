@@ -39,13 +39,13 @@ fi
 
 # Environment
 module use --append /ccs/home/emkemp/hpc11/privatemodules
-module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12
-module load afw-python/3.11-202406
+module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0
+module load afw-python/3.11-202511
 
 # Paths on local system. Must be customized before running script.
-SCRIPTDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/ldt/noah39_smap_e_opl/scripts
-BINDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/ldt/noah39_smap_e_opl/bin
-TMPLDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/ldt/noah39_smap_e_opl/tmpl
+SCRIPTDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/nrt_ldt_noah39_smap_e_opl/work
+BINDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/nrt_ldt_noah39_smap_e_opl/work
+TMPLDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/nrt_ldt_noah39_smap_e_opl/work
 
 # Get the command line arguments to specify the training period
 if [ -z "$1" ] ; then

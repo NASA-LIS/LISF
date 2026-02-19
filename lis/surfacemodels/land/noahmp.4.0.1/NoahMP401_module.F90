@@ -343,6 +343,8 @@ module NoahMP401_module
 !     veg 2m exchange coefficient. unit: -
 !   \item[chb2]
 !     bare 2m exchange coefficient. unit: -
+!   \item[wtrflx]
+!    total water flux. unit: kg m-2 s-1
 !   \end{description}
 !
 ! !REVISION HISTORY:
@@ -517,6 +519,9 @@ module NoahMP401_module
 	real               :: sfcheadrt
 	real               :: infxs1rt
 	real               :: soldrain1rt
+#ifdef PARFLOW
+        real, pointer      :: wtrflx(:)
+#endif
  
     end type noahmp401dec
 

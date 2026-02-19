@@ -7,7 +7,6 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-#include "LIS_misc.h"
 
 module RAPID_routingMod
 !BOP
@@ -25,6 +24,7 @@ module RAPID_routingMod
 ! 17 Mar 2021: Yeosang Yoon: Initial implementation in LIS based on the 
 !                            RAPID offline routing code. 
 ! 25 Oct 2022: Yeosang Yoon: Support to run with LSM ensemble mean runoff variables
+! 13 Jan 2023: Yeosang Yoon: Support to run with ensemble mode
 ! 
 ! !USES: 
   use ESMF
@@ -86,8 +86,9 @@ module RAPID_routingMod
      real,allocatable    :: riv_tot_lon(:)
      real,allocatable    :: riv_tot_lat(:)
 
-     real,allocatable    :: Qout(:)  ! instantaneous flow 
-     integer             :: useens   ! ensemble mode
+     real,allocatable    :: Qout(:)        ! instantaneous flow 
+     real,allocatable    :: Qout_ens(:,:)  ! river outflow [m3/s], for ensemble mode
+     integer             :: useens         ! ensemble mode
 end type RAPID_routing_dec
 
   type(RAPID_routing_dec), allocatable :: RAPID_routing_struc(:)
@@ -331,15 +332,6 @@ contains
             "RAPID run in ensemble mode: not defined")
     enddo
 
-    ! ensemble mode 0: open loop, ensemble mode 1: ensemble mean 
-    ! EMK...Add do loop
-    do n=1, LIS_rc%nnest
-       if(RAPID_routing_struc(n)%useens>1) then
-          write(LIS_logunit,*) "[ERR] Currently RAPID only supports ensemble modes 0 or 1" 
-          call LIS_endrun()
-       endif
-    end do
-
     ! checks the size of static data for RAPID
     do n=1, LIS_rc%nnest
        call RAPID_check_domain_size(n)
@@ -356,10 +348,15 @@ contains
        RAPID_routing_struc(n)%riv_tot_lat=-9999
     enddo
 
-    ! for RAPID restart
+    ! for initializing river outflow (also needs it for restart mode)
     do n=1, LIS_rc%nnest
-       allocate(RAPID_routing_struc(n)%Qout(RAPID_routing_struc(n)%n_riv_bas))
-       RAPID_routing_struc(n)%Qout=0
+       if(RAPID_routing_struc(n)%useens==2) then
+          allocate(RAPID_routing_struc(n)%Qout_ens(RAPID_routing_struc(n)%n_riv_bas,LIS_rc%nensem(n)))
+          RAPID_routing_struc(n)%Qout_ens=0.0
+       else
+          allocate(RAPID_routing_struc(n)%Qout(RAPID_routing_struc(n)%n_riv_bas))
+          RAPID_routing_struc(n)%Qout=0.0
+       endif
     enddo
      
     do n=1, LIS_rc%nnest

@@ -1,0 +1,58 @@
+#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
+
+#Energy balance components
+Qle:          0  W/m2    UP   1 0 0 1 121 100      # Latent Heat Flux (W/m2)
+Qh:           0  W/m2    UP   1 0 0 1 122 100      # Sensible Heat Flux (W/m2)
+Qg:           0  W/m2    DN   1 0 0 1 155 100      # Ground Heat Flux (W/m2)
+
+#Water balance components
+TotalPrecip:  1  kg/m2   DN   3 0 0 1  61 10000    # Total Precipitation rate (kg/m2s)
+Evap:         0  kg/m2s  UP   1 0 0 1 204 10000    # Total Evapotranspiration (kg/m2s)
+Qs:           1  kg/m2s  OUT  1 0 0 1 235 10000    # Surface runoff (kg/m2s)
+Qsb:          1  kg/m2s  OUT  1 0 0 1 234 10000    # Subsurface runoff (kg/m2s)
+RHMin:        0  %       -    0 0 0 1 210 10       # Minimum 2-meter relative humidity (-)
+
+#Surface state variables
+AvgSurfT:     0  K       -    2 0 0 1  11 100      # Average surface temperature (K)
+Albedo:       0  %       -    1 0 0 1  84 1000     # Surface Albedo (-)
+SWE:          1  kg/m2   -    0 0 0 1  65 10000    # Snow Water Equivalent (kg/m2)
+
+#Subsurface state variables
+SoilMoist:    1  m3/m3   -    2 0 0 4 201 1000     # Average layer soil moisture (kg/m2)
+SoilTemp:     1  K       -    2 0 0 4  85 1000     # Average layer soil temperature (K)
+SmLiqFrac:    1  m3/m3   -    0 0 0 4  10 1000     # Average layer fraction of liquid moisture (-)
+RelSMC:       1  -       -    0 0 0 4 194 1000     # Relative soil moisture
+
+#Evaporation components
+PotEvap:      0  W/m2    UP   1 0 0 1 208 100      # Potential Evapotranspiration (kg/m2s)
+CanopInt:     0  kg/m2   -    0 0 0 1 207 1000     # Total canopy water storage (kg/m2)
+
+#Cold season processes
+Snowcover:    1  %       -    0 0 0 1 238 100      # Snow Cover (-) or percentage Snow Coverage
+SnowDepth:    1  m       -    0 0 0 1  66 1000     # Snow Depth (m)
+
+#Forcings
+Wind_f:       0  m/s     -    2 0 0 1 209 10000    # Near surface Wind (m/s)
+Tair_f:       0  K       -    2 1 0 1  11 10000    # Near surface air temperature
+Qair_f:       0  kg/kg   -    2 0 0 1  51 10000000 # Near surface specific humidity
+Psurf_f:      0  Pa      -    2 0 0 1   1 1000     # Surface pressure
+SWdown_f:     0  W/m2    DN   2 0 0 1 145 10000    # Surface incident shortwave radiation
+LWdown_f:     0  W/m2    DN   2 0 0 1 144 100000   # Surface incident longwave radiation
+
+#Parameters
+Landmask:     0  -       -    0 0 0 1  81 1        # Land Mask (0 - Water, 1 - Land)
+Landcover:    0  -       -    0 0 0 1 241 1        # Land cover
+Soiltype:     0  -       -    0 0 0 1 205 1        # Soil type
+Elevation:    0  m       -    0 0 0 1 233 100      # Elevation
+Greenness:    0  -       -    0 0 0 1 193 1000     # Greenness
+
+# HyMAP-2 Routing
+Streamflow:      1 m3/s    -     1 0 0 1 333 10    # Streamflow
+SWS:             1 mm      -     1 0 0 1 333 10    # Surface water storage
+SurfElev:        0 m       -     1 0 0 1 333 10    # SurfElev
+RiverStor:       0 m3      -     1 0 0 1 333 10    # RiverStorage
+RiverDepth:      0 m       -     1 0 0 1 333 10    # RiverDepth
+RiverVelocity:   0 m/s     -     1 0 0 1 333 10    # RiverVelocity
+FloodStor:       0 m3      -     1 0 0 1 333 10    # FloodStorage
+FloodedFrac:     1 -       -     1 0 0 1 333 10    # FloodedFrac
+FloodedArea:     1 m2      -     1 0 0 1 333 10    # FloodedArea

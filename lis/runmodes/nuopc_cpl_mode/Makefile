@@ -143,6 +143,17 @@ override ESMF_CXXCOMPILECPPFLAGS += -DWRF_HYDRO
 endif
 endif
 
+# #################################
+# Compile with PARFLOW directives
+# #################################
+
+ifneq ($(PARFLOW),)
+ifneq ($(PARFLOW),0)
+override ESMF_F90COMPILECPPFLAGS += -DPARFLOW
+override ESMF_CXXCOMPILECPPFLAGS += -DPARFLOW
+endif
+endif
+
 # ##################################
 # Compile with GSM_EXTLND directives
 # ##################################

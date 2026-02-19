@@ -1,11 +1,11 @@
 = Step 4: Generate LSM OL Cumulative Density Function-based Files (LDT)
 
 :step-label: Step 4
-:download-filename: testcase4_ldt_lsmcdf_2023.tar.gz
-:input-filesize-compressed: 384KB
-:input-filesize-unpacked: 803KB
+:download-filename: walkthrough_step4.tar.gz
+:input-filesize-compressed: 366KB
+:input-filesize-unpacked: 805KB
 :ldt-run-dir: DA_proc_LSM
-:ldt-config-filename: ldt.config.noah36_cdf
+:ldt-config-filename: ldt.config.step4.noah36_cdf
 
 == Overview
 
@@ -30,21 +30,22 @@ include::download_input_files.adoc[]
 
 The following files and directories were added to your common working directory `$WORKING_DIR`:
 
-[cols="2*",frame=topbot,stripes=odd]
+[cols="2*",frame=topbot,stripes=odd,subs=attributes]
 [%autowidth]
 |===
-|`DA_proc_LSM/`                   |A directory containing the files below
-|`ldt.config.noah36_cdf`          |The LDT config file for this step
+|`{ldt-config-filename}`          |The LDT config file for this step
+|`target_step4/`                  |A directory containing the files below
 |`target_ldtlog.0000`             |The target LDT log file
+|`target_MaskParamFill.log`       |The target mask-parameter log file
 |`target_cdf_noah36_domain.nc`    |The target LDT-generated Noah LSM _domain_ file
 |`target_cdf_noah36.nc`           |The target LDT-generated Noah LSM _CDF_ file
-|`noah36_cdf.xdf`                 |GrADS description file for viewing `*cdf_noah36.nc` output and target files
+|`target_cdf_noah36.xdf`          |GrADS description file for viewing `*cdf_noah36.nc` output and target files
 |`plot_noah36_cdf.gs`             |GrADS script that plots an X-Y plot of `*cdf_noah36.nc` output and target files
 |===
 
 == The LDT Configuration File
 
-Review the contents of `DA_proc_LSM/ldt.config.noah36_cdf` to view the
+Review the contents of `{ldt-config-filename}` to view the
 configuration settings used for this step:
 
 [source,shell]
@@ -63,7 +64,7 @@ Apply external mask:                0
 External mask director:             none
 ...
 LIS soil moisture output model name:        "Noah.3.6"
-LIS soil moisture output directory:         ../OL_OUTPUT/
+LIS soil moisture output directory:         ./run_step2
 LIS soil moisture output format:            "netcdf"
 LIS soil moisture output methodology:       "2d gridspace"
 LIS soil moisture output naming style:      "3 level hierarchy"
@@ -87,7 +88,7 @@ include::running_ldt.adoc[]
 
 == LDT Output Files
 
-During this run LDT produced a domain file, `cdf_noah36_domain.nc`, and a LSM CDF file,  `cdf_noah36.nc` in the `DA_proc_LSM` directory. If GrADS is installed, use the provided GrADS descriptor files to plot the output shown below.
+During this run LDT produced a domain file, `cdf_noah36_domain.nc`, and a LSM CDF file,  `cdf_noah36.nc` in the `run_step4` directory. If GrADS is installed, use the provided GrADS descriptor files to plot the output shown below.
 
 [source,shell]
 ----

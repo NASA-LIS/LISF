@@ -1,0 +1,94 @@
+# Overall driver options
+LDT running mode:                       "Ensemble restart processing"
+Processed LSM parameter filename:       ./output/lis_input.global.noah39.nc
+
+LIS number of nests:                    1
+Number of surface model types:          2
+Surface model types:                    "LSM"  "Openwater"
+Land surface model:                     "Noah.3.9"
+Routing model:                          "RAPID"
+Lake model:                             none
+Water fraction cutoff value:            0.5
+Incorporate crop information:           .false.
+Number of met forcing sources:          0
+Met forcing sources:                    none
+LDT diagnostic file:                    ./output/ldtlog.global.noah39.rapid
+Mask-parameter fill diagnostic file:    ./output/MaskParamFill.global.noah39.rapid.log
+LDT output directory:                   OUTPUT
+Undefined value:                        -9999.0
+
+#Rotated GALWEM 10-km domain
+Map projection of the LIS domain:       latlon
+Run domain lower left lat:               -89.9531250
+Run domain lower left lon:              -179.9296875
+Run domain upper right lat:               89.9531250
+Run domain upper right lon:              179.9296875
+Run domain resolution (dx):                0.1406250
+Run domain resolution (dy):                0.0937500
+
+#Runtime options
+Number of ensembles per tile:           1
+
+#The following options are used for subgrid tiling based on vegetation
+Maximum number of surface type tiles per grid:    1
+Minimum cutoff percentage (surface type tiles):   0.05
+Maximum number of soil texture tiles per grid:    1
+Minimum cutoff percentage (soil texture tiles):   0.05
+Maximum number of soil fraction tiles per grid:   1
+Minimum cutoff percentage (soil fraction tiles):  0.05
+Maximum number of elevation bands per grid:       1
+Minimum cutoff percentage (elevation bands):      0.05
+Maximum number of slope bands per grid:           1
+Minimum cutoff percentage (slope bands):          0.05
+Maximum number of aspect bands per grid:          1
+Minimum cutoff percentage (aspect bands):         0.05
+
+# Ensemble restart options
+LIS restart source:                               "Routing"
+Ensemble restart generation mode:                 "upscale"
+Number of ensembles per tile (input restart):     1
+Number of ensembles per tile (output restart):    10
+Ensemble restart generation sampling strategy:    "random sampling"
+
+Input restart filename:                           ./input/LIS_RST_RAPID_router_202503090000.d01.nc
+Output restart filename:                          ./output/noah39/LIS_RST_RAPID_router_202503090000_EN10.d01.nc
+
+# --------------------------------------------------------
+#Landcover parameter inputs
+Landcover data source:                  "MODIS_Native"
+Landcover classification:               "IGBPNCEP"
+Landcover file:                         ./input/LS_PARAMETERS/noah_2dparms/igbp.bin
+Landcover spatial transform:            tile
+Landcover map projection:               latlon
+Landcover fill option:                  neighbor
+Landcover fill radius:                  5
+Landcover fill value:                   10
+
+#Landmask parameter inputs
+Create or readin landmask:              "readin"
+Landmask data source:                   "UKMO_CAP_Netcdf"
+Landmask file:                          ./input/cap2ldt_ps41.nc
+Landmask spatial transform:             none
+Landmask map projection:                latlon
+Landmask fill option:                   none
+Landmask lower left lat:                 -89.9531250
+Landmask lower left lon:                -179.9296875
+Landmask upper right lat:                 89.9531250
+Landmask upper right lon:                179.9296875
+Landmask resolution (dx):                  0.1406250
+Landmask resolution (dy):                  0.0937500
+
+Soil fraction data source:              none
+Soils spatial transform:                none
+Soils map projection:                   latlon
+Porosity data source:                   none
+Soil texture data source:               none
+Elevation data source:                  none
+Slope data source:                      none
+Aspect data source:                     none
+Albedo data source:                     none
+Max snow albedo data source:            none
+Greenness data source:                  none
+Slope type data source:                 none
+Bottom temperature data source:        none
+

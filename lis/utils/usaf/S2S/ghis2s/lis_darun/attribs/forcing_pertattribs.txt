@@ -1,0 +1,7 @@
+#ptype   std   std_max   zeromean   tcorr   xcorr   ycorr   ccorr
+Incident Shortwave Radiation Level 001
+ 1       0.30    2.5        1       86400     0       0      1.0  -0.5  -0.8
+Incident Longwave Radiation Level 001
+ 0       50.0    2.5        1       86400     0       0     -0.5   1.0   0.5
+Rainfall Rate Level 001
+ 1       0.50    2.5        1       86400     0       0     -0.8   0.5   1.0

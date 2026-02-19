@@ -24,6 +24,7 @@
 !                        ESPC-D or GOFS data.  Also fixed uninitialized
 !                        variable.
 ! 15 Oct 2024  Eric Kemp Updated error_message logic.
+! 18 Mar 2025  Eric Kemp Fixed bug in checking for earlier 12Z analysis.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -2223,10 +2224,11 @@ contains
          write(LDT_logunit,*) &
               '[WARN] Cannot find prior USAFSI analysis'
          ierr = 2
-      else if (.not. found_12z) then
-      !EMK The above else if looks wrong, but using the below, commented-out
-      !else if changes the answer.  For now, use the above.
-      !else if (.not. found_12z .and. runcycle .eq. 12) then
+      ! Only return error for missing 12z analysis if
+      ! current cycle is 12z.  This avoids erroneously searching for
+      ! 0.25 deg SNODEP data, and applying climo for missing or zero
+      ! values.
+      else if (.not. found_12z .and. runcycle .eq. 12) then
          write(LDT_logunit,*) &
               '[WARN] Cannot find prior 12Z USAFSI analysis'
          ierr = 1

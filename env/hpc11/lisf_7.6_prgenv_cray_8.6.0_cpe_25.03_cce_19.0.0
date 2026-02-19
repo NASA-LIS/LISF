@@ -1,0 +1,205 @@
+#%Module1.0###################################################################
+
+proc ModulesHelp { } {
+    puts stderr "\t[module-info name] - loads the LISF_7.6_PRGENV_CRAY_8.6.0_CPE_25.03_CCE_19.0.0 env"
+    puts stderr ""
+    puts stderr "This is for use on HPC-11 running Cray/SUSE 15 SP6."
+    puts stderr ""
+    puts stderr "\tThe following env variables are set:"
+    puts stderr "\t\tDEV_ENV"
+    puts stderr "\t\tCRAYPE_LINK_TYPE"
+    puts stderr "\t\tLIS_ARCH"
+    puts stderr "\t\tLIS_SPMD"
+    puts stderr "\t\tLIS_FC"
+    puts stderr "\t\tLIS_CC"
+    puts stderr "\t\tLIS_RPC"
+    puts stderr "\t\tLIS_OPENJPEG"
+    puts stderr "\t\tLIS_ECCODES"
+    puts stderr "\t\tLIS_NETCDF"
+    puts stderr "\t\tLIS_HDF4"
+    puts stderr "\t\tLIS_HDFEOS"
+    puts stderr "\t\tLIS_HDF5"
+    puts stderr "\t\tLIS_MODESMF"
+    puts stderr "\t\tLIS_LIBESMF"
+    #puts stderr "\t\tLIS_MINPACK"
+    #puts stderr "\t\tLIS_CRTM"
+    #puts stderr "\t\tLIS_CRTM_PROF"
+    #puts stderr "\t\tLIS_CMEM"
+    #puts stderr "\t\tLIS_LAPACK"
+    puts stderr "\t\tLIS_PETSC"
+    puts stderr "\t\tLDT_ARCH"
+    puts stderr "\t\tLDT_FC"
+    puts stderr "\t\tLDT_CC"
+    puts stderr "\t\tLDT_RPC"
+    puts stderr "\t\tLDT_OPENJPEG"
+    puts stderr "\t\tLDT_ECCODES"
+    puts stderr "\t\tLDT_NETCDF"
+    puts stderr "\t\tLDT_HDF4"
+    puts stderr "\t\tLDT_HDFEOS"
+    puts stderr "\t\tLDT_HDF5"
+    puts stderr "\t\tLDT_MODESMF"
+    puts stderr "\t\tLDT_LIBESMF"
+    puts stderr "\t\tLDT_GDAL"
+    puts stderr "\t\tLDT_FORTRANGIS"
+    puts stderr "\t\tLDT_LIBGEOTIFF"
+    puts stderr "\t\tLDT_LIBTIFF"
+    puts stderr "\t\tLVT_ARCH"
+    puts stderr "\t\tLVT_FC"
+    puts stderr "\t\tLVT_CC"
+    puts stderr "\t\tLVT_RPC"
+    puts stderr "\t\tLVT_OPENJPEG"
+    puts stderr "\t\tLVT_ECCODES"
+    puts stderr "\t\tLVT_NETCDF"
+    puts stderr "\t\tLVT_HDF4"
+    puts stderr "\t\tLVT_HDFEOS"
+    puts stderr "\t\tLVT_HDF5"
+    puts stderr "\t\tLVT_MODESMF"
+    puts stderr "\t\tLVT_LIBESMF"
+    puts stderr "\t\tLVT_GDAL"
+    puts stderr "\t\tLVT_FORTRANGIS"
+    puts stderr ""
+    puts stderr "\tThe following modules are loaded:"
+    puts stderr "\t\tcpe/25.03"
+    puts stderr ""
+}
+
+#
+# Default modules
+#
+#Currently Loaded Modules:
+#  1) craype-x86-rome
+#  2) libfabric/1.22.0
+#  3) craype-network-ofi
+#  4) perftools-base/24.11.0
+#  5) xpmem/2.11.3-1.3_gdbda01a1eb3d
+#  6) cray-pmi/6.1.15
+#  7) cce/18.0.1
+#  8) craype/2.7.33
+#  9) cray-dsmml/0.3.0
+# 10) cray-mpich/8.1.31
+# 11) cray-libsci/24.11.0
+# 12) PrgEnv-cray/8.6.0
+# 13) TimeZoneUTC
+# 14) xsudo
+# 15) Core/24.06
+# 16) DefApps
+# 17) slurm
+
+module load cpe/25.03
+
+#Currently Loaded Modules:
+#  1) craype-x86-rome
+#  2) libfabric/1.22.0
+#  3) craype-network-ofi
+#  4) xpmem/2.11.3-1.3_gdbda01a1eb3d
+#  5) TimeZoneUTC
+#  6) xsudo
+#  7) Core/24.06
+#  8) DefApps
+#  9) slurm
+# 10) PrgEnv-cray/8.6.0
+# 11) cce/19.0.0
+# 12) cray-dsmml/0.3.1
+# 13) cray-libsci/25.03.0
+# 14) cray-mpich/8.1.32
+# 15) cray-pmi/6.1.15
+# 16) craype/2.7.34
+# 17) perftools-base/25.03.0
+# 18) cpe/25.03
+
+setenv CRAYPE_LINK_TYPE dynamic
+
+set   def_lis_rpc         /lib64/libtirpc.so.3
+set   def_lis_hdf5        /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/hdf5/1.14.6_cce-19.0.0
+set   def_lis_netcdf      /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/netcdf/4.9.3_cce-19.0.0
+set   def_lis_openjpeg    /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/openjpeg/2.5.3_cce-19.0.0
+set   def_lis_eccodes     /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/eccodes/2.42.0_cce-19.0.0
+set   def_lis_modesmf     /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/esmf/8.9.0_cce-19.0.0_cray-mpich-8.1.32/mod/modO/Unicos.cce.64.mpi.default
+set   def_lis_libesmf     /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/esmf/8.9.0_cce-19.0.0_cray-mpich-8.1.32/lib/libO/Unicos.cce.64.mpi.default
+set   def_lis_hdf4        /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/hdf4/4.3.1_cce-19.0.0
+set   def_lis_hdfeos      /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/hdfeos2/3.0_cce-19.0.0
+set   def_ldt_libgeotiff  /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/geotiff/1.7.4_cce-19.0.0
+set   def_lvt_proj        /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/proj/9.6.2_cce-19.0.0
+set   def_lvt_gdal        /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/gdal/3.11.3_cce-19.0.0
+set   def_lvt_fortrangis  /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/fortrangis/3.0-1_cce-19.0.0
+set   def_lis_minpack     ""
+set   def_lis_crtm        ""
+set   def_lis_crtm_prof   ""
+set   def_lis_cmem        ""
+set   def_lis_lapack      ""
+#set   def_lis_petsc       /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/petsc/3.23.4_cce-19.0.0
+#set   def_lis_petsc       /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/petsc/3.22.5_cce-19.0.0
+#set   def_lis_petsc       /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/petsc/3.21.6_cce-19.0.0
+set   def_lis_petsc       /lustre/active/nwp601/proj-shared/jvgeiger/lib/sles-15.6/prgenv-cray-8.6.0_cpe-25.03_cce-19.0.0/petsc/3.20.1_cce-19.0.0
+
+
+setenv   DEV_ENV         LISF_7.6_PRGENV_CRAY_8.6.0_CPE_25.03_CCE_19.0.0
+setenv   LIS_ARCH        cray_cray
+setenv   LIS_SPMD        parallel
+setenv   LIS_FC          ftn
+setenv   LIS_CC          cc
+setenv   LIS_RPC         $def_lis_rpc
+setenv   LIS_HDF5        $def_lis_hdf5
+setenv   LIS_NETCDF      $def_lis_netcdf
+setenv   LIS_OPENJPEG    $def_lis_openjpeg
+setenv   LIS_ECCODES     $def_lis_eccodes
+setenv   LIS_MODESMF     $def_lis_modesmf
+setenv   LIS_LIBESMF     $def_lis_libesmf
+setenv   LIS_HDF4        $def_lis_hdf4
+setenv   LIS_HDFEOS      $def_lis_hdfeos
+setenv   LIS_MINPACK     $def_lis_minpack
+setenv   LIS_CRTM        $def_lis_crtm
+setenv   LIS_CRTM_PROF   $def_lis_crtm_prof
+setenv   LIS_CMEM        $def_lis_cmem
+setenv   LIS_LAPACK      $def_lis_lapack
+setenv   LIS_PETSC       $def_lis_petsc
+
+
+setenv   LDT_ARCH        cray_cray
+setenv   LDT_FC          ftn
+setenv   LDT_CC          cc
+setenv   LDT_RPC         $def_lis_rpc
+setenv   LDT_HDF5        $def_lis_hdf5
+setenv   LDT_NETCDF      $def_lis_netcdf
+setenv   LDT_OPENJPEG    $def_lis_openjpeg
+setenv   LDT_ECCODES     $def_lis_eccodes
+setenv   LDT_MODESMF     $def_lis_modesmf
+setenv   LDT_LIBESMF     $def_lis_libesmf
+setenv   LDT_HDF4        $def_lis_hdf4
+setenv   LDT_HDFEOS      $def_lis_hdfeos
+setenv   LDT_LIBGEOTIFF  $def_ldt_libgeotiff
+setenv   LDT_GDAL        $def_lvt_gdal
+setenv   LDT_FORTRANGIS  $def_lvt_fortrangis
+
+
+setenv   LVT_ARCH        cray_cray
+setenv   LVT_FC          ftn
+setenv   LVT_CC          cc
+setenv   LVT_RPC         $def_lis_rpc
+setenv   LVT_HDF5        $def_lis_hdf5
+setenv   LVT_NETCDF      $def_lis_netcdf
+setenv   LVT_OPENJPEG    $def_lis_openjpeg
+setenv   LVT_ECCODES     $def_lis_eccodes
+setenv   LVT_MODESMF     $def_lis_modesmf
+setenv   LVT_LIBESMF     $def_lis_libesmf
+setenv   LVT_HDF4        $def_lis_hdf4
+setenv   LVT_HDFEOS      $def_lis_hdfeos
+setenv   LVT_GDAL        $def_lvt_gdal
+setenv   LVT_FORTRANGIS  $def_lvt_fortrangis
+
+
+setenv FI_VERBS_PREFER_XRC 0
+
+
+prepend-path   LD_LIBRARY_PATH   "$def_lis_openjpeg/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_ldt_libgeotiff/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lvt_proj/lib64"
+prepend-path   LD_LIBRARY_PATH   "$def_lvt_gdal/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_hdf4/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_hdf5/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_libesmf"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_netcdf/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_eccodes/lib64"
+prepend-path   LD_LIBRARY_PATH   "$def_lvt_fortrangis/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_petsc/lib"
+prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"

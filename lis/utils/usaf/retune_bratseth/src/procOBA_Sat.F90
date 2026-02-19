@@ -18,6 +18,7 @@
 ! REVISION HISTORY:
 ! 26 0ct 2020:  Eric Kemp.  Initial Specification.  Multi-process
 !   MPI doesn't work yet, just use single process.
+! 10 Dec 2024:  Eric Kemp.  Updates for WIGOS.
 !
 program main
 
@@ -60,7 +61,7 @@ program main
    type(ESMF_TimeInterval) :: deltatime
    type(ESMF_VM) :: vm
    integer :: icount
-   integer, parameter :: maxlen_sattype = 9
+   integer, parameter :: maxlen_sattype = 32
    character(len=maxlen_sattype) :: sattype
    integer, parameter :: max_sattypes = 4
    character(len=maxlen_sattype) :: sattypes(max_sattypes)
@@ -75,7 +76,7 @@ program main
    real :: dist_thresh
    logical :: use_blacklist
    character(len=ESMF_MAXPATHLEN) :: blacklist_file
-   character(len=9), allocatable :: blacklist_stns(:)
+   character(len=32), allocatable :: blacklist_stns(:)
    integer :: nstns
    character(len=ESMF_MAXPATHLEN) :: logname
 
@@ -909,7 +910,7 @@ contains
       logical, external :: is_sattype ! Function
       logical, intent(in) :: use_blacklist
       integer, intent(in) :: nstns
-      character(len=9), allocatable, intent(in) ::  blacklist_stns(:)
+      character(len=32), allocatable, intent(in) ::  blacklist_stns(:)
 
       ! Local variables
       type(esmf_time) :: curtime
@@ -921,9 +922,9 @@ contains
       integer :: istat
       integer :: iunit_input
       type(Reports) :: R_gages_sat, R_matches
-      character(len=80) :: line
-      character(len=10) :: platform, platform_k, platform_kk
-      character(len=10) :: network, network_k, network_kk, network_new
+      character(len=123) :: line
+      character(len=32) :: platform, platform_k, platform_kk
+      character(len=32) :: network, network_k, network_kk, network_new
       real :: latitude, longitude, lat_k, lon_k, lat_kk, lon_kk
       real :: O, B, A, O_k, B_k, O_kk, B_kk, B_new
       real :: min_dist_k_kk, dist_k_kk
@@ -1016,7 +1017,7 @@ contains
                if (istat .ne. 0) exit
                if (line(2:2) .eq. '#') cycle
                read(line, &
-                    '(A10,1x,A10,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3)') &
+                    '(A32,1x,A32,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3,1x,F8.3)') &
                     network, platform, latitude, longitude, O, B, A
                if (is_gage(adjustl(network))) then
 
@@ -1050,9 +1051,9 @@ contains
                end if
             end do
             close(unit=iunit_input)
-            !print*, "[INFO] Skipped ", count_skips, " blacklisted stations"
-            !print*, '[INFO] Working with ', icount_gages, ' gages'
-            !print*, '[INFO] Working with ', icount_sat, ' ', trim(sattype), &
+            !write(6,*) "[INFO] Skipped ", count_skips, " blacklisted stations"
+            !write(6,*) '[INFO] Working with ', icount_gages, ' gages'
+            !write(6,*) '[INFO] Working with ', icount_sat, ' ', trim(sattype), &
             !     ' obs'
          end if
 

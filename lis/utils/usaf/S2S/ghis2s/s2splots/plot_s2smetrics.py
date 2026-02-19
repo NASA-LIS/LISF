@@ -1,0 +1,202 @@
+#!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+'''
+This script plots OL anomalies at lead times 0,1,2,3,4 months
+for a given forecast start month and year. The script consolidated
+Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py and
+Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
+'''
+# pylint: disable=no-value-for-parameter,line-too-long
+# pylint: disable=f-string-without-interpolation,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-locals,consider-using-f-string,too-many-statements
+
+import os
+import calendar
+import argparse
+import gc
+from concurrent.futures import ProcessPoolExecutor
+import xarray as xr
+import numpy as np
+import yaml
+from ghis2s.s2smetric.metricslib import get_anom
+from ghis2s.shared.logging_utils import TaskLogger
+import plot_utils
+
+USAF_COLORS = True
+task_name = os.environ.get('SCRIPT_NAME')
+logger = TaskLogger(task_name,
+                    os.getcwd(),
+                    f'Running s2splots/plot_s2smetrics.py')
+
+def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None):
+    '''
+    This function processes arguments and make plots.
+    '''
+    metric = "ANOM"
+    figure_template = '{}/NMME_plot_{}_{}_FCST_anom.png'
+
+    # Standardized anomaly input and plot file templates (option):
+    if standardized_anomaly == 'Y':
+        metric = "SANOM"
+        figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
+
+    subtask = region + ': ' + metric
+    plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/'
+    plotdir = plotdir_template.format(fcst_year, fcst_mon)
+    if not os.path.exists(plotdir):
+        os.makedirs(plotdir, exist_ok=True)
+
+    # Where input data files are located ("s2smetric dir - CF-convention nc files):
+    data_dir = cwd_ + f'/s2smetric/{syear:04d}{smonth:02d}/'
+
+    lead_month = list(range(min(6, config_["EXP"]["lead_months"])))
+
+    # Universal setup of plots:
+    nrows = 2
+    ncols = 3
+    domain = plot_utils.dicts('boundary', region)
+
+    for var_name in config_["POST"]["metric_vars"]:
+        logger.info(f"Plotting {var_name} {metric}", subtask=subtask)
+        # Streamflow specifics
+        if var_name == 'Streamflow':
+            ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+                config['SETUP']['ldtinputfile']
+            ldt_ds = xr.open_dataset(ldtfile)
+            lat_2d = ldt_ds['lat']  
+            lon_2d = ldt_ds['lon']  
+            ldt = ldt_ds['HYMAP_drain_area']
+            ldt = ldt.assign_coords({
+                'lat': (['north_south', 'east_west'], lat_2d.values),
+                'lon': (['north_south', 'east_west'], lon_2d.values)
+            })
+            ldt = ldt.load()
+            ldt_crop = plot_utils.crop(domain, ldt)
+            ldt_ds.close()
+            ldt.close()
+            del ldt_ds, ldt
+            mask = ldt_crop.values
+
+        # levels defaults
+        if standardized_anomaly  == 'Y':
+            levels = plot_utils.dicts('anom_levels', 'standardized')
+        else:
+            levels = plot_utils.dicts('anom_levels', var_name)
+
+        # colors defualts
+        load_table = plot_utils.dicts('anom_tables', var_name)
+
+        # special cases
+        if USAF_COLORS and standardized_anomaly is None:
+            if var_name in {'AirT'}:
+                load_table = '14WT2M'
+                levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
+
+            elif var_name == 'Precip':
+                load_table = '14WPR'
+                levels = plot_utils.dicts('anom_levels','Precip_AF')
+
+        under_over = plot_utils.dicts('lowhigh', load_table)
+
+        # READ ANOMALIES
+        anom = get_anom(data_dir, var_name, metric, domain, [logger, subtask])
+        median_anom = np.median(anom.anom.values, axis=0)
+
+        if (var_name in {'AirT'}) and \
+           USAF_COLORS and standardized_anomaly is None:
+            median_anom = median_anom*9./5.
+#           In units of deg F
+
+#       Already monthly accumulated values
+        if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
+            median_anom = median_anom/25.4
+
+        if var_name in {'ET'}:
+            if standardized_anomaly is None:
+                median_anom = median_anom * 86400.
+
+#       Runoff = accumulated monthly values ...
+        if var_name in {'Total-Runoff'}:
+            if standardized_anomaly is None:
+                median_anom = median_anom * 1.
+
+        plot_arr = median_anom[lead_month, ]
+        figure = figure_template.format(plotdir, region, var_name)
+        logger.info(f"Figure: {figure}", subtask=subtask)
+
+        titles = []
+        for lead in lead_month:
+            if var_name == 'Streamflow':
+                plot_arr[lead,] = np.ma.masked_where(mask<=2.0e9, plot_arr[lead,])
+            fcast_month = smonth+lead
+            fcast_year = syear
+            if fcast_month > 12:
+                fcast_month -= 12
+                fcast_year = syear+1
+            titles.append(calendar.month_abbr[fcast_month] + ', ' + str(fcast_year))
+        stitle = var_name + ' Forecast'
+        clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
+
+        if USAF_COLORS and standardized_anomaly is None:
+            if var_name in {'AirT'}:
+                clabel = 'Anomaly (' + plot_utils.dicts('units', 'Air_T_AF') + ')'
+            elif var_name == 'Precip':
+                clabel = 'Anomaly (' + plot_utils.dicts('units', 'Precip_AF') + ')'
+
+        if standardized_anomaly == 'Y':
+            clabel = 'Standardized Anomaly'
+
+        cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
+        plot_utils.contours (anom.lon.values, anom.lat.values, nrows,
+                             ncols, plot_arr, load_table, titles, domain, figure, under_over,
+                             fscale=0.8, stitle=stitle, clabel=clabel, levels=levels,
+                             cartopy_datadir=cartopy_dir)
+        anom.close()
+        del anom
+        gc.collect()
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
+    parser.add_argument('-m', '--fcst_mon', required=True, help= 'forecast end year')
+    parser.add_argument('-c', '--configfile', required=True, help='config file name')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-M', '--metric', required=True, help='ANOM or SANOM')
+
+    args = parser.parse_args()
+    configfile = args.configfile
+    fcst_year = int(args.fcst_year)
+    fcst_mon = int(args.fcst_mon)
+    cwd = args.cwd
+
+    # load config file
+    with open(configfile, 'r', encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+
+    num_calls = 7
+    num_workers = int(os.environ.get('NUM_WORKERS', num_calls))
+    regions = ['GLOBAL', 'AFRICA', 'EUROPE', 'CENTRAL_ASIA', 'SOUTH_EAST_ASIA', 'NORTH_AMERICA', 'SOUTH_AMERICA']
+
+    with ProcessPoolExecutor(max_workers=7) as executor:
+        futures = []
+        if args.metric == "ANOM":
+            for region in regions:
+                futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, region))
+
+        if args.metric == "SANOM":
+            for region in regions:
+                futures.append(executor.submit(plot_anoms, fcst_year, fcst_mon, cwd, config, region, standardized_anomaly='Y'))
+
+        for future in futures:
+            result = future.result()

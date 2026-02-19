@@ -1,6 +1,6 @@
 = Land Information System (LIS): LIS {lisfrevision} Users Guide
-:revnumber: 4.0
-:revdate: 12 Nov 2024
+:revnumber: 5.0
+:revdate: 16 Jan 2026
 :doctype: book
 :sectnums:
 :toc:

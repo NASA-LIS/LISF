@@ -1,0 +1,11 @@
+#nfields
+4
+#name  varmin  varmax	 
+Soil Moisture Layer 1
+  0.01	0.55   
+Soil Moisture Layer 2
+  0.01	0.55	
+Soil Moisture Layer 3
+  0.01	0.55	
+Soil Moisture Layer 4
+  0.01	0.55	

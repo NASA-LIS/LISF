@@ -28,7 +28,6 @@ subroutine reset_nldas20()
 !
 !EOP
   integer   :: n
-  integer   :: findex
 
   do n = 1,LIS_rc%nnest
      nldas20_struc(n)%nldas20time1 = 3000.0

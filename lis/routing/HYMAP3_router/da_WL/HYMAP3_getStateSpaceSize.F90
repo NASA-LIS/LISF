@@ -1,0 +1,43 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+!
+! Copyright (c) 2015 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !ROUTINE: HYMAP3_getStateSpaceSize
+! \label{HYMAP3_getStateSpaceSize}
+!
+! !REVISION HISTORY:
+!  07 Nov 2019: Sujay Kumar, Initial specification
+!
+! !INTERFACE:
+subroutine HYMAP3_getStateSpaceSize(n, size)
+
+! !USES:
+  use ESMF
+  use HYMAP3_routingMod
+  use LIS_coreMod, only : LIS_rc
+  use LIS_logMod,  only  : LIS_verify
+
+  implicit none
+
+  ! !ARGUMENTS:
+  integer, intent(in)    :: n
+  integer, intent(out)   :: size
+!
+! !DESCRIPTION:
+!
+!  Returns the water level DA related state prognostic variables for
+!  data assimilation
+!
+!  The arguments are:
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \end{description}
+!EOP
+   size = HYMAP3_routing_struc(n)%nseqall*LIS_rc%nensem(n)
+
+end subroutine HYMAP3_getStateSpaceSize
+

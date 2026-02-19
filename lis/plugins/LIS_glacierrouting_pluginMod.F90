@@ -12,21 +12,21 @@ module LIS_glacierrouting_pluginMod
 !BOP
 !
 ! !MODULE: LIS_glacierrouting_pluginMod
-! 
-! !DESCRIPTION: 
-!   
-! !REVISION HISTORY: 
+!
+! !DESCRIPTION:
+!
+! !REVISION HISTORY:
 !
 !   06 Apr 2018: Sujay Kumar, Initial imlementation
-! 
+!
   implicit none
-  
+
   PRIVATE
 !------------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !------------------------------------------------------------------------------
-  PUBLIC :: LIS_glacierrouting_plugin  
-!EOP  
+  PUBLIC :: LIS_glacierrouting_plugin
+!EOP
 
 contains
 !BOP
@@ -35,41 +35,51 @@ contains
 !
 ! !DESCRIPTION:
 !
-!  
+!
 ! !INTERFACE:
-subroutine LIS_glacierrouting_plugin
+  subroutine LIS_glacierrouting_plugin
 !EOP
 
-   use LIS_pluginIndices
+    use LIS_pluginIndices
 
-#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) )
+    implicit none
+    external :: registerglacierroutinggetrunoff
+
+#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) ||  ( defined ROUTE_HYMAP3_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) )
 
 #if ( defined SM_GLACIER_TEMPLATE )
-   external templateGL_getrunoffs_mm
+    external templateGL_getrunoffs_mm
 #endif
 
 #if ( defined SM_NOAHMP_GLACIER_3_9_1_1 )
-   external noahmpglacier3911_getrunoffs_mm
-   external noahmpglacier3911_getrunoffs_hymap2
+    external noahmpglacier3911_getrunoffs_mm
+    external noahmpglacier3911_getrunoffs_hymap2
 #endif
 
 #if ( defined SM_GLACIER_TEMPLATE )
-   call registerglacierroutinggetrunoff(trim(LIS_templateGLId)//"+"//&
-        trim(LIS_HYMAProuterId)//char(0), &
-        templateGL_getrunoffs_mm)
+    call registerglacierroutinggetrunoff(trim(LIS_templateGLId)//"+"//&
+         trim(LIS_HYMAProuterId)//char(0), &
+         templateGL_getrunoffs_mm)
 #endif
 
 #if ( defined SM_NOAHMP_GLACIER_3_9_1_1 )
-   call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
-        trim(LIS_HYMAProuterId)//char(0), &
-        noahmpglacier3911_getrunoffs_mm)
+    call registerglacierroutinggetrunoff( &
+         trim(LIS_noahmpglacier3911Id)//"+"//&
+         trim(LIS_HYMAProuterId)//char(0), &
+         noahmpglacier3911_getrunoffs_mm)
 
-   call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
-        trim(LIS_HYMAP2routerId)//char(0), &
-        noahmpglacier3911_getrunoffs_hymap2)
+    call registerglacierroutinggetrunoff( &
+         trim(LIS_noahmpglacier3911Id)//"+"//&
+         trim(LIS_HYMAP2routerId)//char(0), &
+         noahmpglacier3911_getrunoffs_hymap2)
+
+    call registerglacierroutinggetrunoff( &
+         trim(LIS_noahmpglacier3911Id)//"+"//&
+         trim(LIS_HYMAP3routerId)//char(0), &
+         noahmpglacier3911_getrunoffs_hymap2)
 #endif
 
 #endif
 
-end subroutine LIS_glacierrouting_plugin
+  end subroutine LIS_glacierrouting_plugin
 end module LIS_glacierrouting_pluginMod

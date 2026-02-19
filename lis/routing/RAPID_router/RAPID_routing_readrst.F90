@@ -14,10 +14,12 @@
 !
 ! !REVISION HISTORY:
 ! 19 Jul 2021: Yeosang Yoon;  Initial implementation
+! 20 Mar 2024: Yeosang Yoon; Support to run with ensemble mode
 
 subroutine RAPID_routing_readrst
 
   use ESMF
+  use LIS_constantsMod
   use LIS_fileIOMod
   use LIS_coreMod
   use LIS_logMod
@@ -52,9 +54,15 @@ subroutine RAPID_routing_readrst
                 'Error in nf90_inq_varid in RAPID_routing_readrst')
 
            ! Read the data.
-           call LIS_verify(nf90_get_var(ftn,varid_Qout,&
-                RAPID_routing_struc(n)%Qout,(/1,1/),(/RAPID_routing_struc(n)%n_riv_bas,1/)),&
-                'Error in nf90_get_var in RAPID_routing_readrst')
+           if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+              call LIS_verify(nf90_get_var(ftn,varid_Qout,&
+                   RAPID_routing_struc(n)%Qout_ens,(/1,1,1/), (/RAPID_routing_struc(n)%n_riv_bas,LIS_rc%nensem(n),1/)),&
+                   'Error in nf90_get_var in RAPID_routing_readrst')
+           else
+              call LIS_verify(nf90_get_var(ftn,varid_Qout,&
+                   RAPID_routing_struc(n)%Qout,(/1,1/),(/RAPID_routing_struc(n)%n_riv_bas,1/)),&
+                   'Error in nf90_get_var in RAPID_routing_readrst')
+           endif
 
            ! Close the file
            call LIS_verify(nf90_close(ftn),'Error in nf90_close in RAPID_routing_readrst') 

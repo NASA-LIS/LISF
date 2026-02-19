@@ -1,0 +1,5 @@
+#nfields
+1
+#name  varmin  varmax
+SMAP soil moisture
+  0.01 1.0

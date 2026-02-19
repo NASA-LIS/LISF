@@ -16,6 +16,7 @@
 !
 ! REVISION HISTORY:
 ! 26 Oct 2020:  Eric Kemp.  Initial specification.
+! 10 Dec 2024:  Eric Kemp.  Updates for WIGOS.
 !
 module USAF_sharedMod
 
@@ -121,13 +122,13 @@ contains
   subroutine fetch_blacklist(blacklist_file, blacklist_stns, nstns)
 
     use esmf
-    
+
     ! Defaults
     implicit none
 
     ! Arguments
     character(len=*), intent(in) :: blacklist_file
-    character(len=9), allocatable, intent(inout) :: blacklist_stns(:)
+    character(len=32), allocatable, intent(inout) :: blacklist_stns(:)
     integer, intent(inout) :: nstns
 
     ! Local variables
@@ -179,15 +180,16 @@ contains
        read(unit=15, fmt='(A)', end=200) line
        if (line(1:1) .eq. "#") cycle
        i = i + 1
-       do j = 1, 9
-          if (line(j:j) .eq. ' ') exit
+       do j = 1, 34
+          if (line(j:j) .eq. '#') exit
        end do
-       blacklist_stns(i) = trim(line(1:j))
+       if ((j-2) < 1) cycle
+       blacklist_stns(i) = trim(line(1:j-2))
     end do
 200 continue
 
     ! Finish up
-    close(unit=10)
+    close(unit=15)
 
   end subroutine fetch_blacklist
 

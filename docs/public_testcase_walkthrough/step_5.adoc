@@ -1,42 +1,69 @@
 = Step 5: Generate Observations CDF-based Files (LDT)
 
 :step-label: Step 5
-:download-filename: testcase5_ldt_obscdf_2023.tar.gz
-:input-filesize-compressed: 4.6GB
-:input-filesize-unpacked: 9.1GB
-:ldt-run-dir: DA_proc_SMAP
-:ldt-config-filename: ldt.config.smapobs_cdf
+:download-filename: walkthrough_step5.tar.gz
+:input-filesize-compressed: 267KB
+:input-filesize-unpacked: 518KB
+:ldt-run-dir: 
+:ldt-config-filename: ldt.config.step5.smapobs_cdf
 
 == Overview
 
-In this step you will use LDT to generate CDF files from the satellite-based soil moisture (SM) observations collected by NASA's **S**oil **M**oisture **A**ctive **P**assive (SMAP) mission. The observation based CDF files generated in this step will be used along with the model CDF files created in Step 4 for the data assimilation run in Step 6.
+In this step you will use LDT to generate CDF files from the satellite-based soil moisture (SM) observations collected by NASA`'s **S**oil **M**oisture **A**ctive **P**assive (SMAP) mission. The observation based CDF files generated in this step will be used along with the model CDF files created in Step 4 for the data assimilation run in Step 6.
 
 include::download_input_files.adoc[]
 
 The following files and directories were added to your common working directory
 `$WORKING_DIR`:
 
-[cols="2*",frame=topbot,stripes=odd]
+[cols="2*",frame=topbot,stripes=odd,subs=attributes]
 [%autowidth]
 |===
-|`RS_DATA.tgz`                     |A tar file containing sample SMAP soil moisture observations
-|`DA_proc_SMAP/`                   |A directory containing the files below
-|`ldt.config.smapobs_cdf`          |The LDT config file for this step
+|`{ldt-config-filename}`           |The LDT config file for this step
+|`INPUT/download_smap_l3v009_nrt.py` |Download script to get SMAP soil moisture observations
+|`target_step5/`                   |A directory containing the files below
 |`target_ldtlog.0000`              |The target LDT log file
+|`target_MaskParamFill.log`        |The target mask-parameter log file
 |`target_cdf_smapobs_domain.nc`    |The target LDT-generated Noah LSM _domain_ file
 |`target_cdf_smapobs.nc`           |The target LDT-generated Noah LSM _CDF_ file
+|`target_cdf_smapobs.xdf`          |GrADS description file for viewing `*cdf_smapobs.nc` output and target files
 |===
 
-The file `RS_DATA.tgz` should have been recursively unpacked as subdirectory `RS_DATA` within your `$WORKING_DIR`. If it was not, run the following command:
+=== Download the Soil Moisture Observations Dataset
+
+This testcase is set up to use the link:https://nsidc.org/data/SPL3SMP/versions/9[_SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, Version 9, window="_blank"]_ data product. A script has been provided in the input files that uses `python3` to download these data.
+
+[NOTE]
+====
+Users on NASA's NCCS Discover HPC system do not need to download the data as described below. Instead, change directories into `INPUT/` and create a symbolic link to a local copy:
 
 [source,shell]
 ----
-% tar -xzf RS_DATA.tgz -C .
+% ln -s /discover/nobackup/projects/lis/RS_DATA/SMAP SMAP
 ----
 
-The new directory, `RS_DATA`, contains sample soil moisture observations from the link:https://nsidc.org/data/SPL3SMP/versions/5[_SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, Version 5, window="_blank"]_ data product.
+Jump to the <<step_5_next_step,next step.>>
+====
 
-.SMAP SPL3SMP.005 dataset description:
+[IMPORTANT]
+====
+Before running the download script:
+
+. If needed, install `python3`
+. Create a link:https://urs.earthdata.nasa.gov/users/new[NASA Earthdata] account if you do not already have one
+. Follow steps 1-3 in link:https://disc.gsfc.nasa.gov/data-access#mac_linux_wget[these instructions] to save your NASA Earthdata login credentials locally
+====
+
+When you are ready to run the script, change directories into `INPUT/` and run the following command:
+
+[source,shell]
+----
+% ./download_smap_l3v009_nrt.py --start-date 20170101 --end-date 20180101 --output-dir ./SMAP/SPL3SMP.009/
+----
+
+The new directory, `SMAP`, contains sample soil moisture observations from the link:https://nsidc.org/data/SPL3SMP/versions/5[_SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, Version 5, window="_blank"]_ data product.
+
+.SMAP SPL3SMP.009 dataset description:
 [quote]
 This Level-3 (L3) soil moisture product provides a composite of daily estimates of global land surface conditions retrieved by the Soil Moisture Active Passive (SMAP) passive microwave radiometer. SMAP L-band soil moisture data are resampled to a global, cylindrical 36 km Equal-Area Scalable Earth Grid, Version 2.0 (EASE-Grid 2.0).
 
@@ -44,10 +71,10 @@ Use `ncview` to view the data for 3/1/2017.
 
 [source,shell]
 ----
-% ncview RS_DATA/SMAP/SPL3SMP.005/2017.03.01/SMAP_L3_SM_P_20170301_R16010_001.h5
+% ncview SMAP/SPL3SMP.009/2017.03.01/SMAP_L3_SM_P_20170301_R19240_001.h5
 ----
 
-When `ncview` opens, click and hold on one of the subdataset buttons under the color bar (e.g., `Soil_Moisture_Retrieval_Data_AM (36 vars)`) to open the list of variables. Release the mouse button on the variable you would like to plot (e.g., `soil_moisture`).
+When `ncview` opens, click and hold on one of the subdataset buttons under the color bar (e.g., `Soil_Moisture_Retrieval_Data_AM (53 vars)`) to open the list of variables. Release the mouse button on the variable you would like to plot (e.g., `soil_moisture`).
 
 [NOTE]
 --
@@ -56,9 +83,10 @@ Due to the way the data is formatted, the plot will appear upside down. Click on
 
 image::step_5_SMAP_data_viz.png[pdfwidth=70%,align="center"]
 
+[[step_5_next_step]]
 == The LDT Configuration File
 
-Review the contents of `DA_proc_SMAP/ldt.config.smapobs_cdf` to view the configuration settings used for this step:
+Review the contents of `{ldt-config-filename}` to view the configuration settings used for this step:
 
 [source,shell]
 ----
@@ -66,7 +94,7 @@ LDT running mode: "DA preprocessing" <1>
 ...
 DA preprocessing method:            "CDF generation"
 DA observation source:              "NASA SMAP soil moisture"
-Name of the preprocessed DA file:   "./cdf_smapobs" <2>
+Name of the preprocessed DA file:   "cdf_smapobs" <2>
 Apply anomaly correction to obs:    0
 Temporal resolution of CDFs:        "yearly" <3>
 Number of bins to use in the CDF:   100
@@ -75,10 +103,10 @@ Temporal averaging interval:        "1da"<4>
 Apply external mask:                0
 External mask director:             none
 ...
-NASA SMAP soil moisture observation directory: ../RS_DATA/SMAP/SPL3SMP.005  <5>
+NASA SMAP soil moisture observation directory: ./INPUT/SMAP/SPL3SMP.009  <5>
 NASA SMAP soil moisture data designation:      SPL3SMP <6>
 NASA SMAP search radius for openwater proximity detection: 3 <7>
-SMAP(NASA) soil moisture Composite Release ID (e.g., R16): R16 <8>
+SMAP(NASA) soil moisture Composite Release ID (e.g., R16): R19 <8>
 ----
 <1> _DA preprocessing_ mode is used to generate the observation domain and scaling parameters.
 <2> Prefix of output files (e.g., `cdf_smapobs_domain.nc`).
@@ -89,7 +117,7 @@ SMAP(NASA) soil moisture Composite Release ID (e.g., R16): R16 <8>
 <7> Specifies the radius in which LDT searches to detect open water. Then removes all pixels within the radius in the CDF calculations.
 <8> Specifies the release ID of the SMAP dataset.
 
-See the link:{url-lisf-docs}[LDT Users' Guide] for more information about configuration settings.
+See the link:{url-lisf-docs}[LDT Users`' Guide] for more information about configuration settings.
 
 == Run LDT - DA Preprocessing Step
 
@@ -110,7 +138,7 @@ Use `nccmp` to directly compare the contents of `cdf_smapobs_domain.nc` with the
 
 [source,shell]
 ----
-% nccmp -dsf cdf_smapobs_domain.nc target_cdf_smapobs_domain.nc
+% nccmp -dsf run_step5/cdf_smapobs_domain.nc target_step5/target_cdf_smapobs_domain.nc
 Files "cdf_smapobs_domain.nc" and "target_cdf_smapobs_domain.nc" are identical.
 ----
 

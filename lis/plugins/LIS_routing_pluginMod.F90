@@ -38,107 +38,146 @@ contains
 !
 ! !DESCRIPTION:
 !
-! This is a custom-defined plugin point for introducing a new routing scheme.
-! The interface mandates that the following routines be implemented
-! and registered for each of the routing scheme that is included in LIS.
+! This is a custom-defined plugin point for introducing a new routing
+! scheme.  The interface mandates that the following routines be
+! implemented and registered for each of the routing scheme that is
+! included in LIS.
 !
 
 ! !INTERFACE:
-subroutine LIS_routing_plugin
+  subroutine LIS_routing_plugin
 !EOP
 
-   use LIS_pluginIndices
+    use LIS_pluginIndices
 
 #if ( defined ROUTE_NLDAS_ROUTER )
-   use NLDAS_routingMod, only : NLDAS_routingInit
+    use NLDAS_routingMod, only : NLDAS_routingInit
 #endif
 
 #if ( defined ROUTE_HYMAP_ROUTER )
-   use HYMAP_routingMod, only : HYMAP_routingInit
+    use HYMAP_routingMod, only : HYMAP_routingInit
 #endif
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
     use HYMAP2_routingMod, only : HYMAP2_routingInit
 #endif
 
+#if ( defined ROUTE_HYMAP3_ROUTER )
+    use HYMAP3_routingMod, only : HYMAP3_routingInit
+#endif
+
 #if ( defined ROUTE_RAPID_ROUTER )
     use RAPID_routingMod, only : RAPID_routingInit
 #endif
 
-   implicit none
+    implicit none
 
 #if ( defined ROUTE_NLDAS_ROUTER )
-   external NLDAS_routing_readrst
-   external NLDAS_routing_run
-   external NLDAS_routing_output
-   external NLDAS_routing_writerst
+    external NLDAS_routing_readrst
+    external NLDAS_routing_run
+    external NLDAS_routing_output
+    external NLDAS_routing_writerst
 #endif
 
 #if ( defined ROUTE_HYMAP_ROUTER )
-   external HYMAP_routing_readrst
-   external HYMAP_routing_run
-   external HYMAP_routing_output
-   external HYMAP_routing_writerst
+    external HYMAP_routing_readrst
+    external HYMAP_routing_run
+    external HYMAP_routing_output
+    external HYMAP_routing_writerst
 #endif
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
-   external HYMAP2_routing_readrst
-   external HYMAP2_routing_run
-   external HYMAP2_routing_output
-   external HYMAP2_routing_writerst
+    external HYMAP2_routing_readrst
+    external HYMAP2_routing_run
+    external HYMAP2_routing_output
+    external HYMAP2_routing_writerst
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+    external HYMAP3_routing_readrst
+    external HYMAP3_routing_run
+    external HYMAP3_routing_output
+    external HYMAP3_routing_writerst
 #endif
 
 #if ( defined ROUTE_RAPID_ROUTER )
-   external RAPID_routing_readrst
-   external RAPID_routing_run
-   external RAPID_routing_output
-   external RAPID_routing_writerst
+    external RAPID_routing_readrst
+    external RAPID_routing_run
+    external RAPID_routing_output
+    external RAPID_routing_writerst
 #endif
 
+    external :: registerroutinginit
+    external :: registerroutingreadrestart
+    external :: registerroutingrun
+    external :: registerroutingoutput
+    external :: registerroutingwriterestart
+
 #if ( defined ROUTE_NLDAS_ROUTER )
-   call registerroutinginit(trim(LIS_NLDASrouterId)//char(0),NLDAS_routingInit)
-   call registerroutingreadrestart(trim(LIS_NLDASrouterId)//char(0), &
-                                   NLDAS_routing_readrst)
-   call registerroutingrun(trim(LIS_NLDASrouterId)//char(0),NLDAS_routing_run)
-   call registerroutingoutput(trim(LIS_NLDASrouterId)//char(0), &
-                              NLDAS_routing_output)
-   call registerroutingwriterestart(trim(LIS_NLDASrouterId)//char(0), &
-                                    NLDAS_routing_writerst)
+    call registerroutinginit(trim(LIS_NLDASrouterId)//char(0), &
+         NLDAS_routingInit)
+    call registerroutingreadrestart(trim(LIS_NLDASrouterId)//char(0), &
+         NLDAS_routing_readrst)
+    call registerroutingrun(trim(LIS_NLDASrouterId)//char(0), &
+         NLDAS_routing_run)
+    call registerroutingoutput(trim(LIS_NLDASrouterId)//char(0), &
+         NLDAS_routing_output)
+    call registerroutingwriterestart(trim(LIS_NLDASrouterId)//char(0), &
+         NLDAS_routing_writerst)
 #endif
 
 #if ( defined ROUTE_HYMAP_ROUTER )
-   call registerroutinginit(trim(LIS_HYMAProuterId)//char(0),HYMAP_routingInit)
-   call registerroutingreadrestart(trim(LIS_HYMAProuterId)//char(0), &
-                                   HYMAP_routing_readrst)
-   call registerroutingrun(trim(LIS_HYMAProuterId)//char(0),HYMAP_routing_run)
-   call registerroutingoutput(trim(LIS_HYMAProuterId)//char(0), &
-                              HYMAP_routing_output)
-   call registerroutingwriterestart(trim(LIS_HYMAProuterId)//char(0), &
-                                    HYMAP_routing_writerst)
+    call registerroutinginit(trim(LIS_HYMAProuterId)//char(0), &
+         HYMAP_routingInit)
+    call registerroutingreadrestart(trim(LIS_HYMAProuterId)//char(0), &
+         HYMAP_routing_readrst)
+    call registerroutingrun(trim(LIS_HYMAProuterId)//char(0), &
+         HYMAP_routing_run)
+    call registerroutingoutput(trim(LIS_HYMAProuterId)//char(0), &
+         HYMAP_routing_output)
+    call registerroutingwriterestart(trim(LIS_HYMAProuterId)//char(0), &
+         HYMAP_routing_writerst)
 #endif
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
-   call registerroutinginit(trim(LIS_HYMAP2routerId)//char(0),HYMAP2_routingInit)
-   call registerroutingreadrestart(trim(LIS_HYMAP2routerId)//char(0), &
-                                   HYMAP2_routing_readrst)
-   call registerroutingrun(trim(LIS_HYMAP2routerId)//char(0),HYMAP2_routing_run)
-   call registerroutingoutput(trim(LIS_HYMAP2routerId)//char(0), &
-                              HYMAP2_routing_output)
-   call registerroutingwriterestart(trim(LIS_HYMAP2routerId)//char(0), &
-                                    HYMAP2_routing_writerst)
+    call registerroutinginit(trim(LIS_HYMAP2routerId)//char(0), &
+         HYMAP2_routingInit)
+    call registerroutingreadrestart(trim(LIS_HYMAP2routerId)//char(0), &
+         HYMAP2_routing_readrst)
+    call registerroutingrun(trim(LIS_HYMAP2routerId)//char(0), &
+         HYMAP2_routing_run)
+    call registerroutingoutput(trim(LIS_HYMAP2routerId)//char(0), &
+         HYMAP2_routing_output)
+    call registerroutingwriterestart(trim(LIS_HYMAP2routerId)//char(0), &
+         HYMAP2_routing_writerst)
+#endif
+
+#if ( defined ROUTE_HYMAP3_ROUTER )
+    call registerroutinginit(trim(LIS_HYMAP3routerId)//char(0), &
+         HYMAP3_routingInit)
+    call registerroutingreadrestart(trim(LIS_HYMAP3routerId)//char(0), &
+         HYMAP3_routing_readrst)
+    call registerroutingrun(trim(LIS_HYMAP3routerId)//char(0), &
+         HYMAP3_routing_run)
+    call registerroutingoutput(trim(LIS_HYMAP3routerId)//char(0), &
+         HYMAP3_routing_output)
+    call registerroutingwriterestart(trim(LIS_HYMAP3routerId)//char(0), &
+         HYMAP3_routing_writerst)
 #endif
 
 #if ( defined ROUTE_RAPID_ROUTER )
-   call registerroutinginit(trim(LIS_RAPIDrouterId)//char(0),RAPID_routingInit)
-   call registerroutingreadrestart(trim(LIS_RAPIDrouterId)//char(0), &
-                                   RAPID_routing_readrst)
-   call registerroutingrun(trim(LIS_RAPIDrouterId)//char(0),RAPID_routing_run)
-   call registerroutingoutput(trim(LIS_RAPIDrouterId)//char(0), &
-                              RAPID_routing_output)
-   call registerroutingwriterestart(trim(LIS_RAPIDrouterId)//char(0), &
-                                    RAPID_routing_writerst)
+    call registerroutinginit(trim(LIS_RAPIDrouterId)//char(0), &
+         RAPID_routingInit)
+    call registerroutingreadrestart(trim(LIS_RAPIDrouterId)//char(0), &
+         RAPID_routing_readrst)
+    call registerroutingrun(trim(LIS_RAPIDrouterId)//char(0), &
+         RAPID_routing_run)
+    call registerroutingoutput(trim(LIS_RAPIDrouterId)//char(0), &
+         RAPID_routing_output)
+    call registerroutingwriterestart(trim(LIS_RAPIDrouterId)//char(0), &
+         RAPID_routing_writerst)
 #endif
 
-end subroutine LIS_routing_plugin
+  end subroutine LIS_routing_plugin
 
 end module LIS_routing_pluginMod

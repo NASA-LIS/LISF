@@ -74,6 +74,7 @@ subroutine timeinterp_nldas20(n,findex)
   logical          :: forcing_z,forcing_ch,forcing_pet,forcing_cape
   integer          :: mfactor,m,k,kk
 
+  external :: zterp
 !________________________________________
 
   btime = nldas20_struc(n)%nldas20time1

@@ -368,11 +368,12 @@ subroutine USAFSI_run(n)
         end if
 
         ! RETRIEVE FRACTIONAL SNOW DATA.
-        if (usafsi_settings%usefrac) then
-           write (LDT_logunit,*) &
-                '[INFO] CALLING GETFRAC TO GET FRACTIONAL SNOW DATA'
-           call getfrac (date10, fracdir)
-        end if
+        usafsi_settings%usefrac = .false.  ! YY: no longer in use
+        !if (usafsi_settings%usefrac) then
+        !   write (LDT_logunit,*) &
+        !        '[INFO] CALLING GETFRAC TO GET FRACTIONAL SNOW DATA'
+        !   call getfrac (date10, fracdir)
+        !end if
 
         ! RETRIEVE SURFACE OBSERVATIONS.
         write (LDT_logunit,*) &

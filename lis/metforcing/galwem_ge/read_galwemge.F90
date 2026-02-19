@@ -68,28 +68,28 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
   integer         :: ftn, igrib, ierr
   integer         :: center
   character*100   :: gtype
-  integer         :: file_julhr
-  integer         :: yr1, mo1, da1, hr1
   integer         :: iginfo      ( 40 )
   real            :: gridres_dlat, gridres_dlon
   integer         :: ifguess, jfguess
   integer         :: dataDate, dataTime
-  integer         :: fc_hr
 
-  real            :: tair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Temperature interpolated to 2 metres [K] 
-  real            :: qair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Relative humidity interpolated to 2 metres[kg/kg] 
-  real            :: swdown(LIS_rc%lnc(n),LIS_rc%lnr(n))    !Downward shortwave flux at the ground [W/m^2] 
-  real            :: lwdown(LIS_rc%lnc(n),LIS_rc%lnr(n))    !Downward longwave radiation at the ground [W/m^2] 
+  real            :: tair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Temperature interpolated to 2 metres [K]
+  real            :: qair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Relative humidity interpolated to 2 metres [kg/kg]
+  real            :: swdown(LIS_rc%lnc(n),LIS_rc%lnr(n))    !Downward shortwave flux at the ground [W/m^2]
+  real            :: lwdown(LIS_rc%lnc(n),LIS_rc%lnr(n))    !Downward longwave radiation at the ground [W/m^2]
   real            :: uwind(LIS_rc%lnc(n),LIS_rc%lnr(n))     !Instantaneous zonal wind interpolated to 10 metres [m/s]
   real            :: vwind(LIS_rc%lnc(n),LIS_rc%lnr(n))     !Instantaneous meridional wind interpolated to 10 metres[m/s]
-  real            :: ps(LIS_rc%lnc(n),LIS_rc%lnr(n))        !Instantaneous Surface Pressure [Pa] 
-  real            :: prectot(LIS_rc%lnc(n),LIS_rc%lnr(n))   !Accumulated total precipitation [kg/m^2] 
- 
-  integer         :: r, c 
+  real            :: ps(LIS_rc%lnc(n),LIS_rc%lnr(n))        !Instantaneous Surface Pressure [Pa]
+  real            :: prectot(LIS_rc%lnc(n),LIS_rc%lnr(n))   !Accumulated total precipitation [kg/m^2]
+
+  integer         :: r, c
   real            :: e, es
-  real            :: q(LIS_rc%lnc(n),LIS_rc%lnr(n))         !Specific humidity interpolated to 2 metres[kg/kg]
+  real            :: q(LIS_rc%lnc(n),LIS_rc%lnr(n))         !Specific humidity interpolated to 2 metres [kg/kg]
 
   integer, intent(out) :: rc
+
+  external :: fldbld_read_galwemge
+  external :: assign_processed_galwemgeforc
 
   ! Initialize return code to "no error".  We will change it below if
   ! necessary.
@@ -97,47 +97,47 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
 
 #if (defined USE_GRIBAPI)
 
-   call grib_open_file(ftn,trim(gribfile),'r',ierr)
-   if ( ierr .ne. 0 ) then
-      write(LIS_logunit,*) '[ERR] Failed to open - '//trim(gribfile)
-      call LIS_endrun()
-   end if
+  call grib_open_file(ftn,trim(gribfile),'r',ierr)
+  if ( ierr .ne. 0 ) then
+     write(LIS_logunit,*) '[ERR] Failed to open - '//trim(gribfile)
+     call LIS_endrun()
+  end if
 
-   ! Read in the first grib record, unpack the header and extract
-   ! section 1 and section 2 information.
-   call grib_new_from_file(ftn,igrib,ierr)
-   if ( ierr .ne. 0 ) then
-      write(LIS_logunit,*) '[ERR] failed to read - '//trim(gribfile)
-      call grib_close_file(ftn)
-      call LIS_endrun()
-   endif
+  ! Read in the first grib record, unpack the header and extract
+  ! section 1 and section 2 information.
+  call grib_new_from_file(ftn,igrib,ierr)
+  if ( ierr .ne. 0 ) then
+     write(LIS_logunit,*) '[ERR] failed to read - '//trim(gribfile)
+     call grib_close_file(ftn)
+     call LIS_endrun()
+  endif
 
-   call grib_get(igrib,'centre',center,ierr)
-   if ( ierr .ne. 0 ) then
-      write(LIS_logunit,*) '[ERR] in grib_get: ' // &
-           'centre in read_galwemge'
-      call grib_release(igrib,ierr)
-      call grib_close_file(ftn)
-      call LIS_endrun()
-   endif
+  call grib_get(igrib,'centre',center,ierr)
+  if ( ierr .ne. 0 ) then
+     write(LIS_logunit,*) '[ERR] in grib_get: ' // &
+          'centre in read_galwemge'
+     call grib_release(igrib,ierr)
+     call grib_close_file(ftn)
+     call LIS_endrun()
+  endif
 
-   call grib_get(igrib,'gridType',gtype,ierr)
-   if ( ierr .ne. 0 ) then
-      write(LIS_logunit,*) '[ERR] in grid_get: ' // &
-           'gridtype in read_galwemge'
-      call grib_release(igrib,ierr)
-      call grib_close_file(ftn)
-      call LIS_endrun()
-   endif
+  call grib_get(igrib, 'gridType', gtype, ierr)
+  if ( ierr .ne. 0 ) then
+     write(LIS_logunit,*) '[ERR] in grid_get: ' // &
+          'gridtype in read_galwemge'
+     call grib_release(igrib, ierr)
+     call grib_close_file(ftn)
+     call LIS_endrun()
+  endif
 
-   if(trim(gtype).ne."regular_ll") then
+   if (trim(gtype).ne."regular_ll") then
       write(LIS_logunit,*)'[ERR] GALWEM-GE file not on lat/lon grid!'
-      call grib_release(igrib,ierr)
+      call grib_release(igrib, ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
    endif
 
-   call grib_get(igrib,'Ni',iginfo(1),ierr)
+   call grib_get(igrib, 'Ni', iginfo(1), ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: Ni read_galwemge'
       call grib_release(igrib,ierr)
@@ -145,7 +145,7 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
       call LIS_endrun()
    endif
 
-   call grib_get(igrib,'Nj',iginfo(2),ierr)
+   call grib_get(igrib, 'Nj', iginfo(2), ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: Nj in read_galwemge'
       call grib_release(igrib,ierr)
@@ -153,7 +153,8 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
       call LIS_endrun()
    endif
 
-   call grib_get(igrib,'jDirectionIncrementInDegrees',gridres_dlat,ierr)
+   call grib_get(igrib, 'jDirectionIncrementInDegrees', gridres_dlat, &
+        ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
            'jDirectionIncrementInDegrees ' // &
@@ -164,7 +165,8 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
    endif
 
    ! EMK...Added dlon
-   call grib_get(igrib, 'iDirectionIncrementInDegrees', gridres_dlon, ierr)
+   call grib_get(igrib, 'iDirectionIncrementInDegrees', gridres_dlon, &
+        ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
            'iDirectionIncrementInDegrees ' // &
@@ -174,16 +176,16 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
       call LIS_endrun()
    endif
 
-   call grib_get(igrib,'dataDate',dataDate,ierr)
+   call grib_get(igrib, 'dataDate', dataDate, ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
            'dataDate in read_galwemge'
-      call grib_release(igrib,ierr)
+      call grib_release(igrib, ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
    endif
 
-   call grib_get(igrib,'dataTime',dataTime,ierr)
+   call grib_get(igrib, 'dataTime', dataTime, ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
            'dataTime in read_galwemge'
@@ -194,14 +196,15 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
 
    ! Here we tentatively have a file we can use. Close it for now, and
    ! prepare to pull the appropriate variables.
-   call grib_release(igrib,ierr)
+   call grib_release(igrib, ierr)
    call grib_close_file(ftn)
 
    ifguess = iginfo(1)
    jfguess = iginfo(2)
 
-   call fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess, &
-           tair, qair, swdown, lwdown, uwind, vwind, ps, prectot, rc)
+   call fldbld_read_galwemge(n, findex, order, gribfile, &
+        ifguess, jfguess, &
+        tair, qair, swdown, lwdown, uwind, vwind, ps, prectot, rc)
 
    call assign_processed_galwemgeforc(n, m, order, 1, tair)
 
@@ -228,10 +231,10 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
 
    do r=1,LIS_rc%lnr(n)
       do c=1,LIS_rc%lnc(n)
-         tair(c,r) =tair(c,r)-273.15 !to celcius 
+         tair(c,r) =tair(c,r)-273.15 !to celcius
          es = 6.112*exp((17.67+tair(c,r))/(tair(c,r)+243.5))
          e = es*(qair(c,r)/100.0)
-         q(c,r) = (0.622*e)/(ps(c,r)*0.01-0.378*e)   ! 1mb=100Pa        
+         q(c,r) = (0.622*e)/(ps(c,r)*0.01-0.378*e)   ! 1mb=100Pa
       enddo
    enddo
    call assign_processed_galwemgeforc(n, m, order, 2, q)
@@ -241,16 +244,17 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
    call assign_processed_galwemgeforc(n, m, order, 6, vwind)
    call assign_processed_galwemgeforc(n, m, order, 7, ps)
    call assign_processed_galwemgeforc(n, m, order, 8, prectot)
-      
+
 #endif
 
 end subroutine read_galwemge
 
-subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,     &
-                                     tair, qair, swdown, lwdown,                &
-                                     uwind, vwind, ps, prectot, rc)                            
- 
-  ! !USES:
+subroutine fldbld_read_galwemge(n, findex, order, gribfile, &
+     ifguess, jfguess, &
+     tair, qair, swdown, lwdown, &
+     uwind, vwind, ps, prectot, rc)
+
+! !USES:
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
@@ -310,15 +314,18 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
 
   logical                       :: found_inq
 
+  external :: check_galwemge_message
+  external :: interp_galwemge
+
   rc = 1 ! Initialize as "no error"
 
   ! EMK...Before using ECCODES/GRIB_API, see if the GRIB file exists
   ! using a simple inquire statement.  This avoids ECCODES/GRIB_API
   ! writing error messages to stdout/stderr, which may lead to runtime
   ! problems.
-  inquire(file=trim(gribfile),exist=found_inq)
+  inquire(file=trim(gribfile), exist=found_inq)
   if (.not. found_inq) then
-     write(LIS_logunit,*) '[WARN] Cannot find file '//trim(gribfile)
+     write(LIS_logunit,*) '[WARN] Cannot find file ' // trim(gribfile)
      rc = 0
      return
   end if
@@ -327,9 +334,9 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
 
   ! If a problem occurs here, we can just return immediately since no
   ! memory has been allocated yet.
-  call grib_open_file(ftn,trim(gribfile),'r',ierr)
+  call grib_open_file(ftn, trim(gribfile), 'r', ierr)
   if ( ierr .ne. 0 ) then
-     write(LIS_logunit,*) '[WARN] Failed to open - '//trim(gribfile)
+     write(LIS_logunit,*) '[WARN] Failed to open - ' // trim(gribfile)
      rc = 0
      return
   end if
@@ -353,7 +360,7 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
   fg_uwind = LIS_rc%udef
   fg_vwind = LIS_rc%udef
   fg_ps = LIS_rc%udef
-  fg_prectot = LIS_rc%udef 
+  fg_prectot = LIS_rc%udef
   dum1d = LIS_rc%udef
 
   tair = LIS_rc%udef
@@ -377,42 +384,26 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
   count_ps = 0
   count_prectot = 0
 
-  call grib_count_in_file(ftn,nvars,ierr)
+  call grib_count_in_file(ftn, nvars, ierr)
   if ( ierr .ne. 0 ) then
      write(LIS_logunit,*) '[WARN] in grib_count_in_file in ' // &
           'fldbld_read_galwemge'
      goto 100
   end if
 
-  ! Tentatively loop through every field in GRIB file looking for the variables
-  ! we want. The code below will exit the loop early if a problem is found *or*
-  ! once all the required variables are found and read in.
+  ! Tentatively loop through every field in GRIB file looking for the
+  ! variables we want. The code below will exit the loop early if a
+  ! problem is found *or* once all the required variables are found and
+  ! read in.
   do kk=1,nvars
 
-     call grib_new_from_file(ftn,igrib,ierr)
+     call grib_new_from_file(ftn, igrib, ierr)
      if ( ierr .ne. 0 ) then
-        write(LIS_logunit,*) '[WARN] failed to read - '//trim(gribfile)
+        write(LIS_logunit,*) '[WARN] failed to read - ' // trim(gribfile)
         goto 100
      end if
 
-     call grib_get(igrib,'discipline',param_disc_val,ierr)
-     if ( ierr .ne. 0 ) then
-        write(LIS_logunit,*) '[WARN] in grib_get: parameterNumber in ' // &
-             'fldbld_read_galwemge'
-        call grib_release(igrib,ierr)
-        goto 100
-     end if
-
-     call grib_get(igrib,'parameterCategory',param_cat_val,ierr)
-     if ( ierr .ne. 0 ) then
-        write(LIS_logunit,*) &
-             '[WARN] in grib_get: parameterCategory in ' // &
-             'fldbld_read_galwemge'
-        call grib_release(igrib,ierr)
-        goto 100
-     end if
-
-     call grib_get(igrib,'parameterNumber',param_num_val,ierr)
+     call grib_get(igrib, 'discipline', param_disc_val, ierr)
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: parameterNumber in ' // &
@@ -421,7 +412,25 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
         goto 100
      end if
 
-     call grib_get(igrib,'typeOfFirstFixedSurface',surface_val,ierr)
+     call grib_get(igrib, 'parameterCategory', param_cat_val, ierr)
+     if ( ierr .ne. 0 ) then
+        write(LIS_logunit,*) &
+             '[WARN] in grib_get: parameterCategory in ' // &
+             'fldbld_read_galwemge'
+        call grib_release(igrib, ierr)
+        goto 100
+     end if
+
+     call grib_get(igrib, 'parameterNumber', param_num_val, ierr)
+     if ( ierr .ne. 0 ) then
+        write(LIS_logunit,*) &
+             '[WARN] in grib_get: parameterNumber in ' // &
+             'fldbld_read_galwemge'
+        call grib_release(igrib,ierr)
+        goto 100
+     end if
+
+     call grib_get(igrib, 'typeOfFirstFixedSurface', surface_val, ierr)
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: level in ' // &
@@ -430,36 +439,37 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
         goto 100
      end if
 
-     call grib_get(igrib,'level',level_val,ierr)
+     call grib_get(igrib, 'level', level_val, ierr)
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: level in ' // &
              'fldbld_read_galwemge'
-        call grib_release(igrib,ierr)
+        call grib_release(igrib, ierr)
         goto 100
      end if
 
-     ! We have enough information to determine what GRIB parameter this is.
+     ! We have enough information to determine what GRIB parameter this
+     ! is.
      grib_msg = check_galwemge_message(param_disc_val, &
           param_cat_val, param_num_val, surface_val, level_val)
 
      ! Skip this field if GRIB parameter is not required.
      if (grib_msg == 'none') then
-        call grib_release(igrib,ierr)
+        call grib_release(igrib, ierr)
         if (ierr .ne. 0) then
-           write(LIS_logunit,*)'[WARN], in grib_release: in ' //&
+           write(LIS_logunit,*)'[WARN], in grib_release: in ' // &
                 'fldbld_read_galwemge'
            goto 100
         end if
         cycle ! Not a message we are interested in.
      end if
 
-     call grib_get(igrib,'values',dum1d,ierr)
+     call grib_get(igrib, 'values', dum1d, ierr)
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: values in ' // &
              'fldbld_read_galwemge'
-        call grib_release(igrib,ierr)
+        call grib_release(igrib, ierr)
         goto 100
      end if
 
@@ -467,7 +477,7 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
      case('t2')       ! 2-m temperature
         fg_tair = reshape(dum1d, (/ifguess,jfguess/))
         count_tair = count_tair + 1
-     case ('q2')      ! 2-m relative humidity 
+     case ('q2')      ! 2-m relative humidity
         fg_qair = reshape(dum1d, (/ifguess,jfguess/))
         count_qair = count_qair + 1
      case ('swdown')  ! downward shortwave
@@ -490,8 +500,8 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
         count_prectot = count_prectot + 1
 
      case default ! Internal error, we shouldn't be here
-        write(LIS_logunit,*)'[WARN] Unknown grib_message ',grib_msg
-        write(LIS_logunit,*)'Aborting...'
+        write(LIS_logunit,*)'[ERR] Unknown grib_message ', grib_msg
+        write(LIS_logunit,*)'[ERR] Aborting...'
         flush(LIS_logunit)
         write(cstat,'(i9)',iostat=istat1) ierr
         message(1) = 'Program: LIS'
@@ -522,32 +532,30 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
 
   enddo ! Loop through all GRIB file fields
 
-  ! Make sure we have all required fields.
-  !if ( (count_tair   .ne. 1)  .or. (count_qair    .ne. 1)   .or. &
-  !     (count_swdown .ne. 1 ) .or. (count_lwdown  .ne. 1)   .or. &
-  !     (count_uwind  .ne. 1)  .or. (count_vwind   .ne. 1)   .or. &
-  !     (count_ps     .ne. 1)  .or. (count_prectot .ne. 1) ) then
-  !   write(LIS_logunit,*)'[WARN] Missing data from GALWEM-GE GRIB file!'
-  !   !goto 100
-  !end if
-
   ! Interpolate the fields to the LIS grid
   ! tair
-  call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_tair, tair)
+  call interp_galwemge(n, findex, ifguess, jfguess, .false., &
+       fg_tair, tair)
   ! qair
-  call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_qair, qair)
+  call interp_galwemge(n, findex, ifguess, jfguess, .false., &
+       fg_qair, qair)
   ! swdown
-  call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_swdown, swdown)
+  call interp_galwemge(n, findex, ifguess, jfguess, .false., &
+       fg_swdown, swdown)
   ! lwdown
-  call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_lwdown, lwdown)
+  call interp_galwemge(n, findex, ifguess, jfguess, .false., &
+       fg_lwdown, lwdown)
   ! uwind
-  call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_uwind, uwind)
+  call interp_galwemge(n, findex, ifguess, jfguess, .false., &
+       fg_uwind, uwind)
   ! vwind
-  call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_vwind, vwind)
+  call interp_galwemge(n, findex, ifguess, jfguess, .false., &
+       fg_vwind, vwind)
   ! ps
   call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_ps, ps)
   ! prectot
-  call interp_galwemge(n, findex, ifguess, jfguess, .true., fg_prectot, prectot)
+  call interp_galwemge(n, findex, ifguess, jfguess, .true., &
+       fg_prectot, prectot)
 
   ! At this point, we have everything.  Close the file and return.
   call grib_close_file(ftn)
@@ -606,13 +614,13 @@ function check_galwemge_message(param_disc_val, &
             param_cat_val  == 5 .and. &
             param_num_val  == 3 .and. &
             surface_val    == 1 ) then
-      check_galwemge_message = 'lwdown'  ! Downward longwave radiation at the ground [W/m^2] 
+      check_galwemge_message = 'lwdown'  ! Downward longwave radiation at the ground [W/m^2]
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 2 .and. &
             param_num_val  == 2 .and. &
             surface_val    == 103 .and. &
             level_val == 10) then
-      check_galwemge_message = 'u10'     ! Instantaneous zonal wind interpolated to 10 metres [m/s] 
+      check_galwemge_message = 'u10'     ! Instantaneous zonal wind interpolated to 10 metres [m/s]
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 2 .and. &
             param_num_val  == 3 .and. &
@@ -634,38 +642,41 @@ function check_galwemge_message(param_disc_val, &
    endif
 end function check_galwemge_message
 
-subroutine interp_galwemge(n, findex, ifguess, jfguess, pcp_flag, input, output)
+subroutine interp_galwemge(n, findex, ifguess, jfguess, pcp_flag, &
+     input, output)
 
-! !USES:
+  ! !USES:
   use LIS_coreMod,       only : LIS_rc, LIS_domain
   use LIS_logMod,        only : LIS_logunit, LIS_endrun
   use galwemge_forcingMod, only : galwemge_struc
 
   implicit none
-! !ARGUMENTS:
+  ! !ARGUMENTS:
   integer, intent(in)  :: n
-  integer, intent(in)   :: findex
+  integer, intent(in)  :: findex
   integer, intent(in)  :: ifguess
   integer, intent(in)  :: jfguess
   logical, intent(in)  :: pcp_flag
   real,    intent(in)  :: input  ( ifguess,jfguess )
   real,    intent(out) :: output ( LIS_rc%lnc(n),LIS_rc%lnr(n) )
-!
-! !DESCRIPTION:
-!
-! This routine interpolates the GALWEM-GE data to the LIS grid.
+  !
+  ! !DESCRIPTION:
+  !
+  ! This routine interpolates the GALWEM-GE data to the LIS grid.
 
-!EOP
+  !EOP
 
   integer   :: mi, mo
-  integer   :: k
   integer   :: i,j
   integer   :: iret
   integer   :: midway
-  character(len=50) :: method
   real, allocatable, dimension(:,:)    :: var
   logical*1, allocatable, dimension(:) :: lb
   logical*1, allocatable, dimension(:) :: lo
+
+  external :: bilinear_interp
+  external :: conserv_interp
+  external :: neighbor_interp
 
   allocate(var(ifguess,jfguess))
   allocate(lb(ifguess*jfguess))
@@ -692,45 +703,48 @@ subroutine interp_galwemge(n, findex, ifguess, jfguess, pcp_flag, input, output)
   ! Interpolate to LIS grid
   select case( LIS_rc%met_interp(findex) )
 
-    case( "bilinear" )
-     call bilinear_interp(LIS_rc%gridDesc(n,:),lb,                     &
-          var,lo,output,mi,mo,                                         &
-          LIS_domain(n)%lat,LIS_domain(n)%lon,                         &
-          galwemge_struc(n)%w111,galwemge_struc(n)%w121,                   &
-          galwemge_struc(n)%w211,galwemge_struc(n)%w221,                   &
-          galwemge_struc(n)%n111,galwemge_struc(n)%n121,                   &
-          galwemge_struc(n)%n211,galwemge_struc(n)%n221,LIS_rc%udef,iret)
+  case( "bilinear" )
+     call bilinear_interp(LIS_rc%gridDesc(n,:), lb,                    &
+          var, lo, output, mi, mo,                                     &
+          LIS_domain(n)%lat, LIS_domain(n)%lon,                        &
+          galwemge_struc(n)%w111, galwemge_struc(n)%w121,              &
+          galwemge_struc(n)%w211, galwemge_struc(n)%w221,              &
+          galwemge_struc(n)%n111, galwemge_struc(n)%n121,              &
+          galwemge_struc(n)%n211, galwemge_struc(n)%n221,LIS_rc%udef,  &
+          iret)
 
-    case( "budget-bilinear" )
+  case( "budget-bilinear" )
      if (pcp_flag) then
-        call conserv_interp(LIS_rc%gridDesc(n,:),lb,                   &
-             var,lo,output,mi,mo,                                      &
+        call conserv_interp(LIS_rc%gridDesc(n,:), lb,                  &
+             var, lo, output, mi, mo,                                  &
              LIS_domain(n)%lat, LIS_domain(n)%lon,                     &
-             galwemge_struc(n)%w112,galwemge_struc(n)%w122,                &
-             galwemge_struc(n)%w212,galwemge_struc(n)%w222,                &
-             galwemge_struc(n)%n112,galwemge_struc(n)%n122,                &
-             galwemge_struc(n)%n212,galwemge_struc(n)%n222,LIS_rc%udef,iret)
+             galwemge_struc(n)%w112, galwemge_struc(n)%w122,           &
+             galwemge_struc(n)%w212, galwemge_struc(n)%w222,           &
+             galwemge_struc(n)%n112, galwemge_struc(n)%n122,           &
+             galwemge_struc(n)%n212, galwemge_struc(n)%n222,           &
+             LIS_rc%udef, iret)
      else
-        call bilinear_interp(LIS_rc%gridDesc(n,:),lb,                  &
-             var,lo,output,mi,mo,                                      &
+        call bilinear_interp(LIS_rc%gridDesc(n,:), lb,                 &
+             var, lo, output, mi, mo,                                  &
              LIS_domain(n)%lat, LIS_domain(n)%lon,                     &
-             galwemge_struc(n)%w111,galwemge_struc(n)%w121,                &
-             galwemge_struc(n)%w211,galwemge_struc(n)%w221,                &
-             galwemge_struc(n)%n111,galwemge_struc(n)%n121,                &
-             galwemge_struc(n)%n211,galwemge_struc(n)%n221,LIS_rc%udef,iret)
+             galwemge_struc(n)%w111, galwemge_struc(n)%w121,           &
+             galwemge_struc(n)%w211, galwemge_struc(n)%w221,           &
+             galwemge_struc(n)%n111, galwemge_struc(n)%n121,           &
+             galwemge_struc(n)%n211, galwemge_struc(n)%n221,           &
+             LIS_rc%udef, iret)
      endif
 
-     case( "neighbor" )
-        call neighbor_interp(LIS_rc%gridDesc(n,:),lb,                     &
-             var,lo,output,mi,mo,                                         &
-             LIS_domain(n)%lat, LIS_domain(n)%lon,                        &
-             galwemge_struc(n)%n113,LIS_rc%udef,iret)
+  case( "neighbor" )
+     call neighbor_interp(LIS_rc%gridDesc(n,:), lb,                 &
+          var, lo, output, mi, mo,                                  &
+          LIS_domain(n)%lat, LIS_domain(n)%lon,                     &
+          galwemge_struc(n)%n113, LIS_rc%udef, iret)
 
-     case DEFAULT
-        write(LIS_logunit,*) 'ERR: Unexpected interpolation method'
-        write(LIS_logunit,*) '     in interp_galwemge_first_guess'
-        write(LIS_logunit,*) '     ', trim(LIS_rc%met_interp(findex))
-        call LIS_endrun()  
+  case DEFAULT
+     write(LIS_logunit,*) '[ERR]: Unexpected interpolation method'
+     write(LIS_logunit,*) '     in interp_galwemge_first_guess'
+     write(LIS_logunit,*) '     ', trim(LIS_rc%met_interp(findex))
+     call LIS_endrun()
   end select
 
   deallocate(var)
@@ -745,7 +759,8 @@ end subroutine interp_galwemge
 ! \label{assign_processed_galwemgeforc}
 !
 ! !INTERFACE:
-subroutine assign_processed_galwemgeforc(n,m,order,var_index,galwemgeforc)
+subroutine assign_processed_galwemgeforc(n, m, order, var_index, &
+     galwemgeforc)
 ! !USES:
   use LIS_coreMod
   use galwemge_forcingMod, only : galwemge_struc
@@ -759,21 +774,21 @@ subroutine assign_processed_galwemgeforc(n,m,order,var_index,galwemgeforc)
   implicit none
 
   integer, intent(in) :: n
-  integer, intent(in) :: m 
+  integer, intent(in) :: m
   integer, intent(in) :: order
   integer, intent(in) :: var_index
   real,    intent(in) :: galwemgeforc(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
-  integer :: c,r
+  integer :: c, r
 
   do r=1,LIS_rc%lnr(n)
      do c=1,LIS_rc%lnc(n)
-        if(LIS_domain(n)%gindex(c,r).ne.-1) then
-           if(order.eq.1) then
+        if (LIS_domain(n)%gindex(c,r).ne.-1) then
+           if (order.eq.1) then
               galwemge_struc(n)%metdata1(var_index,m,&
                    LIS_domain(n)%gindex(c,r)) = &
                    galwemgeforc(c,r)
-           elseif(order.eq.2) then
+           elseif (order.eq.2) then
               galwemge_struc(n)%metdata2(var_index,m,&
                    LIS_domain(n)%gindex(c,r)) = &
                    galwemgeforc(c,r)

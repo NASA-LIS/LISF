@@ -1,6 +1,6 @@
 = Land surface Verification Toolkit (LVT): LVT {lisfrevision} Users Guide
-:revnumber: 4.0
-:revdate: 12 Nov 2024
+:revnumber: 4.1
+:revdate: 21 Nov 2025
 :doctype: book
 :sectnums:
 :toc:

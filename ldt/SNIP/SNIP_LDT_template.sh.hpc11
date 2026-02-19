@@ -1,0 +1,186 @@
+#!/bin/bash
+#SBATCH --job-name=PLACEHOLDER_DATETIME
+#SBATCH --output=./log/SNIP_LDT_%j.log        # Combined output log
+#SBATCH --error=./log/SNIP_LDT_error_%j.log   # Combined error log
+#SBATCH --nodes=1
+#SBATCH --ntasks=16  # Request 16 CPUs for your job
+#SBATCH --time=1:00:00
+#SBATCH --cluster-constraint=blue
+#SBATCH --account=NWP601
+#SBATCH --exclusive
+#SBATCH --mem=0
+
+ulimit -s unlimited
+
+# Configuration
+TARGET_DATETIME="PLACEHOLDER_DATETIME"
+LOG_DIR="./log"
+LOG_FILE="${LOG_DIR}/processing_log_${TARGET_DATETIME}.txt"
+
+# Create log directory if it doesn't exist
+mkdir -p $LOG_DIR
+
+# Change to submission directory
+if [ ! -z "$SLURM_SUBMIT_DIR" ]; then
+    cd "$SLURM_SUBMIT_DIR" || exit 1
+fi
+
+echo "=== Combined SNIP Python + LDT Processing Started at $(date) ===" | tee -a $LOG_FILE
+echo "Target datetime: $TARGET_DATETIME" | tee -a $LOG_FILE
+
+# Validate datetime format
+if [[ ${#TARGET_DATETIME} -ne 12 ]]; then
+    echo "ERROR: Invalid datetime format '$TARGET_DATETIME'. Must be YYYYMMDDHHMM (12 digits)" | tee -a $LOG_FILE
+    exit 1
+fi
+
+# Validate hour
+datetime_hour=${TARGET_DATETIME:8:2}
+if [[ ! "$datetime_hour" =~ ^(00|06|12|18)$ ]]; then
+    echo "ERROR: Invalid hour '$datetime_hour'. Must be 00, 06, 12, or 18" | tee -a $LOG_FILE
+    exit 1
+fi
+
+TARGET_DATETIME_10="${TARGET_DATETIME:0:10}"
+
+# Define file paths
+SNIP_OUTPUT_FILE="./SNIP_ops/data/output/amsr2_snip_0p1deg_${TARGET_DATETIME}_AFgrid.nc"
+AMSR2_INPUT_DIR="./data/input/AMSR2_SD_retrievals"
+TARGET_AFGRID_FILE="$AMSR2_INPUT_DIR/amsr2_snip_0p1deg_${TARGET_DATETIME}_AFgrid.nc"
+
+mkdir -p "$AMSR2_INPUT_DIR"
+
+#   --------------------------------------------------------------------------------------
+#   STEP 1: Run Python SNIP processing (if reprojected file doesn't exist)
+#   --------------------------------------------------------------------------------------
+
+python_success=false
+
+# Check if reprojected snow depth file already exists
+if [ -e "$TARGET_AFGRID_FILE" ] || [ -e "$SNIP_OUTPUT_FILE" ]; then
+    echo "=== STEP 1: Skipping Python SNIP Processing (File exists) ===" | tee -a $LOG_FILE
+    python_success=true
+else
+    echo "=== STEP 1: Starting Python SNIP Processing ===" | tee -a $LOG_FILE
+
+    cd ./SNIP_ops
+    
+    # Setup Python environment
+    #module purge
+    #unset LD_LIBRARY_PATH
+    #module use --append /home/emkemp/privatemodules/sles15
+    #module load lisf_7.6_intel_2023.2.1_emk_aiml
+
+    module use --append /ccs/home/emkemp/hpc11/privatemodules/
+    module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0
+    module use --append /sw/afw_sw/modulefiles
+    module load afw-python/3.11-202511
+
+    if [ $? -eq 0 ]; then
+        # Create and update config file
+        UNIQUE_CONFIG=$(mktemp ./config/SNIP_config_${TARGET_DATETIME}_XXXXXX.json)
+        
+        if [[ $? -eq 0 && -f "$UNIQUE_CONFIG" ]]; then
+            cp ./config/SNIP_config.json "$UNIQUE_CONFIG"
+            sed -i "/\"target_datetime\"/s/: \"[^\"]*\"/: \"$TARGET_DATETIME\"/g" "$UNIQUE_CONFIG"
+
+            echo "Started Python processing at: $(date)" | tee -a $LOG_FILE
+            python main.py "$UNIQUE_CONFIG" 2>&1 | tee -a $LOG_FILE
+            python_exit_code=${PIPESTATUS[0]}
+
+            rm -f "$UNIQUE_CONFIG"
+
+            if [ $python_exit_code -eq 0 ]; then
+                echo "SUCCESS: Python processing completed" | tee -a $LOG_FILE
+                python_success=true
+            else
+                echo "WARNING: Python processing failed (exit code: $python_exit_code)" | tee -a $LOG_FILE
+            fi
+        else
+            echo "WARNING: Could not create config file" | tee -a $LOG_FILE
+        fi
+    else
+        echo "WARNING: Failed to activate environment" | tee -a $LOG_FILE
+    fi
+
+    cd ..
+fi
+
+#   --------------------------------------------------------------------------------------
+#   STEP 2: Run LDT processing
+#   --------------------------------------------------------------------------------------
+
+echo "=== STEP 2: Starting LDT Processing ===" | tee -a $LOG_FILE
+
+#module purge
+#unset LD_LIBRARY_PATH
+#module use --append /home/emkemp/privatemodules/sles15
+#module load lisf_7.6_intel_2023.2.1_emk_aiml
+
+module use --append /ccs/home/emkemp/hpc11/privatemodules/
+module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0
+module use --append /sw/afw_sw/modulefiles
+module load afw-python/3.11-202511
+
+# Sanity checks
+if [ ! -e ./ldt.config ]; then
+    echo "ERROR: ./ldt.config not found!" | tee -a $LOG_FILE
+    exit 1
+fi
+
+if [ ! -e ./LDT ]; then
+   echo "ERROR: ./LDT does not exist!" | tee -a $LOG_FILE
+   exit 1
+fi
+
+# Move snow depth file to target location if available
+if [ -e "$SNIP_OUTPUT_FILE" ] && [ ! -e "$TARGET_AFGRID_FILE" ]; then
+    mv "$SNIP_OUTPUT_FILE" "$AMSR2_INPUT_DIR"
+    echo "Moved snow depth file to target directory" | tee -a $LOG_FILE
+fi
+
+# Check LDT output file
+ldt_output_file="./data/output/snip/SNIP_${TARGET_DATETIME_10}.nc"
+
+if [ -f "$ldt_output_file" ]; then
+    echo "LDT output file already exists - skipping LDT processing" | tee -a $LOG_FILE
+    ldt_exit_code=0
+else
+    # Update config file
+    sed -i "s/SNIP valid date (YYYYMMDDHH):[[:space:]]*[0-9]\{10\}/SNIP valid date (YYYYMMDDHH):                    ${TARGET_DATETIME_10}/g" ldt.config
+
+    echo "Started LDT processing at: $(date)" | tee -a $LOG_FILE
+    mpirun -np 1 ./LDT ldt.config 2>&1 | tee -a $LOG_FILE
+    ldt_exit_code=$?
+
+    if [ $ldt_exit_code -eq 0 ] && [ -f "$ldt_output_file" ]; then
+        echo "SUCCESS: LDT processing completed" | tee -a $LOG_FILE
+    else
+        echo "ERROR: LDT processing failed" | tee -a $LOG_FILE
+    fi
+fi
+
+#   --------------------------------------------------------------------------------------
+#   Final Summary
+#   --------------------------------------------------------------------------------------
+
+echo "" | tee -a $LOG_FILE
+echo "=== PROCESSING SUMMARY ===" | tee -a $LOG_FILE
+
+if [ "$python_success" = true ]; then
+    echo "Python processing: SUCCESS" | tee -a $LOG_FILE
+else
+    echo "Python processing: FAILED - LDT continued" | tee -a $LOG_FILE
+fi
+
+if [ -f "$ldt_output_file" ]; then
+    echo "LDT processing: SUCCESS" | tee -a $LOG_FILE
+    final_exit_code=0
+else
+    echo "LDT processing: FAILED" | tee -a $LOG_FILE
+    final_exit_code=1
+fi
+
+echo "Processing completed at $(date)" | tee -a $LOG_FILE
+
+exit $final_exit_code

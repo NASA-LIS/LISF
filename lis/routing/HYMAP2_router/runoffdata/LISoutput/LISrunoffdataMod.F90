@@ -49,7 +49,7 @@ module LISrunoffdataMod
      integer             :: nc,nr
      character(len=LIS_CONST_PATH_LEN)       :: previous_filename
      real                :: datares
-     real, allocatable   :: qs(:,:),qsb(:,:),evap(:,:)
+     real, allocatable   :: qs(:,:),qsb(:,:)
      
   end type LISrunoffdatadec
 
@@ -214,10 +214,8 @@ contains
       LISrunoffdata_struc(n)%previous_filename='none'
       allocate(LISrunoffdata_struc(n)%qs(LIS_rc%lnc(n),LIS_rc%lnr(n)))
       allocate(LISrunoffdata_struc(n)%qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-      allocate(LISrunoffdata_struc(n)%evap(LIS_rc%lnc(n),LIS_rc%lnr(n)))
       LISrunoffdata_struc(n)%qs=LIS_rc%udef
       LISrunoffdata_struc(n)%qsb=LIS_rc%udef
-      LISrunoffdata_struc(n)%evap=LIS_rc%udef
     enddo
     
   end subroutine LISrunoffdata_init
