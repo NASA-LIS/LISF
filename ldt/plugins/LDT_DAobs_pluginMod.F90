@@ -81,6 +81,7 @@ contains
 
 
     external readLISlsmSMObs
+    ! E.J: TODO: uncomment after fixing the relocation truncated error
     external readLISlsmTEFFObs    !Y.Kwon
     external readsyntheticsmobs
     external readNASA_AMSREsmObs
@@ -121,6 +122,7 @@ contains
     call registerdaobssetup(trim(LDT_LISlsmPrecipobsId)//char(0), LISlsmPrecip_obsInit)
     call registerdaobsread(trim(LDT_LISlsmPrecipobsId)//char(0), readLISlsmPrecipObs)
 
+    ! E.J: TODO: uncomment after fixing the relocation truncated error
     !Y.Kwon
     call registerdaobssetup(trim(LDT_LISlsmTEFFobsId)//char(0), LISlsmTEFF_obsInit)
     call registerdaobsread(trim(LDT_LISlsmTEFFobsId)//char(0), readLISlsmTEFFObs)

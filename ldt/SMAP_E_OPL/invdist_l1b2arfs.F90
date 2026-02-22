@@ -45,6 +45,8 @@
 
      !ALLOCATE(zerodistflag(size(ref_lat),size(ref_lon)))
      ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
+     zerodistflag = 0 ! E.J
+     
      !INITIAL THE OUTPUT VARIABLES
      arfs_tim=0.0
      arfs_tbv_cor=0.0
