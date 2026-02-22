@@ -49,6 +49,11 @@ DEPGEN_FLAGS += --exclude-finc-files mpif.h,netcdf.inc,CXMLDEF.FOR,mkl_vml.f90
 
 include ./configure.ldt
 
+# E.J: added these flags to tell the compiler to use a more relaxed memory model
+FFLAGS += -mcmodel=medium
+FC77FLAGS += -mcmodel=medium
+LDFLAGS += -mcmodel=medium
+
 # Define goals.
 LDT: $(OBJS)
 	 $(FC) -o $@ $(OBJS) $(FOPTS) $(LDFLAGS)
