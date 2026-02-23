@@ -138,13 +138,14 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
                 cmd_list.append(cmd)
                 jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
                 jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            
+
                 if py_call:
-                    if resol == '25km':
-                        slurm_commands.append(cmd)
-                    else:
-                        for lead_mon in range(config["EXP"]["lead_months"]):
-                            slurm_commands.append(cmd + f" {lead_mon}")
+                    slurm_commands.append(cmd)
+                    #if resol == '25km':
+                    #    slurm_commands.append(cmd)
+                    #else:
+                    #    for lead_mon in range(config["EXP"]["lead_months"]):
+                    #        slurm_commands.append(cmd + f" {lead_mon}")
                 else:
                     utils.job_script(config_file, jobfile, jobname, len(cmd_list),
                                      hours, cwd, None, group_jobs=cmd_list)
@@ -168,11 +169,12 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
 
             if py_call:
-                if resol == '25km':
-                    slurm_commands.append(cmd)
-                else:
-                    for lead_mon in range(config["EXP"]["lead_months"]):
-                        slurm_commands.append(cmd + f" {lead_mon}")
+                slurm_commands.append(cmd)
+                #if resol == '25km':
+                #    slurm_commands.append(cmd)
+                #else:
+                #    for lead_mon in range(config["EXP"]["lead_months"]):
+                #        slurm_commands.append(cmd + f" {lead_mon}")
             else:
                 utils.job_script(config_file, jobfile, jobname, ntasks,
                                  hours, cwd, None, in_command=cmd)

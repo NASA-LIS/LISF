@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
@@ -564,7 +563,7 @@ def write_ncfile(out_xr, outfile, encoding, logger):
                             # For time/ensemble dimensions, use chunk size of 1
                             chunk_tuple.append(1)
 
-                    updated_encoding[var_name]['chunksizes'] = tuple(chunk_tuple)                    
+                    updated_encoding[var_name]['chunksizes'] = tuple(chunk_tuple)
 
                 logger[0].info(f"Updated encoding for variables: {list(updated_encoding.keys())}", subtask=logger[1])
 
@@ -621,91 +620,195 @@ def log_memory_usage(message, logger):
     except Exception as e:
         logger[0].error(f"Error logging memory usage: {e}", subtask=logger[1])
 
-def get_optimized_encoding():
+def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-9999.0):
     """
-    Returns encoding dictionary for optimized saving.
+    Pre-pack multiple variables in a dataset to int16.
+    This triggers parallel dask computation across all variables.
+    Uses memory-efficient processing with proper -9999 handling.
     """
-    return {
-        'T2M': {
-            'dtype': 'int16',
-            'scale_factor': 0.01,
-            'add_offset': 288.0,  
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 8,
-            'shuffle': True,
-        },
-        'PS': {
-            'dtype': 'int16',
-            'scale_factor': 10.0,
-            'add_offset': 85000.0,  
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 7,
-            'shuffle': True,
-        },
-        'QV2M': {
-            'dtype': 'int16',
-            'scale_factor': 1e-6,
-            'add_offset': 0.01,  
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 8,
-            'shuffle': True,
-        },
-        'LWGAB': {
-            'dtype': 'int16',
-            'scale_factor': 0.2,  
-            'add_offset': 300.0,
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 9,
-            'shuffle': True,
-            'chunksizes': (120, 75, 150)
-        },
-        'SWGDN': {
-            'dtype': 'int16',
-            'scale_factor': 1.0,  
-            'add_offset': 400.0,
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 9,
-            'shuffle': True,
-        },
-        'PRECTOT': {
-            'dtype': 'int16',
-            'scale_factor': 1e-6,
-            'add_offset': 0.0005,
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 6,
-            'shuffle': True,
-        },
-        'WIND10M': {
-            'dtype': 'int16',
-            'scale_factor': 0.01,
-            'add_offset': 5.0,
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 6,
-            'shuffle': True,
-        },
-        'U10M': {
-            'dtype': 'int16',
-            'scale_factor': 0.01,
-            'add_offset': 5.0,
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 6,
-            'shuffle': True,
-        },
-        'V10M': {
-            'dtype': 'int16',
-            'scale_factor': 0.01,
-            'add_offset': 5.0,
-            '_FillValue': -32767,
-            'zlib': True,
-            'complevel': 6,
-            'shuffle': True,
-        },        
+    import gc
+    import dask
+    import dask.array
+
+    encoding = {
+        'T2M': {'scale_factor': 0.01, 'add_offset': 270.0, '_FillValue': -32767},
+        'PS': {'scale_factor': 1.0, 'add_offset': 85000.0, '_FillValue': -32767},
+        'QV2M': {'scale_factor': 1e-6, 'add_offset': 0.01, '_FillValue': -32767},
+        'LWGAB': {'scale_factor': 0.01, 'add_offset': 350.0, '_FillValue': -32767},
+        'SWGDN': {'scale_factor': 0.04, 'add_offset': 0.0, '_FillValue': -32767},
+        'PRECTOT': {'scale_factor': 1e-6, 'add_offset': 0.0005, '_FillValue': -32767},
+        'WIND10M': {'scale_factor': 0.01, 'add_offset': 5.0, '_FillValue': -32767},
+        'U10M': {'scale_factor': 0.01, 'add_offset': 0.0, '_FillValue': -32767},
+        'V10M': {'scale_factor': 0.01, 'add_offset': 0.0, '_FillValue': -32767},
     }
+
+    def pack_variable_to_int16(data_array, params):
+        """
+        Pre-pack a single xarray DataArray to int16 using dask operations.
+        Parameters:
+        -----------
+        data_array : xr.DataArray
+        Input data (may contain NaN or -9999 fill values)
+        params : dict
+        Dictionary with scale_factor, add_offset, _FillValue
+        """
+        scale = params['scale_factor']
+        offset = params['add_offset']
+        fill = params['_FillValue']
+
+        def pack_chunk(data):
+            """Pack a single dask chunk, handling -9999 and NaN"""
+            packed = np.empty(data.shape, dtype=np.int16)
+
+            # Create mask for VALID data
+            # Valid = finite AND not equal to input_fill_value
+            valid_mask = np.isfinite(data) & (np.abs(data - input_fill_value) > 0.1)
+
+            # Pack valid data
+            if np.any(valid_mask):
+                packed_values = (data[valid_mask] - offset) / scale
+                packed[valid_mask] = np.round(packed_values).astype(np.int16)
+
+            # Set invalid data to output fill value
+            packed[~valid_mask] = fill
+
+            return packed
+
+        # Apply packing using dask (parallelized)
+        if isinstance(data_array.data, dask.array.Array):
+            packed_data = dask.array.map_blocks(
+                pack_chunk,
+                data_array.data,
+                dtype=np.int16,
+                drop_axis=[],
+                new_axis=[]
+            )
+        else:
+            # Handle non-dask arrays
+            packed_data = pack_chunk(data_array.values)
+
+        # Create new DataArray with packed data
+        packed_da = xr.DataArray(
+            packed_data,
+            coords=data_array.coords,
+            dims=data_array.dims,
+            attrs={
+                'scale_factor': scale,
+                'add_offset': offset,
+                '_FillValue': fill,
+                **data_array.attrs  # Preserve other attributes
+            }
+        )
+        return packed_da
+
+    ds_packed = ds.copy(deep=False)
+    if logger:
+        logger[0].info("Pre-packing variables to int16...", subtask=logger[1])
+        logger[0].info(f"  Input fill value: {input_fill_value}", subtask=logger[1])
+
+    # dask arrays to compute
+    vars_to_compute = {}
+    encoding_dict = {}
+    for var_name in variables_to_pack:
+        packing_params = encoding[var_name]
+        if var_name in ds_packed:
+            if logger:
+                logger[0].info(f"  Preparing {var_name} for packing...", subtask=logger[1])
+
+            # Get packed dask array (lazy) - with fill value handling
+            packed_da = pack_variable_to_int16(
+                ds_packed[var_name],
+                packing_params)
+
+            # update encoding dict dict
+            encoding_dict[var_name] = {
+                'scale_factor': packing_params['scale_factor'],
+                'add_offset': packing_params['add_offset'],
+                '_FillValue': packing_params['_FillValue'],
+            }
+
+            # Store the dask array for batch computation
+            if isinstance(packed_da.data, dask.array.Array):
+                vars_to_compute[var_name] = packed_da
+            else:
+                # Already computed, just assign
+                ds_packed[var_name] = packed_da
+
+    if vars_to_compute:
+        if logger:
+            logger[0].info(f"Computing {len(vars_to_compute)} packed arrays in parallel...",
+                          subtask=logger[1])
+
+        # Compute all at once (parallel + memory efficient)
+        computed_data = dask.compute(
+            *[var.data for var in vars_to_compute.values()],
+            scheduler='threads'
+        )
+
+        # Assign computed results
+        for (var_name, packed_da), computed_array in zip(vars_to_compute.items(), computed_data):
+            # Replace dask array with numpy array
+            ds_packed[var_name].data = computed_array
+
+            # Count valid vs fill values for verification
+            n_total = computed_array.size
+            n_fill = np.sum(computed_array == packed_da.attrs['_FillValue'])
+            n_valid = n_total - n_fill
+
+            if logger:
+                logger[0].info(
+                    f"  {var_name}: {computed_array.dtype}, "
+                    f"{computed_array.nbytes / 1e9:.2f} GB, "
+                    f"{n_valid:,} valid / {n_fill:,} fill", 
+                    subtask=logger[1]
+                )
+
+        # Explicit cleanup of intermediate dask structures
+        del vars_to_compute, computed_data
+        gc.collect()
+
+        if logger:
+            logger[0].info("Packing complete! Memory cleaned.", subtask=logger[1])
+
+    return ds_packed, encoding_dict
+
+def add_packing_attributes(filepath, packing_params, logger=None):
+    """
+    Add scale_factor and add_offset attributes to already-written netCDF file.
+    
+    Parameters:
+    -----------
+    filepath : str
+        Path to netCDF file
+    packing_params : dict
+        Dictionary like {'PRECTOT': {'scale_factor': 1e-6, 'add_offset': 0.0005}}
+    """
+    try:
+        # Open file in append mode
+        with nc4(filepath, 'a') as ds:
+            for var_name, params in packing_params.items():
+                if var_name in ds.variables:
+                    var = ds.variables[var_name]
+
+                    # Add packing attributes
+                    if 'scale_factor' in params:
+                        var.scale_factor = params['scale_factor']
+                    if 'add_offset' in params:
+                        var.add_offset = params['add_offset']
+
+                    if logger:
+                        logger[0].info(
+                            f"  Added packing attributes to {var_name}: "
+                            f"scale={params.get('scale_factor')}, "
+                            f"offset={params.get('add_offset')}",
+                            subtask=logger[1]
+                        )
+
+        if logger:
+            logger[0].info(f"Successfully updated attributes in {filepath}", subtask=logger[1])
+        return True
+
+    except Exception as e:
+        if logger:
+            logger[0].error(f"Failed to add attributes: {e}", subtask=logger[1])
+        return False

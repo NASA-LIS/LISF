@@ -4,7 +4,6 @@ Python main script for hindcast processing
 import os
 import sys
 import argparse
-from datetime import datetime
 from ghis2s.main.hcast_module import S2SHcast
 from ghis2s.main import walltime
 from ghis2s.shared import logging_utils

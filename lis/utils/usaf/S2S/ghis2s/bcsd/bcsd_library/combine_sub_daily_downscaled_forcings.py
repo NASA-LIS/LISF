@@ -24,7 +24,7 @@ import numpy as np
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-from ghis2s.shared.utils import load_ncdata, get_domain_info, get_chunk_sizes
+from ghis2s.shared.utils import load_ncdata, get_domain_info
 from ghis2s.shared.logging_utils import TaskLogger
 
 
@@ -220,14 +220,14 @@ def process_ensemble(_ens):
         ### Finished reading all files now writing combined output
         outfile = OUTFILE_TEMPLATE.format(outdir, MODEL_NAME, fcst_year, fcst_month)
         logger.info(f"Writing {outfile}", subtask=subtask)
-        sdate = datetime(fcst_year, fcst_month, 1, 6)
         num_days = temp.shape[0]
-        dates = [sdate+relativedelta(hours=n*6) for n in range(num_days)]
         force_dt = 21600
         if MODEL_NAME == 'CFSv2':
             force_dt = 21600
         if MODEL_NAME == 'GEOSv3':
             force_dt = 10800
+        sdate = datetime(fcst_year, fcst_month, 1, force_dt/3600)
+        dates = [sdate+relativedelta(hours=n*force_dt/3600) for n in range(num_days)]
         write_bc_netcdf(outfile, in_data, VAR_NAME_LIST, \
                         'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \
                         UNITS, VAR_NAME_LIST, lons, lats, sdate, dates, 8, lats[-1], \

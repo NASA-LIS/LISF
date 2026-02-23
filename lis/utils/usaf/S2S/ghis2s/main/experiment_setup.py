@@ -49,7 +49,8 @@ class DownloadForecasts():
         self.patchdir = self.config['SETUP']['supplementarydir'] + "/bcsd_fcst/patch_files/"
         self.cfsv2_log = os.path.join(self.scrdir, 'CFSv2_missing_corrupted_files')
         self.srcdir = "https://noaacfs.blob.core.windows.net/cfs"
-        self.nmme_rawdir =  self.config['BCSD']['nmme_download_dir']
+        if self.config.get('BCSD', {}).get('nmme_download_dir'):
+            self.nmme_rawdir =  self.config['BCSD']['nmme_download_dir']
         if os.path.exists(self.cfsv2_log):
             os.remove(self.cfsv2_log)
 
@@ -388,15 +389,17 @@ class S2Srun(DownloadForecasts):
         self.lishmod = self.config['SETUP']['LISFMOD']
         self.metforc = self.config['SETUP']['METFORC']
         self.e2esroot = self.config['SETUP']['E2ESDIR']
-        self.domain = self.config['EXP']['DOMAIN']
+        if self.config.get('EXP', {}).get('DOMAIN'):
+            self.domain = self.config['EXP']['DOMAIN']
         self.supdir = self.config['SETUP']['supplementarydir']
         self.ldtfile = self.config['SETUP']['ldtinputfile']
-        self.models = self.config["EXP"]["NMME_models"]
+        if self.config.get('EXP', {}).get('NMME_models'):
+            self.models = self.config["EXP"]["NMME_models"]
         self.constraint = self.config['SETUP']['CONSTRAINT']
         self.fcst_model = self.config['BCSD']['source']['metforce']
         self.precip_model = self.config['BCSD']['source']['precip']
         self.obs_model = self.config['BCSD']['source']['obs']
-        
+
         self.schedule = {}
         self.additional_env_vars = additional_env_vars
 
@@ -1219,7 +1222,7 @@ class S2Srun(DownloadForecasts):
                              f'ldtlog_noahmp401_{mon_abbr}{self.yyyy}.0000'))
 
         os.chdir(self.e2esdir)
-    
+
     def bcsd(self, clim=None):
         """ BCSD 7 steps """
         lats, _ = utils.get_domain_info(self.config_file, coord=True)
@@ -1257,10 +1260,10 @@ class S2Srun(DownloadForecasts):
             # link Climatology directories
             os.chdir(self.e2esdir + f'/bcsd_fcst/{self.fcst_model}_{self._resol}/raw')
             self.create_symlink(fcast_clim_dir, 'Climatology')
-            
+
             os.chdir(self.e2esdir + '/bcsd_fcst/NMME/raw')
             self.create_symlink(nmme_clim_dir, 'Climatology')
-            
+
             os.chdir(self.e2esdir + f'/bcsd_fcst/{self.obs_model}_{self._resol}/raw')
             self.create_symlink(usaf_25km, 'Climatology')
             os.chdir(self.scrdir + 'bcsd_fcst')
@@ -1273,10 +1276,11 @@ class S2Srun(DownloadForecasts):
         if self.config['BCSD']['source']['precip'] is not None:
             self._pr_biascorr()
             self._pr_tempdis()
-        self._combine_files()
-            
+        if self.fcst_model.lower() == "cfsv2":
+            self._combine_files()
+
     # BCSD methods (internal)
-    # -----------------------    
+    # -----------------------
     def _mf_regrid(self, clim_syr, clim_eyr=None):
         '''
         (1) metforce_regridding (formerly bcsd01) - regrid metforce files
@@ -1295,7 +1299,7 @@ class S2Srun(DownloadForecasts):
         slurm_commands = bcsd.metforce_regridding.main(
             self.e2esroot +'/' + self.config_file, clim_syr, clim_eyr,
             self._mmm, self._cwd, jobname, 1, 2, py_call=True)
-        
+
         # multi tasks per job
         l_sub = info['l_sub']
         par_info = {}
@@ -1307,7 +1311,7 @@ class S2Srun(DownloadForecasts):
         if self.fcst_model.upper() == 'GEOSV3' and self._resol == '5km':
             par_info['MEM'] = '480GB'
             info['HOURS'] = '12'
-            
+
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, self._cwd)
@@ -1320,7 +1324,7 @@ class S2Srun(DownloadForecasts):
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-        
+
             shutil.copy(jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_run.sh')
             utils.remove_sbatch_lines(jobname + f'{i+1:02d}_run.sh')
             #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), info['HOURS'],
@@ -1360,7 +1364,7 @@ class S2Srun(DownloadForecasts):
                 finally:
                     tfile.close()
                     os.unlink(tfile.name)
-        
+
                 shutil.copy(jobname + f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_run.sh')
                 utils.remove_sbatch_lines(jobname + f'{i+1:02d}_run.sh')
         else:
@@ -1377,7 +1381,7 @@ class S2Srun(DownloadForecasts):
             utils.remove_sbatch_lines(jobname + 'run.sh')
             #utils.cylc_job_scripts(jobname + 'run.sh', 3, self._cwd, command_list=slurm_commands)
 
-    def _mf_biascorr(self):   
+    def _mf_biascorr(self):
         # (4) metforce_biascorrection (formerly bcsd04): Monthly "BC" step applied to CFSv2
         #    (task_04.py, after 1 and 3)
         # ---------------------------------------------------------------------------------

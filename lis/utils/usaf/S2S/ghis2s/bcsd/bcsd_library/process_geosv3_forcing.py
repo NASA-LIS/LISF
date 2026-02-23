@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 import xesmf as xe
 import yaml
-from ghis2s.shared.utils import get_domain_info, load_ncdata, get_chunk_sizes, write_ncfile, get_optimized_encoding
+from ghis2s.shared.utils import get_domain_info, load_ncdata, get_chunk_sizes, write_ncfile, pack_dataset_to_int16, add_packing_attributes
 from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask, add_fcorr_vars, apply_fcorr
 from ghis2s.bcsd.bcsd_library.bcsd_functions import VarLimits as lim
 from ghis2s.shared.logging_utils import TaskLogger
@@ -57,14 +57,28 @@ def _read_cmd_args():
 
 def write_monthly_optimized(this_6h, file_6h, file_mon, logger):
     ''' writes regridded raw Monthly and 3-hourly files '''
-    encoding = get_optimized_encoding()
-    write_ncfile(this_6h, file_6h, encoding, logger)
+    var_list = ["PRECTOT", "PS", "T2M", "LWGAB", "SWGDN", "QV2M", "WIND10M"]
+    compress_encoding = {
+        var: {'dtype': 'int16', "zlib": True, "complevel": 6, "shuffle": True, "missing_value": -32767}
+        for var in var_list
+    }
+    packed_ds, packing_params = pack_dataset_to_int16(this_6h, var_list, logger=logger)
+    write_ncfile(packed_ds, file_6h, compress_encoding, logger)
+    add_packing_attributes(file_6h, packing_params, logger)
+    packed_ds.close()
+    del packed_ds
+    gc.collect()
+
     this_mon = this_6h.mean(dim="time")
-    write_ncfile(this_mon, file_mon, encoding, logger)
+    this_mon = this_mon.fillna(-9999.0)
+    packed_ds, packing_params = pack_dataset_to_int16(this_mon, var_list, logger=logger)
+    write_ncfile(packed_ds, file_mon, compress_encoding, logger)
+    add_packing_attributes(file_mon, packing_params, logger)
     this_6h.close()
     this_mon.close()
-    del this_6h, this_mon
-    
+    packed_ds.close()
+    del this_6h, this_mon, packed_ds
+
 def write_monthly_files(this_6h, file_6h, file_mon, logger):
     ''' writes regridded raw Monthly and 3-hourly files '''
     encoding = {
@@ -180,7 +194,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
         elevation_regridded = bil_regridder(geos_elev['ELEVATION'].where(geosv3_land_mask['LANDMASK'] > 0))
         elevation_regridded = elevation_regridded.where(target_land_mask['LANDMASK'] > 0)
         ds_out["ELEV_DIFF"] = target_land_mask["ELEVATION"] - elevation_regridded
-        
+
         # Add local hour, doy, lat_2d for ASPECT correction
         ds_out = add_fcorr_vars(ds_out)
 
@@ -189,7 +203,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
             apply_fcorr,
             target_land_mask["LANDMASK"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
             target_land_mask["SLOPE"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
-            target_land_mask["ASPECT"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),            
+            target_land_mask["ASPECT"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
             ds_out["ELEV_DIFF"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
             ds_out["LAT_2D"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
             ds_out["T2M"].chunk({'lat': lat_chunk, 'lon': lon_chunk}),
@@ -222,7 +236,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
             var_no = 4
         if aspect_corr:
             ds_out["SWGDN"] = result.isel(variable = var_no)
-            
+
         # remove temporary variables
         ds_out = ds_out.drop_vars(["ELEV_DIFF", "LHOUR", "DOY", "LAT_2D"])
 
@@ -241,7 +255,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
         'WIND10M': {'var_name': 'WIND'}
     }
     ds_out = limits.clip_forcing_variables(ds_out, var_configs)
-    ds_out = ds_out.chunk({'time':-1, 'lat': -1, 'lon': -1})
+    #ds_out = ds_out.chunk({'time':-1, 'lat': -1, 'lon': -1})
     dt1 = dt1 + relativedelta(months=rank)
     file_6h = outdir_6hourly + '/' + \
         final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
@@ -255,7 +269,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
     geosv3_masked.close()
     del ds_out, geosv3_masked
     logger.info(f"Done processing GEOSv3 forecast files for {rank}", subtask = subtask)
-    
+
 def driver(rank, logger_task=None):
     """Main driver. rank = forecast month"""
     new_name = {'PRECTOTCORR': 'PRECTOT', 'T2M': 'T2M', 'PS': 'PS',
@@ -273,7 +287,7 @@ def driver(rank, logger_task=None):
     dt0 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
     dt1 = dt0 + relativedelta(months=rank)
     subtask = f'{dt1.year:04d}{dt1.month:02d}'
-    
+
     if logger_task is None:
         task_name = os.environ.get('SCRIPT_NAME')
         logger = TaskLogger(task_name,
