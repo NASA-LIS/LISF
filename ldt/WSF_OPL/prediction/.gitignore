@@ -1,0 +1,16 @@
+# Large model files
+*.pkl
+*.pickle
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Slurm output
+slurm-*.out
+*.log
