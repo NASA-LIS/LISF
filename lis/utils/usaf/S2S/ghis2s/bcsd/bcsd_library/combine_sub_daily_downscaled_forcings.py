@@ -226,7 +226,7 @@ def process_ensemble(_ens):
             force_dt = 21600
         if MODEL_NAME == 'GEOSv3':
             force_dt = 10800
-        sdate = datetime(fcst_year, fcst_month, 1, force_dt/3600)
+        sdate = datetime(fcst_year, fcst_month, 1, force_dt//3600)
         dates = [sdate+relativedelta(hours=n*force_dt/3600) for n in range(num_days)]
         write_bc_netcdf(outfile, in_data, VAR_NAME_LIST, \
                         'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \

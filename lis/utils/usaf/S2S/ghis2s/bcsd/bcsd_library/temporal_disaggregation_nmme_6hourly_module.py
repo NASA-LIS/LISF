@@ -284,7 +284,7 @@ def process_ensemble(ens):
         os.makedirs(outdir, exist_ok=True)
 
     for lead_num in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
-        fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, FORCE_DT/3600) + \
+        fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, FORCE_DT//3600) + \
         relativedelta(months=lead_num)
         fcst_year, fcst_month = fcst_date.year, fcst_date.month
 
