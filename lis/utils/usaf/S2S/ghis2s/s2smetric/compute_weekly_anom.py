@@ -273,8 +273,8 @@ def process_variable(var_name, anom):
         'units': '1'
     }
     anom_xr['time'].attrs = {
-        'long_name': 'Forecast month',
-        'units': 'months'
+        'long_name': 'Forecast week',
+        'units': 'weeks'
     }
     anom_xr[var_name + '_' + anom].attrs = {
         'long_name': long_names[var_name],
