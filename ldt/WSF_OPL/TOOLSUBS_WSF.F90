@@ -417,5 +417,28 @@ CONTAINS
 #endif
     
     END SUBROUTINE get_wsf_data_with_flags
+    
+    FUNCTION detect_pass_type(lat, nscans, nfovs) RESULT(pass_type)
+        ! Returns: 1=ascending, -1=descending, 0=unknown
+        INTEGER :: pass_type
+        REAL*4, INTENT(IN) :: lat(:,:)  ! (nfovs, nscans)
+        INTEGER, INTENT(IN) :: nscans, nfovs
+        
+        REAL :: lat_start, lat_end
+        INTEGER :: n_avg
+        
+        n_avg = MIN(10, nscans/10)  ! Average first/last 10 scans
+        
+        lat_start = SUM(lat(:, 1:n_avg)) / (nfovs * n_avg)
+        lat_end = SUM(lat(:, nscans-n_avg+1:nscans)) / (nfovs * n_avg)
+        
+        IF (lat_end - lat_start > 0.5) THEN
+            pass_type = 1  ! Ascending
+        ELSE IF (lat_start - lat_end > 0.5) THEN
+            pass_type = -1  ! Descending
+        ELSE
+            pass_type = 0  ! Unknown/equatorial
+        END IF
+    END FUNCTION detect_pass_type
 
 END MODULE TOOLSUBS_WSF
