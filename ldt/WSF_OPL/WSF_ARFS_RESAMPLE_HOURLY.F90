@@ -11,7 +11,7 @@
 !-------------------------------------------------------------------------
 
 subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
-                                    yyyymmdd, hour_str, n)
+                                    yyyymmdd, hour_str, n, pass_suffix)
 
     USE TOOLSUBS_WSF
     USE invdist_wsf2arfs
@@ -29,6 +29,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     character(len=8), intent(in) :: yyyymmdd
     character(len=2), intent(in) :: hour_str
     integer, intent(in) :: n
+    character(len=3), intent(in) :: pass_suffix  ! ADD THIS LINE
+
     
     ! ARFS grid arrays
     real*8, allocatable :: ARFS_LAT(:), ARFS_LON(:)
@@ -115,6 +117,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] WSF HOURLY GROUP PROCESSING'
     write(LDT_logunit,*)'[INFO] Hour: ', hour_str, 'H'
+    write(LDT_logunit,*)'[INFO] Pass type: ', trim(pass_suffix)  
     write(LDT_logunit,*)'[INFO] Number of files: ', n_files
     write(LDT_logunit,*)'[INFO] ========================================='
     
@@ -575,7 +578,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ! =====================================================================
     ! WRITE OUTPUT
     ! =====================================================================
-    output_filename = trim(output_dir)//'/WSF_SDR_resampled_'//yyyymmdd//'_t'//hour_str//'00.nc'
+    output_filename = trim(output_dir)//'/WSF_SDR_resampled_'//yyyymmdd//'_t'//hour_str//'00_'//trim(pass_suffix)//'.nc'
     
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Writing stitched hourly output'
