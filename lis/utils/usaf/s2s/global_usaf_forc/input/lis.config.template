@@ -253,7 +253,7 @@ AGRMET IMERG temperature threshold:        278
 AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
 ## S2S July-2024 forecast and after – use the following option:
-AGRMET IMERG version:                      V07B            # V07B started 1 June 2024
+AGRMET IMERG version:                      V07C            # V07C started 4 Mar 2026
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 # Bratseth runtime settings
