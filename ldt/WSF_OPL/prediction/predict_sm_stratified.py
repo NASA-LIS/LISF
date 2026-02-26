@@ -723,8 +723,9 @@ class StratifiedSoilMoisturePredictor:
         output_paths : list of str
             Paths to all written output files
         """
+        dt_obj = self._parse_time_from_filename(input_path)
         print("=" * 60)
-        print(f"HOURLY NC PREDICTION")
+        print(f"Soil moisture prediction for {dt_obj.strftime('%Y-%m-%d %H:%M UTC')}")
         print("=" * 60)
         print(f"  Input: {input_path}")
 
