@@ -826,7 +826,8 @@ module LIS_PRIV_rcMod
      integer                :: laiInterval
      real*8                 :: laitime  
      real*8                 :: saitime  
-     character*50           :: wopt     
+     character*50           :: wopt
+     character*50           :: wopt_routing
      integer                :: wopt_rst
      character*50           :: wout           
      integer                :: wsingle

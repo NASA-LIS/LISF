@@ -443,6 +443,12 @@ contains
 
     character*20 :: model_name ! EMK
 
+    character(len=10)       :: fres
+    character(len=10)       :: fres2
+    character*1             :: fres1(10)
+    character(len=1)        :: fproj
+    integer                 :: varid_def_local
+
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
 
@@ -728,14 +734,54 @@ contains
              call LVT_endrun()
           end if
 
+          if(LVT_rc%domain.eq."polar") then
+             fproj = 'P'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."lambert") then
+             fproj = 'L'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."mercator") then
+             fproj = 'M'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."gaussian") then
+             fproj = 'G'
+             write(unit=fres, fmt='(i2.2)') &
+                  LVT_LIS_rc(1)%gridDesc(9)*100
+             fres1 = '0P'//trim(fres)//'DEG'
+          else
+             fproj = 'C'
+             write(unit=fres, fmt='(i10)') &
+                  nint(LVT_LIS_rc(1)%gridDesc(10)*100)
+             read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
+             c = 0
+             do i=1,10
+                if(fres1(i).ne.' '.and.c==0) c = i
+             enddo
+             ! EMK...Make code consistent with LIS
+             if (LVT_LIS_rc(1)%gridDesc(10) .lt. 0.1) then
+                fres2 = '0P0'
+             else
+                fres2 = '0P'
+             end if
+             do i=c,10
+                fres2 = trim(fres2)//trim(fres1(i))
+             enddo
+             fres2 = trim(fres2)//'DEG'
+          endif
+
           ! EMK...Different file name convention for 24-hr data
           if (LVT_rc%tavgInterval == 86400) then
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
+                  //'_GP.'//trim(LVT_rc%generating_process) &
+                  !//'_GP.'//trim(model_name) &
+                  !//'_GR.C0P09DEG' &
+                  //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS24' &
                   //'_DD.'//trim(cdate2) &
@@ -747,7 +793,8 @@ contains
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
-                     //'_GP.'//trim(model_name) &
+                     //'_GP.'//trim(LVT_rc%generating_process) &
+                     !//'_GP.'//trim(model_name) &
                      //'_GR.C0P09DEG' &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.LIS24-SSDEV' &
@@ -757,12 +804,23 @@ contains
              end if
           else
              ! EMK...Assume 3-hr
+             ! fname_mean = trim(LVT_rc%statsodir) &
+             !      //'/PS.557WW' &
+             !      //'_SC.'//trim(LVT_rc%security_class) &
+             !      //'_DI.'//trim(LVT_rc%data_category) &
+             !      //'_GP.'//trim(model_name) &
+             !      //'_GR.C0P09DEG' &
+             !      //'_AR.'//trim(LVT_rc%area_of_data) &
+             !      //'_PA.LIS' &
+             !      //'_DD.'//trim(cdate2) &
+             !      //'_DT.'//trim(cdate3) &
+             !      //'_DF.GR2'
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
+                  //'_GP.'//trim(LVT_rc%generating_process) &
+                  //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS' &
                   //'_DD.'//trim(cdate2) &
@@ -770,17 +828,29 @@ contains
                   //'_DF.GR2'
 
              if (LVT_rc%nensem > 1) then
+                ! fname_ssdev = trim(LVT_rc%statsodir) &
+                !      //'/PS.557WW' &
+                !      //'_SC.'//trim(LVT_rc%security_class) &
+                !      //'_DI.'//trim(LVT_rc%data_category) &
+                !      //'_GP.'//trim(model_name) &
+                !      //'_GR.C0P09DEG' &
+                !      //'_AR.'//trim(LVT_rc%area_of_data) &
+                !      //'_PA.SSDEV' &
+                !      //'_DD.'//trim(cdate2) &
+                !      //'_DT.'//trim(cdate3) &
+                !      //'_DF.GR2'
                 fname_ssdev = trim(LVT_rc%statsodir) &
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
-                     //'_GP.'//trim(model_name) &
-                     //'_GR.C0P09DEG' &
+                     //'_GP.'//trim(LVT_rc%generating_process) &
+                     //'_GR.'//trim(fproj)//trim(fres2) &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.SSDEV' &
                      //'_DD.'//trim(cdate2) &
                      //'_DT.'//trim(cdate3) &
                      //'_DF.GR2'
+
              end if
           end if
           ! Setup of GRIB-1 and GRIB-2 Metadata Section
@@ -1893,6 +1963,151 @@ contains
 
                       end if ! if PS41 snow variable
                    end if ! If processing JULES PS41 snow ensembles.
+
+                   ! EMK...Special processing of qsb_tavg or qs_tavg rate.  We
+                   ! need to also provide 3-hrly accumulation, and
+                   ! LIS can't write both.  So, we will calculate
+                   ! qsb_acc from qsb_tavg, or qs_acc from qs_tavg
+                   if (LVT_rc%lvt_out_format .eq. "grib2" .and. &
+                        lisdataentry%gribDis == 1 .and. &
+                        lisdataentry%gribCat == 0 .and. &
+                        (lisdataentry%varid_def == 192 .or. &
+                        lisdataentry%varid_def == 193)) then
+                      do m = 1, LVT_rc%nensem
+
+                         if (lisdataentry%varid_def == 192) then
+                            varid_def_local = 5 ! qsb_acc
+                         else if (lisdataentry%varid_def == 193) then
+                            varid_def_local = 6 ! qs_acc
+                         end if
+
+                         ! Must initialize ensemble member with "undefined" for
+                         ! noise smoother
+                         gtmp1_1d_mem(:) = LVT_rc%udef
+                         do r = 1, LVT_rc%lnr
+                            do c = 1, LVT_rc%lnc
+                               if (LVT_domain%gindex(c,r) .ne. -1) then
+                                  gid = LVT_domain%gindex(c,r)
+                                  gtmp1_1d_mem(c + (r-1)*LVT_rc%lnc) = &
+                                       dataEntry%value(gid,m,k)*10800
+                               endif
+                            enddo ! c
+                         enddo ! r
+
+                         ! Apply the smoother
+                         if (LVT_rc%applyNoiseReductionFilter == 1) then
+                            call applyNoiseReductionFilter(gtmp1_1d_mem)
+                         end if
+
+                         ! Now provide smoothed field to ensemble mean
+                         ! and spread
+                         do r = 1,LVT_rc%lnr
+                            do c = 1,LVT_rc%lnc
+                               if (LVT_domain%gindex(c,r) .ne. -1) then
+                                  gid = LVT_domain%gindex(c,r)
+                                  if (LVT_rc%nensem > 1) then
+                                     ! Use Welford algorithm to calculate
+                                     ! mean and standard deviation
+                                     count = ngtmp1_1d(c + (r-1)*LVT_rc%lnc)
+                                     mean = gtmp1_1d(c + (r-1)*LVT_rc%lnc)
+                                     m2 = gtmp1_ss(c + (r-1)*LVT_rc%lnc)
+                                     new_value = &
+                                          gtmp1_1d_mem(c + (r-1)*LVT_rc%lnc)
+                                     call welford_update(count, mean, m2, &
+                                          new_value)
+                                     ngtmp1_1d(c + (r-1)*LVT_rc%lnc) = count
+                                     gtmp1_1d(c + (r-1)*LVT_rc%lnc) = mean
+                                     gtmp1_ss(c + (r-1)*LVT_rc%lnc) = m2
+                                  else
+                                     gtmp1_1d(c + (r-1)*LVT_rc%lnc) = &
+                                          gtmp1_1d(c + (r-1)*LVT_rc%lnc) + &
+                                          gtmp1_1d_mem(c + (r-1)*LVT_rc%lnc)
+                                     ngtmp1_1d(c + (r-1)*LVT_rc%lnc) = &
+                                          ngtmp1_1d(c + (r-1)*LVT_rc%lnc) + 1
+                                  end if
+                               endif
+                            enddo ! c
+                         enddo ! r
+                      end do ! m
+
+                      ! Finalize the ensemble mean and spread
+                      do r = 1, LVT_rc%lnr
+                         do c = 1, LVT_rc%lnc
+                            if (LVT_rc%nensem > 1) then
+                               ! Use Welford algorithm to calculate mean and
+                               ! standard deviation
+                               count = ngtmp1_1d(c + (r-1)*LVT_rc%lnc)
+                               if (count < 1) then
+                                  gtmp1_1d(c + (r-1)*LVT_rc%lnc) = LVT_rc%udef
+                                  gtmp1_ss(c + (r-1)*LVT_rc%lnc) = LVT_rc%udef
+                               else
+                                  mean = gtmp1_1d(c + (r-1)*LVT_rc%lnc)
+                                  m2 = gtmp1_ss(c + (r-1)*LVT_rc%lnc)
+                                  call welford_finalize(count, mean, m2, stddev)
+                                  gtmp1_1d(c + (r-1)*LVT_rc%lnc) = mean
+                                  gtmp1_ss(c + (r-1)*LVT_rc%lnc) = stddev
+                               end if
+                            else ! No ensembles, just calculate mean
+                               if(ngtmp1_1d(c + (r-1)*LVT_rc%lnc).gt.0) then
+                                  gtmp1_1d(c + (r-1)*LVT_rc%lnc) = &
+                                       gtmp1_1d(c + (r-1)*LVT_rc%lnc)/&
+                                       ngtmp1_1d(c + (r-1)*LVT_rc%lnc)
+                               else
+                                  gtmp1_1d(c + (r-1)*LVT_rc%lnc) = LVT_rc%udef
+                               end if
+                               gtmp1_ss(c + (r-1)*LVT_rc%lnc) = LVT_rc%udef
+                            end if
+                         enddo ! c
+                      enddo ! r
+
+                      call writeSingleGrib2Var(ftn_mean, &
+                           gtmp1_1d, &
+                           varid_def_local, &
+                           lisdataentry%gribSF, &
+                           lisdataentry%gribSfc, &
+                           lisdataentry%gribLvl, &
+                           lisdataentry%gribDis, &
+                           lisdataentry%gribCat, &
+                           pdTemplate, &
+                           stepType, &
+                           time_unit, &
+                           time_past, &
+                           time_curr, &
+                           timeRange, &
+                           k, &
+                           toplev(k:k), &
+                           botlev(k:k), &
+                           depscale(k:k), &
+                           typeOfGeneratingProcess=4, &
+                           typeOfProcessedData=4)
+
+                      if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
+                           LVT_rc%nensem > 1 &
+                           .and. .not. jules_ps41_ens_snow) then
+                         call writeSingleGrib2Var(ftn_ssdev, &
+                              gtmp1_ss, &
+                              varid_def_local, &
+                              lisdataentry%gribSF, &
+                              lisdataentry%gribSfc, &
+                              lisdataentry%gribLvl, &
+                              lisdataentry%gribDis, &
+                              lisdataentry%gribCat, &
+                              pdTemplate, &
+                              stepType, &
+                              time_unit, &
+                              time_past, &
+                              time_curr, &
+                              timeRange, &
+                              k, &
+                              toplev(k:k), &
+                              botlev(k:k), &
+                              depscale(k:k), &
+                              ensembleSpread=.true., &
+                              typeOfGeneratingProcess=4, &
+                              typeOfProcessedData=4)
+                      end if
+
+                   end if ! EMK Calculate qsb_acc from qsb_tavg
 
                    ! Normal ensemble postprocessing starts here.
                    do m = 1, LVT_rc%nensem

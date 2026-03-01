@@ -313,6 +313,7 @@ module LVT_PRIV_rcMod
      character*500           :: distribution_class
      character*500           :: data_category
      character*500           :: area_of_data
+     character*500           :: generating_process
      character*500          :: institution = 'NASA GSFC'
 
      integer                :: nscales
