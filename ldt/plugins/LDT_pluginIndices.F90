@@ -254,6 +254,8 @@ module LDT_pluginIndices
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_umdcropmapId   = "UMDCROPMAP"
    character*50, public,  parameter :: LDT_monfredacropId = "Monfreda08"
+   character*50, public,  parameter :: LDT_mircairrcropId = "MIRCA"
+   character*50, public,  parameter :: LDT_mirca52cropId  = "MIRCA52"
 
 !------------------------------------------------------------------------
 ! Mask sources
@@ -324,6 +326,10 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_modisirrigId  = "MODIS"
    character*50, public,  parameter :: LDT_modOGirrigId  = "MODIS_OG"
    character*50, public,  parameter :: LDT_gripcirrigId  = "GRIPC"
+!HKB
+   character*50, public,  parameter :: LDT_giairrigId    = "GIA"
+   character*50, public,  parameter :: LDT_aquairrigId   = "AQUASTAT"
+
    character*50, public,  parameter :: LDT_irriggwratioId  = "USGS_Native"
 
    character*50, public,  parameter :: LDT_userinputirrigId = "UserDerived"

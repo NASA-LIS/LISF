@@ -391,6 +391,7 @@ contains
 !EOP
 
     use Monfredaetal08_crops_module, only : read_Monfredaetal08_croptype
+    use MIRCA2000_crops_module, only : read_MIRCA2000_croptype
 
     external set_AVHRR_lc_attribs
     external read_avhrr_lc
@@ -491,6 +492,7 @@ contains
 ! - Crop type sources:
     call registerreadcroptype(trim(LDT_umdcropmapId)//char(0), read_UMDCROPMAP_croptype)
     call registerreadcroptype(trim(LDT_monfredacropId)//char(0), read_Monfredaetal08_croptype)
+    call registerreadcroptype(trim(LDT_mircairrcropId)//char(0), read_MIRCA2000_croptype)
 
 ! - Root depth:
     call registerreadrootdepth(trim(LDT_ALMIPIIlcId)//char(0),read_ALMIPII_droot)
@@ -988,6 +990,9 @@ contains
 
     external read_GRIPC_irrigtype
     external read_GRIPC_irrigfrac
+    external read_GIA_irrigfrac
+    external read_AQUASTAT_irrigtype
+
     external read_UserDerived_irrigfrac
 
     external read_USGSNative_irriggwratio
@@ -998,6 +1003,9 @@ contains
     call registerreadirrigtype(trim(LDT_gripcirrigId)//char(0),read_GRIPC_irrigtype)
     call registerreadirrigfrac(trim(LDT_gripcirrigId)//char(0),read_GRIPC_irrigfrac)
 
+    call registerreadirrigfrac(trim(LDT_giairrigId)//char(0),read_GIA_irrigfrac)
+
+    call registerreadirrigtype(trim(LDT_aquairrigId)//char(0),read_AQUASTAT_irrigtype)
     ! Added user-derived irrigation fraction input option:
     call registerreadirrigfrac(trim(LDT_userinputirrigId)//char(0),read_UserDerived_irrigfrac)
     ! Added irrigation groundwater ratio input option

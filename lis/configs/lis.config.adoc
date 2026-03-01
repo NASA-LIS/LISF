@@ -10587,8 +10587,10 @@ Acceptable values are:
 |Value     | Description
 
 |none      | No irrigation scheme
-|Sprinkler | Demand sprinkler scheme
-|Flood     | Demand flood scheme
+|Sprinkler | sprinkler scheme
+|Flood     | flood scheme
+|Drip      | drip scheme
+|Concurrent  | sprinkler, drip, flood, and paddy simultaneously
 |====
 
 `Irrigation output interval:` defines the output writing
@@ -10597,19 +10599,7 @@ interval for irrigation.
 See Section <<ssec_timeinterval>> for a description
 of how to specify a time interval.
 
-`Irrigation threshold:` defines the irrigation trigger
-threshold for the flood and sprinkler irrigation schemes.
-
-`Irrigation max soil layer depth:` specifies the maximum soil layer depth.  Defaults to 1 layer.
-
-`Sprinkler irrigation max root depth file:` specifies the
-location of the max root depth file for sprinkler irrigation.
-
-`Flood irrigation max root depth file:` specifies the
-location of the max root depth file for flood irrigation.
-
-`Drip irrigation max root depth file:` specifies the
-location of the max root depth file for drip irrigation.
+`Irrigation max root depth file:` specifies the location of the max root depth file. One file applies for all irrigation schemes.
 
 `Irrigation GVF parameter 1:` specifies growing season for
 irrigation in Noah-MP [set to 0.40 for Ozdogan et al. (2010)
@@ -10665,22 +10655,75 @@ Acceptable values are:
 
 Defaults to 0.
 
+`Irrigation type to crop mapping method:` specifies the mothod for mapping irrigation type grid fractions onto crop tiles.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|single       | assign a single type controlled in LDT
+|dominant     | assign dominant type 
+|distribute   | use distribution algorithm in Rodell et al 2026.
+|====
+
+`Country level crop irrigtype file:` specifies the location of the US county and World countries irrigation type file. Invoked with `distribute` mapping method.
+
+`Irrigation runoff recycle input file:` specifies the location of the precomputed runoff recycling index data file. Invoked with `concurrent` irrigation scheme used in the paddy scheme.
+
+`Crop Calendar use:` specifies the mothod for growing season determination.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|none       | vegetation based as in Ozdogan et al 2010.
+|MIRCA      | crop calendar from MIRCA
+|====
+
+`Crop seasons:` specifies the number of multiple cropping seasons when using crop calendar. It must match the value set for `Multiple Cropping Max Seasons` in LDT configuration. Default is 2.
+
 .Example _lis.config_ entry
 ....
 Irrigation scheme:            "none"
 Irrigation output interval:   "1da"
-Irrigation threshold:          0.50
-Irrigation max soil layer depth: 1
-Sprinkler irrigation max root depth file:
-Flood irrigation max root depth file:
-Drip irrigation max root depth file:
 Irrigation GVF parameter 1: 0.40
 Irrigation GVF parameter 2: 0.00
 Irrigation scheduling based on dynamic vegetation: 0
 Groundwater abstraction for irrigation: 0
 Irrigation source water partition: 0
+Irrigation max root depth file:
+Irrigation type to crop mapping method: "distribute"
+Country level crop irrigtype file: 
+Irrigation runoff recycle input file: 
+Crop Calendar use:   "MIRCA"
+Crop seasons:         2 
 ....
 
+The following common options are applied for Sprinker, Drip, and Flood scheme.  They can be varied by scheme and set in the config file to represent different agricultural practices. Irrigation trigger options include 1. soil moisture availability and 2. Schedule where the former is considered soil moisture deficit (natural) and the latter as manamement (human) requirement.  Irrigation amount is determined by 1. Deficit and 2. Prescribed options. For Flood scheme, irrigation water can be applied to either surface layer only or multiple layers. Rodell et al 2026 used Schedule irrigation trigger, Prescribed irrigation amount, and applied irrigation in the surface soil layer for Flood. For Deficit based irrigation, use `on schedule: 0`, `fixed rate: 0`, and `frequency: 0`.
+
+
+`Irrigation threshold for Sprinkler/Drip/Flood:` defines the irrigation trigger threshold (fraction) for each irrigation scheme. Required for all.
+
+`Irrigation Sprinkler/Drip/Flood start time:` specifies local time of start for irrigation, for example 6 am. Checked daily. Required for all.
+
+`Irrigation Sprinkler/Drip/Flood duration:` specifies duration of irrigation per day, for example 4 hours.  It is used to compute the rate of irrigation if the amount is based on Deficit. If the amount is prescribed, the irrigation occurs for the duration of time since `start time`.
+
+`Irrigation Sprinkler/Drip/Flood efficiency:` specifies the % loss due to field or equipment.  Applicble values range from 0 to 100 (%) where 0 means no loss, 25 means 75 % efficient, which would increase the irrigation water amount by apply 125% of water to offset 25% loss.
+
+`Irrigation Sprinkler/Drip/Flood on schedule:` specifies option for irrigation trigger.  Acceptable values are:
+
+|====
+|Value     | Description
+
+|0      | deficit based on soil moisture availability
+|1      | scheduled
+|====
+
+`Irrigation Sprinkler/Drip/Flood fixed rate:` specifies a prescribed irrigation rate in mm/hr.  If it is set to zero, the model uses Deficit irrigation amount that is dynamically computed based on the soil moisture availability and duration.  
+
+`Irrigation Sprinkler/Drip/Flood frequency:` specifies the number of days that takes a single irrigation event to complete.  For example, it takes 2.5 days to complete with pivot center irrigation. It also means the sprinkler irrigation event occurs every 2.5 days or longer.
+
+`Irrigation Flood max soil layer depth:`specifies the maximum soil layer depth.  Defaults to 1 layer. Applicable to Flood scheme only.
 
 [[ssec_routing,Routing]]
 === Routing

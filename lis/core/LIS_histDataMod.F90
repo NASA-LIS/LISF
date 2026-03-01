@@ -320,6 +320,17 @@ module LIS_histDataMod
   public :: LIS_MOC_RTM_SM
   ! Irrigation
   public :: LIS_MOC_IRRIGATEDWATER  
+  public :: LIS_MOC_IRRIGWATERINPUT  
+  public :: LIS_MOC_IRRIGSCALE
+  public :: LIS_MOC_IRRIGTSP
+  public :: LIS_MOC_IRRIGTDP
+  public :: LIS_MOC_IRRIGTFD
+  public :: LIS_MOC_IRRLCFRAC
+  public :: LIS_MOC_IRRPADDY
+  public :: LIS_MOC_TOTR
+  public :: LIS_MOC_RECR
+  public :: LIS_MOC_OUTR
+  public :: LIS_MOC_QRI
 
   public :: LIS_MOC_LSM_COUNT
   public :: LIS_MOC_ROUTING_COUNT
@@ -848,7 +859,18 @@ module LIS_histDataMod
    integer :: LIS_MOC_RTM_TB = -9999
    integer :: LIS_MOC_RTM_SM = -9999
 
-   integer :: LIS_MOC_IRRIGATEDWATER
+   integer :: LIS_MOC_IRRIGATEDWATER = -9999
+   integer :: LIS_MOC_IRRIGWATERINPUT = -9999
+   integer :: LIS_MOC_IRRIGSCALE = -9999
+   integer :: LIS_MOC_IRRIGTSP = -9999
+   integer :: LIS_MOC_IRRIGTDP = -9999
+   integer :: LIS_MOC_IRRIGTFD = -9999
+   integer :: LIS_MOC_IRRLCFRAC = -9999
+   integer :: LIS_MOC_IRRPADDY = -9999
+   integer :: LIS_MOC_TOTR = -9999
+   integer :: LIS_MOC_RECR = -9999
+   integer :: LIS_MOC_OUTR = -9999
+   integer :: LIS_MOC_QRI = -9999
 
    integer :: LIS_MOC_LSM_COUNT
    integer :: LIS_MOC_ROUTING_COUNT
@@ -4371,7 +4393,7 @@ contains
             n,1,ntiles,(/"m3/m3"/),1,(/"-"/),1,1,1)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Irrigated water:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigatedWater:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
          "IrrigatedWater",&
          "total_irrigated_water_amount",&
@@ -4380,6 +4402,144 @@ contains
        call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGATEDWATER,&
             LIS_histData(n)%head_irrig_list,&
             n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+
+!HKB: separate irrigation input vs the actual applied water 
+!    (sprinkler: input = applied, flood&drip: input /= applied)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigWaterInput:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigWaterInput",&
+         "input_irrigation_water_amount",&
+         "input irrigation water amount",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGWATERINPUT,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+
+!HKB: additional irrigation related output fields (constant)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigationScale:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigationScale",&
+         "grid_irrigation_scale",&
+         "Scaled irrigation fraction to landcover types",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGSCALE,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"-"/),&
+            1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigtypeSp:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigtypeSp",&
+         "sprinkler_irrigated_water_amount",&
+         "Sprinkler irrigation water amount",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGTSP,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigtypeDr:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigtypeDr",&
+         "drip_irrigated_water_amount",&
+         "Drip irrigation water amount",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGTDP,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigtypeFl:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigtypeFl",&
+         "flood_irrigated_water_amount",&
+         "Flood irrigation water amount",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGTFD,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigLCFrac:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigLCFrac",&
+         "irrigation_landcover_frac",&
+         "land cover and crop fraction",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRLCFRAC,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"-"/),&
+            1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigPaddy:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigPaddy",&
+         "grid_irrigation_paddy",&
+         "irrigated paddy fraction",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRPADDY,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"-"/),&
+            1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"totR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "totR",&
+         "total_subsurface_runoff",&
+         "total subsurface runoff",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_TOTR,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"recR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "recR",&
+         "recycled_subsurface_runoff",&
+         "recycled subsurface runoff",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_RECR,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"outR:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "outR",&
+         "net_output_subsurface_runoff",&
+         "net output subsurface runoff",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_OUTR,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"QRI:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "QRI",&
+         "runoff_recycled_to_irrigation",&
+         "runoff recycled to irrigation",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_QRI,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"-"/),&
             1,(/"-"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -6685,7 +6845,6 @@ end subroutine get_moc_attributes
   subroutine LIS_diagnoseSurfaceOutputVar(n, t, index, vlevel, value, unit,&
                                           direction, valid_min, valid_max, &
                                           surface_type)
-    use  LIS_coreMod, only : LIS_domain
     implicit none
 ! !ARGUMENTS:
     integer, intent(in)           :: n
@@ -6753,7 +6912,6 @@ end subroutine get_moc_attributes
     integer :: gindex
     type(LIS_metadataEntry), pointer :: dataEntry
     logical :: model_patch
-    integer         :: tid
 
     model_patch = .true.
    
@@ -6788,7 +6946,6 @@ end subroutine get_moc_attributes
 ! !INTERFACE: 
   subroutine LIS_diagnoseRTMOutputVar(n, t, index, vlevel, value, unit,&
                                       direction,valid_min,valid_max)
-    use  LIS_coreMod, only : LIS_domain
     implicit none
 ! !ARGUMENTS:
     integer, intent(in)           :: n    
@@ -6821,7 +6978,6 @@ end subroutine get_moc_attributes
 ! !INTERFACE: 
   subroutine LIS_diagnoseIrrigationOutputVar(n, t, index, vlevel, value, unit,&
                                       direction,valid_min,valid_max)
-    use  LIS_coreMod, only : LIS_domain
     implicit none
 ! !ARGUMENTS:
     integer, intent(in)           :: n    
@@ -6858,7 +7014,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
                                    direction,valid_min,valid_max,&
                                    model_patch)
     use  LIS_coreMod, only : LIS_domain
-    use  LIS_logMod, only : LIS_logunit, LIS_endrun
+    use  LIS_logMod, only : LIS_endrun
     implicit none
 ! !ARGUMENTS:
     type(LIS_metadataEntry), pointer, intent(in) :: head_dataEntry
@@ -7232,7 +7388,6 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !   \item[group]  output group (1- LSM, 2-ROUTING, 3-RTM) \newline
 !   \end{description}
 !EOP
-    integer :: index
     type(LIS_metadataEntry), pointer :: dataEntry 
 
     if(group.eq.1) then !LSM output
@@ -7324,7 +7479,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 
      type(LIS_metadataEntry), pointer :: dataEntry 
      integer :: count
-     integer :: k, m
+     integer :: k
      integer :: ierr
      
      if(group.eq.1) then !LSM output

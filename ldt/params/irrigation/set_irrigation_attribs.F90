@@ -19,40 +19,45 @@
 ! !INTERFACE:
 subroutine set_irrigation_attribs( n, source )
 
-! !USES:
+  ! !USES:
   use LDT_irrigationMod
-
+  use LDT_logMod, only: LDT_logunit, LDT_endrun
   implicit none
 
   integer,         intent(in) :: n
   character(len=*),intent(in) :: source
 
-! !ARGUMENTS: 
+  ! !ARGUMENTS:
 
-! !DESCRIPTION:
-!
-!  The arguments are:
-!  \begin{description}
-!   \item[n]
-!     index of nest
-!   \item[source]
-!     Irrigation dataset source
-!   \end{description}
-!EOP      
-!
-   select case( source )
+  ! !DESCRIPTION:
+  !
+  !  The arguments are:
+  !  \begin{description}
+  !   \item[n]
+  !     index of nest
+  !   \item[source]
+  !     Irrigation dataset source
+  !   \end{description}
+  !EOP
+  !
+  select case( source )
 
-    case( "GRIPC" )
-      LDT_irrig_struc(n)%irrigtype%num_bins = 4
-      LDT_irrig_struc(n)%irrigtype%num_times = 1
+  case( "GRIPC" )
+     LDT_irrig_struc(n)%irrigtype%num_bins = 3
+     LDT_irrig_struc(n)%irrigtype%num_times = 1
+     LDT_irrig_struc(n)%cropwatsrc%num_bins = 4
+     LDT_irrig_struc(n)%cropwatsrc%num_times = 1
 
-    case default
-      print *, "[ERR] Irrigation type source not recognized: ",trim(source)
-      print *, " Please select:   GRIPC"
-      print *, " Program stopping ..."
-      stop
-!      call LDT_endrun
+  case( "AQUASTAT" )
+     LDT_irrig_struc(n)%irrigtype%num_bins = 3
+     LDT_irrig_struc(n)%irrigtype%num_times = 1
 
-   end select
+  case default
+     write(LDT_logunit,*) "[ERR] Irrigation type source not recognized: ",trim(source)
+     write(LDT_logunit,*) " Please select:   GRIPC or AQUASTAT"
+     write(LDT_logunit,*) " Program stopping ..."
+     call LDT_endrun()
+
+  end select
 
 end subroutine set_irrigation_attribs

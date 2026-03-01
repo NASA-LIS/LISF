@@ -18,6 +18,7 @@ module LDT_paramDataMod
 !
 ! !REVISION HISTORY: 
 !  02 Apr 2012:  Sujay Kumar;  Initial Specification
+!  28 Feb 2020:  H. Beaudoing; Added 4-dimentional array type
 ! 
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   
@@ -46,6 +47,7 @@ module LDT_paramDataMod
      real          :: valid_max
      character*100 :: standard_name
      real, allocatable :: value(:,:,:)
+     real, allocatable :: value4d(:,:,:,:)  !HKB 
      real          :: scale_factor
      real          :: add_offset
      character*100 :: long_name
@@ -103,6 +105,13 @@ module LDT_paramDataMod
      type(LDT_paramEntry) :: aspect
      type(LDT_paramEntry) :: aspectfgrd  ! Aspect tile gridcell fraction
      type(LDT_paramEntry) :: curvature
+
+   ! Crop type parameters
+     type(LDT_paramEntry) :: croptype 
+     type(LDT_paramEntry) :: irrigcrop
+     type(LDT_paramEntry) :: rainfedcrop
+     type(LDT_paramEntry) :: plantday
+     type(LDT_paramEntry) :: harvestday   
      
   end type lsmparam_type_dec
   
@@ -121,7 +130,7 @@ CONTAINS
                                      paramEntryIn, paramEntryOut)
 
 ! !DESCRIPTION:
-!   This routine populates an added parameter's attribute entries
+!  This routine populates an added parameter's attribute entries
 !  based on another parameter entered from the attribs config file.
 !
 ! !USES:
