@@ -631,15 +631,15 @@ def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-
     import dask.array
 
     encoding = {
-        'T2M': {'scale_factor': 0.01, 'add_offset': 270.0, '_FillValue': -32767},
-        'PS': {'scale_factor': 1.0, 'add_offset': 85000.0, '_FillValue': -32767},
-        'QV2M': {'scale_factor': 1e-6, 'add_offset': 0.01, '_FillValue': -32767},
-        'LWGAB': {'scale_factor': 0.01, 'add_offset': 350.0, '_FillValue': -32767},
-        'SWGDN': {'scale_factor': 0.025, 'add_offset': 0.0, '_FillValue': -32767},
-        'PRECTOT': {'scale_factor': 5e-7, 'add_offset': 0., '_FillValue': -32767},
-        'WIND10M': {'scale_factor': 0.01, 'add_offset': 5.0, '_FillValue': -32767},
-        'U10M': {'scale_factor': 0.01, 'add_offset': 0.0, '_FillValue': -32767},
-        'V10M': {'scale_factor': 0.01, 'add_offset': 0.0, '_FillValue': -32767},
+        'T2M': {'scale_factor': 0.005, 'add_offset': 180.0, '_FillValue': -32767},
+        'PS': {'scale_factor': 2., 'add_offset': 50000.0, '_FillValue': -32767},
+        'QV2M': {'scale_factor': 1.6e-6, 'add_offset': 0., '_FillValue': -32767},
+        'LWGAB': {'scale_factor': 0.011, 'add_offset': 350.0, '_FillValue': -32767},
+        'SWGDN': {'scale_factor': 0.021, 'add_offset': 680.0, '_FillValue': -32767},
+        'PRECTOT': {'scale_factor': 1.3e-6, 'add_offset': 0., '_FillValue': -32767},
+        'WIND10M': {'scale_factor': 0.0011, 'add_offset': 0., '_FillValue': -32767},
+        'U10M': {'scale_factor': 0.0022, 'add_offset': 0.0, '_FillValue': -32767},
+        'V10M': {'scale_factor': 0.0022, 'add_offset': 0.0, '_FillValue': -32767},
     }
 
     def pack_variable_to_int16(data_array, params):

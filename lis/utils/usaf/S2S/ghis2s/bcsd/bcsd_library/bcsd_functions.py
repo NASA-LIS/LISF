@@ -74,14 +74,14 @@ class VarLimits:
         # Apply rounding if specified
         if self.enable_rounding and var_name in round_precision:
             round_decimals = round_precision[var_name]
-        
+
         if round_decimals is not None:
             # Only round non-missing values
             mask_valid = clipped_array != missing
             clipped_array = np.where(mask_valid,
                                     np.round(clipped_array, round_decimals),
                                     clipped_array)
-            
+
         return clipped_array
 
     def clip_forcing_variables(self, ds_out, var_configs):
@@ -99,7 +99,6 @@ class VarLimits:
                     dask='parallelized',
                     output_dtypes=[ds_out[var_name].dtype]
                 )
-                
                 # Compute immediately and replace
                 ds_out[var_name] = clipped
 
@@ -200,6 +199,17 @@ def lookup(query, vec1, vec2, dim, par, lu_type, mean, sd_val, skew, tiny):
                     a_val = (vec1[ndx+1]-query)/(vec1[ndx+1]-vec1[ndx])
                 val = a_val*vec2[ndx]+(1-a_val)*vec2[ndx+1]
                 break
+        else:
+            # Loop completed without break - no matching bracket found
+            print(f"WARNING: Interpolation bracket not found!")
+            print(f"  query={query}, vec1[0]={vec1[0]}, vec1[{dim-1}]={vec1[dim-1]}")
+            print(f"  vec1 contains NaN: {np.any(np.isnan(vec1))}")
+            # Fallback to nearest neighbor
+            diffs = np.abs(vec1 - query)
+            closest_idx = np.argmin(diffs)
+            val = vec2[closest_idx]
+            print(f"  Fallback: using vec2[{closest_idx}]={val}")
+
     if par=='PRCP':
         try:
             val = max(val, 0)
@@ -459,27 +469,27 @@ def add_fcorr_vars(ds):
             t_pd = pd.Timestamp(t)
             doy[i] = t_pd.dayofyear
         return doy
-    
+
     # Calculate UTC hours for all time steps
     utc_hours = xr.DataArray(
         get_utc_hour(ds.time.values),
         coords={'time': ds.time},
         dims=['time']
     )
-    
+
     # Calculate solar offset from longitude
     solar_offset = ds.lon / 15.0
-    
+
     # utc_hours: (time,) + solar_offset: (lon,) -> (time, lon)
     # Then broadcast to (time, lat, lon)
     lhour = utc_hours + solar_offset
-    
+
     # Wrap to 0-24 range
     lhour = xr.where(lhour < 0, lhour + 24, lhour)
     lhour = xr.where(lhour >= 24, lhour - 24, lhour)
     lhour = lhour.expand_dims({'lat': ds.lat})
     lhour = lhour.transpose('time', 'lat', 'lon')
-    
+
     lhour.attrs = {
         'long_name': 'Local Solar Hour',
         'units': 'hours',
@@ -487,7 +497,7 @@ def add_fcorr_vars(ds):
         'valid_range': [0, 24]
     }
     ds['LHOUR'] = lhour
-    
+
     # Add Day of Year (DOY)
     doy = xr.DataArray(
         get_day_of_year(ds.time.values),
@@ -511,14 +521,14 @@ def add_fcorr_vars(ds):
         coords={'lat': ds.lat, 'lon': ds.lon},
         dims=['lat', 'lon']
     )
-    
+
     lat_2d.attrs = {
         'long_name': 'Latitude (2D)',
         'units': 'degrees_north',
         'description': '2D latitude array for vectorized calculations'
     }
     ds['LAT_2D'] = lat_2d
-    
+
     return ds
 
 def apply_fcorr(mask, slope, aspect, elevdiff, lat,
@@ -526,7 +536,6 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
                 swd, lhour, doy, force_corr=None):
     '''
     Apply forcing corrections (lapse rate and aspect).
-    
     Parameters:
     -----------
     mask : float - land mask value [point]
@@ -554,7 +563,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
     lis_tfrz = 273.16
     lapserate = -0.0065
     deg2rad = np.pi / 180.0
-    
+
     def correct_swddirect(aslope, aspect, saz, solzen, swddirect):
         delaz = abs(aspect - saz) * deg2rad
         sdircorr = np.sin(solzen) * np.sin(aslope) * np.cos(delaz)
@@ -562,7 +571,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
         swddirect = swddirect * (np.cos(aslope) + sdircorr)
         swddirect = np.where(swddirect < 0, 0, swddirect)
         return swddirect
-    
+
     n_times = len(force_tmp)
     n_outvar = 0
     var_no = 0
@@ -578,14 +587,14 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
         if force_corr['lapsrate']:
             # Temperature
             tcforce = force_tmp + (lapserate*elevdiff)
-            
+
             # Pressure
             tbar = (force_tmp + tcforce)/2
             pcforce = force_prs / (np.exp((lis_g * elevdiff) / (tdry * tbar)))
-            
+
             # Humidity
             force_hum = np.where(force_hum == 0, 1e-08, force_hum)
-            ee = (force_hum * force_prs) / 0.622               
+            ee = (force_hum * force_prs) / 0.622
             esat = 611.2 * np.exp(\
                                   (17.67 * (force_tmp - lis_tfrz)) / ((force_tmp - lis_tfrz) + 243.5)
                                   )
@@ -596,12 +605,12 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
                                    )
             fqsat = (0.622 * fesat) / (pcforce - (0.378 * fesat))
             hcforce = (rh * fqsat) / 100.0
-            
+
             # Longwave Radiation
             fe = (hcforce * pcforce) / 0.622
             mee = ee / 100.0
             mfe = fe / 100.0
-        
+
             # Correct for negative vapor pressure at very low temperatures at high latitudes
             mee = np.where(mee < 0, 1e-08, mee)
             mfe = np.where(mfe < 0, 1e-08, mfe)
@@ -609,7 +618,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
             femiss = 1.08 * (1 - np.exp(-mfe**(tcforce / bb)))
             ratio = (femiss * (tcforce**4))/(emiss * (force_tmp**4))
             lcforce = force_lwd * ratio
-        
+
             # lapse rate corrected forcings
             corrected_force[var_no + 0,:] = np.round(tcforce,2)
             corrected_force[var_no + 1,:] = np.round(hcforce,6)
@@ -637,12 +646,12 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
             # Solar noon is at lhour=12, so hour angle is:
             hour_angle_deg = (lhour - 12.0) * 15.0  # degrees from solar noon
             omega = hour_angle_deg * deg2rad
-            
+
             # Cosine of solar zenith angle
             cosz = np.sin(decl) * np.sin(lat_r) + np.cos(decl) * np.cos(lat_r) * np.cos(omega)
             cosz = np.where(cosz < 0, 0, cosz)
             cosz = np.where(cosz > 1, 1, cosz)
-            
+
             # Cloud fraction estimation
             sunang = np.where(cosz < 0.01764, 0.01764, cosz)
             cloud  = (1160.0 * sunang - swd) / (963.0 * sunang)
@@ -653,7 +662,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
             difrat = np.where(difrat < 0, 0, difrat)
             difrat = np.where(difrat > 1, 1, difrat)
             difrat = difrat + (1.0 - difrat) * cloud
-            
+
             # Visible/NIR split
             vnrat = (580.0 - cloud * 464.0) / ((580.0 - cloud * 499.0) + (580.0 - cloud * 464.0))
             swddirect  = swd * ((1.0 - difrat) * vnrat + (1.0 - difrat)*(1.0 - vnrat))
@@ -688,18 +697,14 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
             slope_rad = slope * deg2rad
             aslope = np.clip(slope_rad, 0, 1.57)
             solzen = np.arccos(cosz)
-                        
+
             swddirect = np.where((swd > 0) & (aslope > 0) & (aslope < 90 * deg2rad),
                                  correct_swddirect(aslope, aspect, saz, solzen, swddirect),
                                  swddirect)
 
             corrected_force[var_no,:] = np.round(swddirect,1) + np.round(swddiffuse,1)
-    
+
     return corrected_force
-
-    
-    
-
 
 
 

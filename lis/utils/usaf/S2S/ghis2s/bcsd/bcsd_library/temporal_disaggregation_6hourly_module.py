@@ -287,7 +287,7 @@ def process_ensemble(ens):
             input_core_dims=[[],[],['time']],
             exclude_dims=set(('time',)),
             output_core_dims=[['time']],
-            output_sizes={'time': num_timesteps},
+            dask_gufunc_kwargs={'output_sizes': {'time': num_timesteps}},
             vectorize=True,
             dask="parallelized",
             output_dtypes=[np.float32],
