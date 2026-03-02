@@ -89,7 +89,7 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(file)
 
     sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.s2splots import plot_utils
+    from ghis2s.s2splots import plot_utils
     clim_syr = int(cfg["BCSD"]["clim_start_year"])
     clim_eyr = int(cfg["BCSD"]["clim_end_year"])
     CFSv2_PATH = 'bcsd_fcst/CFSv2_25km/'
