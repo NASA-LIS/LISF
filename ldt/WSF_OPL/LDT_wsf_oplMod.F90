@@ -473,7 +473,7 @@ contains
     
     write (tmp,'(I2.2)') suffix
     
-    search_pattern = trim(ndir)//'/WSFM_01_d'//trim(yyyymmdd)//'*_res_sdr.nc'
+    search_pattern = trim(ndir)//'/*WSFM_01_d'//trim(yyyymmdd)//'*_res_sdr.nc'
     
     list_files = 'ls '//trim(search_pattern)// &
                  ' > WSF_filelist_'//trim(tmp)//'.dat 2>&1'
