@@ -304,8 +304,7 @@ contains
     type(wsf_file_info), intent(out) :: file_info
     
     character*255 :: basename
-    integer :: pos, pos_i
-    integer*4 :: istat, unit_size
+    integer :: pos, pos_d, pos_t, pos_e, pos_i
     integer*8 :: file_size_bytes
     
     file_info%filename = filename
@@ -319,25 +318,40 @@ contains
     if (pos == 1) pos = 1
     basename = filename(pos:)
     
-    ! Example: WSFM_01_d20250601_t002900_e004059_gREEF-A_r05898_c02_i0_v0522_res_sdr.nc
+    ! Find _d (date), _t (start time), _e (end time) by searching
+    pos_d = index(basename, '_d')
+    pos_t = index(basename, '_t')
+    pos_e = index(basename, '_e')
     
-    ! Extract date (d20250601)
-    file_info%date_str = basename(10:17)
+    if (pos_d == 0 .or. pos_t == 0 .or. pos_e == 0) then
+      write(LDT_logunit,*) '[WARN] Cannot parse _d/_t/_e from: ', trim(basename)
+      file_info%date_str = '00000000'
+      file_info%start_time = '000000'
+      file_info%end_time = '000000'
+      file_info%hour_str = '00'
+      file_info%start_hour = -1
+      file_info%end_hour = -1
+      file_info%copy_num = '00'
+      file_info%copy_int = 0
+      file_info%integrity = '1'
+      file_info%integrity_int = 1
+      file_info%pass_type = 0
+      return
+    endif
     
-    ! Extract start time (t002900)
-    file_info%start_time = basename(20:25)
+    ! _d + 8 digits = date
+    file_info%date_str = basename(pos_d+2:pos_d+9)
     
-    ! Extract end time (e004059)
-    file_info%end_time = basename(28:33)
-    
-    ! Extract hour from start time
-    file_info%hour_str = basename(20:21)
+    ! _t + 6 digits = start time
+    file_info%start_time = basename(pos_t+2:pos_t+7)
+    file_info%hour_str   = basename(pos_t+2:pos_t+3)
     read(file_info%hour_str, '(I2)') file_info%start_hour
     
-    ! Extract end hour
-    read(basename(28:29), '(I2)') file_info%end_hour
+    ! _e + 6 digits = end time
+    file_info%end_time = basename(pos_e+2:pos_e+7)
+    read(basename(pos_e+2:pos_e+3), '(I2)') file_info%end_hour
     
-    ! Extract copy number
+    ! _c + 2 digits = copy number
     pos = index(basename, '_c')
     if (pos > 0) then
       file_info%copy_num = basename(pos+2:pos+3)
@@ -347,17 +361,18 @@ contains
       file_info%copy_int = 0
     endif
     
-    ! Extract integrity indicator (i0 or i1)
+    ! _i + 1 digit = integrity (must come after _c)
     pos_i = index(basename, '_i')
-    if (pos_i > 0 .and. pos_i > pos) then  ! Make sure it's after copy number
+    if (pos_i > 0 .and. pos_i > pos) then
       file_info%integrity = basename(pos_i+2:pos_i+2)
       read(file_info%integrity, '(I1)') file_info%integrity_int
     else
-      ! Default to incomplete if not found
       file_info%integrity = '1'
       file_info%integrity_int = 1
     endif
+    
     file_info%pass_type = 0
+    
   end subroutine parse_wsf_filename_improved
     
   subroutine filter_duplicate_files_improved(all_files, n_files, filtered, n_filtered)
