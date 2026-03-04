@@ -25,7 +25,8 @@ CONTAINS
         arfs_tb_10h, arfs_tb_10v, arfs_tb_18h, arfs_tb_18v, &
         arfs_tb_23h, arfs_tb_23v, arfs_tb_36h, arfs_tb_36v, &
         arfs_tb_89h, arfs_tb_89v, arfs_quality_flag, &
-        arfs_sample_v, arfs_sample_h)
+        arfs_sample_v, arfs_sample_h, &
+        filter_snow_precip)
     
     ! Arguments
     integer, intent(in) :: nscans_in, nfovs_in
@@ -51,7 +52,8 @@ CONTAINS
     real*4, intent(out) :: arfs_land_water_frac(2560,1920)
     integer*1, intent(out) :: arfs_quality_flag(2560,1920)
     integer*4, intent(out) :: arfs_sample_v(2560,1920), arfs_sample_h(2560,1920)
-    
+    logical, intent(in) :: filter_snow_precip  ! .true. = exclude snow/precip footprints (SM mode)
+                                               ! .false. = keep all footprints (snow depth mode)
     ! Local variables
     integer :: ii, jj, r, c, rr, cc, rmin, rmax, cmin, cmax
     real*8, parameter :: RE_KM = 6371.228
@@ -61,6 +63,7 @@ CONTAINS
     real*8 :: gcdist, lat1, lon1, lat2, lon2, weight
     logical :: has_snow, has_precip, has_water
     logical :: band1_bad, band2_bad, band3_bad, band4_bad, band5_bad
+    logical :: skip_snow_precip  ! combined condition: skip this footprint due to snow/precip
     
     ! Weight arrays for accumulation
     real*4, allocatable :: arfs_wt_tb10h(:,:), arfs_wt_tb10v(:,:)
@@ -83,7 +86,12 @@ CONTAINS
     integer :: excluded_band4, excluded_band5
     
     write(LDT_logunit,*)'[INFO] Starting WSF inverse distance resampling'
-    write(LDT_logunit,*)'[INFO] WITH per-channel quality filtering'
+    
+    if (filter_snow_precip) then
+        write(LDT_logunit,*)'[INFO] WITH per-channel quality filtering (snow/precip filtered)'
+    else
+        write(LDT_logunit,*)'[INFO] WITH per-channel quality filtering (snow/precip NOT filtered)'
+    endif
     
     ! Allocate weight and counter arrays
     allocate(arfs_wt_tb10h(2560,1920), arfs_wt_tb10v(2560,1920))
@@ -169,6 +177,16 @@ CONTAINS
             band4_bad = (IBITS(quality_flag(jj,ii), 6, 1) == 1)
             band5_bad = (IBITS(quality_flag(jj,ii), 7, 1) == 1)
             
+            ! Determine if this footprint should be skipped for snow/precip
+            ! When filter_snow_precip is .false., never skip due to snow/precip
+            
+            if (filter_snow_precip) then
+                skip_snow_precip = (has_snow .or. has_precip)
+            else
+                skip_snow_precip = .false.
+            endif
+
+            
             ! Find grid cell bounds
             lat1 = lat_in(jj,ii)
             lon1 = lon_in(jj,ii)
@@ -221,7 +239,7 @@ CONTAINS
                         ! ============================================================
                         
                         ! 10 GHz channels (Band 1)
-                        if (.not. band1_bad .and. .not. has_snow .and. .not. has_precip) then
+                        if (.not. band1_bad .and. .not. skip_snow_precip) then
                             if (ABS(tb_10h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_10h(jj,ii) > 0.0) then
                                 arfs_tb_10h(rr,cc) = arfs_tb_10h(rr,cc) + tb_10h(jj,ii) * weight
                                 arfs_wt_tb10h(rr,cc) = arfs_wt_tb10h(rr,cc) + weight
@@ -237,7 +255,7 @@ CONTAINS
                         endif
                         
                         ! 18 GHz channels (Band 2)
-                        if (.not. band2_bad .and. .not. has_snow .and. .not. has_precip) then
+                        if (.not. band2_bad .and. .not. skip_snow_precip) then
                             if (ABS(tb_18h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_18h(jj,ii) > 0.0) then
                                 arfs_tb_18h(rr,cc) = arfs_tb_18h(rr,cc) + tb_18h(jj,ii) * weight
                                 arfs_wt_tb18h(rr,cc) = arfs_wt_tb18h(rr,cc) + weight
@@ -251,7 +269,7 @@ CONTAINS
                         endif
                         
                         ! 23 GHz channels (Band 3)
-                        if (.not. band3_bad .and. .not. has_snow .and. .not. has_precip) then
+                        if (.not. band3_bad .and. .not. skip_snow_precip) then
                             if (ABS(tb_23h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_23h(jj,ii) > 0.0) then
                                 arfs_tb_23h(rr,cc) = arfs_tb_23h(rr,cc) + tb_23h(jj,ii) * weight
                                 arfs_wt_tb23h(rr,cc) = arfs_wt_tb23h(rr,cc) + weight
@@ -265,7 +283,7 @@ CONTAINS
                         endif
                         
                         ! 36 GHz channels (Band 4)
-                        if (.not. band4_bad .and. .not. has_snow .and. .not. has_precip) then
+                        if (.not. band4_bad .and. .not. skip_snow_precip) then
                             if (ABS(tb_36h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_36h(jj,ii) > 0.0) then
                                 arfs_tb_36h(rr,cc) = arfs_tb_36h(rr,cc) + tb_36h(jj,ii) * weight
                                 arfs_wt_tb36h(rr,cc) = arfs_wt_tb36h(rr,cc) + weight
@@ -279,7 +297,7 @@ CONTAINS
                         endif
                         
                         ! 89 GHz channels (Band 5)
-                        if (.not. band5_bad .and. .not. has_snow .and. .not. has_precip) then
+                        if (.not. band5_bad .and. .not. skip_snow_precip) then
                             if (ABS(tb_89h(jj,ii) - (-9999.0)) > 1.0E-6 .and. tb_89h(jj,ii) > 0.0) then
                                 arfs_tb_89h(rr,cc) = arfs_tb_89h(rr,cc) + tb_89h(jj,ii) * weight
                                 arfs_wt_tb89h(rr,cc) = arfs_wt_tb89h(rr,cc) + weight
@@ -438,8 +456,15 @@ CONTAINS
     ! Report statistics
     write(LDT_logunit,*)'[INFO] ========================================'
     write(LDT_logunit,*)'[INFO] Resampling statistics:'
-    write(LDT_logunit,*)'[INFO]   Excluded snow footprints: ', excluded_snow
-    write(LDT_logunit,*)'[INFO]   Excluded precip footprints: ', excluded_precip
+    
+    if (filter_snow_precip) then
+        write(LDT_logunit,*)'[INFO]   Excluded snow footprints: ', excluded_snow
+        write(LDT_logunit,*)'[INFO]   Excluded precip footprints: ', excluded_precip
+    else
+        write(LDT_logunit,*)'[INFO]   Snow footprints (kept): ', excluded_snow
+        write(LDT_logunit,*)'[INFO]   Precip footprints (kept): ', excluded_precip
+    endif
+    
     write(LDT_logunit,*)'[INFO]   Excluded water footprints: ', excluded_water
     write(LDT_logunit,*)'[INFO]   Excluded bad band 1 (10GHz): ', excluded_band1
     write(LDT_logunit,*)'[INFO]   Excluded bad band 2 (18GHz): ', excluded_band2
