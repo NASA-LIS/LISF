@@ -20,6 +20,8 @@ ENV_DEFINITION = {
     "SUBMIT_JOB": (bool, False),
     "E2ESDIR": (str, "/discover/nobackup/projects/ghilis/smahanam/ghi-coupling/"),
     "PYTHONPATH": (str, None),
+    "PF_SLURM": (str, "slurm-ghi"),
+    "PF_LHOST": (str, "localhost-ghi"),
 }
 
 # NOTE 1: Allowed S2S_STEP values are: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS
@@ -286,6 +288,8 @@ class Ghis2sProgram():
         filedata = filedata.replace('--error ', '--error=')
         filedata = filedata.replace('--exclusive', '--exclusive=')
         filedata = filedata.replace('-N ', '--nodes=')
+        filedata = filedata.replace('PF_SLURM', self.env["PF_SLURM"])
+        filedata = filedata.replace('PF_LHOST', self.env["PF_LHOST"])
 
         with config_file.open('w', encoding="utf-8") as file:
             file.write(filedata)
