@@ -118,7 +118,7 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
 
         hymap_rstdir = f"./input/LDT_ICs/{nmme_model}"
         hymap_rstfile = \
-            f"{hymap_rstdir}/LIS_RST_{config['EXP']['routing_name'].upper()}" + \
+            f"{hymap_rstdir}/LIS_RST_{config['EXP']['routing_model'].get('model').upper()}" + \
             f"_router_{rst_date}2345.ICS_{rst_monname}" + \
             f"{dates['start'].year:04d}." + \
             "ens1.nc"
@@ -151,7 +151,7 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
         hymap_rstfile = \
             f"{ic_date['start'].year:04d}{ic_date['start'].month:02d}/{nmme_model}" \
             f"/ROUTING/{dates['start'].year:04d}{dates['start'].month:02d}/" + \
-            f"/LIS_RST_{config['EXP']['routing_name'].upper()}_router_{rst_date}0000.d01.nc"
+            f"/LIS_RST_{config['EXP']['routing_model'].get('model').upper()}_router_{rst_date}0000.d01.nc"
         data = data.replace("IC_YYYYMMDD", \
                             f"{ic_date['start'].year:04d}{ic_date['start'].month:02d}01")
 
@@ -186,7 +186,7 @@ def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
             f"bcsd_fcst/NMME/final/6-Hourly/{nmme_model}"
         lisconfig_nameconv = \
             f"lis.config.{domlabel}.{config['EXP']['lsm']}." + \
-            f"{config['EXP']['routing_name']}." + \
+            f"{config['EXP']['routing_model'].get('model')}." + \
             f"da_ics_{config['SETUP']['DATATYPE']}_" + \
             f"{nmme_model}_"
 
@@ -199,7 +199,7 @@ def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
         lisconfig_template = \
             f"{template_dir}/template_lis.config.{domlabel}." + \
             f"{config['EXP']['lsm']}." + \
-            f"{config['EXP']['routing_name']}.da_ics_" + \
+            f"{config['EXP']['routing_model'].get('model')}.da_ics_" + \
             f"{config['SETUP']['DATATYPE']}"
 
         print(lisconfig_template)

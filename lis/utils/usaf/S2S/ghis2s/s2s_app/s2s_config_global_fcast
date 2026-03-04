@@ -22,9 +22,8 @@ SETUP:
 
 EXP:
   DOMAIN: GLOBAL
-  lsmdir: NOAHMP
   lsm:    noahmp401
-  routing_name: hymap2
+  routing_model: {model: hymap2, subdomains: false}
   pertmode: restart
   lead_months: 9
   NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]

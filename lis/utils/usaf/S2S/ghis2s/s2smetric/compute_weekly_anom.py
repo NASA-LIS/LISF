@@ -50,7 +50,7 @@ BASEOUTDIR = sys.argv[5]
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     CONFIG = yaml.safe_load(file)
 
-HYD_MODEL = CONFIG["EXP"]["lsmdir"]
+HYD_MODEL = CONFIG["EXP"]["lsm"].upper()[0:6]
 DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
