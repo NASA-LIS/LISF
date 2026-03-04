@@ -43,6 +43,7 @@ module LDT_wsf_oplMod
     integer*4, allocatable :: ARFS_PRECIP(:,:)
     integer*4, allocatable :: ARFS_SAMPLE_V(:,:)
     integer*4, allocatable :: ARFS_SAMPLE_H(:,:)
+    integer       :: filter_snow_precip  ! NEW 1=filter (default, SM retrieval), 0=keep all footprints (snow depth)
   end type wsf_opl_dec
 
   type(wsf_opl_dec), public :: WSFopl
@@ -103,10 +104,27 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, WSFopl%WSFfilelistSuffixNumber, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     
+    ! Read snow/precip filter option (default = 1 = filter ON for SM retrieval)
+    cfg_entry = "WSF filter snow and precip footprints:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    if (rc == 0) then
+      call ESMF_ConfigGetAttribute(LDT_config, WSFopl%filter_snow_precip, rc=rc)
+      if (rc /= 0) then
+        WSFopl%filter_snow_precip = 1  ! Default: filter ON
+      endif
+    else
+      WSFopl%filter_snow_precip = 1    ! Default: filter ON
+    endif
+
     write(LDT_logunit,*) '[INFO] WSF valid date: ', trim(WSFopl%date_curr)
     write(LDT_logunit,*) '[INFO] WSF input directory: ', trim(WSFopl%WSFdir)
     write(LDT_logunit,*) '[INFO] WSF output directory: ', trim(WSFopl%WSFoutdir)
-    
+    if (WSFopl%filter_snow_precip == 1) then
+      write(LDT_logunit,*) '[INFO] WSF snow/precip filtering: ON (SM retrieval mode)'
+    else
+      write(LDT_logunit,*) '[INFO] WSF snow/precip filtering: OFF (all footprints kept)'
+    endif
+
   end subroutine LDT_wsf_oplInit
 
   subroutine LDT_wsf_oplRun(n)
@@ -248,13 +266,15 @@ contains
     if (n_asc > 0) then
       write(LDT_logunit,*) '[INFO] Processing ASCENDING: ', n_asc, ' files'
       call WSF_ARFS_RESAMPLE_HOURLY(hour_group(1:n_asc), n_asc, &
-                                    WSFopl%WSFoutdir, yyyymmdd, target_hour, n, 'ASC')
+                                    WSFopl%WSFoutdir, yyyymmdd, target_hour, n, 'ASC', &
+                                    WSFopl%filter_snow_precip)
     endif
     
     if (n_desc > 0) then
       write(LDT_logunit,*) '[INFO] Processing DESCENDING: ', n_desc, ' files'
       call WSF_ARFS_RESAMPLE_HOURLY(hour_group(n_filtered/2+1:n_filtered/2+n_desc), &
-                                    n_desc, WSFopl%WSFoutdir, yyyymmdd, target_hour, n, 'DESC')
+                                    n_desc, WSFopl%WSFoutdir, yyyymmdd, target_hour, n, 'DESC', &
+                                    WSFopl%filter_snow_precip)
     endif
     
     if (n_asc == 0 .and. n_desc == 0) then

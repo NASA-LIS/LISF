@@ -11,7 +11,8 @@
 !-------------------------------------------------------------------------
 
 subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
-                                    yyyymmdd, hour_str, n, pass_suffix)
+                                    yyyymmdd, hour_str, n, pass_suffix, &
+                                    filter_snow_precip)
 
     USE TOOLSUBS_WSF
     USE invdist_wsf2arfs
@@ -29,8 +30,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     character(len=8), intent(in) :: yyyymmdd
     character(len=2), intent(in) :: hour_str
     integer, intent(in) :: n
-    character(len=3), intent(in) :: pass_suffix  ! ADD THIS LINE
-
+    character(len=3), intent(in) :: pass_suffix
+    integer, intent(in) :: filter_snow_precip  ! 1=filter snow/precip, 0=keep all footprints
     
     ! ARFS grid arrays
     real*8, allocatable :: ARFS_LAT(:), ARFS_LON(:)
@@ -113,6 +114,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     
     ! Logical for checking data presence
     logical :: has_data
+    logical :: do_filter  ! .true. if snow/precip filtering is enabled
     
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] WSF HOURLY GROUP PROCESSING'
@@ -199,6 +201,14 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     sensor_23ghz_count = 0
     sensor_36ghz_count = 0
     sensor_89ghz_count = 0
+    
+    ! Set filtering flag
+    do_filter = (filter_snow_precip == 1)
+    if (do_filter) then
+        write(LDT_logunit,*)'[INFO] Snow/precip footprint filtering: ON'
+    else
+        write(LDT_logunit,*)'[INFO] Snow/precip footprint filtering: OFF (all footprints kept)'
+    endif
 
     ! =====================================================================
     ! PROCESS EACH FILE
@@ -378,7 +388,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
             TEMP_TB_36H, TEMP_TB_36V, &
             TEMP_TB_89H, TEMP_TB_89V, &
             TEMP_QUALITY_FLAG, &
-            TEMP_SAMPLE_V, TEMP_SAMPLE_H)
+            TEMP_SAMPLE_V, TEMP_SAMPLE_H, &
+            do_filter)
         
         ! ACCUMULATE DATA
         do r = 1, 1920
@@ -578,7 +589,15 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ! =====================================================================
     ! WRITE OUTPUT
     ! =====================================================================
-    output_filename = trim(output_dir)//'/WSF_SDR_resampled_'//yyyymmdd//'_t'//hour_str//'00_'//trim(pass_suffix)//'.nc'
+    if (do_filter) then
+        ! Filtered output (current behavior, for SM retrieval)
+        output_filename = trim(output_dir)//'/WSF_SDR_resampled_'// &
+            yyyymmdd//'_t'//hour_str//'00_'//trim(pass_suffix)//'.nc'
+    else
+        ! Unfiltered output (all footprints kept, for snow depth retrieval)
+        output_filename = trim(output_dir)//'/WSF_SDR_resampled_allfp_'// &
+            yyyymmdd//'_t'//hour_str//'00_'//trim(pass_suffix)//'.nc'
+    endif 
     
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Writing stitched hourly output'
