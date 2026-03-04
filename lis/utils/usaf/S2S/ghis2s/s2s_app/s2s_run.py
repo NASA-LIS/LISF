@@ -993,7 +993,7 @@ class S2Srun(DownloadForecasts):
             # Write runtime section
             file.write("[runtime]\n")
             file.write("    [[root]]\n")
-            file.write("        platform = slurm-ghi\n")
+            file.write("        platform = PF_SLURM\n")
             file.write("        pre-script = \"\"\"\n")
             if 'discover' in platform.node() or 'borg' in platform.node():
                 file.write("            source /etc/profile.d/modules.sh\n")
@@ -1017,16 +1017,16 @@ class S2Srun(DownloadForecasts):
 
             file.write("    [[log_monitor]]\n")
             file.write(f"        script = {self.scrdir}ghis2s_log.sh\n")
-            file.write("        platform = localhost-ghi\n")
+            file.write("        platform = PF_LHOST\n")
             file.write("  \n")
 
             file.write("    [[final_log_collect]]\n")
             file.write(f"        script = {self.scrdir}ghis2s_log.sh\n")
-            file.write("        platform = localhost-ghi\n")
+            file.write("        platform = PF_LHOST\n")
             file.write("  \n")
 
             file.write("    [[stop_log_monitor]]\n")
-            file.write("        platform = localhost-ghi\n")
+            file.write("        platform = PF_LHOST\n")
             file.write("        script = \"\"\"\n")
             file.write("            cylc stop $CYLC_WORKFLOW_ID --now\n")
             file.write("        \"\"\"\n")
@@ -1840,8 +1840,10 @@ class S2Srun(DownloadForecasts):
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                         f'{i+1:02d}_run.j',
-                                        jobname + f'{i+1:02d}_', 1, str(1), cwd, tfile.name,
+                                        jobname + f'{i+1:02d}_', 1, str(2), cwd, tfile.name,
                                         parallel_run=par_info)
+#                                        jobname + f'{i+1:02d}_', 1, str(1), cwd, tfile.name,
+#                                        parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2smetric', prev=prev)
             finally:
                 tfile.close()
@@ -1872,8 +1874,10 @@ class S2Srun(DownloadForecasts):
             tfile = self.sublist_to_file(slurm_commands, cwd)
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
-                                        f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1, str(1),
+                                        f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1, str(2),
                                         cwd, tfile.name, parallel_run=par_info)
+#                                        f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1, str(1),
+#                                        cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2smetric', prev=prev)
             finally:
                 tfile.close()
@@ -1883,7 +1887,7 @@ class S2Srun(DownloadForecasts):
             utils.remove_sbatch_lines(jobname + f'{i+1:02d}_run.sh')
             #utils.cylc_job_scripts(jobname + 'run.sh', 4, cwd, command_list=slurm_commands)
 
-        # write tiff files
+        # write monthly tiff files
         jobname='s2smetric_tiff_'
         prev = [f"{key}" for key in self.schedule.keys() if 's2smetric_0' in key]
         par_info = {}
@@ -1899,7 +1903,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(
                 self.e2esroot +'/' + self.config_file, 's2smetric_tiff_run.j',
-                's2smetric_tiff_', 1, str(1), cwd, tfile.name, parallel_run=par_info)
+                's2smetric_tiff_', 1, str(2), cwd, tfile.name, parallel_run=par_info)
             self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev=prev)
         finally:
             tfile.close()
@@ -1909,7 +1913,7 @@ class S2Srun(DownloadForecasts):
         utils.remove_sbatch_lines(jobname + 'run.sh')
         #utils.cylc_job_scripts(jobname + 'run.sh', 3, cwd, command_list=command)
 
-        # write tiff files
+        # write weekly tiff files
         jobname='s2smetric_weekly_tiff_'
         prev = [f"{key}" for key in self.schedule.keys() if 's2smetric_weekly_0' in key]
         par_info = {}
@@ -1925,7 +1929,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.e2esroot +'/' + self.config_file,
                                     's2smetric_weekly_tiff_run.j', 's2smetric_weekly_tiff_', 1,
-                                    str(1), cwd, tfile.name, parallel_run=par_info)
+                                    str(2), cwd, tfile.name, parallel_run=par_info)
             self.create_dict('s2smetric_weekly_tiff_run.j', 's2smetric', prev=prev)
         finally:
             tfile.close()
