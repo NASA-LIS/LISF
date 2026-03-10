@@ -31,6 +31,7 @@ module LIS_pluginIndices
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF
 !               for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS
+!  18 Mar 2020: Sarith Mahanam, added Concurrent irrigation
 !
 !EOP
 
@@ -476,6 +477,7 @@ module LIS_pluginIndices
         "Sprinkler"
    character*50, public, parameter :: LIS_floodIrrigationId = "Flood"
    character*50, public, parameter :: LIS_dripIrrigationId  = "Drip"
+   character*50, public, parameter :: LIS_concurrentIrrigationId  = "Concurrent"
 !-------------------------------------------------------------------------
 !  Forecasting algorithms
 !-------------------------------------------------------------------------

@@ -1156,6 +1156,7 @@ Incorporate crop information:   .false.
 |UMDCROPMAP |UMD+CROPMAP crop type map. For more info, please refer to Ozdogan et al. (2010; JHM).
 |Monfreda08 |FAOSTAT05 crop type maps. For more info, please refer to Monfreda et al. (2008).
 |CONSTANT |Ability to set a constant crop type for a set classification.
+|MIRCA    |MIRCA2000 crop type maps. For more info, please refer to Portmann et al. (2010).
 |===
 
 .Example _ldt.config_ entry
@@ -1173,6 +1174,8 @@ Crop type data source:  "none"
 |CROPMAP |19 classes; named by Ozdogan et al.(2010), used Leff et al.(2004)
 |FAOSTAT01 |19 classes; Used by Leff et al.(2004), considered obsolete
 |FAOSTAT05 |175 classes; Used by Monfreda et al. (2008)
+|MIRCA     |26 classes; Used by Portmann et al. (2010)
+|MIRCA52   |26 classes for irrigated and rainfed, total of 52 classes.
 |===
 
 .Example _ldt.config_ entry
@@ -1187,27 +1190,24 @@ Crop classification:       "FAOSTAT01"
 Crop library directory:  "../LS_PARAMETERS/crop_params/Crop.Library.Files/"
 ....
 
-`Assign crop value type:` specifies the type of crop presence, such as a "`single`" crop or "`multiple`" crops given within a gridcell.  Currently, only the "`single`" option is supported.
+`Assign crop value type:` specifies the type of crop presence, such as a "`single`" crop or "`multiple`" crops given within a gridcell.  Currently, only the "`single`" option is supported. "`none`" assigns crop types specified by `Crop type data source:`.
 
 .Example _ldt.config_ entry
 ....
 Assign crop value type:    "none"
 ....
-
-`Assign single crop value:` specifies whether to assign a single crop value from an actual crop library inventory, such as FAOSTAT01, which is also known as the CROPMAP classification used in Ozdogan et al. (2010).  By turning on this option (.true.), you can they specify what type of crop you want to assign, like "`maize`" to the user-specified option, `Default crop type:`. If "`maize`" was entered, then wherever the landcover map indicated a generic "`cropland`", the crop type field would be given a dominant "`maize`" type.
-
 [cols="<,<",]
 |===
 |Value |Description
 
-|.false. |Do not assign a single crop class to the crop type field.
-|.true. |Assign a single crop type, like "`maize`" to the crop type field.
+|none     | no crop type
+|single   | force single crop type
+|multiple | force multiple crop type
 |===
 
-.Example _ldt.config_ entry
-....
-Assign single crop value:     .true.    
-....
+By setting `Assign crop value type:` "`single`", you can specify what type of crop you want to assign, like "`maize`" to the user-specified option. 
+`Default crop type:`. If "`maize`" was entered, then wherever the landcover map indicated a generic "`cropland`", the crop type field would be given a dominant "`maize`" type.
+
 
 `Default crop type:` specifies the default crop type that the user can enter and can be used in conjunction with assigning a single crop type value (see above).
 
@@ -1232,11 +1232,8 @@ Crop type file:  ./irrigation/conus_modis/UMD_N125C19.1gd4r
 |none |Data is on same grid as LIS output domain
 |mode |Upscale by selecting dominant type for each gridcell
 |tile |Read in tiled data or upscale by estimating gridcell fractions
+|average |Upscale by averaging pixels for each gridcell
 |===
-
-NOTE: LIS will be expecting "`mode`" or dominant crop type per
-gridcell at this time. Future versions will include landcover-crop tile
-options.
 
 .Example _ldt.config_ entry
 ....
@@ -1248,8 +1245,9 @@ Crop map spatial transform:   mode
 [cols="<,<",]
 |===
 |Value |Description
-
+|none  |not used
 |GRIPC |Irrigation map, by Salmon (2013).
+|AQUASTAT |Irrigated areas by type (drip, flood, and sprinkler), by FAO.
 |===
 
 .Example _ldt.config_ entry
@@ -1259,7 +1257,7 @@ Irrigation type data source:  "none"
 
 `Irrigation type map:` specifies the location of an irrigation type file. This file contains different irrigation categories (types) that can be used in conjunction with an irrigation fraction map.
 
-A special land-use/irrigation-related map, known as the Global Rain-Fed, Irrigated, and Paddy Croplands (GRIPC) Dataset (Salmon, 2013), has also been implemented as an option to LDT. Currently, no models in LIS utilize this map but opportunities exist for the user community to utilize for their landcover and irrigation modeling needs.
+A special land-use/irrigation-related map, known as the Global Rain-Fed, Irrigated, and Paddy Croplands (GRIPC) Dataset (Salmon, 2013), has also been implemented as an option to LDT. GRIPC provides crop water resources whose pixels are labeled as 1 = Rain-fed croplands, 2 = Irrigated croplands, 3 = Paddy croplands, and 4 = Not cropped.  The Irrigated croplands need to be mapped into irrigation method types via `Assign irrigation type:` and `Assign sprinkler fraction:`.
 
 .Example _ldt.config_ entry
 ....
@@ -1283,7 +1281,29 @@ Irrigation type map: ../LS_PARAMETERS/irrigation/irrigtype_map.bin
 Irrigation type spatial transform:    mode
 ....
 
-`Irrigation fraction data source:` specifies the irrigation method type dataset source to be read in. Current source options include:
+`Assign irrigation type:` specifies irrigation types of sprinkler, drip, and flood for corresponding crop water source information provided by GRIPC. Applicable when GRIPC is chosen for `Irrigation type data source:`.  
+
+[cols="<,<",]
+|===
+|Value |Description
+|sprinkler | assign as sprinkler
+|drip      | assign as drip
+|sprinkler+drip  | assign a fraction as sprinkler specified in `Assign sprinkler fraction`
+|===
+
+.Example _ldt.config_ entry
+....
+Assign irrigation type:  "sprinkler"
+....
+
+`Assign sprinkler fraction:` specifies a fraction of sprinkler+drip, ranging 0-1.
+
+.Example _ldt.config_ entry
+....
+Assign sprinkler fraction:  0.5
+....
+
+`Irrigation fraction data source:` specifies the irrigation area dataset source to be read in. Current source options include:
 
 [cols="<,<",]
 |===
@@ -1292,6 +1312,7 @@ Irrigation type spatial transform:    mode
 |MODIS_OG |Irrigation area fraction map by Ozdogan and Gutman (2008)
 |GRIPC |Irrigation area fraction map by Salmon (2013)
 |UserDerived |User derived irrigation fraction map
+|GIA |Irrigation area fraction map by Meier et al (2018)
 |===
 
 .Example _ldt.config_ entry
@@ -1349,6 +1370,22 @@ Irrigation fraction resolution (dx):       0.2500
 Irrigation fraction resolution (dy):       0.2500
 ....
 
+`Irrigation fraction type option:` specifies the irrigation method type if GRIPC is selected as `Irrigation fraction data source`. GRIPC pixels are labeled as 1 = Rain-fed croplands, 2 = Irrigated croplands, 3 = Paddy croplands, and 4 = Not cropped. Irrigation fraction is computed based on the fraction of Irrigated croplands (= sprinkler), Paddy Croplands (= paddy), or a sum of Irrigated and Paddy croplands ove the total pixels.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|sprinkler |sprinkler irrigation type, default.
+|paddy     |paddy irrigation type.
+|sprinkler+paddy  |a sum of sprinkler and paddy irrigation types.
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction type option:  "sprinkler+paddy"
+....
+
 `Groundwater irrigation ratio map:` specifies the location of a groundwater irrigation fraction map file. This file contains the ratio (gridcell-based) that partitions the simulated irrigation water amount into groundwater source.
 
 .Example ldt.config entry
@@ -1373,6 +1410,79 @@ Groundwater irrigation ratio map: ./params/irrigGWratio2000.asc
 Groundwater irrigation ratio spatial transform: bilinear
 ....
 
+`Merge crop and irrigation information:` specifies whether to enable adding another dataset to be merged with those currently selected for `Irrigation fraction data source` and `Crop type data source` (i.e. merge GRIPC with GIA and MIRCA).  The primary irrigation fraction is separated into irrigated and paddy fractions.  Further, non-rice crops and rice fractions are adjusted to match irrigation and paddy, as well as rainfed crops are adjusted to rainfed area fractions. In older code logic, irrigation map was independent of land cover/crop data, thus irrigation fraction had to be scaled and assigned for appropriate vegetation tiles in LIS.  This “Merge” step replaces it and is now done in LDT.  If additional source to be merged is not present, it aligns Irrigation fraction data source with crop type data source and landcover data source via “Crop irrigation merge data source:”. 
+
+.Example _ldt.config_ entry
+....
+Merge crop and irrigation information:   .false.
+....
+
+`Crop irrigation merge data source:` specifies the additional dataset to be merged with the irrigation fraction and crop type data.
+
+[cols="<,<",]
+|===
+|Value |Description
+|GRIPC | originally designed for merging GIA, GRIPC, and MIRCA datasets.
+|===
+
+.Example _ldt.config_ entry
+....
+Crop irrigation merge data source:  "GRIPC"
+....
+
+`Crop irrigation merge data map:` specifies the additional irrigation map file.
+
+.Example _ldt.config_ entry
+....
+Crop irrigation merge data map:   ./irrigtype_salmon2013_gia_ricemask.flt
+....
+
+`Crop irrigation merge data spatial transform:` specifies spatial trasformation method for the additional irrigation map file. Currently, tile is the default.
+
+.Example _ldt.config_ entry
+....
+Crop irrigation merge data spatial trasform:   tile
+....
+
+`Crop Calendar information:` specifies whether to enable processing crop calendar information.
+
+.Example _ldt.config_ entry
+....
+Crop Calendar information: .false.
+....
+
+`Crop Calendar data source:` specifies crop calendar data to be processed. Currently, only MIRCA is supported.
+
+.Example _ldt.config_ entry
+....
+Crop Calendar data source:  "MIRCA"
+....
+
+`Crop Calendar data map:` specifies crop calendar map to be read in. It is a place holder for future option.
+
+.Example _ldt.config_ entry
+....
+Crop Calendar data map:  "none"
+....
+
+`Crop Calendar data spatial transform:` specifies spatial transformation method for crop calendar data processing. It is a place holder for future option.
+
+.Example _ldt.config_ entry
+....
+Crop Calendar data spatial transform:  "average"
+....
+
+`Multiple Cropping Max Seasons:` specifies the number of seasons for multiple cropping.  Currently, the routine is hard-coded for 2 seasons.
+
+.Example _ldt.config_ entry
+....
+Multiple Cropping Max Seasons:  2
+....
+
+[[ssec-soilspecparams]]
+=== Soil Parameters
+
+Soils maps
 
 [[ssec-soilspecparams]]
 === Soil Parameters
