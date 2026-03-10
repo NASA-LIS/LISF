@@ -35,6 +35,7 @@
 #               JULES.
 # 05 Dec 2022:  Eric Kemp (SSAI), updates to improve pylint score.
 # 24 Jan 2023:  Eric Kemp (SSAI), updates to GRIB file names.
+# 27 Jan 2026:  Eric Kemp (SSAI), updates for merged NRT/NRT-Streamflow.
 #
 #------------------------------------------------------------------------------
 """
@@ -48,7 +49,10 @@ import sys
 #------------------------------------------------------------------------------
 
 # Supported LIS LSMs
-_LIS_LSMS = ["NOAH", "NOAHMP", "JULES"]
+_LIS_LSMS = ["NOAH", "NOAHMP"]
+
+# Supported LIS Routing models
+_LIS_ROUTINGS = ["RAPID"]
 
 # The LVT invocations for Noah LSM output.  Each invocation handles a subset
 # of the total variable list due to memory limitations.
@@ -114,58 +118,25 @@ _LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
 # The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.
 _LVT_NOAHMP_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst', 'SWE_inst']
 
-# The LVT invocations for JULES LSM output.
-_LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
-                              'AvgSurfT_inst', 'AvgSurfT_tavg',
-                              'CanopInt_inst',
-                              'Elevation_inst', 'Evap_tavg',
-                              'LWdown_f_inst', 'LWdown_f_tavg',
-                              'Landcover_inst', 'Landmask_inst',
-                              'Psurf_f_inst', 'Psurf_f_tavg',
-                              'Qair_f_inst', 'Qair_f_tavg',
-                              'Qh_tavg', 'Qle_tavg',
-                              'Qs_acc', 'Qsb_acc',
-                              'RHMin_inst', 'RelSMC_inst',
-                              'SWE_inst',
-                              'SWdown_f_inst', 'SWdown_f_tavg',
-                              'SmLiqFrac_inst',
-                              'SnowDepth_inst',
-                              'SoilMoist_inst', 'SoilMoist_tavg',
-                              'SoilTemp_inst', 'SoilTemp_tavg',
-                              'Tair_f_inst', 'Tair_f_max',
-                              'Tair_f_tavg',
-                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
-
-_LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
-                               'RHMin_inst',
-                               'SoilMoist_tavg', 'SoilTemp_tavg',
-                               'SWdown_f_tavg', 'Tair_f_max',
-                               'Tair_f_tavg',
-                               'TotalPrecip_acc', 'Wind_f_tavg']
-
-# The 24-hr postprocessing should include the latest 3-hr snow depth and SWE.
-_LVT_JULES_INVOCATIONS_24HR_LATEST = ['SnowDepth_inst', 'SWE_inst']
 
 # The combined invocation directory for all supported LSMs.
 _INVOCATIONS = {
-    "NOAH_3HR": _LVT_NOAH_INVOCATIONS_3HR,
-    "NOAH_24HR": _LVT_NOAH_INVOCATIONS_24HR,
-    "NOAH_24HR_LATEST": _LVT_NOAH_INVOCATIONS_24HR_LATEST,
-    "NOAHMP_3HR": _LVT_NOAHMP_INVOCATIONS_3HR,
-    "NOAHMP_24HR": _LVT_NOAHMP_INVOCATIONS_24HR,
-    "NOAHMP_24HR_LATEST": _LVT_NOAHMP_INVOCATIONS_24HR_LATEST,
-    "JULES_3HR": _LVT_JULES_INVOCATIONS_3HR,
-    "JULES_24HR": _LVT_JULES_INVOCATIONS_24HR,
-    "JULES_24HR_LATEST": _LVT_JULES_INVOCATIONS_24HR_LATEST,
+    "NOAH_RAPID_3HR": _LVT_NOAH_INVOCATIONS_3HR,
+    "NOAH_RAPID_24HR": _LVT_NOAH_INVOCATIONS_24HR,
+    "NOAH_RAPID_24HR_LATEST": _LVT_NOAH_INVOCATIONS_24HR_LATEST,
+    "NOAHMP_RAPID_3HR": _LVT_NOAHMP_INVOCATIONS_3HR,
+    "NOAHMP_RAPID_24HR": _LVT_NOAHMP_INVOCATIONS_24HR,
+    "NOAHMP_RAPID_24HR_LATEST": _LVT_NOAHMP_INVOCATIONS_24HR_LATEST,
 }
 
 # -----------------------------------------------------------------------------
 def _usage():
     """Print command line usage"""
-    print(f"Usage: {sys.argv[0]} yyyymmddhh lsm period [--nospread]")
+    print(f"Usage: {sys.argv[0]} yyyymmddhh lsm routing period [--nospread]")
     print("   where:")
     print("        yyyymmddhh is valid year/month/day/hour in UTC")
     print("        lsm is name of land surface model used by LIS")
+    print("        routing is name of routing model used by LIS")
     print("        period is time period (hours) for postprocessing (3 or 24)")
     print("        --nospread is optional flag to skip ensemble spread")
 
@@ -173,7 +144,7 @@ def _usage():
 def _read_cmd_args():
     """Read command line arguments"""
     # Check if argument count is correct
-    if len(sys.argv) not in [4, 5]:
+    if len(sys.argv) not in [5, 6]:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -204,33 +175,46 @@ def _read_cmd_args():
         print(text)
         sys.exit(1)
 
+    # Get routing name
+    routing = None
+    if sys.argv[3] in _LIS_ROUTINGS:
+        routing = sys.argv[3]
+    if routing is None:
+        print("[ERR] Invalid routing selection!")
+        print(f" routing value is {sys.argv[3]}")
+        text = " Supported routing models:"
+        for routing in _LIS_ROUTINGS:
+            text += f" {routing}"
+        print(text)
+        sys.exit(1)
+
     # Get processing hour
     period_options = [3, 24]
     period = None
-    tmp_int = int(sys.argv[3])
+    tmp_int = int(sys.argv[4])
     if tmp_int in period_options:
         period = tmp_int
     if period is None:
         print("[ERR] Invalid period selection!")
-        print(f" period value is {sys.argv[3]}")
+        print(f" period value is {sys.argv[4]}")
         print(" Supported time periods are: 3 and 24")
         sys.exit(1)
 
     # Check if ensemble spread should be skipped
     skip_ens_spread = False
-    if len(sys.argv) == 5:
-        if sys.argv[4] == "--nospread":
+    if len(sys.argv) == 6:
+        if sys.argv[5] == "--nospread":
             skip_ens_spread = True
         else:
-            print(f"[ERR] Invalid argument {sys.argv[4]}")
+            print(f"[ERR] Invalid argument {sys.argv[5]}")
             _usage()
 
-    return validdt, lsm, period, skip_ens_spread
+    return validdt, lsm, routing, period, skip_ens_spread
 
 # -----------------------------------------------------------------------------
-def _get_gr2_mean_files(validdt, lsm, period):
+def _get_gr2_mean_files(validdt, lsm, routing, period):
     """Collect GRIB2 mean files"""
-    key = f"{lsm}_{period}HR"
+    key = f"{lsm}_{routing}_{period}HR"
     invocation_list = _INVOCATIONS[key]
 
     mean_gr2_infiles = {}
@@ -238,7 +222,8 @@ def _get_gr2_mean_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.{period}hr"
-        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}-{routing}_GR.C0P09DEG_AR.GLOBAL_PA"
+
         if period == 24:
             path += ".LIS24_DD."
         else:
@@ -256,7 +241,7 @@ def _get_gr2_mean_files(validdt, lsm, period):
     path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}-{routing}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
         path += ".LIS24_DD."
     else:
@@ -270,9 +255,9 @@ def _get_gr2_mean_files(validdt, lsm, period):
     return mean_gr2_infiles, mean_gr2_outfile
 
 # -----------------------------------------------------------------------------
-def _get_gr2_ssdev_files(validdt, lsm, period):
+def _get_gr2_ssdev_files(validdt, lsm, routing, period):
     """Collect GRIB2 ssdev files"""
-    key = f"{lsm}_{period}HR"
+    key = f"{lsm}_{routing}_{period}HR"
     invocation_list = _INVOCATIONS[key]
 
     ssdev_gr2_infiles = {}
@@ -280,7 +265,7 @@ def _get_gr2_ssdev_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.{period}hr"
-        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}-{routing}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
             path += ".LIS24-SSDEV_DD."
         else:
@@ -298,7 +283,7 @@ def _get_gr2_ssdev_files(validdt, lsm, period):
     path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}-{routing}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
         path += ".LIS24-SSDEV_DD."
     else:
@@ -312,10 +297,10 @@ def _get_gr2_ssdev_files(validdt, lsm, period):
     return ssdev_gr2_infiles, ssdev_gr2_outfile
 
 # -----------------------------------------------------------------------------
-def _get_gr2_latest_files(validdt, lsm):
+def _get_gr2_latest_files(validdt, lsm, routing):
     """Collect GRIB2 latest files"""
 
-    key = f"{lsm}_24HR_LATEST"
+    key = f"{lsm}_{routing}_24HR_LATEST"
     invocation_list = _INVOCATIONS[key]
 
     latest_gr2_infiles = {}
@@ -323,7 +308,7 @@ def _get_gr2_latest_files(validdt, lsm):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.3hr" # Always use 3hr processing
-        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}-{routing}_GR.C0P09DEG_AR.GLOBAL_PA"
         path += ".LIS_DD."
         path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
         path += f".{validdt.hour:02}00_DF"
@@ -338,17 +323,17 @@ def _get_gr2_latest_files(validdt, lsm):
     return latest_gr2_infiles
 
 # -----------------------------------------------------------------------------
-def _merge_gr2_files(lsm, period, gr2_infiles, gr2_outfile,
+def _merge_gr2_files(lsm, routing, period, gr2_infiles, gr2_outfile,
                     latest_gr2_infiles=None):
     """Use cat to merge GRIB2 fields together"""
-    key = f"{lsm}_{period}HR"
+    key = f"{lsm}_{routing}_{period}HR"
     invocations = _INVOCATIONS[key][0:]
     cmd = "cat"
     for invocation in invocations:
         cmd += f" {gr2_infiles[invocation]}"
     # For 24-hr postprocessing, we also must concatenate several 3-hr fields
     if latest_gr2_infiles is not None:
-        key = f"{lsm}_24HR_LATEST"
+        key = f"{lsm}_{routing}_24HR_LATEST"
         invocations = _INVOCATIONS[key][:]
         for invocation in invocations:
             cmd += f" {latest_gr2_infiles[invocation]}"
@@ -366,27 +351,29 @@ def _merge_gr2_files(lsm, period, gr2_infiles, gr2_outfile,
 def _main():
     """Main driver"""
     # Process command line arguments
-    validdt, lsm, period, skip_ens_spread = _read_cmd_args()
+    validdt, lsm, routing, period, skip_ens_spread = _read_cmd_args()
 
     # Collect GRIB2 files
     (mean_gr2_infiles, mean_gr2_outfile) = \
-        _get_gr2_mean_files(validdt, lsm, period)
+        _get_gr2_mean_files(validdt, lsm, routing, period)
     # 3-hr postprocessing includes ensemble spread files
     if period == 3 and not skip_ens_spread:
         (ssdev_gr2_infiles, ssdev_gr2_outfile) = \
-            _get_gr2_ssdev_files(validdt, lsm, period)
+            _get_gr2_ssdev_files(validdt, lsm, routing, period)
     # 24-hr postprocessing includes several latest 3-hr fields
     if period == 24:
-        latest_gr2_infiles = _get_gr2_latest_files(validdt, lsm)
+        latest_gr2_infiles = _get_gr2_latest_files(validdt, lsm, routing)
 
     # Merge the input GRIB2 files together
     if period == 3:
-        _merge_gr2_files(lsm, period, mean_gr2_infiles, mean_gr2_outfile)
+        _merge_gr2_files(lsm, routing, period, mean_gr2_infiles, \
+                         mean_gr2_outfile)
         if not skip_ens_spread:
-            _merge_gr2_files(lsm, period, ssdev_gr2_infiles, ssdev_gr2_outfile)
+            _merge_gr2_files(lsm, routing, period, ssdev_gr2_infiles, \
+                             ssdev_gr2_outfile)
     else:
         # 24-hr processing
-        _merge_gr2_files(lsm, period, mean_gr2_infiles,
+        _merge_gr2_files(lsm, routing, period, mean_gr2_infiles,
                          mean_gr2_outfile, latest_gr2_infiles)
 
 if __name__ == "__main__":

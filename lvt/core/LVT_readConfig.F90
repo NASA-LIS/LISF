@@ -620,9 +620,12 @@ subroutine LVT_readConfig(configfile)
 
   LVT_rc%security_class='U'
   LVT_rc%distribution_class = 'C'
-  !LVT_rc%data_category = 'ANLYS'
   LVT_rc%data_category = 'C'
   LVT_rc%area_of_data = 'GLOBAL'
+
+  LVT_rc%generating_process = 'UNDEFINED'
+  call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%generating_process,&
+       label="LIS Streamflow Generating Process:",rc=rc)
 
   allocate(LVT_metricsPtr(LVT_NMETRICS))
   LVT_rc%maskflag = 0

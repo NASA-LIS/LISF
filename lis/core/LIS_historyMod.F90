@@ -2420,12 +2420,12 @@ contains
     xlong%valid_max = 0.0
 
     if(LIS_masterproc) then 
-       if(LIS_rc%wopt.eq."1d tilespace") then 
+       if(LIS_rc%wopt_routing.eq."1d tilespace") then 
           write(LIS_logunit,*) '[ERR] 1d tilespace output for routing models'
           write(LIS_logunit,*) '[ERR] is not supported currently'
           call LIS_endrun()
 
-       elseif(LIS_rc%wopt.eq."2d gridspace") then 
+       elseif(LIS_rc%wopt_routing.eq."2d gridspace") then 
           call LIS_verify(nf90_def_dim(ftn,'east_west',LIS_rc%gnc(n),&
                dimID(1)),&
                'nf90_def_dim for east_west failed in LIS_historyMod')
@@ -2433,7 +2433,7 @@ contains
                dimID(2)),&
                'nf90_def_dim for north_south failed in LIS_historyMod')
 
-       elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+       elseif(LIS_rc%wopt_routing.eq."2d ensemble gridspace") then 
           call LIS_verify(nf90_def_dim(ftn,'east_west',LIS_rc%gnc(n),&
                dimID(1)),&
                'nf90_def_dim for east_west failed in LIS_historyMod')
@@ -2452,9 +2452,9 @@ contains
             'nf90_put_att for missing_value failed in LIS_historyMod')
        
        call defineNETCDFheaderVar(n,ftn,dimID, xlat,&
-            non_model_fields = 1 )       
+            non_model_fields = 1, wopt=LIS_rc%wopt_routing )       
        call defineNETCDFheaderVar(n,ftn,dimID, xlong, &
-            non_model_fields = 2 )              
+            non_model_fields = 2, wopt=LIS_rc%wopt_routing )              
 
        ! defining time field
        call LIS_verify(nf90_def_var(ftn,'time',&
@@ -2489,7 +2489,7 @@ contains
             'nf90_put_att for begin_time failed in LIS_historyMod')
 
        ! Write ensemble information as a variable:
-       if( LIS_rc%wopt.eq."2d ensemble gridspace" ) then
+       if( LIS_rc%wopt_routing.eq."2d ensemble gridspace" ) then
           call LIS_verify(nf90_def_var(ftn,'ensemble',&
                nf90_float, dimids=dimID(3), varID=ensID),&
               'nf90_def_var for ensemble failed in LIS_historyMod')
@@ -2511,7 +2511,7 @@ contains
 
        do while ( associated(dataEntry) )
           call defineNETCDFheaderVar(n,ftn,dimId,&
-               dataEntry)
+               dataEntry, wopt=LIS_rc%wopt_routing)
           dataEntry => dataEntry%next
        enddo
 
@@ -2632,7 +2632,7 @@ contains
        call LIS_verify(nf90_put_var(ftn,xtimeID,0.0),&
             'nf90_put_var for xtimeID failed in LIS_historyMod')
        ! Write ensemble var info:
-       if( LIS_rc%wopt.eq."2d ensemble gridspace" ) then
+       if( LIS_rc%wopt_routing.eq."2d ensemble gridspace" ) then
          call LIS_verify(nf90_put_var(ftn,ensID,ensval,(/1/),(/LIS_rc%nensem(n)/)),&
             'nf90_put_var for ensID failed in LIS_historyMod')
        endif
@@ -2656,7 +2656,7 @@ contains
     deallocate(xlong)
     
     if( LIS_masterproc ) then
-      if( LIS_rc%wopt.eq."2d ensemble gridspace" ) then
+      if( LIS_rc%wopt_routing.eq."2d ensemble gridspace" ) then
         deallocate(ensval)
       endif
     endif
@@ -2669,16 +2669,18 @@ contains
 ! \label{defineNETCDFheaderVar}
 ! 
 ! !INTERFACE: 
-  subroutine defineNETCDFheaderVar(n,ftn,dimID, dataEntry, non_model_fields)
+  subroutine defineNETCDFheaderVar(n,ftn,dimID, dataEntry, non_model_fields, wopt)
 ! !USES: 
 
 ! !ARGUMENTS:     
     integer                           :: n
     integer                           :: ftn
+    integer                           :: dimID(4)
     type(LIS_metadataEntry), pointer  :: dataEntry
     integer,   optional               :: non_model_fields
-    integer                           :: dimID(4)
-! 
+    character*50, optional            :: wopt
+
+    ! 
 ! !DESCRIPTION: 
 !    This routine writes the required NETCDF header for a single variable
 ! 
@@ -2710,12 +2712,18 @@ contains
     integer       :: fill_value
     integer :: dimID_vert
     integer :: start, end
+    character*50 :: wopt_local
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
     nmodel_status = 0
     if(present(non_model_fields)) then
        nmodel_status = non_model_fields
+    endif
+
+    wopt_local = trim(LIS_rc%wopt)
+    if (present(wopt)) then
+       wopt_local = trim(wopt)
     endif
 
     data_index = dataEntry%index
@@ -2732,11 +2740,11 @@ contains
             trim(dataEntry%short_name)//'_profiles', &
             dataEntry%vlevels, dimID_vert), &
             'nf90_def_dim failed (2d gridspace) in LIS_historyMod')
-       if (LIS_rc%wopt.eq."1d tilespace") then
+       if (wopt_local.eq."1d tilespace") then
           dimID(2) = dimID_vert
-       else if(LIS_rc%wopt.eq."2d gridspace") then
+       else if(wopt_local.eq."2d gridspace") then
           dimID(3) = dimID_vert
-       else if(LIS_rc%wopt.eq."2d ensemble gridspace") then
+       else if(wopt_local.eq."2d ensemble gridspace") then
           dimID(4) = dimID_vert
        endif
     endif
@@ -2744,10 +2752,10 @@ contains
     ! Define start and end limits of dimID to pass to nf90_def_var
     if (nmodel_status == 1) then
        ! Latitude.  No vertical levels.
-       if (LIS_rc%wopt == "1d tilespace") then
+       if (wopt_local == "1d tilespace") then
           start = 1; end = 1
-       else if (LIS_rc%wopt == "2d gridspace" .or. &
-            LIS_rc%wopt == "2d ensemble gridspace") then
+       else if (wopt_local == "2d gridspace" .or. &
+            wopt_local == "2d ensemble gridspace") then
           if (LIS_rc%nlatlon_dimensions == '1D') then
              start = 2; end = 2
           else
@@ -2756,10 +2764,10 @@ contains
        end if
     else if (nmodel_status == 2) then
        ! Longitude. No vertical levels.
-       if (LIS_rc%wopt == "1d tilespace") then
+       if (wopt_local == "1d tilespace") then
           start = 1; end = 1
-       else if (LIS_rc%wopt == "2d gridspace" .or. &
-            LIS_rc%wopt == "2d ensemble gridspace") then
+       else if (wopt_local == "2d gridspace" .or. &
+            wopt_local == "2d ensemble gridspace") then
           if (LIS_rc%nlatlon_dimensions == '1D') then
              start = 1; end = 1
           else
@@ -2769,19 +2777,19 @@ contains
     else
        ! General case.  Must consider 1D vs 2D horizontal, ensembles,
        ! and vertical levels
-       if (LIS_rc%wopt == "1d tilespace") then
+       if (wopt_local == "1d tilespace") then
           if (dataEntry%vlevels > 1) then
              start = 1; end = 2
           else
              start = 1; end = 1
           end if
-       else if (LIS_rc%wopt == "2d gridspace") then
+       else if (wopt_local == "2d gridspace") then
           if (dataEntry%vlevels > 1) then
              start = 1; end = 3
           else
              start = 1; end = 2
           end if
-       else if (LIS_rc%wopt == "2d ensemble gridspace") then
+       else if (wopt_local == "2d ensemble gridspace") then
           if (dataEntry%vlevels > 1) then
              start = 1; end = 4
           else
@@ -4166,12 +4174,12 @@ contains
     REAL          :: gtmp(LIS_rc%lnc(n),LIS_rc%lnr(n))
     integer       :: gid, c,r,i,t,m
     
-    if(LIS_rc%wopt.eq."1d tilespace") then !tiled output
+    if(LIS_rc%wopt_routing.eq."1d tilespace") then !tiled output
        write(LIS_logunit,*) '[ERR] 1d tilespace option is not supported'
        write(LIS_logunit,*) '[ERR] in the distributed binary mode'
        call LIS_endrun()
        
-    elseif(LIS_rc%wopt.eq."2d gridspace") then !2d gridded output
+    elseif(LIS_rc%wopt_routing.eq."2d gridspace") then !2d gridded output
 
        gtmp = LIS_rc%udef
        
@@ -4198,7 +4206,7 @@ contains
        
        write(ftn) gtmp
 
-    elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then !2d gridded output
+    elseif(LIS_rc%wopt_routing.eq."2d ensemble gridspace") then !2d gridded output
 
        do m=1, LIS_rc%nensem(n)
 
@@ -4222,7 +4230,7 @@ contains
           write(ftn) gtmp
        enddo             
        
-    elseif(LIS_rc%wopt.eq."1d gridspace") then !1d gridded output
+    elseif(LIS_rc%wopt_routing.eq."1d gridspace") then !1d gridded output
 
        write(LIS_logunit,*) '[ERR] 1d gridspace option is not supported'
        write(LIS_logunit,*) '[ERR] in the distributed binary mode'
@@ -6311,7 +6319,7 @@ contains
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
-    if(LIS_rc%wopt.eq."2d gridspace") then 
+    if(LIS_rc%wopt_routing.eq."2d gridspace") then 
        allocate(var1(LIS_rc%nroutinggrid(n)))
        if(LIS_masterproc) then 
           allocate(gtmp(LIS_rc%gnc(n),LIS_rc%gnr(n)))
@@ -6424,7 +6432,7 @@ contains
        deallocate(gtmp1)
 
     ! Write output in 2D ensemble grid space:
-    elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+    elseif(LIS_rc%wopt_routing.eq."2d ensemble gridspace") then 
 
        ! Non-model output field status (T=non-model; F=model-based):
        if(nmodel_status.ne.0) then   ! non-model output field status
