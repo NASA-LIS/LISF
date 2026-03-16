@@ -330,11 +330,11 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
 ! Apply QC: valid range 0.0 to 1.0 (guard against NaN)
   do r = 1, nlat
      do c = 1, nlon
-        if (tmp(c,r,1) .eq. tmp(c,r,1)) then  ! NaN /= NaN, so this filters NaNs
+        if (tmp(c,r,1) .eq. tmp(c,r,1)) then
            if (tmp(c,r,1) >= 0.0 .and. &
                 tmp(c,r,1) <= 1.0) then
-              sm_in(c + (r-1)*WSFsmobs(n)%nc) = tmp(c,r,1)
-              sm_data_b(c + (r-1)*WSFsmobs(n)%nc) = .true.
+              sm_in(c + (nlat-r)*WSFsmobs(n)%nc) = tmp(c,r,1)
+              sm_data_b(c + (nlat-r)*WSFsmobs(n)%nc) = .true.
            end if
         end if
      end do
