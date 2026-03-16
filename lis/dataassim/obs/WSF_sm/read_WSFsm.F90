@@ -436,6 +436,7 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   use LIS_logMod
   use LIS_timeMgrMod
   use WSFsm_Mod, only : WSFsm_struc
+  use, intrinsic :: ieee_arithmetic
 
   implicit none
 !
@@ -456,6 +457,7 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   integer                 :: smid
   integer                 :: ios, nid
   integer                 :: c,r
+  integer                 :: r_flip 
   integer                 :: ftn1
   ! EMK
   logical :: file_exists
@@ -465,31 +467,6 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   real, allocatable :: tmp(:,:,:)
   integer :: rc
 
-  ! Old code to use binary data
-  !ftn1 = LIS_getNextUnitNumber()
-  !open(unit=ftn1,file=fname,form='unformatted',access='direct',recl=4*nc*nr,status='old')
-
-  ! read(ftn1, rec=1) sm_raw
-  ! close(1)
-  ! call LIS_releaseUnitNumber(ftn1)
-
-  ! sm_data_b = .false.
-
-  ! do r=1,WSFsm_struc(n)%nr
-  !    do c=1,WSFsm_struc(n)%nc
-  !       if (sm_raw(c,r)>=0.and.&
-  !          sm_raw(c,r)<=100) then
-
-  !          sm_in(c+(r-1)*WSFsm_struc(n)%nc) = sm_raw(c,r)
-  !          sm_data_b(c+(r-1)*WSFsm_struc(n)%nc) = .true.
-  !       else
-  !          sm_in(c+(r-1)*WSFsm_struc(n)%nc) = LIS_rc%udef
-  !          sm_data_b(c+(r-1)*WSFsm_struc(n)%nc) = .false.
-  !       endif
-  !    enddo
-  ! enddo
-
-  ! EMK...Read netCDF data
   sm_in = LIS_rc%udef
   sm_data_b = .false.
 
@@ -654,11 +631,13 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   rc = nf90_close(ncid)
 
   do r = 1, nlat
+     r_flip = nlat - r + 1            ! flip N→S to S→N
      do c = 1, nlon
-        if (tmp(c,r,1) >= 0 .and. &
-             tmp(c,r,1) <= 1) then
-           sm_in(c + (r-1)*nc) = tmp(c,r,1)
-           sm_data_b(c + (r-1)*nc) = .true.
+        if (.not. ieee_is_nan(tmp(c,r,1))) then    ! safe NaN check
+           if (tmp(c,r,1) >= 0.0 .and. tmp(c,r,1) <= 1.0) then
+              sm_in(c + (r_flip-1)*nc)     = tmp(c,r,1)
+              sm_data_b(c + (r_flip-1)*nc) = .true.
+           end if
         end if
      end do
   end do
