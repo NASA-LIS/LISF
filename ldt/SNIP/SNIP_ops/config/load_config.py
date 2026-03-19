@@ -19,6 +19,7 @@ retrievals with AI/ML.
 REVISION HISTORY:
 15 Aug 2025: Kehan Yang. Initial Specification.
 18 Aug 2025: Eric Kemp, Code cleanup.
+19 Mar 2026: Kehan Yang. Add flags; Turn on filter
 """
 
 # Standard modules
@@ -43,9 +44,10 @@ class Config:
     """Class for processing JSON config file."""
     def __init__(self, config_path=None):
         self.proj = "EPSG:4326"
-        self.flag_cold = False
-        self.flag_rain = False
+        self.flag_cold = True
+        self.flag_rain = True
         self.flag_rfi = False
+        self.flag_shallow = False
         self.target_resolution = 0.1 # degrees
         self.time_window_hours = 6
         self.land_frac_th = 90
