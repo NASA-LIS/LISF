@@ -708,7 +708,6 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
-      use esmf
       use USAF_ReportsMod, only: Reports, newReports, getNobs, getReport, &
            destroyReports, appendToReports, bcast_reports
       use USAF_StationsMod, only: great_circle_distance

@@ -59,6 +59,7 @@ subroutine HYMAP2_getWLpred(n, k,obs_pred)
   
 end subroutine HYMAP2_getWLpred
 
+#if 0
 !BOP
 ! !ROUTINE: HYMAP2_convertPatchSpaceToObsEnsSpace
 ! \label{HYMAP2_convertPatchSpaceToObsEnsSpace}
@@ -171,3 +172,4 @@ end subroutine HYMAP2_getWLpred
     enddo
  
   end subroutine HYMAP2_convertPatchSpaceToObsEnsSpace
+#endif

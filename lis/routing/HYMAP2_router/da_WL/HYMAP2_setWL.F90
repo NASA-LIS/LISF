@@ -142,6 +142,7 @@ subroutine HYMAP2_setWL(n, Routing_State)
 
 end subroutine HYMAP2_setWL
 
+#if 0
 subroutine reorderEnsForOutliers(nensem, statevec, minvalue)
   
   implicit none
@@ -196,3 +197,4 @@ subroutine reorderEnsForOutliers(nensem, statevec, minvalue)
   endif
 
 end subroutine reorderEnsForOutliers
+#endif

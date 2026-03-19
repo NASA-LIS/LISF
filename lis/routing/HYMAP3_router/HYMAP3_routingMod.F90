@@ -36,6 +36,7 @@ module HYMAP3_routingMod
 !   a river flow map.
 ! 07 Sep 2019: Augusto Getirana,  Added support for 2-way coupling
 ! 27 Apr 2020: Augusto Getirana,  Added support for urban drainage
+! 13 Nov 2025: Augusto Getirana,  Added runoff bias correction
 !
 ! !USES:
   use ESMF
@@ -134,12 +135,12 @@ module HYMAP3_routingMod
      real                 :: rstInterval
      character*20         :: startMode
      integer              :: mo
-     !ag (04Jun2012)
+
      integer              :: flowtype     !flow type flag
      integer              :: linresflag   !linear reservoir (time delay) flag
      integer              :: evapflag     !evaporation from open water flag
 
-     !ag (03May2017)
+
      real,   allocatable  :: ewat(:,:)     !potential evaporation from open waters [km m-2 s-1]
      real,   allocatable  :: edif(:,:) !differential evapotranspiration
                                        ! (evaporation from open waters -
@@ -147,7 +148,7 @@ module HYMAP3_routingMod
                                        ! as input in HyMAP [km m-2 s-1]
 
      integer              :: dwiflag      !deep water infiltration flag
-     !ag (11Sep2015)
+
      integer              :: steptype     !time step type flag
 
      character(LIS_CONST_PATH_LEN) :: LISdir     !if LIS output is being read
@@ -163,7 +164,7 @@ module HYMAP3_routingMod
 
      real,    allocatable  :: dtaout(:,:)
 
-     !ag (30Jan2016)
+
      ! === timer variables ====================
      real                 :: dt_proc
 
@@ -181,12 +182,12 @@ module HYMAP3_routingMod
      integer              :: resopflag
      character(LIS_CONST_PATH_LEN) :: resopdir
      character(LIS_CONST_PATH_LEN) :: resopheader
-     !ag (29Jun2016)
+
      integer              :: floodflag
      character(LIS_CONST_PATH_LEN) :: HYMAP_dfile
-     !ag(17Apr2024)
+
      integer, allocatable :: resoptype(:)
-     !ag(11Oct2024)
+
      real,   allocatable  :: elevtn_resop(:)
      real,   allocatable  :: fldhgt_resop(:,:)
      real,   allocatable  :: fldstomax_resop(:,:)
@@ -202,7 +203,7 @@ module HYMAP3_routingMod
      integer              :: enable2waycpl
      real                 :: fldfrc2waycpl
 
-     !ag(27Apr2020)
+
      ! === urban drainage and flood modeling ===
      real,   allocatable  :: drsto(:,:)      !urban drainage network water storage [m3]
      real,   allocatable  :: drout(:,:)      !urban drainage network outflow [m3/s]
@@ -225,7 +226,7 @@ module HYMAP3_routingMod
      real                        :: drman   ! Roughness coefficient for ciment pipes [-]
      real                        :: drslp      ! drainage system slope [m/m]
 
-     !ag(8Aug2020)
+
      ! === direct streamflow insertion variables/parameters ===
      integer, allocatable :: insertloc(:)
      real*8,  allocatable :: tinsert(:,:)
@@ -236,7 +237,7 @@ module HYMAP3_routingMod
      character(LIS_CONST_PATH_LEN) :: insertdir
      character(LIS_CONST_PATH_LEN) :: insertheader
 
-     !ag(30Mar2021)
+
      ! === sea level variables/parameters ===
      integer, allocatable  :: outletid(:)      !outlet identification
      real*8,  allocatable  :: tsealevel(:,:)   !date/time for sea level time series
@@ -249,7 +250,7 @@ module HYMAP3_routingMod
      character(LIS_CONST_PATH_LEN) :: sealeveldir      !directory containing files with sea level time series
      character(LIS_CONST_PATH_LEN) :: sealevelheader   !file containing list of sea level time series
      character(LIS_CONST_PATH_LEN) :: outletlist       !file containing list of outlet under varying sea level effect
-     !ag
+
      ! === water management variables/parameters ===
      integer, allocatable  :: managact(:)
      integer, allocatable  :: managloc(:,:)
@@ -260,7 +261,7 @@ module HYMAP3_routingMod
      integer               :: nmanag            !number of locations with water management
      integer               :: managflag
      character(LIS_CONST_PATH_LEN) :: managheader
-     !ag(30Mar2022)
+
      ! === bifurcation variables/parameters ===
      integer               :: bifflag          !bifurcation flag
      character(LIS_CONST_PATH_LEN) :: biffile          !bifurcation pathway input file
@@ -276,7 +277,6 @@ module HYMAP3_routingMod
      real,    allocatable  :: bifsto(:,:)      !bifurcation water storage for each elevation [m3]
      integer, allocatable  :: bifloc(:,:)      !location of upstream and downstream grids composing bifurcation
 
-     !ag(23Feb2023)
      ! === levee variables/parameters ===
      integer               :: levflag          !levee flag
      real,    allocatable  :: levhgt(:)        !levee elevation above surface elevation [m]
@@ -284,12 +284,10 @@ module HYMAP3_routingMod
      real,    allocatable  :: fldonlystomax(:,:,:) !maximum floodplain-only storage - excludes river storage [m3]
      real,    allocatable  :: fldstoatlev(:,:) !isolated floodplain storage at levee elevation - excludes river storage [m3]
 
-     !ag(8Nov2024)
      ! === slope constraints ===
      real,    allocatable  :: rivslp(:)        !riverbed slope [m/m]
      real,    allocatable  :: maxsfcslp(:)     !upper threshold (max. allowed) surface slope [m/m]
 
-     !ag(4Apr2025)
      ! === Yassin's reservoir operation scheme ===
      character(LIS_CONST_PATH_LEN) :: resopncfile
      integer,  allocatable :: ncloc_resop(:)
@@ -310,10 +308,13 @@ module HYMAP3_routingMod
      real*8,   allocatable :: reg2_resop(:)
      real*8,   allocatable :: reg3_resop(:)
 
-     !ag(14Apr2025)
      ! === vector-based HyMAP implementation ===
      character(LIS_CONST_PATH_LEN) :: vecfile  !vector input file
      integer               :: vecflag          !vector input flag
+
+     ! ===== runoff bias correction =====
+     integer              :: rbiasflag       !total runoff bias correction flag
+     real,    allocatable :: rbias_ratio(:)  !total runoff bias correction factor [-]
 
   end type HYMAP3_routing_dec
 
@@ -329,13 +330,10 @@ contains
 !
   subroutine HYMAP3_routingInit
     !USES:
-    !ag(6Apr2022)
     use HYMAP3_bifMod
     use HYMAP3_initMod
-    !ag(1May2021)
     use HYMAP3_managMod
     use HYMAP3_modelMod
-    !ag(27Apr2020)
     use HYMAP3_urbanMod
     use LIS_coreMod
     use LIS_logMod
@@ -360,23 +358,17 @@ contains
     character*100        :: ctitle
     character*10         :: time
     character*20         :: flowtype
-    !ag (11Sep2015)
     character*20         :: steptype
-    !ag (31Jan2016)
 
-    !ag (19Feb2016)
     real,    allocatable :: tmp_real(:,:),tmp_real_nz(:,:,:)
     integer, allocatable :: mask(:,:),maskg(:,:)
     real,    allocatable :: elevtn(:,:),uparea(:,:),basin(:,:)
 
-    !ag (11Mar2016)
     integer, external  :: LIS_create_subdirs
 
-    !ag (03Apr2017)
     integer       :: m
     integer       :: gdeltas
 
-    !ag (12Sep2019)
     type(ESMF_Field)     :: rivsto_field
     type(ESMF_Field)     :: fldsto_field
     type(ESMF_Field)     :: fldfrc_field
@@ -408,7 +400,6 @@ contains
     character*20         :: alglist(10)
     logical              :: Routing_DAvalid
 
-    !ag(7Sep2022)
     ! === bifurcation local variables/parameters ===
     real,    allocatable :: elevtn_glb(:)      !river bed elevation [m]
     real,    allocatable :: grarea_glb(:)      !area of the grid [m^2]
@@ -421,7 +412,6 @@ contains
     real*8               :: bifelv1,bifsto1
     integer              :: ibif,ielv,icg,iz
 
-    !ag(11Oct2024)
     integer              :: iresop
     real                 :: cadp
 
@@ -450,7 +440,6 @@ contains
        HYMAP3_routing_struc(n)%dt_proc  = 0.
     enddo
 
-    !ag(14Apr2025)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 vector input file:",rc=status)
     do n=1, LIS_rc%nnest
@@ -473,7 +462,6 @@ contains
        endif
     enddo
 
-    !ag (12Sep2019)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 enable 2-way coupling:",rc=status)
     do n=1, LIS_rc%nnest
@@ -529,7 +517,6 @@ contains
 
     !Local inertia is the default routing method
     flowtype="local inertia"
-    !ag (13Apr2016)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 routing method:",rc=status)
     if(status==0)call ESMF_ConfigGetAttribute(LIS_config,&
@@ -543,7 +530,6 @@ contains
           HYMAP3_routing_struc(n)%flowtype = 3
        elseif(flowtype.eq."hybrid") then
           HYMAP3_routing_struc(n)%flowtype = 0
-          !ag(27Apr2020)
        elseif(flowtype.eq."urban") then
           HYMAP3_routing_struc(n)%flowtype = 4
        else
@@ -557,7 +543,6 @@ contains
 
     !adaptive is the default time step method
     steptype="adaptive"
-    !ag (11Sep2015)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 routing model time step method:",rc=status)
     if(status==0)call ESMF_ConfigGetAttribute(LIS_config,&
@@ -577,7 +562,6 @@ contains
             trim(steptype)
     enddo
 
-    !ag (29Jan2016)
     if(steptype.eq."adaptive")then
        !0.5 is the default alpha coefficient
        cadp=0.5
@@ -594,7 +578,6 @@ contains
        enddo
     endif
 
-    !ag (29Jun2016)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 floodplain dynamics:",rc=status)
     do n=1, LIS_rc%nnest
@@ -613,7 +596,6 @@ contains
             HYMAP3_routing_struc(n)%linresflag,rc=status)
     enddo
 
-    !ag (24Apr2017)
     !"none" is the default evaporation option, i.e., "off"
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 routing model evaporation option",rc=status)
@@ -634,7 +616,6 @@ contains
             HYMAP3_routing_struc(n)%dwiflag
     enddo
 
-    !ag (24May2021)
     do n=1, LIS_rc%nnest
        if (HYMAP3_routing_struc(n)%enable2waycpl==1) then
           write(LIS_logunit,*) &
@@ -644,7 +625,6 @@ contains
        endif
     enddo
 
-    !ag (8Aug2020)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 discharge direct insertion:",rc=status)
     do n=1, LIS_rc%nnest
@@ -685,7 +665,6 @@ contains
        endif
     enddo
 
-    !ag (30Apr2021)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 water management:",rc=status)
     do n=1, LIS_rc%nnest
@@ -702,7 +681,6 @@ contains
        endif
     enddo
 
-    !ag (30Mar2021)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 sea level:",rc=status)
     do n=1, LIS_rc%nnest
@@ -754,7 +732,6 @@ contains
        endif
     enddo
 
-    !ag(30Mar2022)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 river bifurcation:",rc=status)
     do n=1, LIS_rc%nnest
@@ -768,7 +745,6 @@ contains
                HYMAP3_routing_struc(n)%biffile,rc=status)
           call LIS_verify(status,&
                "HYMAP3 river bifurcation pathway file: not defined")
-          !ag(27Jul2025)
           !get number of bifurcations and elevations
           call HYMAP3_read_header_size1(HYMAP3_routing_struc(n)%biffile,&
                HYMAP3_routing_struc(n)%nbif, &
@@ -776,7 +752,6 @@ contains
        endif
     enddo
 
-    !ag(23Feb2023)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 levee:",rc=status)
     do n=1, LIS_rc%nnest
@@ -785,7 +760,6 @@ contains
             HYMAP3_routing_struc(n)%levflag,rc=status)
     enddo
 
-    !ag (4Feb2016)
     call ESMF_ConfigFindLabel(LIS_config,&
          "HYMAP3 reservoir operation option:",rc=status)
     do n=1, LIS_rc%nnest
@@ -808,12 +782,10 @@ contains
                HYMAP3_routing_struc(n)%resopheader,rc=status)
           call LIS_verify(status,&
                "HYMAP3 reservoir operation header filename: not defined")
-          !ag(27Jul2025)
           call HYMAP3_read_header_size1( &
                trim(HYMAP3_routing_struc(n)%resopheader),&
                HYMAP3_routing_struc(n)%nresop, &
                HYMAP3_routing_struc(n)%ntresop)
-          !ag(1Apr2025)
           !Yassin's scheme
        elseif(HYMAP3_routing_struc(n)%resopflag==2)then
           call ESMF_ConfigFindLabel(LIS_config,&
@@ -829,22 +801,30 @@ contains
                HYMAP3_routing_struc(n)%resopheader,rc=status)
           call LIS_verify(status,&
                "HYMAP3 reservoir list: not defined")
-          !ag(27Jul2025)
           call HYMAP3_read_header_size( &
                trim(HYMAP3_routing_struc(n)%resopheader),&
                HYMAP3_routing_struc(n)%nresop)
        endif
     enddo
 
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "HYMAP3 runoff bias correction:",rc=status)
+    do n=1, LIS_rc%nnest
+       HYMAP3_routing_struc(n)%rbiasflag=0
+       call ESMF_ConfigGetAttribute(LIS_config,&
+            HYMAP3_routing_struc(n)%rbiasflag,default=0,rc=status)
+       write(LIS_logunit,*) &
+            "[INFO] HYMAP3 runoff bias correction: ", &
+            HYMAP3_routing_struc(n)%rbiasflag
+    enddo
+
     write(LIS_logunit,*) '[INFO] Initializing HYMAP3....'
     !allocate matrixes
     do n=1, LIS_rc%nnest
-       !ag(14Apr2025)
        if(HYMAP3_routing_struc(n)%vecflag==0)then
           write(LIS_logunit,*)'[INFO] columns and rows', &
                LIS_rc%lnc(n),LIS_rc%lnr(n)
 
-          !ag (19Feb2016)
           allocate(HYMAP3_routing_struc(n)%nextx( &
                LIS_rc%gnc(n),LIS_rc%gnr(n)))
           ctitle = 'HYMAP_flow_direction_x'
@@ -1013,7 +993,6 @@ contains
        allocate(HYMAP3_routing_struc(n)%bsfdwi_ratio( &
             HYMAP3_routing_struc(n)%nseqall))
 
-       !ag (4Feb2016)
        if(HYMAP3_routing_struc(n)%resopflag==1)then
           allocate(HYMAP3_routing_struc(n)%resoploc( &
                HYMAP3_routing_struc(n)%nresop))
@@ -1034,7 +1013,6 @@ contains
           allocate(HYMAP3_routing_struc(n)%resoptype( &
                HYMAP3_routing_struc(n)%nresop))
 
-          !ag(11Oct2024)
           allocate(HYMAP3_routing_struc(n)%elevtn_resop( &
                HYMAP3_routing_struc(n)%nresop))
           allocate(HYMAP3_routing_struc(n)%fldhgt_resop( &
@@ -1052,7 +1030,6 @@ contains
           allocate(HYMAP3_routing_struc(n)%rivwth_resop( &
                HYMAP3_routing_struc(n)%nresop))
 
-          !ag(4Apr2025)
           !Yassin's scheme
        elseif(HYMAP3_routing_struc(n)%resopflag==2)then
           allocate(HYMAP3_routing_struc(n)%resoploc( &
@@ -1095,7 +1072,6 @@ contains
                HYMAP3_routing_struc(n)%nresop))
        endif
 
-       !ag(27Apr2020)
        allocate(HYMAP3_routing_struc(n)%drstomax( &
             HYMAP3_routing_struc(n)%nseqall))
        allocate(HYMAP3_routing_struc(n)%droutlet( &
@@ -1109,7 +1085,6 @@ contains
        allocate(HYMAP3_routing_struc(n)%drtotlgh( &
             HYMAP3_routing_struc(n)%nseqall))
 
-       !ag(8Aug2020)
        if(HYMAP3_routing_struc(n)%insertflag==1)then
           allocate(HYMAP3_routing_struc(n)%insertloc( &
                HYMAP3_routing_struc(n)%ninsert))
@@ -1121,7 +1096,6 @@ contains
                HYMAP3_routing_struc(n)%ntinsert))
        endif
 
-       !ag(23Feb2023)
        allocate(HYMAP3_routing_struc(n)%levhgt( &
             HYMAP3_routing_struc(n)%nseqall))
 
@@ -1163,7 +1137,6 @@ contains
 
           allocate(HYMAP3_routing_struc(n)%dtaout( &
                HYMAP3_routing_struc(n)%nseqall,1))
-          !ag (19Jan2016)
           allocate(HYMAP3_routing_struc(n)%rivout_pre( &
                HYMAP3_routing_struc(n)%nseqall,1))
           allocate(HYMAP3_routing_struc(n)%rivdph_pre( &
@@ -1174,25 +1147,21 @@ contains
                HYMAP3_routing_struc(n)%nseqall,1))
           allocate(HYMAP3_routing_struc(n)%fldelv1( &
                HYMAP3_routing_struc(n)%nseqall,1))
-          !ag (03May2017)
           allocate(HYMAP3_routing_struc(n)%ewat( &
                HYMAP3_routing_struc(n)%nseqall,1))
           allocate(HYMAP3_routing_struc(n)%edif( &
                HYMAP3_routing_struc(n)%nseqall,1))
-          !ag (12Sep2019)
           allocate(HYMAP3_routing_struc(n)%rivstotmp( &
                HYMAP3_routing_struc(n)%nseqall,1))
           allocate(HYMAP3_routing_struc(n)%fldstotmp( &
                HYMAP3_routing_struc(n)%nseqall,1))
           allocate(HYMAP3_routing_struc(n)%fldfrctmp( &
                HYMAP3_routing_struc(n)%nseqall,1))
-          !ag(27Apr2020)
           allocate(HYMAP3_routing_struc(n)%drsto( &
                HYMAP3_routing_struc(n)%nseqall,1))
           allocate(HYMAP3_routing_struc(n)%drout( &
                HYMAP3_routing_struc(n)%nseqall,1))
 
-          !ag(22May2024)
           allocate(HYMAP3_routing_struc(n)%levstomax( &
                HYMAP3_routing_struc(n)%nseqall,1))
           allocate(HYMAP3_routing_struc(n)%fldstoatlev( &
@@ -1237,7 +1206,6 @@ contains
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%dtaout( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
-          !ag (19Jan2016)
           allocate(HYMAP3_routing_struc(n)%rivout_pre( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%rivdph_pre( &
@@ -1248,24 +1216,20 @@ contains
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%fldelv1( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
-          !ag (03May2017)
           allocate(HYMAP3_routing_struc(n)%ewat( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%edif( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
-          !ag (12Sep2019)
           allocate(HYMAP3_routing_struc(n)%rivstotmp( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%fldstotmp( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%fldfrctmp( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
-          !ag(27Apr2020)
           allocate(HYMAP3_routing_struc(n)%drsto( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%drout( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
-          !ag(22May2024)
           allocate(HYMAP3_routing_struc(n)%levstomax( &
                HYMAP3_routing_struc(n)%nseqall,LIS_rc%nensem(n)))
           allocate(HYMAP3_routing_struc(n)%fldstoatlev( &
@@ -1274,10 +1238,12 @@ contains
                HYMAP3_routing_struc(n)%nseqall,&
                HYMAP3_routing_struc(n)%nz,LIS_rc%nensem(n)))
        endif
-       !ag(9Oct2024)
        allocate(HYMAP3_routing_struc(n)%outletid( &
             HYMAP3_routing_struc(n)%nseqall))
        HYMAP3_routing_struc(n)%outletid=HYMAP3_routing_struc(n)%imis
+
+       allocate(HYMAP3_routing_struc(n)%rbias_ratio( &
+            HYMAP3_routing_struc(n)%nseqall))
 
        HYMAP3_routing_struc(n)%seqx=0.0
        HYMAP3_routing_struc(n)%seqy=0.0
@@ -1327,14 +1293,12 @@ contains
        HYMAP3_routing_struc(n)%surfws=0.0
        HYMAP3_routing_struc(n)%dtaout=1000000.
 
-       !ag (19Jan2016)
        HYMAP3_routing_struc(n)%rivout_pre=0.0
        HYMAP3_routing_struc(n)%rivdph_pre=0.0
        HYMAP3_routing_struc(n)%fldout_pre=0.0
        HYMAP3_routing_struc(n)%flddph_pre=0.0
        HYMAP3_routing_struc(n)%fldelv1=0.0
 
-       !ag (4Feb2016)
        if(HYMAP3_routing_struc(n)%resopflag==1)then
           HYMAP3_routing_struc(n)%resoploc = &
                real(HYMAP3_routing_struc(n)%imis)
@@ -1351,7 +1315,6 @@ contains
           HYMAP3_routing_struc(n)%resopalt = &
                real(HYMAP3_routing_struc(n)%imis)
 
-          !ag(11Oct2024)
           HYMAP3_routing_struc(n)%elevtn_resop = &
                real(HYMAP3_routing_struc(n)%imis)
           HYMAP3_routing_struc(n)%fldhgt_resop = &
@@ -1370,15 +1333,12 @@ contains
                real(HYMAP3_routing_struc(n)%imis)
        endif
 
-       !ag (03May2017)
        HYMAP3_routing_struc(n)%ewat=0.0
        HYMAP3_routing_struc(n)%edif=0.0
 
-       !ag(27Apr2020)
        HYMAP3_routing_struc(n)%drsto=0.0
        HYMAP3_routing_struc(n)%drout=0.0
 
-       !ag(8Aug2020)
        if(HYMAP3_routing_struc(n)%insertflag==1)then
           HYMAP3_routing_struc(n)%insertloc = &
                real(HYMAP3_routing_struc(n)%imis)
@@ -1388,14 +1348,12 @@ contains
                real(HYMAP3_routing_struc(n)%imis)
        endif
 
-       !ag(22May2024)
        HYMAP3_routing_struc(n)%levstomax=0.0
        HYMAP3_routing_struc(n)%fldstoatlev=0.0
        HYMAP3_routing_struc(n)%fldonlystomax=0.0
     enddo
 
     do n=1, LIS_rc%nnest
-       !ag(15May2025)
        !read grid-based input parameters
        if(HYMAP3_routing_struc(n)%vecflag==0)then
           write(LIS_logunit,*) '[INFO] Get HYMAP3 cell vector sequence'
@@ -1599,7 +1557,6 @@ contains
                HYMAP3_routing_struc(n)%tbsflw = &
                HYMAP3_routing_struc(n)%cntime/86400.
 
-          !ag (23Nov2016)
           ctitle = 'HYMAP_runoff_dwi_ratio'
           if(HYMAP3_routing_struc(n)%dwiflag==1)then
              call HYMAP3_read_param_real_2d(ctitle,n,tmp_real)
@@ -1613,7 +1570,6 @@ contains
              HYMAP3_routing_struc(n)%rnfdwi_ratio=0.
           endif
 
-          !ag (23Nov2016)
           ctitle = 'HYMAP_baseflow_dwi_ratio'
           if(HYMAP3_routing_struc(n)%dwiflag==1)then
              call HYMAP3_read_param_real_2d(ctitle,n,tmp_real)
@@ -1627,9 +1583,7 @@ contains
              HYMAP3_routing_struc(n)%bsfdwi_ratio=0.
           endif
 
-          !ag (13Apr2016)
           ctitle = 'HYMAP_river_flow_type'
-          !ag(27Apr2020)
           if(HYMAP3_routing_struc(n)%flowtype==0 .or. &
                HYMAP3_routing_struc(n)%flowtype==4)then
              call HYMAP3_read_param_real_2d(ctitle,n,tmp_real)
@@ -1644,7 +1598,6 @@ contains
                   HYMAP3_routing_struc(n)%flowtype
           endif
 
-          !ag (7Dec2020)
           ctitle = 'HYMAP_urban_drainage_outlet'
           if(HYMAP3_routing_struc(n)%flowtype==4)then
              call HYMAP3_read_param_real_2d(ctitle,n,tmp_real)
@@ -1659,7 +1612,6 @@ contains
                   HYMAP3_routing_struc(n)%imis
           endif
 
-          !ag(23Feb2023)
           ctitle = 'HYMAP_levee_height'
           if(HYMAP3_routing_struc(n)%levflag==1)then
              call HYMAP3_read_param_real_2d(ctitle,n,tmp_real)
@@ -1671,6 +1623,19 @@ contains
                   tmp_real,HYMAP3_routing_struc(n)%levhgt)
           else
              HYMAP3_routing_struc(n)%levhgt=0.0
+          endif
+
+          ctitle = 'HYMAP_runoff_bias_correction'
+          if(HYMAP3_routing_struc(n)%rbiasflag==1)then
+             call HYMAP3_read_param_real_2d(ctitle,n,tmp_real)
+             call HYMAP3_grid2vector(LIS_rc%lnc(n),LIS_rc%lnr(n),&
+                  1,HYMAP3_routing_struc(n)%nseqall,&
+                  HYMAP3_routing_struc(n)%imis,&
+                  HYMAP3_routing_struc(n)%seqx,&
+                  HYMAP3_routing_struc(n)%seqy,&
+                  tmp_real,HYMAP3_routing_struc(n)%rbias_ratio)
+          else
+             HYMAP3_routing_struc(n)%rbias_ratio=1.0
           endif
 
 #if (defined SPMD)
@@ -1826,10 +1791,20 @@ contains
           else
              HYMAP3_routing_struc(n)%levhgt=0.
           endif
+                  
+          if(HYMAP3_routing_struc(n)%rbiasflag==1)then
+             ctitle = 'HYMAP_runoff_bias_correction'
+             call HYMAP3_vector_read_param(ctitle,n,1, &
+                  HYMAP3_routing_struc(n)%rbias_ratio)
+          else 
+             HYMAP3_routing_struc(n)%rbias_ratio=0.
+          endif
+
+
        endif
     enddo
 
-    !ag (20Sep2016) Correction for cases where parameter maps don't match
+    ! Correction for cases where parameter maps don't match
     do n=1, LIS_rc%nnest
        if(HYMAP3_routing_struc(n)%useens.eq.0) then
           do i=1,HYMAP3_routing_struc(n)%nseqall
@@ -1956,7 +1931,6 @@ contains
                   HYMAP3_routing_struc(n)%rivlen(i) * &
                   HYMAP3_routing_struc(n)%rivwth(i,1) * &
                   HYMAP3_routing_struc(n)%rivhgt(i,1)
-             !ag(23Feb2023) (22May2024)
              HYMAP3_routing_struc(n)%levstomax(i,1) = &
                   HYMAP3_routing_struc(n)%rivlen(i) * &
                   HYMAP3_routing_struc(n)%rivwth(i,1) * &
@@ -1992,7 +1966,6 @@ contains
                      HYMAP3_routing_struc(n)%rivlen(i) * &
                      HYMAP3_routing_struc(n)%rivwth(i,m) * &
                      HYMAP3_routing_struc(n)%rivhgt(i,m)
-                !ag(23Feb2023) (22May2024)
                 HYMAP3_routing_struc(n)%levstomax(i,m) = &
                      HYMAP3_routing_struc(n)%rivlen(i) * &
                      HYMAP3_routing_struc(n)%rivwth(i,m) * &
@@ -2027,7 +2000,7 @@ contains
        endif
     enddo
 
-    !ag (4Feb2016) - read reservoir operation data
+    ! read reservoir operation data
     do n=1, LIS_rc%nnest
        if(HYMAP3_routing_struc(n)%resopflag==1)then
           call HYMAP3_get_data_resop_alt(n, &
@@ -2048,7 +2021,6 @@ contains
                HYMAP3_routing_struc(n)%resopoutmin<0.) &
                HYMAP3_routing_struc(n)%resopoutmin=0.
 
-          !ag(11Oct2024)
           allocate(elevtn_glb(LIS_rc%glbnroutinggrid(n)))
           allocate(grarea_glb(LIS_rc%glbnroutinggrid(n)))
           allocate(rivelv_glb(LIS_rc%glbnroutinggrid(n)))
@@ -2191,7 +2163,7 @@ contains
        endif
     enddo
 
-    !ag(27Apr2020) - read urban flood data
+    ! read urban flood data
     do n=1, LIS_rc%nnest
        if(HYMAP3_routing_struc(n)%flowtype==4)then
           write(LIS_logunit,*)'[INFO] Setting urban drainage parameters'
@@ -2231,7 +2203,7 @@ contains
        endif
     enddo
 
-    !ag(8Aug2020) - read discharge data for direct insertion
+    ! read discharge data for direct insertion
     do n=1, LIS_rc%nnest
        if(HYMAP3_routing_struc(n)%insertflag==1)then
           call HYMAP3_get_discharge_data( &
@@ -2247,7 +2219,7 @@ contains
        endif
     enddo
 
-    !ag(30Mar2021) - read sea level data
+    ! read sea level data
     do n=1, LIS_rc%nnest
        if(HYMAP3_routing_struc(n)%sealevelflag==1)then
           call HYMAP3_get_sea_level_data(n, &
@@ -2264,7 +2236,7 @@ contains
        endif
     enddo
 
-    !ag(30Apr2021) - read water management header file
+    ! read water management header file
     do n=1, LIS_rc%nnest
        if(HYMAP3_routing_struc(n)%managflag==1)then
           !get number of water management locations
@@ -2298,10 +2270,9 @@ contains
        endif
     enddo
 
-    !ag(7Sep2022) - read bifurcation pathway file
+    ! read bifurcation pathway file
     do n=1, LIS_rc%nnest
        if(HYMAP3_routing_struc(n)%bifflag==1)then
-          !ag(27Jul2025)
           !get number of bifurcations and elevations
           allocate(HYMAP3_routing_struc(n)%bifloc( &
                HYMAP3_routing_struc(n)%nbif,2))
@@ -2484,7 +2455,6 @@ contains
 
        HYMAP3_routing_struc(n)%mo = -1
 
-       !ag (12Sep2019)
        call ESMF_AttributeSet(LIS_runoff_state(n),"2 way coupling",&
             0, rc=status)
        call LIS_verify(status)
@@ -3541,7 +3511,6 @@ contains
   end subroutine HYMAP3_read_header_size
   !=============================================
   !=============================================
-  !ag(27Jul2025)
   subroutine HYMAP3_read_header_size1(yheader, isize, isize1)
 
     use LIS_logMod
@@ -3732,7 +3701,6 @@ contains
             '[INFO] [read_header] get stations info: name and coordinates'
        write(LIS_logunit,*)'[INFO] [read_header] ',yheader,inst
        open(ftn,file=trim(yheader), status='old')
-       !ag(27Jul2025)
        read(ftn,*)
        do ist=1,inst
           read(ftn,*,end=10)yqname(ist),ix,iy,outmin(ist),resoptype(ist)
@@ -3848,8 +3816,7 @@ contains
 
   end subroutine HYMAP3_read_time_series
   !=============================================
-  !ag(27Apr2020)
-  ! ================================================
+  !=============================================
   !BOP
   !
   ! !ROUTINE: HYMAP3_gather_tiles
