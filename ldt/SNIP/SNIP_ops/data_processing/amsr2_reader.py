@@ -179,10 +179,8 @@ class AMSR2DataProcessor:
 
         if self.config.source == 'NOAA':
             amsr2_path = os.path.join(amsr2_path_root, year_str, day_of_year)
-<<<<<<< HEAD
-=======
             logger.info(f"Search NOAA data in: {amsr2_path}")
->>>>>>> b3ee38d6f1966a5c4f27183eae482ff4717d3bb6
+
         elif self.config.source == 'JAXA':
             amsr2_path = os.path.join(amsr2_path_root, year_str, month)
             logger.info(f"Search JAXA data in: {amsr2_path}")
