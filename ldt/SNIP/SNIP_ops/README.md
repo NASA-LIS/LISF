@@ -16,7 +16,6 @@ The AMSR2 SNIP system addresses the need for accurate, automated snow depth mapp
 - ✅ Read and resample AMSR2 L1R data to geographic gridcells
 - ✅ Save data quality flag including flags for cold desert, frozen ground, glaciers, rain, and C bands RFI 
 - ✅ AI/ML-based snow depth prediction
-- ✅ VIIRS Snow Cover Area (SCA) masking integration
 - ✅ Snow depth prediction quality control and gap filling in LDT
 - ✅ LVT post processing to write outputs to legacy GRIB-1 and GRIB-2 formats
 
@@ -35,10 +34,15 @@ The AMSR2 SNIP system addresses the need for accurate, automated snow depth mapp
 - **amsr2_merge_path**: Output directory for merged AMSR2 data products (serves as input for ML prediction pipeline)
 - **output_dir**: Final snow depth data output location and storage path for reprojected data products
 - **model_path**: Pre-trained machine learning model directory path
-- **viirs_path**: VIIRS snow mask data directory path
 - **template_path**:  Reference template data path used for spatial reprojection operations
-- **apply_viirs_mask**: Boolean flag to enable/disable VIIRS snow extent masking (default: True)
-- **reproject_USAF**: Boolean flag to control saving of reprojected data products (default: True)
+- **AMSR2_template_path**: Reference template file used for snow depth reprojection retrieved using traditional approaches
+- **fraction_forest_cover**: Fractional forest cover dataset ("data/template/MCD12Q1_LC_frac_2019_reprojected.tif")
+- **forest_density**: Forest density ("data/template/MOD44B_FF_2019_reprojected.tif")
+- **viirs_path**: Directory to the VIIRS snow cover files ("../data/input/viirs")
+- **flag_output_kelly**: Boolean flag to control calculating snow depth using Kelly, (2009) approach (default: false)
+- **flag_output_foster**: Boolean flag to control calculating snow depth using Foster et al., (2005) approach (default: false). The same approach is used by USAFSI.
+- **apply_viirs_mask**: Boolean flag to control applying VIIRS snow mask (default: true)
+- **reproject_USAF**: Boolean flag to control saving of reprojected data products (default: true)
 - **source**: AMSR2 L1R data source specification - accepts "NOAA" or "JAXA"
 
 ## Data Processing 
@@ -49,16 +53,18 @@ The AMSR2 SNIP system addresses the need for accurate, automated snow depth mapp
 
 ## Machine Learning Prediction 
 
-| File | Description |
-|------|-------------|
-| `ml_prediction/run_prediction.py` | ML inference pipeline that:<br>• Loads pretrained machine learning models<br>• Runs ML predictions on processed data<br>• Applies VIIRS Snow Covered Area (SCA) masking<br>• Handles data quality flagging<br>• Reprojects results to Analysis Framework (AF) grids<br>• Saves prediction results |
+| File                                        | Description                                                                                                                                                                                                                                                                                       |
+|---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ml_prediction/run_prediction.py`           | ML inference pipeline that:<br>• Loads pretrained machine learning models<br>• Runs ML predictions on processed data<br>• Applies VIIRS Snow Covered Area (SCA) masking<br>• Handles data quality flagging<br>• Reprojects results to Analysis Framework (AF) grids<br>• Saves prediction results |
+| `ml_prediction/run_traditional_approach.py` | Traditional snow depth retrival pipeline that:<br>• Calculate snow depth  using Kelly, (2009) approach and Foster et al, (2005) approach. <br>• Options provided in config file to output these two snow depth results. <br>• Saves prediction results at PMW native resolution        |
 
 
 ## Main Execution
 
-| File | Description |
-|------|-------------|
+| File     | Description                                                          |
+|----------|----------------------------------------------------------------------|
 | `main.py` | Main execution script that orchestrates the entire SNIP_ops workflow |
+| `amsr2_reader_main.py`    | Main execution script to read, merge and reproject AMSR2 data        |
 
 
 ## Usage
@@ -81,30 +87,29 @@ This use case runs LDT to generate SNIP snow and ice analyses for the 557WW ~10-
 |--------------|-------------|
 | `ldt.config` | Template configuration file containing project settings and parameters |
 
-This directory contains:
-* This README file
-* An "input" tarball file that should be un-tarred to put the required
-  input parameter datasets on disk where LDT will be able to find it.
-  To un-tar this file, please run:
-      tar xvfz ldt_usafsi_use-case_input_v76.tar.gz
-* An "output" tarball file that should be un-tarred to put the target
-  output on disk.  Running this LDT use case should produce output that
-  matches data contained in this tarball.  To un-tar this file, run:
-      tar xvfz ldt_usafsi_use-case_output_v76.tar.gz
-
 ## Usage
 * Generate the LDT executable following the build instructions with the
   software.  Be sure to select "little endian".
-* Run the LDT executable using the ldt.config.foc.nrt.noah39.param.76 file
+* Run the LDT executable using the lis_input.nrt_streamflow.noah39.nc file
   and the input datasets.
-* Output netCDF files will be in the current directory.
+* Output netCDF files will be in the ../data/output/snip directory with the log file saved in ../data/output/logs
 
 ## Operational usage
-Under the job folder, we provide a few slurm job submission examples to run the workflow for either a specific period or one time step.
+Under the parent folder, we provide a SLURM job submission example to run the workflow for a single time step.
 
-| File                       | Description         |
-|----------------------------|---------------------|
-| 'run_SNIP_LDT_workflow.sh` | Template bash file  |
-
+| File                   | Description                                       |
+|------------------------|---------------------------------------------------|
+| 'job_submit.sh`        | Bash script to submit a SLURM job to run the workflow |
+| 'SNIP_LDT_template.sh` | Template bash script for workflow execution                           |
+ 
+For example, to run model at 06:00 UTC on 2025-01-20, execute the following command in the terminal: 
+```shell
+./job_submit.sh 202501200600
+```
 ## Support
 - Technical Contact: kehan.yang@nasa.gov
+
+## Reference
+- Yoon, Y., Kemp, E.M., Kumar, S.V., Wegiel, J.W., Vuyovich, C.M., Peters-Lidard, C., 2022. Development of a global operational snow analysis: The US Air Force Snow and Ice Analysis. Remote Sensing of Environment 278, 113080. https://doi.org/10.1016/j.rse.2022.113080
+- Foster, J.L., Sun, C., Walker, J.P., Kelly, R., Chang, A., Dong, J., Powell, H., 2005. Quantifying the uncertainty in passive microwave snow water equivalent observations. Remote Sensing of Environment 94, 187–203. https://doi.org/10.1016/j.rse.2004.09.012
+- KELLY, R., 2009. AMSR-E積雪深アルゴリズム : 解説と初期成果〔英文〕. 日本リモートセンシング学会誌 29, 307–317. https://doi.org/10.11440/rssj.29.307
