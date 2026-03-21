@@ -15,9 +15,11 @@ import tempfile
 import argparse
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
+import numpy as np
 import xarray as xr
 import yaml
 from ghis2s.main import s2s_api, walltime
+from ghis2s.main.hymap_basins import HyMAPDomains
 from ghis2s.shared import utils, logging_utils
 from ghis2s.lis_fcst import generate_lis_config_scriptfiles_fcst
 from ghis2s.s2spost import s2spost_driver
@@ -134,6 +136,7 @@ class DownloadForecasts():
         infile_temp = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
 
         havenot_files = {}
+        undifined_slices = {}
 
         for model in self.models:
             nmme_path = nmme_path_dict[model]
@@ -141,14 +144,36 @@ class DownloadForecasts():
                                         mon_abbr[self.month-1], self.year)
             if not os.path.exists(infile):
                 havenot_files[model] = infile
+            else:
+                # check for undefined slices
+                with xr.open_dataset(infile.strip(), decode_times=False) as nmme_xr:
+                    is_missing = nmme_xr['prec'].isnull().all(dim=['Y', 'X'])
+                    if is_missing.any():
+                        bad_indices = np.where(is_missing)
+                        dims = is_missing.dims
+                        bad_layers = []
+                        for loc in zip(*bad_indices):
+                            layer_info = {dim: nmme_xr[dim].values[idx] for dim, idx in zip(dims, loc)}
+                            bad_layers.append(layer_info)
+                        undifined_slices[model] = bad_layers
 
-        if len(havenot_files) > 0:
-            print("Following NMME precip files are missing:")
-            for key, value in havenot_files.items():
-                print(f"{key}: {value}")
+        if len(havenot_files) > 0 or len(undifined_slices) > 0:
+            if len(havenot_files) > 0:
+                print("Following NMME precip files are missing:")
+                for key, value in havenot_files.items():
+                    print(f"{key}: {value}")
+                print("  ")
+
+            if len(undifined_slices) > 0:
+                print("Following NMME models have completely missing data layers (all NaNs in Y, X):")
+                for model, layers in undifined_slices.items():
+                    print(f"  {model}:")
+                    for layer in layers:
+                        print(f"    {layer}")
+                print("  ")
 
             print("  ")
-            print("Please download missing files before launching the forecast.")
+            print("Please resolve missing files/data before launching the forecast.")
             print("Alternatively, if you wish to exclude them from the current forecast:")
             print(f"      Remove {list(havenot_files.keys())} from NMME_models in")
             print(f"      {self.config_file} and launch the forecast.")
@@ -402,6 +427,12 @@ class S2Srun(DownloadForecasts):
 
         self.schedule = {}
         self.additional_env_vars = additional_env_vars
+        self.hymap = None
+        if self.config.get("EXP", {}).get("routing_model", {}).get("subdomains") is True:
+            lats, _ = utils.get_domain_info(self.config_file, coord=True)
+            self.resol = f'{round((lats[1] - lats[0])*100)}km'
+            subdomain_path = self.config['SETUP']['supplementarydir'] + f"/hymap_domains/{self.resol}/"
+            self.hymap = HyMAPDomains(subdomain_path)
 
         if not os.path.exists(self.e2esdir + 'scratch/'):
             subprocess.run(["setfacl", "-R", "-m", "u::rwx,g::rwx,o::r",
@@ -730,7 +761,6 @@ class S2Srun(DownloadForecasts):
         sec_ids = []
         for key_no, jfile in enumerate(self.schedule.keys()):
             subdir = self.schedule[jfile]['subdir']
-
             # logging jobs
             if cur_subdir != subdir:
                 if cur_subdir != '':
@@ -898,7 +928,7 @@ class S2Srun(DownloadForecasts):
         def write_lines(file, jfile, subdir, directives, environment):
             file.write(f"    [[{jfile}]]\n")
 
-            sh_script = self.scrdir + subdir + '/' + jfile + '.sh'
+            sh_script = self.scrdir + subdir + '/' + jfile.replace('--', '/') + '.sh'
             file.write(f"        script = {sh_script}\n")
 
             # Write directives
@@ -918,11 +948,11 @@ class S2Srun(DownloadForecasts):
         # Build dependency graph based on schedule structure
         dependency_map = {}
         for jfile in self.schedule.keys():
-            task_name = jfile.removesuffix('.j')
+            task_name = jfile.removesuffix('.j').replace('/', '--')
             prev_tasks = []
             if len(self.schedule[jfile]['prev']) > 0:
                 for pfile in self.schedule[jfile]['prev']:
-                    prev_task = pfile.removesuffix('.j')
+                    prev_task = pfile.removesuffix('.j').replace('/', '--')
                     prev_tasks.append(prev_task)
                     dependency_map[task_name] = prev_tasks
 
@@ -969,7 +999,7 @@ class S2Srun(DownloadForecasts):
             else:
                 # Single task run: write all tasks as standalone
                 for jfile in self.schedule.keys():
-                    task_name = jfile.removesuffix('.j')
+                    task_name = jfile.removesuffix('.j').replace('/', '--')
                     file.write(f"                {task_name}\n")
                     dependency_map[task_name] = task_name
             # Find terminal tasks for final log collection
@@ -1049,7 +1079,7 @@ class S2Srun(DownloadForecasts):
                 #        inherit_list.append(pfile.removesuffix('.j'))
                 #if len(inherit_list) == 0:
                 #    inherit_list = None
-                write_lines(file, jfile.removesuffix('.j'), subdir,
+                write_lines(file, jfile.removesuffix('.j').replace('/', '--'), subdir,
                             directives, environment)
 
     def lis_darun(self):
@@ -1068,6 +1098,11 @@ class S2Srun(DownloadForecasts):
         self.create_symlink(self.supdir + '/lis_darun/' + self.ldtfile, self.ldtfile)
         os.chdir(self.e2esdir)
 
+        # check if hymap subdomains are used
+        if self.hymap:
+            self.schedule = self.hymap.lis_darun(self)
+            return
+
         # previous month
         date_obj = datetime.strptime(f"{self.yyyy}-{self.mm}-01", "%Y-%m-%d")
         previous_month_date = date_obj - relativedelta(months=1)
@@ -1075,6 +1110,7 @@ class S2Srun(DownloadForecasts):
         yyyyp = yyyymmp[:4]
         mmp = yyyymmp[4:6]
         monp = int(mmp)
+
         pertmode = self.config['EXP']['pertmode']
         os.makedirs(self.scrdir + '/lis_darun/input/', exist_ok=True)
         os.chdir(self.scrdir +'/lis_darun/input/')
@@ -1135,6 +1171,7 @@ class S2Srun(DownloadForecasts):
         with open('lis.config', 'r', encoding="utf-8") as file:
             filedata = file.read()
 
+        filedata = filedata.replace('LDTINPUTFILE', self.ldtfile)
         filedata = filedata.replace('DAPERTRSTFILE', dapertrstfile)
         filedata = filedata.replace('NOAHMP401RSTFILE', noahmp401rstfile)
         filedata = filedata.replace('HYMAP2RSTFILE', hymap2rstfile)
@@ -1146,6 +1183,8 @@ class S2Srun(DownloadForecasts):
         filedata = filedata.replace('FINALDA', '1')
         filedata = filedata.replace('PERTMODE', pertmode)
         filedata = filedata.replace('LSMLISLOGFILE', lsmlislogfile)
+        filedata = filedata.replace('NUMPROCX', str(self.config['FCST']['numprocx']))
+        filedata = filedata.replace('NUMPROCY', str(self.config['FCST']['numprocy']))
 
         with open('lis.config', 'w', encoding="utf-8") as file:
             file.write(filedata)
@@ -1161,11 +1200,17 @@ class S2Srun(DownloadForecasts):
         """ LDT-ICS STEP """
         if 'lisda_run.j' in self.schedule.keys():
             prev = 'lisda_run.j'
+        elif 'stitch_lisda_run.j' in self.schedule.keys():
+            prev = 'stitch_lisda_run.j'
         else:
             prev = None
 
+        # check if hymap subdomains are used
+        if self.hymap:
+            self.schedule = self.hymap.ldt_ics(self, prev)
+            return
+
         os.makedirs(self.e2esdir + '/ldt_ics/input/', exist_ok=True)
-        os.makedirs(self.scrdir + '/ldt_ics/input/', exist_ok=True)
         os.chdir(self.e2esdir + '/ldt_ics/')
         [os.makedirs(model, exist_ok=True) for model in self.models]
         os.makedirs('ldt.config_files', exist_ok=True)
@@ -1178,6 +1223,7 @@ class S2Srun(DownloadForecasts):
         os.chdir(self.e2esdir + '/ldt_ics/input/')
         self.create_symlink(self.supdir + '/lis_darun/' + self.ldtfile, self.ldtfile)
         self.create_symlink(self.supdir + '/LS_PARAMETERS', 'LS_PARAMETERS')
+        os.makedirs(self.scrdir + '/ldt_ics/input/', exist_ok=True)
         os.chdir(self.scrdir + '/ldt_ics/input/')
         self.create_symlink(self.supdir + '/lis_darun/' + self.ldtfile, self.ldtfile)
         self.create_symlink(self.supdir + '/LS_PARAMETERS', 'LS_PARAMETERS')
@@ -1637,8 +1683,8 @@ class S2Srun(DownloadForecasts):
                 print(f'Try these instead: {good_nseg}')
                 sys.exit()
 
-        prev = [job for job in ['ldtics_run.j', 'combine_files_run.j']
-                if job in self.schedule] or None
+        prev = [job for job in self.schedule
+                if 'ldtics' in job or 'combine_files' in job] or None
 
         if prev is not None:
             prev.extend([f"{key}" for key in self.schedule.keys() if 'pr_tempdis_' in key])
@@ -1657,11 +1703,17 @@ class S2Srun(DownloadForecasts):
         self.create_symlink(self.lishdir + '/ghis2s/lis_fcst/template_files','template_files')
         self.create_symlink(self.lishdir + '/ghis2s/lis_fcst/tables','tables')
         self.create_symlink(self.supdir + '/lis_darun/' + self.ldtfile, self.ldtfile)
-
-        os.chdir(self.e2esdir + 'lis_fcst/input/LDT_ICs/')
         for model in self.models:
             os.makedirs(self.e2esdir + 'lis_fcst/' + self.yyyy + self.mm + '/' + model + '/logs/',
                         exist_ok=True)
+
+        # check if hymap subdomains are used
+        if self.hymap:
+            self.schedule = self.hymap.lis_fcst(self, prev)
+            return
+
+        os.chdir(self.e2esdir + 'lis_fcst/input/LDT_ICs/')
+        for model in self.models:
             self.create_symlink(self.e2esdir + 'ldt_ics/'  + model, model)
 
         os.makedirs(self.scrdir + 'lis_fcst/input', exist_ok=True)
@@ -1706,16 +1758,19 @@ class S2Srun(DownloadForecasts):
 
     def s2spost(self):
         """ S2SPOST STEP """
-        fcst_list = [item for item in self.schedule.keys() if re.match('lis_fcst', item)]
-        if len(fcst_list) > 0:
-            prev=[]
-            for model in self.models:
-                sublist = sorted([item for item in fcst_list if model in item])
-                last_item = sublist[-1] if sublist else None
-                if last_item is not None:
-                    prev.append(last_item)
-        else:
-            prev = None
+        prev = [job for job in self.schedule
+                if 'stitch_lisfcst' in job] or None
+        if prev is None:
+            fcst_list = [item for item in self.schedule.keys() if re.match('lis_fcst', item)]
+            if len(fcst_list) > 0:
+                prev=[]
+                for model in self.models:
+                    sublist = sorted([item for item in fcst_list if model in item])
+                    last_item = sublist[-1] if sublist else None
+                    if last_item is not None:
+                        prev.append(last_item)
+            else:
+                prev = None
 
         if self.hindcast:
             [os.makedirs(self.e2esdir + 's2spost/' + self.mm + '/' + self.yyyy + self.mm + '/' + \
@@ -2106,7 +2161,8 @@ class S2Srun(DownloadForecasts):
     def main(self):
         ''' S2SRun driver '''
         # (1) File checkers to ensure RST files are available & downloaded files are not corrupted.
-        self.rst_file_checker()
+        if self.config['EXP']['pertmode'] == 'restart':
+            self.rst_file_checker()
         super().nmme_file_checker()
         self.clim_files_checker()
         self.cfsv2_file_checker()

@@ -257,10 +257,21 @@ class GHIS2SLogger:
         if schedule:
             # Process in schedule order (maintains order as written)
             for task_key, task_info in schedule.items():
-                task_name = task_key.replace('.j', '') if task_key.endswith('.j') else task_key
+                # Extract the base string without the .j extension
+                task_name_raw = task_key.replace('.j', '') if task_key.endswith('.j') else task_key
                 subdir = task_info.get('subdir', '')
 
-                task_dir = self.scratch_path / subdir
+                if '/' in task_name_raw:
+                    # for logfiles in subdomain
+                    # Split into 'north_america_1' and 'lisda_north_america_1_run'
+                    region_dir, task_name = task_name_raw.split('/', 1)
+                    task_dir = self.scratch_path / subdir / region_dir
+                else:
+                    # for general log files
+                    task_name = task_name_raw
+                    task_dir = self.scratch_path / subdir
+
+                # Construct the final pattern
                 log_pattern = str(task_dir / f"logs/{task_name}*.log")
                 matching_logs = glob.glob(log_pattern)
 

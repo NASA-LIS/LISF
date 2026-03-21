@@ -145,6 +145,7 @@ def dicts(dic_name, key):
 
     default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
     default_units = 'm^3/m^3'
+    ret = None
     if dic_name == 'boundary':
         ret = boundary.get(key)
     elif dic_name == 'anom_levels':
@@ -198,18 +199,31 @@ def load_table (table_key):
     '''
 
     tables = {
-        'DROUGHT':[[  0,  0,  0],
-                   [  0,115,  0],
-                   [  0,159,  0],
-                   [  0,210,  0],
-                   [ 47,255, 67],
-                   [200,255,130],
-                   [255,255,255],
-                   [255,255,  0],
-                   [255,219,  0],
-                   [255,157,  0],
-                   [249,  0,  0],
-                   [197,  0,  0]],
+        'DROUGHT':[[197,  0,  0],   #  0 → D4  Exceptional Drought  (dark red)
+                   [249,  0,  0],   #  1 → D3  Extreme Drought       (red)
+                   [255,157,  0],   #  2 → D2  Severe Drought        (orange)
+                   [255,219,  0],   #  3 → D1  Moderate Drought      (gold)
+                   [255,255,  0],   #  4 → D0  Abnormally Dry        (yellow)
+                   [255,255,255],   #  5 → Normal                    (white)
+                   [200,255,130],   #  6 → W0  Abnormally Wet        (pale green)
+                   [ 47,255, 67],   #  7 → W1  Moderate Wet          (bright green)
+                   [  0,210,  0],   #  8 → W2  Severe Wet            (light green)
+                   [  0,159,  0],   #  9 → W3  Extreme Wet           (green)
+                   [  0,115,  0],   # 10 → W4  Exceptional Wet       (dark green)
+                   [  0,  0,  0],   # 11 → NaN/Ocean/Missing         (black)
+                   ],
+        #'DROUGHT':[[  0,  0,  0],
+        #           [  0,115,  0],
+        #           [  0,159,  0],
+        #           [  0,210,  0],
+        #           [ 47,255, 67],
+        #           [200,255,130],
+        #           [255,255,255],
+        #           [255,255,  0],
+        #           [255,219,  0],
+        #           [255,157,  0],
+        #           [249,  0,  0],
+        #           [197,  0,  0]],
         'DROUGHT_INV':[[167,  0,  0],
                        [197,  0,  0],
                        [249,  0,  0],
@@ -639,7 +653,7 @@ def map2pfaf (anom, lats, lons, dlat, dlon, ulat, ulon, carea, levels):
     yy2 = []
     cua = []
 
-    for i, value in enumerate(dlon):
+    for i, _ in enumerate(dlon):
         iy_ = min(range(len(lats)), key=lambda j: abs(lats[j] - ulat[i]))
         ix_ = min(range(len(lons)), key=lambda j: abs(lons[j] - ulon[i]))
         au_ = anom[iy_,ix_]
@@ -698,8 +712,8 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
               under_over, min_val=None, max_val=None, fscale=None, levels=None, \
               stitle=None, clabel=None, cartopy_datadir=None, colorbar2=None, \
               projection=None):
-    ''' plot contour maps'''
-    '''
+    ''' plot contour maps
+
     added 2nd colorbar option
     colorbar2 = {levels: [],
                  begin : int (0-indexed)
@@ -782,7 +796,8 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         if projection is None:
             gl_ = ax_.gridlines(draw_labels=True)
         else:
-            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, zorder=11)
+            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False,
+                                zorder=11)
             if projection[0] == 'polar':
                 gl_.xformatter = cticker.LongitudeFormatter()
                 gl_.yformatter = cticker.LatitudeFormatter()
@@ -847,8 +862,8 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
     plt.close()
 
 def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
-               under_over, dlat, dlon, ulat, ulon, carea, google_path, min_val=None, \
-               max_val=None, fscale=None, levels=None, \
+               under_over, dlat, dlon, ulat, ulon, carea, google_path, \
+               fscale=None, levels=None, \
                stitle=None, clabel=None, cartopy_datadir=None):
     ''' plots streams using google map as the background image'''
     cartopy_dir(cartopy_datadir)

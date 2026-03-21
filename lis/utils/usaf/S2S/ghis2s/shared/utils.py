@@ -208,6 +208,7 @@ def remove_sbatch_lines(filename):
     filtered_lines = [line for line in lines if not line.strip().startswith('#SBATCH')]
     with open(filename, 'w', encoding="utf-8") as file:
         file.writelines(filtered_lines)
+    os.chmod(filename, 0o755)
 
 def cylc_job_scripts(job_file, hours, command_list=None, loop_list=None, command2=None):
     ''' writes Cylc specific .sh files without srun'''
@@ -284,7 +285,7 @@ exit 0
 def update_job_schedule (filename, myid, jobname, afterid):
     ''' writes the SLURM_JOB_SCHEDULE file '''
     with open(filename, "a", encoding="utf-8") as sch_file:
-        sch_file.write('{:<10}{:<30}{}\n'.format(myid, jobname, afterid))
+        sch_file.write('{:<10}{:<45}{}\n'.format(myid, jobname, afterid))
 
 def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_command=None):
     ''' writes SLURM job scripts for LISF '''
@@ -308,6 +309,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
     lisf_module = cfg['SETUP']['LISFMOD']
     supd = cfg['SETUP']['supplementarydir']
     domain=cfg['EXP']['DOMAIN']
+    subdomains=cfg['EXP']['routing_model']['subdomains']
     datatype=cfg['SETUP']['DATATYPE']
     numprocx=cfg['FCST']['numprocx']
     numprocy=cfg['FCST']['numprocy']
@@ -341,7 +343,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
                 _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         # Forecast runmode (and LIS DA run setup):
         else:
-            if domain == 'GLOBAL':
+            if domain == 'GLOBAL' and not subdomains:
                 if 'mil' in cfg['SETUP']['CONSTRAINT']:
                     _f.write('#SBATCH --ntasks=' + ntasks + ' --ntasks-per-socket=48 --ntasks-per-core=1' + '\n')
                     cylc_command = cylc_command + '--map-by socket:PE=48 --bind-to none '
@@ -380,11 +382,12 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             _f.write('export I_MPI_PMI_VALUE_LENGTH_MAX=' + ntasks + '\n')
             _f.write('cd ' + cwd + '\n')
             _f.write('srun --mpi=pmi2 --ntasks=$SLURM_NTASKS \\' + '\n')
-            _f.write('     --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \\' + '\n')
-            _f.write('     --ntasks-per-core=$SLURM_NTASKS_PER_CORE \\' + '\n')
+            if not subdomains:
+                _f.write('     --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \\' + '\n')
+                _f.write('     --ntasks-per-core=$SLURM_NTASKS_PER_CORE \\' + '\n')
             _f.write('     --cpu-bind="none"  \\' + '\n')
             # Separate out LIS DA run from LIS fcst run:
-            if job_name == "lisda_":
+            if "lisda_" in job_name:
                 _f.write('     ' + this_command + ' || exit 1' + '\n')
                 cylc_command = cylc_command + './LIS'
             else:
@@ -441,6 +444,7 @@ def tiff_to_da(file):
 
 def load_ncdata(infile, logger,  var_name=None, **kwargs):
     ''' generic function to load letcdf file[s] as a xarray dataset/datarray'''
+    kwargs.setdefault('decode_timedelta', False)
     try:
         if isinstance(infile, str) and ('*' in infile or '?' in infile):
             matching_files = glob.glob(infile)

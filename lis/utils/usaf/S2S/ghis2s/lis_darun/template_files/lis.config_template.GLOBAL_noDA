@@ -19,13 +19,13 @@ Temporal interpolation method (met forcing):  linear
 
 #Runtime options
 Forcing variables list file:            ./input/forcing_variables.txt
-Output methodology:                     "2d ensemble gridspace"
+Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
 Output naming style:                    "3 level hierarchy"
 Enable output statistics:               .false.
 
-Start mode:                             restart
+Start mode:                             coldstart
 Starting year:                          STARTYR
 Starting month:                         STARTMO
 Starting day:                           STARTDA
@@ -73,7 +73,7 @@ Number of application models:          0
 
 #---------------------DATA ASSIMILATION ----------------------------------
 #Data assimilation options
-Number of data assimilation instances:                1
+Number of data assimilation instances:                0
 Data assimilation algorithm:                         "EnKF"
 Data assimilation set:                               "SMAP(NRT) soil moisture"
 Data assimilation exclude analysis increments:        0                                       
@@ -87,7 +87,7 @@ Data assimilation output ensemble spread:             0
 # S2S-Global domain:
 Data assimilation observation domain file:   ./input/LDTINPUTFILE
 ##
-Data assimilation scaling strategy:                   "CDF matching"
+Data assimilation scaling strategy:                   "none"
 
 Data assimilation use a trained forward model:        0
 Data assimilation trained forward model output file:  none
@@ -419,7 +419,7 @@ Template open water timestep:             15mn
 # ROUTING MODEL:  HYMAP-2
 Routing model:                          "HYMAP2 router"
 
-HYMAP2 routing model start mode:         restart
+HYMAP2 routing model start mode:        coldstart
 HYMAP2 routing model restart file:      HYMAP2RSTFILE
 
 HYMAP2 routing model time step:         "15mn"

@@ -134,7 +134,7 @@ class S2SHcast(S2Srun):
             info['TPN'] = None
             info['MP'] = True
             cmd = [f"python {self.lisfdir}/lis/utils/usaf/S2S/ghis2s/bcsd/"
-                   f"regrid2fine.py {resol}"]
+                   f"regrid_obs25km_clim.py {self.e2esroot}/{self.config_file}"]
             tfile = self.sublist_to_file(cmd, cwd)
             try:
                 s2s_api.python_job_file(f'{self.e2esroot}/{self.config_file}', f'{jobname}run.j',

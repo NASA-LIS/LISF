@@ -10,22 +10,22 @@ Open water model:                       "template open water"
 
 Number of met forcing sources:          1
 Blending method for forcings:           overlay
-Met forcing sources:                    "AGRMET"
+Met forcing sources:                    "MERRA2"
 Topographic correction method (met forcing):  "none"
 Enable spatial downscaling of precipitation:  0
 Spatial upscaling method (met forcing):       average
-Spatial interpolation method (met forcing):   average
+Spatial interpolation method (met forcing):   bilinear
 Temporal interpolation method (met forcing):  linear
 
 #Runtime options
 Forcing variables list file:            ./input/forcing_variables.txt
-Output methodology:                     "2d ensemble gridspace"
+Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
 Output naming style:                    "3 level hierarchy"
 Enable output statistics:               .false.
 
-Start mode:                             restart
+Start mode:                             coldstart
 Starting year:                          STARTYR
 Starting month:                         STARTMO
 Starting day:                           STARTDA
@@ -73,7 +73,7 @@ Number of application models:          0
 
 #---------------------DATA ASSIMILATION ----------------------------------
 #Data assimilation options
-Number of data assimilation instances:                1
+Number of data assimilation instances:                0
 Data assimilation algorithm:                         "EnKF"
 Data assimilation set:                               "SMAP(NRT) soil moisture"
 Data assimilation exclude analysis increments:        0                                       
@@ -87,7 +87,7 @@ Data assimilation output ensemble spread:             0
 # S2S-Global domain:
 Data assimilation observation domain file:   ./input/LDTINPUTFILE
 ##
-Data assimilation scaling strategy:                   "CDF matching"
+Data assimilation scaling strategy:                   "none"
 
 Data assimilation use a trained forward model:        0
 Data assimilation trained forward model output file:  none
@@ -169,43 +169,52 @@ TBOT lag skin temperature update option:  0
 TBOT skin temperature lag days:           0
 
 #--------------------------------FORCINGS----------------------------------
+#--------------------------------FORCINGS----------------------------------
+
+# MERRA-2 base forcing:
+MERRA2 forcing directory:       ./MERRA2/
+MERRA2 use lowest model level forcing:     0  # 0-ref height; 1-lowest model level
+MERRA2 use corrected total precipitation:  1
+
+Template open water timestep:           30mn
+TEMPLATE model timestep:                30mn
 
 # 10-km global domain
-AGRMET forcing map projection:             latlon
-AGRMET forcing domain lower left lat:       -89.9531250
-AGRMET forcing domain lower left lon:      -179.9296875
-AGRMET forcing domain upper right lat:       89.9531250
-AGRMET forcing domain upper right lon:      179.9296875
-AGRMET forcing domain resolution (dx):        0.1406250
-AGRMET forcing domain resolution (dy):        0.0937500
+#AGRMET forcing map projection:             latlon
+#AGRMET forcing domain lower left lat:       -89.9531250
+#AGRMET forcing domain lower left lon:      -179.9296875
+#AGRMET forcing domain upper right lat:       89.9531250
+#AGRMET forcing domain upper right lon:      179.9296875
+#AGRMET forcing domain resolution (dx):        0.1406250
+#AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-AGRMET forcing directory:                  ./USAF_FORCING/usaf_lis75s2s_gfs2galwem/
-AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
+#AGRMET forcing directory:                  ./USAF_FORCING/usaf_lis75s2s_gfs2galwem/
+#AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings
-AGRMET analysis directory:                 Analysis_UMFG_1 # Change as appropriate
-AGRMET surface fields directory:           SFCALC          # Legacy, will eventually remove
-AGRMET merged precip directory:            PRECIP          # Legacy, will eventually remove
-AGRMET security classification:            U
-AGRMET distribution classification:        C
-AGRMET data category:                      ANLYS
-AGRMET area of data:                       GLOBAL
+#AGRMET analysis directory:                 Analysis_UMFG_1 # Change as appropriate
+#AGRMET surface fields directory:           SFCALC          # Legacy, will eventually remove
+#AGRMET merged precip directory:            PRECIP          # Legacy, will eventually remove
+#AGRMET security classification:            U
+#AGRMET distribution classification:        C
+#AGRMET data category:                      ANLYS
+#AGRMET area of data:                       GLOBAL
 
-AGRMET PPT Background bias correction option:   0          # Apply bias-correction to PPT background field
+#AGRMET PPT Background bias correction option:   0          # Apply bias-correction to PPT background field
 
 # NWP data.  Use GFS until 2017100100, then switch to GALWEM.
 # (GFS will still be used as on-the-fly emergency backup,
 #  if GALWEM files are missing.)
-AGRMET first guess source:                 GALWEM          # GALWEM or GFS, but not both
-AGRMET use GFS precip:                     0               # Set to 1 if *not* using GALWEM as primary
-AGRMET GFS data directory:                 GFS             # Always GFS
-AGRMET GFS filename version:               1               # 1 for legacy, 2 for new 557WW filename convention
-AGRMET use timestamp on gfs:               1               # Always 1
-AGRMET use GALWEM precip:                  1               # Set to 1 if using GALWEM as primary
-AGRMET GALWEM data directory:              GALWEM          # Always GALWEM
-AGRMET GALWEM nominal resolution (km):     17              # 17 or 10
-AGRMET nogaps wind weight:                 1.0             # Applied for all NWP sources, keep at 1.0
+#AGRMET first guess source:                 GALWEM          # GALWEM or GFS, but not both
+#AGRMET use GFS precip:                     0               # Set to 1 if *not* using GALWEM as primary
+#AGRMET GFS data directory:                 GFS             # Always GFS
+#AGRMET GFS filename version:               1               # 1 for legacy, 2 for new 557WW filename convention
+#AGRMET use timestamp on gfs:               1               # Always 1
+#AGRMET use GALWEM precip:                  1               # Set to 1 if using GALWEM as primary
+#AGRMET GALWEM data directory:              GALWEM          # Always GALWEM
+#AGRMET GALWEM nominal resolution (km):     17              # 17 or 10
+#AGRMET nogaps wind weight:                 1.0             # Applied for all NWP sources, keep at 1.0
 
 # Rain gauge data.  Use JMOBS until 2012032700, use NONE from
 # 2012032700 until 2012040912, use CDMS beginning 2012040912.
@@ -419,7 +428,7 @@ Template open water timestep:             15mn
 # ROUTING MODEL:  HYMAP-2
 Routing model:                          "HYMAP2 router"
 
-HYMAP2 routing model start mode:         restart
+HYMAP2 routing model start mode:        coldstart
 HYMAP2 routing model restart file:      HYMAP2RSTFILE
 
 HYMAP2 routing model time step:         "15mn"
