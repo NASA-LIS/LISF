@@ -117,7 +117,7 @@ class HyMAPDomains():
                 filedata = file.read()
             filedata = filedata.replace('COMMAND', command)
             if domain == 'russia_tip':
-                filedata = filedata.replace(str(setup.config['FCST']['numprocy']), '40')
+                filedata = filedata.replace(str(setup.config['FCST']['numprocy']), '60')
             with open(f'lisda_{domain}_run.j', 'w', encoding="utf-8") as file:
                 file.write(filedata)
 
@@ -154,7 +154,7 @@ class HyMAPDomains():
             filedata = filedata.replace('LSMLISLOGFILE', lsmlislogfile)
             filedata = filedata.replace('NUMPROCX', str(setup.config['FCST']['numprocx']))
             if domain == 'russia_tip':
-                filedata = filedata.replace('NUMPROCY', '40')
+                filedata = filedata.replace('NUMPROCY', '60')
             else:
                 filedata = filedata.replace('NUMPROCY', str(setup.config['FCST']['numprocy']))
 
