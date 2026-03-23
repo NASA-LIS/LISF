@@ -221,8 +221,6 @@ class AMSR2DataProcessor:
         for file_path in all_files:
             try:
                 filename = os.path.basename(file_path)
-                print(self.config.source)
-                print(file_path)
                 
                 if self.config.source == 'JAXA':  # "JAXA" or "NOAA":
                     orbit = filename.split('_')[2][3]
