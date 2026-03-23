@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --time=1:00:00
-#SBATCH --constraint="[mil|cas]"
+#SBATCH --constraint="mil"
 #SBATCH --mail-type=ALL
 #SBATCH --account s1189
 #SBATCH --qos=debug
