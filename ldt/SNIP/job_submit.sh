@@ -3,7 +3,7 @@
 RUN_DATETIME="$1"  # Read from first command line argument
 
 # Configuration for single datetime job submission
-TEMPLATE_FILE="SNIP_LDT_template.sh"
+TEMPLATE_FILE="SNIP_LDT_template.sh.discover"
 LOG_DIR="./log"
 SUBMISSION_LOG="$LOG_DIR/job_submissions.log"
 
@@ -22,6 +22,7 @@ parse_datetime() {
     local month=${datetime:4:2}
     local day=${datetime:6:2}
     local hour=${datetime:8:2}
+    
     
     # Validate datetime format
     if [[ ${#datetime} -ne 12 ]]; then
