@@ -47,7 +47,7 @@ class Config:
         self.flag_cold = True
         self.flag_rain = True
         self.flag_rfi = False
-        self.flag_shallow = False
+        self.flag_shallow = True
         self.target_resolution = 0.1 # degrees
         self.time_window_hours = 6
         self.land_frac_th = 90
