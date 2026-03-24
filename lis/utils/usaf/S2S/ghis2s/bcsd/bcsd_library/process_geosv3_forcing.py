@@ -126,7 +126,7 @@ def _migrate_to_monthly_files(geosv3_in, outdirs, fcst_init, args, rank, logger,
     lapsrate_corr = False
     aspect_corr = False
     n_outvar = 0
-    if args["config"].get('BCSD', {}).get('force_corr', {}).get('lapsrate') is True:
+    if args["config"].get('BCSD', {}).get('force_corr', {}).get('lapserate') is True:
         lapsrate_corr = True
         static_file = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/geosv3_staticfields_20150401.nc'
         logger.info(f"Reading GEOSv3 static file: {static_file}", subtask = subtask)

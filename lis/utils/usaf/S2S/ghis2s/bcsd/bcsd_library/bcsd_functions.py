@@ -550,7 +550,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
     swd : array (time,) - shortwave radiation (W/m2)[n_times] 
     lhour : array (time,) - local solar hour (0-24) [n_times]
     doy : array (time,) - day of year (1-366) [n_times]
-    force_corr : dict - correction flags {'lapsrate': bool, 'aspect': bool}
+    force_corr : dict - correction flags {'lapserate': bool, 'aspect': bool}
     
     Returns:
     --------
@@ -576,7 +576,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
     n_outvar = 0
     var_no = 0
 
-    if force_corr['lapsrate']:
+    if force_corr['lapserate']:
         n_outvar += 4
     if force_corr['aspect']:
         n_outvar += 1
@@ -584,7 +584,7 @@ def apply_fcorr(mask, slope, aspect, elevdiff, lat,
     corrected_force = np.ones((n_outvar, n_times), dtype=np.float32)*-9999.
     if mask > 0:
         # (1) lapse rate correction
-        if force_corr['lapsrate']:
+        if force_corr['lapserate']:
             # Temperature
             tcforce = force_tmp + (lapserate*elevdiff)
 

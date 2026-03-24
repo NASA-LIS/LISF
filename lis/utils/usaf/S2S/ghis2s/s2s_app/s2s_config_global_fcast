@@ -39,7 +39,7 @@ BCSD:
   clim_end_year: 2020
   nof_raw_ens: 12
   source: {metforce: CFSv2, precip: nmme, obs: USAF-LIS7.3rc8}
-  force_corr: {lapsrate: false, aspect: false}
+  force_corr: {lapserate: false, aspect: false}
 
 #######################################################################
 #                            LIS Forecast

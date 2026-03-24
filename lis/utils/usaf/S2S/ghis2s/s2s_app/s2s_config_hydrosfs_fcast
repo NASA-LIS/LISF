@@ -33,5 +33,5 @@ BCSD:
   clim_end_year: 2023
   nof_raw_ens: 10
   source: {metforce: GEOSv3, precip: null, obs: HydroSCS}
-  force_corr: {lapsrate: true, aspect: true}  
+  force_corr: {lapserate: true, aspect: true}  
 
