@@ -21,6 +21,7 @@ import yaml
 from ghis2s.main import s2s_api, walltime
 from ghis2s.main.hymap_basins import HyMAPDomains
 from ghis2s.shared import utils, logging_utils
+from ghis2s.bcsd.bcsd_library.nmme_module import NMMEParams
 from ghis2s.lis_fcst import generate_lis_config_scriptfiles_fcst
 from ghis2s.s2spost import s2spost_driver
 from ghis2s.s2smetric import s2smetric_driver
@@ -119,73 +120,58 @@ class DownloadForecasts():
         print("==========================================================================")
         print(" NMME Precip file checker.......")
         print("==========================================================================")
-        nmme_path_dict = {
-            'CFSv2': ['NCEP-CFSv2','NCEP-CFSv2'],
-            'GEOSv2': ['NASA-GEOSS2S','NASA-GEOSS2S'],
-            'CCM4': ['CanSIPS-IC3','CanSIPS-IC3'],
-            'GNEMO5': ['CanSIPS-IC3','CanSIPS-IC3'],
-            'CanESM5': ['CanSIPS-IC4','CanESM5'],
-            'GNEMO52': ['CanSIPS-IC4', 'GEM5.2-NEMO'],
-            'CCSM4': ['COLA-RSMAS-CCSM4', 'COLA-RSMAS-CCSM4'],
-            'CESM1': ['COLA-RSMAS-CESM1', 'COLA-RSMAS-CESM1'],
-            'GFDL': ['GFDL-SPEAR', 'GFDL-SPEAR'],
-        }
 
-        mon_abbr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
-               'Sep', 'Oct', 'Nov', 'Dec']
-        infile_temp = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
-
-        havenot_files = {}
+        havenot_files  = {}
         undifined_slices = {}
+        found_files    = {}
 
         for model in self.models:
-            nmme_path = nmme_path_dict[model]
-            infile = infile_temp.format(self.nmme_rawdir, nmme_path[0], nmme_path[1],
-                                        mon_abbr[self.month-1], self.year)
-            if not os.path.exists(infile):
-                havenot_files[model] = infile
+            nofile, infile, bad_layers = NMMEParams(model).check_file(self)
+            if nofile:
+                havenot_files[model] = nofile
             else:
-                # check for undefined slices
-                with xr.open_dataset(infile.strip(), decode_times=False) as nmme_xr:
-                    is_missing = nmme_xr['prec'].isnull().all(dim=['Y', 'X'])
-                    if is_missing.any():
-                        bad_indices = np.where(is_missing)
-                        dims = is_missing.dims
-                        bad_layers = []
-                        for loc in zip(*bad_indices):
-                            layer_info = {dim: nmme_xr[dim].values[idx] for dim, idx in zip(dims, loc)}
-                            bad_layers.append(layer_info)
-                        undifined_slices[model] = bad_layers
+                found_files[model] = infile
+                if bad_layers:
+                    undifined_slices[model] = bad_layers
 
         if len(havenot_files) > 0 or len(undifined_slices) > 0:
             if len(havenot_files) > 0:
                 print("Following NMME precip files are missing:")
                 for key, value in havenot_files.items():
-                    print(f"{key}: {value}")
-                print("  ")
+                    print(f"  {key}: {value}")
+                    print("  ")
 
             if len(undifined_slices) > 0:
-                print("Following NMME models have completely missing data layers (all NaNs in Y, X):")
+                print("Following NMME models have data quality issues:")
                 for model, layers in undifined_slices.items():
                     print(f"  {model}:")
                     for layer in layers:
-                        print(f"    {layer}")
+                        issue = layer.get('issue', 'unknown')
+                        coords = {k: v for k, v in layer.items()
+                                  if k not in ('issue', 'min', 'max', 'nan_fraction')}
+                    if issue == 'all_nan':
+                        print(f"    [ALL NaN]     {coords}")
+                    elif issue == 'all_zero':
+                        print(f"    [ALL ZERO]    {coords}")
+                    elif issue == 'crazy_values':
+                        print(f"    [BAD VALUES]  {coords}  "
+                              f"min={layer['min']:.4e}  max={layer['max']:.4e}")
+                    elif issue == 'high_nan_fraction':
+                        print(f"    [HIGH NaN]    {coords}  "
+                              f"fraction={layer['nan_fraction']:.1%}")
                 print("  ")
 
             print("  ")
+            problematic_models = list(dict.fromkeys(list(havenot_files.keys()) + list(undifined_slices.keys())))
             print("Please resolve missing files/data before launching the forecast.")
             print("Alternatively, if you wish to exclude them from the current forecast:")
-            print(f"      Remove {list(havenot_files.keys())} from NMME_models in")
+            print(f"      Remove {problematic_models} from NMME_models in")
             print(f"      {self.config_file} and launch the forecast.")
-
             sys.exit()
 
         print("Found below NMME precipitation files:")
-        for model in self.models:
-            nmme_path = nmme_path_dict[model]
-            infile = infile_temp.format(self.nmme_rawdir, nmme_path[0], nmme_path[1],
-                                        mon_abbr[self.month-1], self.year)
-            print(f"{model}: {infile}")
+        for model, infile in found_files.items():
+            print(f"  {model}: {infile}")
 
     def cfsv2_download(self):
         """ download CFSv2 forecasts """

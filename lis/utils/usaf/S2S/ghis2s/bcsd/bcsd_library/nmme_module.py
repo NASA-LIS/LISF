@@ -14,6 +14,19 @@ from ghis2s.bcsd.bcsd_library.bcsd_functions import apply_regridding_with_mask
 from ghis2s.shared.logging_utils import TaskLogger
 
 limits = lim()
+nmme_path_dict = {
+    'CFSv2': ['NCEP-CFSv2','NCEP-CFSv2'],
+    'GEOSv2': ['NASA-GEOSS2S','NASA-GEOSS2S'],
+    'CCM4': ['CanSIPS-IC3','CanSIPS-IC3'],
+    'GNEMO5': ['CanSIPS-IC3','CanSIPS-IC3'],
+    'CanESM5': ['CanSIPS-IC4','CanESM5'],
+    'GNEMO52': ['CanSIPS-IC4', 'GEM5.2-NEMO'],
+    'CCSM4': ['COLA-RSMAS-CCSM4', 'COLA-RSMAS-CCSM4'],
+    'CESM1': ['COLA-RSMAS-CESM1', 'COLA-RSMAS-CESM1'],
+    'GFDL': ['GFDL-SPEAR', 'GFDL-SPEAR'],
+}
+MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+       'Sep', 'Oct', 'Nov', 'Dec']
 
 class NMMEParams():
     '''
@@ -53,6 +66,110 @@ class NMMEParams():
             'GNEMO52': 'downscale'
         }
         return nmme_scalings[self.model]
+
+    @property
+    def ens_index(self):
+        ''' forecast ensemble indices in source data '''
+        model_ens = self.ens_num
+        fcast_ens_index = {
+            'CFSv2': [0, model_ens],
+            'GEOSv2': [0, model_ens],
+            'CCM4': [10, 20],
+            'GNEMO5': [0, model_ens],
+            'CanESM5': [0, model_ens],
+            'GNEMO52': [0, model_ens],
+            'CCSM4': [0, model_ens],
+            'CESM1': [0, model_ens],
+            'GFDL': [0, model_ens],
+        }
+        return fcast_ens_index[self.model]
+
+    def check_file(self, setup):
+        ''' checks NMME file for availability and missing layers '''
+        bad_layers = False
+        infile_temp = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
+        nmme_path_ = nmme_path_dict[self.model]
+        infile = infile_temp.format(setup.config['BCSD']['nmme_download_dir'],
+                                    nmme_path_[0], nmme_path_[1], MON[setup.month-1], setup.year)
+
+        if not os.path.exists(infile):
+            return infile, infile, bad_layers
+
+        # File exists  run data quality checks
+        with xr.open_dataset(infile.strip(), decode_times=False) as nmme_xr:
+            if self.model in ['CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52']:
+                prec_da = nmme_xr.transpose('S', 'L', 'M', 'Y', 'X')['prec']
+            else:
+                prec_da = nmme_xr['prec']
+
+            # Slice to the ensemble/lead months we actually use
+            prec_da = prec_da.isel(
+                L=slice(0, setup.config['EXP']['lead_months']),
+                M=slice(self.ens_index[0], self.ens_index[1])
+            )
+            issues = []
+
+            # CHECK 1: Layers where ALL spatial points are NaN (completely missing)
+            is_all_nan = prec_da.isnull().all(dim=['Y', 'X'])
+            if is_all_nan.any():
+                bad_indices = np.where(is_all_nan)
+                dims = is_all_nan.dims
+                for loc in zip(*bad_indices):
+                    layer_info = {dim: nmme_xr[dim].values[idx]
+                                  for dim, idx in zip(dims, loc)}
+                    layer_info['issue'] = 'all_nan'
+                    issues.append(layer_info)
+
+            # CHECK 2: Layers where ALL spatial points are exactly zero
+            is_all_zero = (prec_da == 0).all(dim=['Y', 'X'])
+            if is_all_zero.any():
+                bad_indices = np.where(is_all_zero)
+                dims = is_all_zero.dims
+                for loc in zip(*bad_indices):
+                    layer_info = {dim: nmme_xr[dim].values[idx]
+                                  for dim, idx in zip(dims, loc)}
+                    layer_info['issue'] = 'all_zero'
+                    issues.append(layer_info)
+
+            # CHECK 3: Physically unreasonable values
+            precip_max = 3000.0  # mm/day
+            precip_min = -1e-6
+            has_crazy_high = (prec_da > precip_max).any(dim=['Y', 'X'])
+            has_crazy_low  = (prec_da < precip_min).any(dim=['Y', 'X'])
+            has_crazy = has_crazy_high | has_crazy_low
+            if has_crazy.any():
+                bad_indices = np.where(has_crazy)
+                dims = has_crazy.dims
+                for loc in zip(*bad_indices):
+                    layer_info = {dim: nmme_xr[dim].values[idx]
+                                  for dim, idx in zip(dims, loc)}
+
+                    slices = {d: int(i) for d, i in zip(dims, loc)}
+                    layer_slice = prec_da.isel(**slices)
+                    layer_info['issue'] = 'crazy_values'
+                    layer_info['min']   = float(layer_slice.min())
+                    layer_info['max']   = float(layer_slice.max())
+                    issues.append(layer_info)
+
+            # CHECK 4: Layers with high NaN fraction (>50% missing but not all NaN)
+            nan_fraction_threshold = 0.5
+            nan_fraction = prec_da.isnull().mean(dim=['Y', 'X'])
+            high_nan = (nan_fraction > nan_fraction_threshold) & ~is_all_nan
+            if high_nan.any():
+                bad_indices = np.where(high_nan)
+                dims = high_nan.dims
+                for loc in zip(*bad_indices):
+                    layer_info = {dim: nmme_xr[dim].values[idx]
+                                  for dim, idx in zip(dims, loc)}
+                    slices = {d: int(i) for d, i in zip(dims, loc)}
+                    layer_info['issue'] = 'high_nan_fraction'
+                    layer_info['nan_fraction'] = float(nan_fraction.isel(**slices))
+                    issues.append(layer_info)
+
+            if issues:
+                bad_layers = issues
+
+        return False, infile, bad_layers
 
 if __name__ == "__main__":
     ''' main program '''
@@ -101,30 +218,6 @@ if __name__ == "__main__":
     if not os.path.exists(NMME_OUTPUT_DIR):
         os.makedirs(NMME_OUTPUT_DIR, exist_ok=True)
 
-    nmme_path_dict = {
-        'CFSv2': ['NCEP-CFSv2','NCEP-CFSv2'],
-        'GEOSv2': ['NASA-GEOSS2S','NASA-GEOSS2S'],
-        'CCM4': ['CanSIPS-IC3','CanSIPS-IC3'],
-        'GNEMO5': ['CanSIPS-IC3','CanSIPS-IC3'],
-        'CanESM5': ['CanSIPS-IC4','CanESM5'],
-        'GNEMO52': ['CanSIPS-IC4', 'GEM5.2-NEMO'],
-        'CCSM4': ['COLA-RSMAS-CCSM4', 'COLA-RSMAS-CCSM4'],
-        'CESM1': ['COLA-RSMAS-CESM1', 'COLA-RSMAS-CESM1'],
-        'GFDL': ['GFDL-SPEAR', 'GFDL-SPEAR'],
-    }
-
-    fcast_ens_index = {
-        'CFSv2': [0, ENS_NUM],
-        'GEOSv2': [0, ENS_NUM],
-        'CCM4': [10, 20],
-        'GNEMO5': [0, ENS_NUM],
-        'CanESM5': [0, ENS_NUM],
-        'GNEMO52': [0, ENS_NUM],
-        'CCSM4': [0, ENS_NUM],
-        'CESM1': [0, ENS_NUM],
-        'GFDL': [0, ENS_NUM],
-    }
-
     hcast_p1 = {
         'CFSv2': [1982, 2010],
         'CCM4': [1991, 2020],
@@ -136,8 +229,6 @@ if __name__ == "__main__":
         'GFDL': [1991, 2020],
     }
 
-    MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
-           'Sep', 'Oct', 'Nov', 'Dec']
     MONTH = ['jan01', 'feb01', 'mar01', 'apr01', 'may01', 'jun01', 'jul01',
               'aug01', 'sep01', 'oct01', 'nov01', 'dec01']
     MONTHN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -168,7 +259,7 @@ if __name__ == "__main__":
 
     if DATATYPE == 'forecast':
         nmme_path = nmme_path_dict[NMME_MODEL]
-        ens_index = fcast_ens_index[NMME_MODEL]
+        ens_index = NMMEParams(NMME_MODEL).ens_index
         INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1], MON[MM], CYR)
 
         logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
@@ -185,7 +276,7 @@ if __name__ == "__main__":
         nmme_path = nmme_path_dict[NMME_MODEL]
         if NMME_MODEL in ['CFSv2', 'CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52', 'CCSM4',
                           'CESM1', 'GFDL']:
-            ens_index = fcast_ens_index[NMME_MODEL]
+            ens_index = NMMEParams(NMME_MODEL).ens_index
             p1 = hcast_p1[NMME_MODEL]
             y1 = p1[0] - YEAR0
             y2 = p1[1] - YEAR0 + 1
