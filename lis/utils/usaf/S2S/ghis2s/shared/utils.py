@@ -151,7 +151,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
 
         # To handle MPLCONFIG and Cache home dir write situation,
         #  where home or /tmp are read-only from compute nodes:
-        if 'discover' not in platform.node() or 'borg' not in platform.node():
+        if 'discover' not in platform.node() and 'borg' not in platform.node():
             if 'user_cache_dir' in cfg['SETUP']:
                 # print(" -- Using a user-designated cache directory from the s2s_config file --")
                 _f.write(f"export USER_CACHE_DIR=\"/{cfg['SETUP']['user_cache_dir']}/ghis2s_python_cache_$$\" \n")

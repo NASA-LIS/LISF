@@ -106,7 +106,11 @@ def dicts(dic_name, key):
         'SnowDepth':  [-2, 2],
         'SWE':  [-1000., 1000],
         'TOP40SM': [-0.5, 0.5],
-        'TOP40ST': [-14., 14.]
+        'TOP40ST': [-14., 14.],
+        'SFCRELSM': [-0.5, 0.5],
+        'TOP40RELSM': [-0.5, 0.5],
+        'SFCST': [-14., 14.],
+        'Streamflow': [-3000., 3000.],
     }
     units = {
         'Streamflow': 'm^3/s',
