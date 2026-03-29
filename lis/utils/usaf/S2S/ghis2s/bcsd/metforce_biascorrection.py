@@ -57,7 +57,7 @@ def main(config_file, fcst_syr,  month_abbr, month_num, job_name,
         config = yaml.safe_load(file)
 
     # Base forecast model
-    fcst_model = config['BCSD']['metforce_source']
+    fcst_model = config['BCSD']['source']['metforce']
 
     lats, _ = utils.get_domain_info(config_file, coord=True)
     resol = f'{round((lats[1] - lats[0])*100)}km'
@@ -75,7 +75,7 @@ def main(config_file, fcst_syr,  month_abbr, month_num, job_name,
 
     # Path for where observational & forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst"
-    obs_indir = f"{forcedir}/USAF-LIS7.3rc8_{resol}/raw/Climatology"
+    obs_indir = f"{forcedir}/{config['BCSD']['source']['obs']}_{resol}/raw/Climatology"
     fcst_indir = f"{forcedir}/{fcst_model}_{resol}"
 
     #  Calculate bias correction for different variables separately:
@@ -86,7 +86,7 @@ def main(config_file, fcst_syr,  month_abbr, month_num, job_name,
     fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
     unit_list = ["kg/m^2/s", "W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
-    print("[INFO] Processing forecast bias correction of CFSv2 variables")
+    print(f"[INFO] Processing forecast bias correction of {fcst_model} variables")
 
     slurm_commands = []
 #    for var_num in range(len(obs_var_list)):

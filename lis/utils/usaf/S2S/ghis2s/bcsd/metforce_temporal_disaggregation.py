@@ -62,7 +62,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         config = yaml.safe_load(file)
 
     # Base forecast model
-    fcst_model = config['BCSD']['metforce_source']
+    fcst_model = config['BCSD']['source']['metforce']
 
     # get resolution
     lats, _ = utils.get_domain_info(config_file, coord=True)
@@ -73,7 +73,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
-    model_name = config['BCSD']['metforce_source']
+    model_name = config['BCSD']['source']['metforce']
 
     # Path for where forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst/{fcst_model}_{resol}"
@@ -82,6 +82,12 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     obs_var_list = ["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
     fcst_var_list = ["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
     unit_list = ["W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
+
+    # Precip model
+    if config['BCSD']['source']['precip'] is None:
+        obs_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
+        fcst_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "WIND10M"]
+        unit_list = ["kg/m^2/s", "W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 
     # Path for where forecast and bias corrected files are located:
     subdaily_raw_fcst_dir = f"{forcedir}/raw/6-Hourly/{month_abbr}01"
@@ -93,12 +99,12 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    print("[INFO] Processing temporal disaggregation of CFSv2 variables")
+    print(f"[INFO] Processing temporal disaggregation of {fcst_model} variables")
 
     slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         for var_num, var_value in enumerate(obs_var_list):
-            if var_num == 1:
+            if var_value == "PRECTOT" or var_value == "SWGDN":
                 var_type = "PRCP"
             else:
                 var_type = "TEMP"
@@ -146,7 +152,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
                 utils.job_script(config_file, jobfile, jobname, ntasks, hours,
                                  cwd, None, in_command=cmd)
 
-    print(f"[INFO] Completed CFSv2 temporal disaggregation for: {(month_abbr)}")
+    print(f"[INFO] Completed {fcst_model} temporal disaggregation for: {(month_abbr)}")
     if py_call:
         return slurm_commands
 #

@@ -345,7 +345,20 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     all_vars = list(monthly_ds.coords.keys()) + list(monthly_ds.data_vars.keys())
 
     for var in all_vars:
-        if var in ['time', 'lat', 'lon', 'ensemble', 'soil_layer']:
+        if var == 'time':
+            time_units = monthly_ds['time'].attrs.get(
+                'units',
+                f"minutes since {startdate.strftime('%Y-%m-%d')} 00:00:00"
+            )
+            monthly_ds['time'].attrs['units'] = time_units
+            monthly_ds['time'].attrs['calendar'] = monthly_ds['time'].attrs.get(
+                'calendar', 'standard')
+            if 'time_bnds' in monthly_ds:
+                monthly_ds['time_bnds'].attrs['units'] = time_units
+                monthly_ds['time_bnds'].attrs['calendar'] = 'standard'
+            encoding['time'] = {'_FillValue': None}
+            continue
+        elif var in ['lat', 'lon', 'ensemble', 'soil_layer']:
             # Skip coordinate variables - let xarray handle them automatically
             continue
         elif var == 'time_bnds':

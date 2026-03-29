@@ -58,7 +58,7 @@ LAT_LDT, LON_LDT = get_domain_info(CONFIG_FILE, coord=True)
 RESOL = f'{round((LAT_LDT[1] - LAT_LDT[0])*100)}km'
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
-FCST_MODEL = config['BCSD']['metforce_source']
+FCST_MODEL = config['BCSD']['source']['metforce']
 MONTHLY_BC_FCST_DIR = str(sys.argv[13])
 SUBDAILY_RAW_FCST_DIR = str(sys.argv[14])
 BASE_OUTDIR = str(sys.argv[15])
@@ -284,7 +284,7 @@ def process_ensemble(ens):
         os.makedirs(outdir, exist_ok=True)
 
     for lead_num in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
-        fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, 6) + \
+        fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, FORCE_DT//3600) + \
         relativedelta(months=lead_num)
         fcst_year, fcst_month = fcst_date.year, fcst_date.month
 
@@ -379,7 +379,7 @@ def process_ensemble(ens):
         logger.info(f"Writing {outfile}", subtask=task_label)
         output_bc_revised = np.ma.masked_array(output_bc_revised, \
                                                mask=output_bc_revised == -9999.)
-        date = [fcst_date+relativedelta(hours=n*6)
+        date = [fcst_date+relativedelta(hours=n*FORCE_DT/3600)
                 for n in range(num_timesteps)]
 
         write_bc_netcdf(outfile, output_bc_revised, OBS_VAR,

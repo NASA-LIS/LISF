@@ -48,7 +48,7 @@ BASEOUTDIR = sys.argv[5]
 # Load CONFIG file
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     CONFIG = yaml.safe_load(file)
-HYD_MODEL = CONFIG["EXP"]["lsmdir"]
+HYD_MODEL = CONFIG["EXP"]["lsm"].upper()[0:6]
 LEAD_NUM = int(CONFIG["EXP"]["lead_months"])
 DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
@@ -156,7 +156,7 @@ def process_variable(var_name, metric_name):
 
         # First reading all available years for the given
         # forecast initialization month
-        all_clim_data1 = load_ncdata(infile1, [logger, var_name], combine='by_coords')
+        all_clim_data1 = xr.open_mfdataset(infile1, combine='by_coords')
 
         # Now selecting only the years that are within the climatology
         sel_cim_data = all_clim_data1.sel(time= \

@@ -50,7 +50,7 @@ BASEOUTDIR = sys.argv[5]
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     CONFIG = yaml.safe_load(file)
 
-HYD_MODEL = CONFIG["EXP"]["lsmdir"]
+HYD_MODEL = CONFIG["EXP"]["lsm"].upper()[0:6]
 DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
@@ -274,7 +274,7 @@ def process_variable(var_name, anom):
     }
     anom_xr['time'].attrs = {
         'long_name': 'Forecast week',
-        'units': 'week'
+        'units': 'weeks'
     }
     anom_xr[var_name + '_' + anom].attrs = {
         'long_name': long_names[var_name],
