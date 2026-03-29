@@ -444,6 +444,7 @@ def tiff_to_da(file):
 
 def load_ncdata(infile, logger,  var_name=None, **kwargs):
     ''' generic function to load letcdf file[s] as a xarray dataset/datarray'''
+    kwargs.setdefault('decode_cf', False)
     kwargs.setdefault('decode_timedelta', False)
     try:
         if isinstance(infile, str) and ('*' in infile or '?' in infile):

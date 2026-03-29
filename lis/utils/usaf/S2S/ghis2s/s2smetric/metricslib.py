@@ -19,8 +19,8 @@ import sys
 import os
 import glob
 import gc
+import xarray as xr
 import numpy as np
-from ghis2s.shared.utils import load_ncdata
 from ghis2s.s2splots import plot_utils
 
 def _get_snow_cover(sel_cim_data):
@@ -269,9 +269,15 @@ def merged_metric_filename(output_dir, startdate, enddate,
     _check_filename_size(name)
     return name
 
-def get_anom(path, var_name, metric, domain, logger, weekly=False):
+def get_anom(path, var_name, metric, domain, weekly=False):
+    ''' read metrics NC files are returns ANOM/SANOM '''
     def preproc(ds_):
-        ds_ = ds_.isel(ens=0)
+        if var_name == 'Streamflow':
+            ds_ = ds_.isel(ens=0)
+        ds_ = ds_.assign_coords(
+            latitude=ds_.latitude.round(3),
+            longitude=ds_.longitude.round(3)
+        )
         return ds_
 
     if weekly:
@@ -281,19 +287,15 @@ def get_anom(path, var_name, metric, domain, logger, weekly=False):
 
     files = glob.glob(regex)
     thisvar = var_name + '_' + metric
-    if var_name == 'Streamflow':
-        kwargs = {
-            'concat_dim': 'ens', 
-            'combine': 'nested',
-            'preprocess': preproc
-        }
-    else:
-        kwargs = {
-            'concat_dim': 'ens', 
-            'combine': 'nested'
-        }
-    anom = load_ncdata(files, logger,  var_name= thisvar, **kwargs)
-    anom = anom.rename({'latitude': 'lat', 'longitude': 'lon'})
+    kwargs = {
+        'concat_dim': 'ens',
+        'combine': 'nested',
+        'join': 'override',
+        'preprocess': preproc       
+    }
+
+    anom = xr.open_mfdataset(files, **kwargs)
+    anom = anom[thisvar].rename({'latitude': 'lat', 'longitude': 'lon'})
     anom_crop = plot_utils.crop(domain, anom)
     del anom
     gc.collect()

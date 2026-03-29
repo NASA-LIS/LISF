@@ -2142,6 +2142,31 @@ class S2Srun(DownloadForecasts):
         shutil.copy(jobname + 'run.j', jobname + 'run.sh')
         utils.remove_sbatch_lines(jobname + 'run.sh')
         #utils.cylc_job_scripts(jobname + 'run.sh', 2, cwd, command_list=slurm_commands)
+
+        # 5th job
+        jobname='s2splots_05_'
+        slurm_commands = [
+            f"python {self.lishdir}/ghis2s/s2splots/plot_weekly_anom.py -y {self.yyyy}"
+            f" -m {self.month} -w {self.e2esdir} -c {self.e2esroot}{self.config_file}"
+            f" -s SANOM"]
+        par_info = {}
+        par_info['CPT'] = str(7)
+        par_info['MEM']= '240GB'
+        par_info['NT']= str(1)
+        par_info['TPN'] = None
+        par_info['MP'] = True
+        tfile = self.sublist_to_file(slurm_commands, cwd)
+        try:
+            s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(2), cwd, tfile.name, parallel_run=par_info)
+            self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+
         os.chdir(self.e2esdir)
 
     def main(self):

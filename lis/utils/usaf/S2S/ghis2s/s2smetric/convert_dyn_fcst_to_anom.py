@@ -156,7 +156,7 @@ def process_variable(var_name, metric_name):
 
         # First reading all available years for the given
         # forecast initialization month
-        all_clim_data1 = load_ncdata(infile1, [logger, var_name], combine='by_coords')
+        all_clim_data1 = xr.open_mfdataset(infile1, combine='by_coords')
 
         # Now selecting only the years that are within the climatology
         sel_cim_data = all_clim_data1.sel(time= \

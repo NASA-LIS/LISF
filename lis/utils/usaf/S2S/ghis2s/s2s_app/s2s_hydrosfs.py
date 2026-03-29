@@ -27,6 +27,47 @@ class HydroSFS(S2Srun):
             self.scrdir = self.e2esdir + 'scratch/' + self.yyyy + self.mm + '/'
             os.makedirs(self.scrdir + '/bcsd_fcst/logs', exist_ok=True)
 
+    def write_radiation(self, years):
+        """ 
+        writes job files to process GEOSv3 surface net radiation and 
+        generate downward radiation """
+        yyyy_list = [int(ym.strip()) for ym in years.split(',')]
+        dir_geos = self.config['BCSD']['fcst_download_dir']
+        if self.config.get('BCSD', {}).get('radiation_dir', {}):
+            dir_rad = self.config['BCSD']['radiation_dir']
+        else:
+            dir_rad = dir_geos
+
+        cmdlist = []
+        info = {}
+        info['CPT'] = str(1)
+        info['MEM']= '240GB'
+        info['NT']= str(len(yyyy_list))
+        info['TPN'] = None
+        info['MP'] = True
+        info['SKIP_ARG'] = True
+        jobname = 'rad_'
+        os.chdir(self.scrdir + 'bcsd_fcst')
+        cwd=self.scrdir + 'bcsd_fcst'
+        for year in yyyy_list:
+            cmdlist.append(f"python {self.lisfdir}/lis/utils/usaf/S2S/ghis2s/bcsd/"
+                           f"geosv3_radiation/driver.py {dir_geos} "
+                           f"{dir_rad} {self.config['SETUP']['supplementarydir']} {year}")
+        # write job file
+        slurm_sub = self.split_list(cmdlist, len(yyyy_list))
+        for i, sub_val in enumerate(slurm_sub):
+            tfile = self.sublist_to_file(sub_val, cwd)
+            try:
+                s2s_api.python_job_file(f'{self.e2esroot}/{self.config_file}',
+                                        f'{jobname}{i+1:02d}_run.j',
+                                        jobname + f'{i+1:02d}_', str(len(yyyy_list)),
+                                        str(12), cwd, tfile.name,
+                                        parallel_run=info)
+                self.create_dict(f'{jobname}{i+1:02d}_run.j', 'bcsd_fcst')
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+
     def monthly_hydroscs(self):
         ''' compute HydroSCS monthlies from hourly data '''
         # manage jobs from SCRATCH
@@ -59,9 +100,10 @@ class HydroSFS(S2Srun):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(f'{self.e2esroot}/{self.config_file}', f'{jobname}{i+1:02d}_run.j',
-                                        jobname + f'{i+1:02d}_', str(4), str(6), cwd, tfile.name,
-                                        parallel_run=info)
+                s2s_api.python_job_file(f'{self.e2esroot}/{self.config_file}',
+                                        f'{jobname}{i+1:02d}_run.j',
+                                        jobname + f'{i+1:02d}_', str(4), str(6), cwd,
+                                        tfile.name, parallel_run=info)
                 self.create_dict(f'{jobname}{i+1:02d}_run.j', 'bcsd_fcst')
             finally:
                 tfile.close()
@@ -99,8 +141,10 @@ class HydroSFS(S2Srun):
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
             try:
-                s2s_api.python_job_file(f'{self.e2esroot}/{self.config_file}', f'{jobname}{i+1:02d}_run.j',
-                                        jobname + f'{i+1:02d}_', str(1), str(6), cwd, tfile.name,
+                s2s_api.python_job_file(f'{self.e2esroot}/{self.config_file}',
+                                        f'{jobname}{i+1:02d}_run.j',
+                                        jobname + f'{i+1:02d}_', str(1), str(6),
+                                        cwd, tfile.name,
                                         parallel_run=info)
                 self.create_dict(f'{jobname}{i+1:02d}_run.j', 'bcsd_fcst')
             finally:
@@ -130,11 +174,12 @@ class HydroSFS(S2Srun):
         slurm_commands = []
         for ens in range(self.config['BCSD']['nof_raw_ens']):
             indir = indir_template.format(subdaily_raw_fcst_dir, self.year, ens+1)
-            outdir = outdir_template.format(self.config['SETUP']['HYDROSFSDIR'], self.year, self.month, ens+1)
+            outdir = outdir_template.format(self.config['SETUP']['HYDROSFSDIR'],
+                                            self.year, self.month, ens+1)
             os.makedirs(outdir, exist_ok=True)
-            slurm_commands.append(f"python {self.e2esroot}/s2s_hydrosfs.py -m {self.month} -y {self.year} "
-                                  f"-c {self.e2esroot}/{self.config_file} "
-                                  f'-w "ens{ens+1:02d} {indir}/ {outdir}/"')
+            slurm_commands.append((f"python {self.e2esroot}/s2s_hydrosfs.py -m {self.month} "
+                                   f"-y {self.year} -c {self.e2esroot}/{self.config_file} "
+                                   f'-w "ens{ens+1:02d} {indir}/ {outdir}/"'))
 
         # multi tasks per job
         l_sub = 5
@@ -157,7 +202,8 @@ class HydroSFS(S2Srun):
     def write_hydrosfs_files(self, cmd):
         """ move BCSD output to HydroSFS directory """
         in_var_list = ["PRECTOT", "LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
-        compress_encoding = {'dtype': 'int16', "zlib": True, "complevel": 6, "shuffle": True, "missing_value": -32767}
+        compress_encoding = {'dtype': 'int16', "zlib": True, "complevel": 6,
+                             "shuffle": True, "missing_value": -32767}
 
         # Split the command string into 3 variables
         try:
@@ -192,9 +238,12 @@ class HydroSFS(S2Srun):
                     date_str = file.split('.')[1]
                     outfile = f'{vname}.{date_str}.nc4'
 
-                packed_ds, packing_params = utils.pack_dataset_to_int16(ds, [vname], logger=[logger, subtask])
-                utils.write_ncfile(packed_ds, outdir+outfile, {vname: compress_encoding}, [logger, subtask])
-                utils.add_packing_attributes(outdir+outfile, packing_params, [logger, subtask])
+                packed_ds, packing_params = \
+                    utils.pack_dataset_to_int16(ds, [vname], logger=[logger, subtask])
+                utils.write_ncfile(packed_ds, outdir+outfile,
+                                   {vname: compress_encoding}, [logger, subtask])
+                utils.add_packing_attributes(outdir+outfile,
+                                             packing_params, [logger, subtask])
 
             # create the link for the next month
             date_str = outfile.split('.')[1]
@@ -214,7 +263,9 @@ if __name__ == "__main__":
     parser.add_argument('-y', '--year', required=False, type=int, help='forecast year')
     parser.add_argument('-m', '--month', required=True, type=int, help='forecast month')
     parser.add_argument('-p', '--preprocess', required=False, default=None, type=str,
-                        help='preprocess options: regrid, clim, monthly')
+                        help='preprocess options: regrid, clim, monthly radiation')
+    parser.add_argument('-Y', '--rad_years', required=False, default=None, type=str,
+                        help='year(s) for GEOSv3  radiation (s) comma-separated (e.g. 2026 or 2024,2025,2026)')
     parser.add_argument('-w', '--write_hydrosfs', required=False, type=str, default=None,
                         help='write hydrosfs files command (3 space-delimited ens indir outdir)')
     parser.add_argument('-j', '--submit_job', action='store_true',
@@ -257,6 +308,8 @@ if __name__ == "__main__":
             if not glob.glob(f'{s2s.e2esroot}/hindcast/bcsd_fcst/{s2s.obs_model}_*/raw/Climatology/PRECTOT_obs_clim.nc'):
                 s2s.clim_hydroscs()
             s2s.schedule.update(hcst.schedule)
+        elif args.preprocess.lower() == 'radiation':
+            s2s.write_radiation(args.rad_years)
         else:
             print(f"Invalid preprocessor {args.preprocess}")
             sys.exit()
