@@ -181,6 +181,12 @@ def process_variable(var_name, metric_name):
 
         ## Now selecting the desired variable
         target_fcst_data = sel_var(target_data, var_name, HYD_MODEL)
+
+        # mask ocean in clim data
+        land_mask_2d = target_fcst_data.isel(ensemble=0, time=0)
+        land_mask_2d = (land_mask_2d != -9999.) & ~np.isnan(land_mask_2d)
+        all_clim_data = all_clim_data.where(land_mask_2d)
+
         target_fcst_data = target_fcst_data.load()
         all_clim_data = all_clim_data.load()
 

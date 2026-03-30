@@ -2260,6 +2260,9 @@ if __name__ == "__main__":
                 s2s.s2smetric()
                 s2s.s2splots()
         elif args.step == 'BCSD':
+            s2s.nmme_file_checker()
+            s2s.clim_files_checker()
+            s2s.cfsv2_file_checker()
             s2s.bcsd()
             if not args.one_step:
                 s2s.lis_fcst()
