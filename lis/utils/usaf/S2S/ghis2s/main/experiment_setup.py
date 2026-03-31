@@ -395,6 +395,11 @@ class S2Srun(DownloadForecasts):
         if self.config['SETUP']['DATATYPE'] == 'hindcast':
             self.hindcast = True
             self.e2esdir = self.config['SETUP']['E2ESDIR'] + "/hindcast/"
+            self.scrdir = self.e2esdir + f'scratch/{self.yyyy}{self.mm}/'
+            os.makedirs(self.scrdir + '/bcsd_fcst/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/lis_fcst/logs', exist_ok=True)
+            os.makedirs(self.scrdir + '/s2spost/logs', exist_ok=True)
+
         self.lisfdir = self.config['SETUP']['LISFDIR']
         self.lishdir = self.config['SETUP']['LISFDIR'] + 'lis/utils/usaf/S2S/'
         self.lishmod = self.config['SETUP']['LISFMOD']
