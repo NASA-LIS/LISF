@@ -223,6 +223,12 @@ class AMSR2DataProcessor:
                 filename = os.path.basename(file_path)
                 
                 if self.config.source == 'JAXA':  # "JAXA" or "NOAA":
+                    if 'L1SGRTBR' not in filename:
+                        logger.error(
+                            'Unexpected JAXA label in filename '
+                            '(expected L1SGRTBR): %s',
+                            filename)
+                        continue
                     orbit = filename.split('_')[2][3]
                     # Only read descending pass
                     # NOAA (sample): 20250120203202_GW1AM2_202501201817_126A_L1DLRTBR_2210210.h5
@@ -239,6 +245,12 @@ class AMSR2DataProcessor:
                         if start_time <= file_datetime <= target_datetime:
                             file_list.append(file_path)
                 elif self.config.source == 'NOAA':  # "JAXA" or "NOAA":
+                    if 'L1DLRTBR' not in filename:
+                        logger.error(
+                            'Unexpected NOAA '
+                            'label in filename (expected L1DLRTBR): %s',
+                            filename)
+                        continue
                     time_str = filename.split('_')[1][0:12]
                     if len(time_str) == 12:  # YYYYMMDD UTC time
                         file_datetime = datetime.strptime(time_str, '%Y%m%d%H%M')
