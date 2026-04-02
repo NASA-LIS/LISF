@@ -102,10 +102,15 @@ Under the parent folder, we provide a SLURM job submission example to run the wo
 | 'job_submit.sh`        | Bash script to submit a SLURM job to run the workflow |
 | 'SNIP_LDT_template.sh` | Template bash script for workflow execution                           |
  
-For example, to run model at 06:00 UTC on 2025-01-20, execute the following command in the terminal: 
+For example, to run model at 06:00 UTC on 2025-01-20 on hpc11, execute the following command in the terminal: 
 ```shell
-./job_submit.sh 202501200600
+python submit_job.py 202501200600 --system hpc11
 ```
+To run model at 06:00 UTC on 2025-01-20 on discover, execute the following command in the terminal: 
+```shell
+python submit_job.py 202501200600
+```
+
 ## Support
 - Technical Contact: kehan.yang@nasa.gov
 
