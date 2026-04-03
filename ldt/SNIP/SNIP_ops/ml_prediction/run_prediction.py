@@ -20,10 +20,12 @@ REVISION HISTORY:
 15 Aug 2025: Kehan Yang, Initial specification
 18 Aug 2025: Eric Kemp, Code cleanup.
 30 Oct 2025: Eric Kemp, More code cleanup.
+19 Mar 2026: Kehan Yang, Code eidt to do filter and pre-classification
 """
 
 # Standard modules
 from datetime import datetime
+import glob
 import logging
 import os
 import time
@@ -32,6 +34,7 @@ from typing import Optional, Tuple
 # Third party modules
 import numpy as np
 import pandas as pd
+from rasterio.enums import Resampling
 import xarray as xr
 import xgboost as xgb
 
@@ -41,6 +44,20 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger('SnowDepthPredictor')
+
+
+# Encoding used for all NetCDF outputs
+_ENCODING = {
+    'snow_depth': {
+        'zlib': True,
+        'complevel': 4,
+        'shuffle': True,
+        '_FillValue': -9999.0,
+        'dtype': 'float32'
+    },
+    'y': {'dtype': 'float32'},
+    'x': {'dtype': 'float32'}
+}
 
 # Pylint flags catching general exceptions, which is excessive.  We disable
 # that here.
@@ -63,6 +80,7 @@ class SnowDepthPredictor:
         self.config = config
         self.target_datetime = self.config.target_datetime
         self.model = None
+        self.ds_result = None
         self.pmw_file = None
         self.model_feature_names = None
         self.model_channels = [
@@ -77,10 +95,10 @@ class SnowDepthPredictor:
 
         self.tb_channels = ['tb_6h', 'tb_6v',
                             'tb_7h', 'tb_7v',
-                            'tb_10h','tb_10v',
+                            'tb_10h', 'tb_10v',
                             'tb_18h', 'tb_18v',
                             'tb_23h', 'tb_23v',
-                            'tb_36h','tb_36v',
+                            'tb_36h', 'tb_36v',
                             'tb_89h', 'tb_89v']
 
         self.channel_mapping = {
@@ -99,6 +117,28 @@ class SnowDepthPredictor:
             'tb_89h': '89.0 GHz H',
             'tb_89v': '89.0 GHz V'
         }
+
+    TB_DIFF_PAIRS = [
+        ('10.7 GHz V', '18.7 GHz V', '10.7_V-18.7_V'),
+        ('10.7 GHz V', '23.8 GHz V', '10.7_V-23.8_V'),
+        ('10.7 GHz V', '36.6 GHz V', '10.7_V-36.6_V'),
+        ('18.7 GHz V', '23.8 GHz V', '18.7_V-23.8_V'),
+        ('18.7 GHz V', '36.6 GHz V', '18.7_V-36.6_V'),
+        ('23.8 GHz V', '36.6 GHz V', '23.8_V-36.6_V'),
+    ]
+
+    def _add_tb_differences(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add brightness temperature difference features to df.
+        Skips any pair where either channel is missing.
+        """
+        for c1, c2, name in self.TB_DIFF_PAIRS:
+            if c1 in df.columns and c2 in df.columns:
+                df[name] = df[c1] - df[c2]
+            else:
+                logger.warning('Skipping diff %s: missing %s or %s',
+                               name, c1, c2)
+        return df
 
     def load_model(self) -> None:
         """
@@ -120,7 +160,7 @@ class SnowDepthPredictor:
                 self.model = model
                 self.model_feature_names = model.feature_names_in_.tolist()
             txt = f"Model loaded successfully from {model_path}" + \
-                f" in {time.time() - start_time:.2f} seconds"
+                  f" in {time.time() - start_time:.2f} seconds"
             logger.info(txt)
         except FileNotFoundError as e:
             logger.error("Model file not found: %s", e)
@@ -138,13 +178,13 @@ class SnowDepthPredictor:
         """
         target_datetime = self.target_datetime.strftime("%Y%m%d%H")
 
-        dir_out =  self.config.project_path / self.config.output_dir
+        dir_out = self.config.project_path / self.config.output_dir
         os.makedirs(dir_out, exist_ok=True)
 
         # Update output file path to use subfolder (keeping original
         # filename)
         output_file = os.path.join(dir_out, \
-                                f'amsr2_snip_0p1deg_{target_datetime}.nc')
+                                   f'amsr2_snip_0p1deg_{target_datetime}.nc')
 
         return output_file, target_datetime
 
@@ -163,7 +203,8 @@ class SnowDepthPredictor:
 
         # Check if output already exists
         if os.path.exists(output_file):
-            logger.info("Output file %s already exists, skipping processing", output_file)
+            logger.info("Output file %s already exists, skipping processing",
+                        output_file)
             return None
 
         # Find input data file
@@ -213,8 +254,6 @@ class SnowDepthPredictor:
             return self._format_output(y_pred, output_shape, lat, lon)
 
     def add_days_since_wy(self, df):
-        """Add days from start of water year, and sine and cosine
-        of that value"""
         df = df.copy()
         df['date'] = pd.to_datetime(df['Date'], format="%Y%m%d%H")
 
@@ -248,6 +287,7 @@ class SnowDepthPredictor:
                                   365.25)
 
         return df
+
     def _extract_features(self, data: xr.Dataset, \
                           target_datetime: str) -> pd.DataFrame:
         """
@@ -276,11 +316,14 @@ class SnowDepthPredictor:
         df['Date'] = target_datetime
         lat_coords = data['lat'].values
         lon_coords = data['lon'].values
-        #Lon, Lat = np.meshgrid(lon_coords, lat_coords)
-        #df['lat'] = Lat.flatten()
-        df['lat'] = np.meshgrid(lon_coords, lat_coords)[1].flatten()
+        Lon, Lat = np.meshgrid(lon_coords, lat_coords)
+
+        df['lat'] = Lat.flatten()
+        df['lon'] = Lon.flatten()
 
         df = self.add_days_since_wy(df)
+        # ── add TB differences ────────────────────────────────────────
+        df = self._add_tb_differences(df)
 
         return df
 
@@ -299,6 +342,7 @@ class SnowDepthPredictor:
 
         # Select only the features used by the model
         df = df[self.model_feature_names]
+
         # Identify rows with NaN values
         nan_mask = np.isnan(df).any(axis=1)
         x_test_no_nan = df[~nan_mask]
@@ -309,7 +353,7 @@ class SnowDepthPredictor:
         # Check if we have enough data to make predictions
         if len(x_test_no_nan) < 100:
             txt = "Insufficient valid data points for prediction " + \
-                "(less than 100)"
+                  "(less than 100)"
             logger.warning(txt)
             return None
 
@@ -323,7 +367,7 @@ class SnowDepthPredictor:
         y_pred[~nan_mask] = y_pred_no_nan
 
         # Apply threshold to remove very small values
-        threshold = 0.01
+        threshold = 0.001
         y_pred[y_pred <= threshold] = 0
 
         return y_pred
@@ -380,8 +424,6 @@ class SnowDepthPredictor:
 
         return output
 
-
-
     def save_to_netcdf(self, output: xr.DataArray, pmw_file: str) -> bool:
         """
            Save the snow depth output to a NetCDF file.
@@ -406,7 +448,7 @@ class SnowDepthPredictor:
             # Verify we have the expected coordinates
             if 'y' not in output.coords or 'x' not in output.coords:
                 txt = "Expected coordinates 'y' and 'x' in output " + \
-                    "DataArray"
+                      "DataArray"
                 raise ValueError(txt)
 
             # Update coordinate attributes directly
@@ -430,9 +472,9 @@ class SnowDepthPredictor:
             ds_out.attrs.update({
                 'title': 'AMSR2 Snow Depth',
                 'description': \
-                   'Snow depth derived from AMSR2 passive microwave data',
+                    'Snow depth derived from AMSR2 passive microwave data',
                 'creation_date': \
-                   datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'source': 'XGBoost model prediction',
                 'Conventions': 'CF-1.8',
                 'institution': 'NASA GSFC',
@@ -442,10 +484,10 @@ class SnowDepthPredictor:
                 'geospatial_lon_max': float(ds_out.x.max()),
                 'geospatial_lat_resolution': \
                     float(abs(ds_out.y.diff('y').mean())) \
-                    if len(ds_out.y) > 1 else 0.0,
+                        if len(ds_out.y) > 1 else 0.0,
                 'geospatial_lon_resolution': \
                     float(abs(ds_out.x.diff('x').mean())) \
-                    if len(ds_out.x) > 1 else 0.0
+                        if len(ds_out.x) > 1 else 0.0
             })
 
             # Add variable attributes
@@ -457,29 +499,18 @@ class SnowDepthPredictor:
                 'grid_mapping': 'crs'
             })
 
-            # Set encoding for better compression and type handling
-            encoding = {
-                'snow_depth': {
-                    'zlib': True,
-                    'complevel': 4,
-                    'shuffle': True,
-                    '_FillValue': -9999.0,
-                    'dtype': 'float32'
-                },
-                'y': {'dtype': 'float32'},
-                'x': {'dtype': 'float32'}
-            }
 
             # Create parent directories if they don't exist
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
             # open pmw file
             ds_pmw = xr.open_dataset(pmw_file).squeeze()
+            self.ds_result = ds_pmw
 
             # Apply land ocean frac threshold - only predict land
             if self.config.land_frac_th is not None:
                 txt = "Apply land water fraction flag: " + \
-                    f"{self.config.land_frac_th}%"
+                      f"{self.config.land_frac_th}%"
                 logger.info(txt)
                 flag_layer = 'land_water_frac'
                 # Ensure proper alignment and dimensions
@@ -500,10 +531,9 @@ class SnowDepthPredictor:
             if self.config.flag_cold:
                 #  Flag rain, cold deserts, frozen ground, and glacier
                 txt = "Apply cold deserts, frozen ground, and " + \
-                    "glacier flag"
+                      "glacier flag"
                 logger.info(txt)
 
-                ds_pmw = xr.open_dataset(pmw_file)
                 flag_layer = 'pixel_qual_flag'
 
                 # Set bits for each condition (1 means condition is
@@ -528,7 +558,8 @@ class SnowDepthPredictor:
                 # Add RFI flags if configured
                 if self.config.flag_rfi:
                     logger.info("Apply RFI h and v flag for C bands")
-                    flag_values_to_mask.extend([6, 7])  # Bit 6: rfi_h, Bit 7: rfi_v
+                    flag_values_to_mask.extend(
+                        [6, 7])  # Bit 6: rfi_h, Bit 7: rfi_v
 
                 flag_cleaned = ds_pmw[flag_layer].fillna(255)
                 flag_uint8 = flag_cleaned.astype('uint8')
@@ -539,7 +570,7 @@ class SnowDepthPredictor:
                     flag_mask = flag_mask | bit_mask
 
                 txt = f"{flag_layer}: {flag_mask.sum().values} " + \
-                    "pixels flagged"
+                      "pixels flagged"
                 logger.info(txt)
                 txt = f"Total masked pixels: {flag_mask.sum().values}"
                 logger.info(txt)
@@ -553,15 +584,110 @@ class SnowDepthPredictor:
                 # Apply mask to your output dataset
                 ds_out = ds_out.where(~flag_mask.squeeze())
 
-            # Save to NetCDF
-            ds_out.to_netcdf(output_file, encoding=encoding, \
+            if self.config.flag_shallow:
+                ds_pmw_shallow = self.apply_filter()
+                depth_flag = ds_pmw_shallow['depth_flag']
+                depth_flag_arr = depth_flag.values
+
+                snow_depth = ds_out['snow_depth']
+                snow_depth_arr = snow_depth.values.copy()
+                mask_no_snow = (depth_flag_arr == 0)
+                mask_shallow = (depth_flag_arr == 2)
+
+                snow_depth_arr[mask_no_snow] = 0
+                snow_depth_arr[mask_shallow] = 0.05
+
+                # Update in place (preserves all metadata and coordinates)
+                ds_out['snow_depth'].values = snow_depth_arr
+
+            # save ML based snow depth
+            ds_out.to_netcdf(output_file,
+                             encoding=_ENCODING,
                              format='NETCDF4')
+
             logger.info("Output saved to %s", output_file)
+
             return True
 
         except Exception as e:
             logger.error("Error saving output: %s", e)
             return False
+
+    def apply_snow_mask(self, ds_out, template_data):
+        # add snow mask from viirs data
+        date_str = self.target_datetime.strftime('%Y%m%d')
+        viirs_path = glob.glob(os.path.join(
+            self.config.viirs_path,
+            f'snomap*{date_str}*tiff'))
+
+        if len(viirs_path) == 1:
+            ds_viirs = xr.open_dataset(viirs_path[0],
+                                       engine='rasterio')
+            ds_viirs = ds_viirs.rio.write_crs(self.config.proj)
+            ds_viirs = ds_viirs.squeeze()
+            ds_viirs_repro = ds_viirs.rio.reproject_match(
+                template_data,
+                resampling=Resampling.mode
+            )
+            # if mask indicates no snow,
+            # snowdepth=0
+            ds_out['snow_depth'] = xr.where(
+                ds_viirs_repro['band_data'] <= 0.5,
+                # Replace with actual variable name
+                0,
+                ds_out['snow_depth']
+            )
+            logger.info('Successfully applied snow mask from VIIRS')
+            return ds_out
+        else:
+            logger.error("No VIIRS data found")
+            return ds_out  # Fixed: return original data
+
+    def apply_filter(self):
+        data = self.ds_result
+
+        # Step 3: Test for moderate to deep snow presence
+        is_coldsnow = (data['tb_36h'] < 245) & (data['tb_36v'] < 255)
+
+        # Step 4: Test for shallow snow (if Step 3 condition is NOT met)
+        # Medium to deep snow test
+        is_medium_deep = (data['tb_10v'] > data['tb_36v']) | (
+                data['tb_10h'] > data['tb_36h'])
+
+        # Calculate T for shallow snow test
+        T = 58.08 - 0.39 * data['tb_18v'] + 1.21 * data['tb_23v'] - 0.37 * data[
+            'tb_36h'] + 0.36 * data['tb_89v']
+
+        # Shallow snow test (if medium to deep is not detected)
+        is_shallow = (
+                (data['tb_89v'] <= 255) &
+                (data['tb_89h'] <= 265) &
+                (data['tb_23v'] > data['tb_89v']) &
+                (data['tb_23h'] > data['tb_89h']) &
+                (T < 267)
+        )
+
+        # Initialize depth_flag as float to support NaN
+        depth_flag = np.full_like(data['tb_36h'].values, np.nan, dtype=float)
+
+        # Get valid data mask
+        valid_mask = ~np.isnan(data['tb_36h'].values)
+
+        # Assign flags only where data is valid
+        depth_flag[valid_mask] = 0  # Default to 0 for valid data
+        depth_flag = np.where(is_shallow.values & valid_mask, 2, depth_flag)
+        depth_flag = np.where(is_medium_deep.values & valid_mask, 1, depth_flag)
+        depth_flag = np.where(is_coldsnow.values & valid_mask, 1, depth_flag)
+
+        # Add to dataset with proper dimensions
+        data['depth_flag'] = (data['tb_36h'].dims, depth_flag)
+
+        # 0 = no snow
+        # 1 = moderate to deep
+        # 2 = shallow snow
+
+        self.ds_result = data
+        return data
 
     def reproject_to_usaf(self) -> bool:
         """
@@ -578,7 +704,7 @@ class SnowDepthPredictor:
         if not os.path.exists(full_path):
             try:
                 template_path = self.config.project_path / \
-                    self.config.template_path
+                                self.config.template_path
                 template_data = xr.open_dataset(template_path)
 
                 # open snow depth data
@@ -592,9 +718,16 @@ class SnowDepthPredictor:
                 # Assuming output is in WGS84 lat/lon based on your
                 # coordinates
                 ds_sd = ds_sd.rio.write_crs(self.config.proj)
+                ds_sd = ds_sd.squeeze()
 
                 ds_sd_reprojected = ds_sd.rio. \
                     reproject_match(template_data)
+
+                if self.config.apply_viirs_mask:
+                    logger.info("Apply snow mask from VIIRS")
+                    ds_sd_reprojected = (
+                        self.apply_snow_mask(ds_sd_reprojected,
+                                             template_data))
 
                 ds_out = xr.Dataset(
                     data_vars={
@@ -606,7 +739,8 @@ class SnowDepthPredictor:
                                 'long_name': 'Snow Depth',
                                 'standard_name': 'snow_depth',
                                 '_FillValue': -9999.0,
-                                'valid_range': [0.0, 10.0]  # adjust range as appropriate
+                                'valid_range': [0.0, 10.0]
+                                # adjust range as appropriate
                             }
                         )
                     },
@@ -634,7 +768,8 @@ class SnowDepthPredictor:
                         'map_projection': 'EQUIDISTANT CYLINDRICAL',
                         'title': 'AMSR2 Snow Depth',
                         'description': 'Snow depth derived from AMSR2 passive microwave data',
-                        'creation_date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'creation_date': datetime.now().strftime(
+                            "%Y-%m-%d %H:%M:%S"),
                         'DX': 0.140625,
                         'DY': 0.09375,
                         'source': 'XGBoost model prediction',
@@ -655,7 +790,6 @@ class SnowDepthPredictor:
             logger.info("Reprojected file exist: %s", full_path)
             return True
 
-
     def run_pipeline(self, pmw_file) -> bool:
         """
         Run the complete snow depth prediction pipeline.
@@ -664,58 +798,86 @@ class SnowDepthPredictor:
             bool: True if successful, False otherwise
         """
         try:
-            # Check if output already exists
-            output_file, _ = self.get_file_paths()
-            if os.path.exists(output_file):
-                txt = f"Output file {output_file} already exists, " + \
-                      "skipping processing"
-                logger.info(txt)
-
-                # check if AFgrid data exists
-                base_name = os.path.splitext(os.path.basename(output_file))[0]
-                filename = f"{base_name}_AFgrid.nc"
-                full_path = os.path.join(os.path.dirname(output_file), filename)
-                if os.path.exists(full_path):
-                    txt = f"AF grid output file {full_path} already exists, " + \
-                          "skipping processing"
-                    logger.info(txt)
-                else:
-                    logger.info("Output at AF grid not exists;"
-                                "Reproject to USAF grid")
-                    self.reproject_to_usaf()
-                return True
-
             # Generate initial prediction
             start_time = time.time()
-            output = self.predict_snow_depth(pmw_file=pmw_file)
-            if output is None:
-                return False
+            # Check if output already exists
+            output_file, target_datetime = self.get_file_paths()
+            dir_out = self.config.project_path / self.config.output_dir
 
-            # Save results
-            success = self.save_to_netcdf(output=output,
-                                          pmw_file=pmw_file)
+            # ── Step 1: ML prediction ──────────────────────────────────
+            if os.path.exists(output_file):
+                logger.info("ML output already exists, skipping: %s",
+                            output_file)
+                # still need ds_result loaded for traditional methods below
+                self.ds_result = xr.open_dataset(pmw_file).squeeze()
+            else:
+                output = self.predict_snow_depth(pmw_file=pmw_file)
+                if output is None:
+                    return False
 
-            if not success:
-                txt = "Failed to save output to NetCDF. Pipeline aborted."
-                logger.error(txt)
-                return False
+                success = self.save_to_netcdf(output=output, pmw_file=pmw_file)
+                if not success:
+                    logger.error("Failed to save ML output. Pipeline aborted.")
+                    return False
 
-            # Reproject to USAF grid if configured
+                logger.info("Pipeline completed in %.2f seconds",
+                            time.time() - start_time)
+
+            # ── Step 2: Reproject to USAF grid ────────────────────────
             if self.config.reproject_USAF:
-                reproject_success = self.reproject_to_usaf()
+                base_name = os.path.splitext(os.path.basename(output_file))[0]
+                af_path = os.path.join(dir_out, f"{base_name}_AFgrid.nc")
 
-                if reproject_success:
+                if os.path.exists(af_path):
                     logger.info(
-                        "USAF reprojection completed successfully")
+                        "AF grid output already exists, skipping: %s",
+                        af_path)
                 else:
-                    txt = "USAF reprojection failed, but " + \
-                          "primary output was saved successfully"
-                    logger.warning(txt)
-            txt = "Pipeline completed in " + \
-                f"{time.time() - start_time:.2f} seconds"
-            logger.info(txt)
+                    logger.info("Reprojecting to USAF grid ...")
+                    reproject_success = self.reproject_to_usaf()
+                    if reproject_success:
+                        logger.info(
+                            "USAF reprojection completed successfully")
+                    else:
+                        logger.warning("USAF reprojection failed, but "
+                                       "primary output was saved successfully")
+
+            # ── Step 3: Traditional methods ────────────────────────────
+            if self.config.flag_output_kelly or self.config.flag_output_foster:
+                from .run_traditional_approach import (
+                    SnowDepthPredictorTraditional)
+                trad = SnowDepthPredictorTraditional(config=self.config)
+                trad.pmw_file = pmw_file
+
+                if self.config.flag_output_kelly:
+                    kelly_file = os.path.join(
+                        dir_out,
+                        f'amsr2_snip_0p1deg_{target_datetime}_kelly.nc')
+                    if os.path.exists(kelly_file):
+                        logger.info(
+                            "Kelly output already exists, skipping: %s",
+                            kelly_file)
+                    else:
+                        logger.info("Running Kelly algorithm ...")
+                        trad.predict(method='kelly', save=True)
+
+
+                if self.config.flag_output_foster:
+                    foster_file = os.path.join(
+                        dir_out,
+                        f'amsr2_snip_0p1deg_{target_datetime}_foster.nc')
+                    if os.path.exists(foster_file):
+                        logger.info(
+                            "Foster output already exists, skipping: %s",
+                            foster_file)
+                    else:
+                        logger.info("Running Foster algorithm ...")
+                        trad.predict(method='foster', save=True)
+
+
             return True
 
         except Exception as e:
             logger.error("Error in pipeline: %s", e)
             return False
+
