@@ -647,6 +647,7 @@ class S2Srun(DownloadForecasts):
         spinner_done[0] = True
         spinner_thread.join()
         print('\rDone')
+        os.chdir(self.e2esdir)
 
         if ret_code > 0:
             print(f"Error return code from the CFSv2 file download checker :: {ret_code}")
