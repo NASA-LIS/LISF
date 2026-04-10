@@ -158,12 +158,22 @@ CONTAINS
     ! Read variables
     write(LDT_logunit,*)'[INFO] Reading variables from NetCDF...'
     
-    ! Read Latitude
+    ! Read Latitude — critical, return immediately on failure
     ierr = nf90_inq_varid(ncid, 'Latitude', varid)
-    if (ierr == NF90_NOERR) then
-        ierr = nf90_get_var(ncid, varid, lat)
-        write(LDT_logunit,*)'[INFO] ✓ Read Latitude'
-    end if
+    if (ierr /= NF90_NOERR) then
+        write(LDT_logunit,*) '[WARN] Cannot find Latitude in: ', trim(filename)
+        ierr = nf90_close(ncid)
+        ierr = 1
+        return
+    endif
+    ierr = nf90_get_var(ncid, varid, lat)
+    if (ierr /= NF90_NOERR) then
+        write(LDT_logunit,*) '[WARN] Cannot read Latitude, file may be truncated: ', trim(filename)
+        ierr = nf90_close(ncid)
+        ierr = 1
+        return
+    endif
+    write(LDT_logunit,*)'[INFO] ✓ Read Latitude'
     
     ! Read Longitude
     ierr = nf90_inq_varid(ncid, 'Longitude', varid)
@@ -172,25 +182,34 @@ CONTAINS
         write(LDT_logunit,*)'[INFO] ✓ Read Longitude'
     end if
     
-    ! Read TbLowRes
+    ! Read TbLowRes — critical, return immediately on failure
     ierr = nf90_inq_varid(ncid, 'TbLowRes', varid)
-    if (ierr == NF90_NOERR) then
-        ierr = nf90_get_var(ncid, varid, tb_lowres)
-        
-        ! Replace NaN and invalid values with -9999.0
-        do ichan = 1, nchans
-            do i = 1, nscans
-                do j = 1, nfovs
-                    if (tb_lowres(j,i,ichan) /= tb_lowres(j,i,ichan) .or. &
-                        tb_lowres(j,i,ichan) < 0.0 .or. &
-                        tb_lowres(j,i,ichan) > 400.0) then
-                        tb_lowres(j,i,ichan) = -9999.0
-                    endif
-                end do
+    if (ierr /= NF90_NOERR) then
+        write(LDT_logunit,*) '[WARN] Cannot find TbLowRes in: ', trim(filename)
+        ierr = nf90_close(ncid)
+        ierr = 1
+        return
+    endif
+    ierr = nf90_get_var(ncid, varid, tb_lowres)
+    if (ierr /= NF90_NOERR) then
+        write(LDT_logunit,*) '[WARN] Cannot read TbLowRes, file may be truncated: ', trim(filename)
+        ierr = nf90_close(ncid)
+        ierr = 1
+        return
+    endif
+    ! Replace NaN and invalid values with -9999.0
+    do ichan = 1, nchans
+        do i = 1, nscans
+            do j = 1, nfovs
+                if (tb_lowres(j,i,ichan) /= tb_lowres(j,i,ichan) .or. &
+                    tb_lowres(j,i,ichan) < 0.0 .or. &
+                    tb_lowres(j,i,ichan) > 400.0) then
+                    tb_lowres(j,i,ichan) = -9999.0
+                endif
             end do
         end do
-        write(LDT_logunit,*)'[INFO] ✓ Read TbLowRes'
-    end if
+    end do
+    write(LDT_logunit,*)'[INFO] ✓ Read TbLowRes'
     
     ! Read Land Fraction
     ierr = nf90_inq_varid(ncid, 'LandFractionLowRes', varid)
@@ -419,25 +438,56 @@ CONTAINS
     END SUBROUTINE get_wsf_data_with_flags
     
     FUNCTION detect_pass_type(lat, nscans, nfovs) RESULT(pass_type)
-        ! Returns: 1=ascending, -1=descending, 0=unknown
         INTEGER :: pass_type
-        REAL*4, INTENT(IN) :: lat(:,:)  ! (nfovs, nscans)
+        REAL*4, INTENT(IN) :: lat(:,:)
         INTEGER, INTENT(IN) :: nscans, nfovs
-        
-        REAL :: lat_start, lat_end
-        INTEGER :: n_avg
-        
-        n_avg = MIN(10, nscans/10)  ! Average first/last 10 scans
-        
-        lat_start = SUM(lat(:, 1:n_avg)) / (nfovs * n_avg)
-        lat_end = SUM(lat(:, nscans-n_avg+1:nscans)) / (nfovs * n_avg)
-        
-        IF (lat_end - lat_start > 0.5) THEN
-            pass_type = 1  ! Ascending
-        ELSE IF (lat_start - lat_end > 0.5) THEN
-            pass_type = -1  ! Descending
+
+        REAL*8 :: sum_start, sum_end
+        INTEGER :: n_avg, n_valid_start, n_valid_end
+        INTEGER :: i, j
+
+        pass_type = 0
+        n_avg = MIN(10, nscans/10)
+        if (n_avg < 1) return
+
+        ! NaN-safe sum for first n_avg scans
+        sum_start = 0.0d0
+        n_valid_start = 0
+        do i = 1, n_avg
+          do j = 1, nfovs
+            if (lat(j,i) == lat(j,i) .and. &
+                abs(lat(j,i)) <= 90.0) then
+              sum_start = sum_start + lat(j,i)
+              n_valid_start = n_valid_start + 1
+            endif
+          end do
+        end do
+
+        ! NaN-safe sum for last n_avg scans
+        sum_end = 0.0d0
+        n_valid_end = 0
+        do i = nscans-n_avg+1, nscans
+          do j = 1, nfovs
+            if (lat(j,i) == lat(j,i) .and. &
+                abs(lat(j,i)) <= 90.0) then
+              sum_end = sum_end + lat(j,i)
+              n_valid_end = n_valid_end + 1
+            endif
+          end do
+        end do
+
+        ! Need valid data in both ends to determine pass type
+        if (n_valid_start < 10 .or. n_valid_end < 10) then
+          pass_type = 0
+          return
+        endif
+
+        IF ((sum_end/n_valid_end) - (sum_start/n_valid_start) > 0.5) THEN
+          pass_type = 1   ! Ascending
+        ELSE IF ((sum_start/n_valid_start) - (sum_end/n_valid_end) > 0.5) THEN
+          pass_type = -1  ! Descending
         ELSE
-            pass_type = 0  ! Unknown/equatorial
+          pass_type = 0   ! Unknown
         END IF
     END FUNCTION detect_pass_type
 

@@ -140,7 +140,8 @@ contains
     type(wsf_file_info), allocatable :: filtered_files(:)
     type(wsf_file_info), allocatable :: hour_group(:)
     character(len=255) :: fname
-    character*2 :: tmp, target_hour
+    character*4 :: tmp          
+    character*2 :: target_hour
     character*8 :: yyyymmdd
     integer :: ftn, ierr, fi, i, j, k
     integer :: n_filtered, n_hour_group
@@ -154,6 +155,8 @@ contains
     real*4, allocatable :: chan_frequencies(:)
     character*1, allocatable :: chan_polarizations(:)
     integer :: n_asc, n_desc
+    integer*8 :: file_size_bytes
+    type(wsf_file_info), allocatable :: filtered_asc(:), filtered_desc(:)
 
         
     external :: WSF_ARFS_RESAMPLE_HOURLY
@@ -171,7 +174,7 @@ contains
     write(LDT_logunit,*) '[INFO] Target hour: ', target_hour, 'H (', target_hour_int, ')'
     
     ! Search for files
-    write(tmp,'(I2.2)') WSFopl%WSFfilelistSuffixNumber
+    write(tmp,'(I4.4)') WSFopl%WSFfilelistSuffixNumber
     call search_WSF_files(WSFopl%WSFdir, WSFopl%date_curr, WSFopl%WSFfilelistSuffixNumber)
     
     allocate(wsf_files(1000))
@@ -197,30 +200,17 @@ contains
       endif
       
       inquire(file=trim(fname), exist=file_exists)
+      
       if (.not. file_exists) then
         write(LDT_logunit,*) '[WARN] File does not exist: ', trim(fname)
         cycle
       endif
-      
+
       fi = fi + 1
       if (fi <= 1000) then
         call parse_wsf_filename_improved(fname, wsf_files(fi))
-        
-        ! DETECT PASS TYPE
-        call get_wsf_data_with_flags(fname, &
-            tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
-            earth_inc_angle, snow_in, precip_in, &
-            nscans, nfovs, nchans, chan_frequencies, chan_polarizations, ierr)
-        
-        if (ierr == 0) then
-          wsf_files(fi)%pass_type = detect_pass_type(lat_in, nscans, nfovs)
-          deallocate(tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
-                     earth_inc_angle, snow_in, precip_in, &
-                     chan_frequencies, chan_polarizations)
-        else
-          wsf_files(fi)%pass_type = 0
-        endif
       endif
+      
     end do
     call LDT_releaseUnitNumber(ftn)
     
@@ -239,24 +229,64 @@ contains
     write(LDT_logunit,*) '[INFO] After duplicate filtering: ', n_filtered, ' files'
     
     ! Filter by target hour (files that overlap with target hour)
+    ! Filter by target hour
     allocate(hour_group(n_filtered))
-    n_asc = 0
-    n_desc = 0
+    n_hour_group = 0
     
     do i = 1, n_filtered
       if (file_overlaps_hour(filtered_files(i), target_hour_int)) then
-        if (filtered_files(i)%pass_type == 1) then
-          n_asc = n_asc + 1
-          hour_group(n_asc) = filtered_files(i)
-          write(LDT_logunit,*) '[INFO] ASC file: ', trim(filtered_files(i)%filename)
-        else if (filtered_files(i)%pass_type == -1) then
-          n_desc = n_desc + 1  
-          hour_group(n_filtered/2 + n_desc) = filtered_files(i)
-          write(LDT_logunit,*) '[INFO] DESC file: ', trim(filtered_files(i)%filename)
-        endif
+        n_hour_group = n_hour_group + 1
+        hour_group(n_hour_group) = filtered_files(i)
       endif
     end do
-
+    
+    write(LDT_logunit,*) '[INFO] Files overlapping hour ', target_hour, ': ', n_hour_group
+    
+    ! Detect pass type only for hour-relevant files
+    n_asc = 0
+    n_desc = 0
+    
+    do i = 1, n_hour_group
+      call get_wsf_data_with_flags(hour_group(i)%filename, &
+          tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
+          earth_inc_angle, snow_in, precip_in, &
+          nscans, nfovs, nchans, chan_frequencies, chan_polarizations, ierr)
+      
+      if (ierr == 0) then
+        hour_group(i)%pass_type = detect_pass_type(lat_in, nscans, nfovs)
+        deallocate(tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
+                   earth_inc_angle, snow_in, precip_in, &
+                   chan_frequencies, chan_polarizations)
+      else
+        hour_group(i)%pass_type = 0
+        if (allocated(tb_lowres))          deallocate(tb_lowres)
+        if (allocated(lat_in))             deallocate(lat_in)
+        if (allocated(lon_in))             deallocate(lon_in)
+        if (allocated(land_frac_low))      deallocate(land_frac_low)
+        if (allocated(quality_flag_in))    deallocate(quality_flag_in)
+        if (allocated(earth_inc_angle))    deallocate(earth_inc_angle)
+        if (allocated(snow_in))            deallocate(snow_in)
+        if (allocated(precip_in))          deallocate(precip_in)
+        if (allocated(chan_frequencies))   deallocate(chan_frequencies)
+        if (allocated(chan_polarizations)) deallocate(chan_polarizations)
+      endif
+    end do
+    
+    ! Separate into ASC and DESC groups
+    ! Pack ASC at front, DESC at back of hour_group
+    n_asc = 0
+    n_desc = 0
+    do i = 1, n_hour_group
+      if (hour_group(i)%pass_type == 1) then
+        n_asc = n_asc + 1
+        write(LDT_logunit,*) '[INFO] ASC file: ', trim(hour_group(i)%filename)
+      else if (hour_group(i)%pass_type == -1) then
+        n_desc = n_desc + 1
+        write(LDT_logunit,*) '[INFO] DESC file: ', trim(hour_group(i)%filename)
+      else
+        write(LDT_logunit,*) '[WARN] Unknown pass type, skipping: ', trim(hour_group(i)%filename)
+      endif
+    end do
     
     write(LDT_logunit,*) '[INFO] ========================================'
     write(LDT_logunit,*) '[INFO] Processing hour: ', target_hour, 'H'
@@ -264,17 +294,35 @@ contains
     write(LDT_logunit,*) '[INFO] ========================================'
     
     if (n_asc > 0) then
+      allocate(filtered_asc(n_asc))
+      j = 0
+      do i = 1, n_hour_group
+        if (hour_group(i)%pass_type == 1) then
+          j = j + 1
+          filtered_asc(j) = hour_group(i)
+        endif
+      end do
       write(LDT_logunit,*) '[INFO] Processing ASCENDING: ', n_asc, ' files'
-      call WSF_ARFS_RESAMPLE_HOURLY(hour_group(1:n_asc), n_asc, &
+      call WSF_ARFS_RESAMPLE_HOURLY(filtered_asc, n_asc, &
                                     WSFopl%WSFoutdir, yyyymmdd, target_hour, n, 'ASC', &
                                     WSFopl%filter_snow_precip)
+      deallocate(filtered_asc)
     endif
     
     if (n_desc > 0) then
+      allocate(filtered_desc(n_desc))
+      j = 0
+      do i = 1, n_hour_group
+        if (hour_group(i)%pass_type == -1) then
+          j = j + 1
+          filtered_desc(j) = hour_group(i)
+        endif
+      end do
       write(LDT_logunit,*) '[INFO] Processing DESCENDING: ', n_desc, ' files'
-      call WSF_ARFS_RESAMPLE_HOURLY(hour_group(n_filtered/2+1:n_filtered/2+n_desc), &
-                                    n_desc, WSFopl%WSFoutdir, yyyymmdd, target_hour, n, 'DESC', &
+      call WSF_ARFS_RESAMPLE_HOURLY(filtered_desc, n_desc, &
+                                    WSFopl%WSFoutdir, yyyymmdd, target_hour, n, 'DESC', &
                                     WSFopl%filter_snow_precip)
+      deallocate(filtered_desc)
     endif
     
     if (n_asc == 0 .and. n_desc == 0) then
@@ -500,13 +548,13 @@ contains
     integer           :: suffix
 
     character*8       :: yyyymmdd
-    character*2       :: tmp
+    character*4       :: tmp
     character*255     :: list_files
     character*255     :: search_pattern
 
     yyyymmdd = date_curr(1:8)
     
-    write (tmp,'(I2.2)') suffix
+    write (tmp,'(I4.4)') suffix
     
     search_pattern = trim(ndir)//'/*WSFM_01_d'//trim(yyyymmdd)//'*_res_sdr.nc'
     
