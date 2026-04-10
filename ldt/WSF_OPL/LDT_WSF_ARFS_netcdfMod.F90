@@ -10,6 +10,7 @@
 !              FIXED: Proper time format with hour, quality flag documentation
 !
 !-------------------------------------------------------------------------
+#include "LDT_misc.h"
 
 module LDT_WSF_ARFS_netcdfMod
 
