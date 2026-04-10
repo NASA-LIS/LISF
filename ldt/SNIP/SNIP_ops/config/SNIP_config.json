@@ -1,12 +1,19 @@
 {
   "target_datetime": "201902131800",
-  "project_path": "/discover/nobackup/kyang17/projects/usaf_lis/kyang17/test_case/SNIP_ops/",
+  "project_path": "/discover/nobackup/kyang17/projects/LISF/ldt/SNIP/SNIP_ops/",
   "amsr2_path": "data/amsr2/",
   "amsr2_merge_path": "data/amsr2_merge",
   "output_dir": "data/output",
   "model_path": "data/models/model.json",
   "template_path": "data/template/USAFSI_2024123112.nc",
+  "viirs_path": "../data/input/viirs",
+  "flag_output_kelly": true,
+  "flag_output_foster": true,
   "reproject_USAF": true,
+  "apply_viirs_mask": true,
   "source": "NOAA",
+  "AMSR2_template_path": "data/template/AMSR2.nc",
+  "fraction_forest_cover":"data/template/MCD12Q1_LC_frac_2019_reprojected.tif",
+  "forest_density":"data/template/MOD44B_FF_2019_reprojected.tif",
   "_comment": "source: JAXA or NOAA; land_frac_th: land and water fraction threshold, only grids with more than 90% of the land are used."
 }
