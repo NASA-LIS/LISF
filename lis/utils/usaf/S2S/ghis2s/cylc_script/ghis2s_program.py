@@ -217,6 +217,9 @@ class Ghis2sProgram():
 
     def _execute_bcsd_chain(self, s2s, one_step):
         """Execute BCSD and subsequent steps if not one_step."""
+        s2s.nmme_file_checker()
+        s2s.clim_files_checker()
+        s2s.cfsv2_file_checker()
         s2s.bcsd()
         if not one_step:
             s2s.lis_fcst()
