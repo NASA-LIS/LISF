@@ -15,6 +15,7 @@
 ! 09 Jul 2025  Eric Kemp  SNIP version.
 ! 11 Jul 2025  Eric Kemp  Create USAFSI netCDF readers.
 ! 30 Jul 2025  Eric Kemp  Add AMSR2 snow depth netCDF reader.
+! 12 Apr 2025  Kehan Yang  Enable WSF snow depth netCDF reader.
 !
 ! DESCRIPTION:
 ! Source code for reading/writing Air Force snow depth analysis variables
@@ -1205,12 +1206,28 @@ contains
     SNIP_arrays%amsr2_snowdepth = misanl
 
     ! See if file exists
+    ! ---------------------------------------------------------
+    ! First attempt: Try to read AMSR2 data
+    ! ---------------------------------------------------------
+    
     infilename = trim(SNIP_settings%amsr2dir) // &
          "amsr2_snip_0p1deg_" // date10 // "00_AFgrid.nc"
     inquire(file=trim(infilename), exist=file_exists)
     if (.not. file_exists) then
-       write(LDT_logunit,*)'[WARN] Cannot find ', trim(infilename)
-       return
+       write(LDT_logunit,*)'[INFO] Cannot find AMSR2 file: ', trim(infilename)
+       write(LDT_logunit,*)'[INFO] Attempting WSF data fallback...'
+       
+       ! ---------------------------------------------------------
+       ! Second attempt: Try to read WSF data as fallback
+       ! ---------------------------------------------------------
+       infilename = trim(SNIP_settings%wsfdir) // &
+            "wsf_snip_0p1deg_" // date10 // "00_AFgrid.nc"
+       inquire(file=trim(infilename), exist=file_exists)
+       
+       if (.not. file_exists) then
+          write(LDT_logunit,*)'[WARN] Cannot find WSF file either: ', trim(infilename)
+          return
+       end if
     end if
 
     write(LDT_logunit,*) '[INFO] Reading AMSR2 snowdepth NETCDF file ', &

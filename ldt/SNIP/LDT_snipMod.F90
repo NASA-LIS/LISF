@@ -40,6 +40,7 @@ module LDT_snipMod
 
      character(LDT_CONST_PATH_LEN) :: viirsdir
      character(LDT_CONST_PATH_LEN) :: amsr2dir
+     character(LDT_CONST_PATH_LEN) :: wsfdir
 
      ! Former namelist variables
      real :: clmadj
@@ -213,6 +214,13 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%amsr2dir, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! TODO: Directory for reading WSF AI/ML retrievals
+    cfg_entry = "SNIP WSF snowdepth data directory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%wsfdir, rc=rc)
+    call LDT_verify(rc, "Error reading "//trim(cfg_entry))
 
     ! get option for snow climatology
     cfg_entry = "SNIP Snow Climatology:"
