@@ -85,11 +85,18 @@ def process_single_config(config):
     try:
         logging.info("Processing config for datetime %s", config.target_datetime)
 
-        # Create workflow instance with config path
-        amsr2workflow = AMSR2SnowWorkflow(config)
-        amsr2workflow.run_workflow()
+        if config.input_SD == "AMSR2":
 
-        logging.info("Successfully processed %s", config.target_datetime)
+            # Create workflow instance with config path
+            amsr2workflow = AMSR2SnowWorkflow(config)
+            amsr2workflow.run_workflow()
+    
+            logging.info("Successfully processed %s", config.target_datetime)
+        if config.input_SD == "WSF":
+            #TODO
+            
+            logging.info("Successfully processed %s", config.target_datetime)
+        
         return True, config
 
     except Exception as e:

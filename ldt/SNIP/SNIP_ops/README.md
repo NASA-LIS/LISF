@@ -41,6 +41,7 @@ The AMSR2 SNIP system addresses the need for accurate, automated snow depth mapp
 - **viirs_path**: Directory to the VIIRS snow cover files ("../data/input/viirs")
 - **flag_output_kelly**: Boolean flag to control calculating snow depth using Kelly, (2009) approach (default: false)
 - **flag_output_foster**: Boolean flag to control calculating snow depth using Foster et al., (2005) approach (default: false). The same approach is used by USAFSI.
+- **input_SD**: Passive Microwave derived snow depth source - accepts "WSF" and "AMSR2".
 - **apply_viirs_mask**: Boolean flag to control applying VIIRS snow mask (default: true)
 - **reproject_USAF**: Boolean flag to control saving of reprojected data products (default: true)
 - **source**: AMSR2 L1R data source specification - accepts "NOAA" or "JAXA"
