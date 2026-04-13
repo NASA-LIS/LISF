@@ -82,29 +82,44 @@ def sel_var(sel_cim_data, var_name, model):
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
+    elif var_name == "TOP10ST":
+        if model in ('NOAHMP', 'NoahMP'):
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            var_sel_clim_data = valid_data.SoilTemp_tavg.isel(soil_layer=0)
+        else:
+            print(f"[ERR] Unknown model {model}")
+            sys.exit(1)
+
     elif var_name == "TOP40ST":
         if model in ('NOAHMP', 'NoahMP'):
-            term1 = sel_cim_data.SoilTemp_tavg.isel(soil_layer=0) * 0.1
-            term2 = sel_cim_data.SoilTemp_tavg.isel(soil_layer=1) * 0.3
-            var_sel_clim_data = term1 + term2
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            term1 = valid_data.SoilTemp_tavg.isel(soil_layer=0) * w1
+            term2 = valid_data.SoilTemp_tavg.isel(soil_layer=1) * w2
+            var_sel_clim_data = (term1 + term2)/(w1 + w2)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
     elif var_name == "TOP40SM":
         if model in ('NOAHMP', 'NoahMP'):
-            term1 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=0) * 0.1
-            term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * 0.3
-            var_sel_clim_data = term1 + term2
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            term1 = valid_data.SoilMoist_tavg.isel(soil_layer=0) * w1
+            term2 = valid_data.SoilMoist_tavg.isel(soil_layer=1) * w2
+            var_sel_clim_data = (term1 + term2)/(w1 + w2)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
     elif var_name == "TOP40RELSM":
         if model in ('NOAHMP', 'NoahMP'):
-            term1 = sel_cim_data.RelSMC_tavg.isel(soil_layer=0) * 0.1
-            term2 = sel_cim_data.RelSMC_tavg.isel(soil_layer=1) * 0.3
-            var_sel_clim_data = term1 + term2
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            term1 = valid_data.RelSMC_tavg.isel(soil_layer=0) * w1
+            term2 = valid_data.RelSMC_tavg.isel(soil_layer=1) * w2
+            var_sel_clim_data = (term1 + term2)/(w1 + w2)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
@@ -114,11 +129,13 @@ def sel_var(sel_cim_data, var_name, model):
             # for clsm the total soil moisture is in the third layer
             var_sel_clim_data = sel_cim_data.SoilMoist_tavg.isel(soil_layer=2)
         elif model in ("NOAHMP", "NoahMP"):
-            term1 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=0) * 0.05
-            term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * 0.15
-            term3 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=2) * 0.3
-            term4 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=3) * 0.5
-            var_sel_clim_data = term1 + term2 + term3 + term4
+            w1, w2, w3, w4 = 0.1, 0.3, 0.6, 1.0
+            term1 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=0) * w1
+            term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * w2
+            term3 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=2) * w3
+            term4 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=3) * w4
+            var_sel_clim_data = (term1 + term2 + term3 + term4) \
+                /(w1 + w2 + w3 + w4)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
