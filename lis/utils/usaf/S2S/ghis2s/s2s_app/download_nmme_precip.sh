@@ -40,7 +40,7 @@ TARGETDIR=`grep nmme_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 # NMME model ensemble suite, valid upto Aug-2024:
 #for model in 'NCEP-CFSv2' 'NASA-GEOSS2S' 'CanSIPS-IC3' 'COLA-RSMAS-CCSM4' 'GFDL-SPEAR'
 # NMME model ensemble suite, valid starting Aug-2024:
-for model in 'NCEP-CFSv2' 'GFDL-SPEAR' 'NASA-GEOSS2S' 'CanSIPS-IC4' 'COLA-RSMAS-CESM1'
+for model in 'NCEP-CFSv2' 'GFDL-SPEAR' 'NASA-GEOSS2S' 'CanSIPS-IC4' 'COLA-RSMAS-CESM1' 'COLA-RSMAS-CCSM4'
 do
     OUTDIR=$TARGETDIR"/"$model
     mkdir -p $OUTDIR
@@ -98,7 +98,13 @@ do
 	    
             # CFSv2 Model:
 	    if [ $model == 'NCEP-CFSv2' ]; then
-		str="http://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/."$model"/.FORECAST/.EARLY_MONTH_SAMPLES/.MONTHLY/."$var"/S/%280000%201%20"$month"%20"$SYR"-"$EYR"%29VALUES/data.nc -o "$OUTDIR"/"$var"."$model".mon_"$month"."$SYR".nc"
+
+            # EARLY_MONTH_SAMPLES -- ISSUES WITH MISSING MEMBERS/LEAD MONTHS:
+#             str="http://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/."$model"/.FORECAST/.EARLY_MONTH_SAMPLES/.MONTHLY/."$var"/S/%280000%201%20"$month"%20"$SYR"-"$EYR"%29VALUES/data.nc -o "$OUTDIR"/"$var"."$model".mon_"$month"."$SYR".nc"
+
+            # PENTAD_SAMPLES -- CONTAINS VALUES FOR FIRST 12 MEMBERS:
+             str="http://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/."$model"/.FORECAST/.PENTAD_SAMPLES/.MONTHLY/."$var"/S/%280000%201%20"$month"%20"$SYR"-"$EYR"%29VALUES/data.nc -o "$OUTDIR"/"$var"."$model".mon_"$month"."$SYR".nc"
+
 	    fi
 
             # Download the model files via curl:
