@@ -1776,6 +1776,13 @@ class S2Srun(DownloadForecasts):
         cwd=self.scrdir + 's2spost'
 
         jobname='s2spost_'
+        jfiles = glob.glob("s2spost_0*_run.j")
+        if jfiles:  # Checks if the list is not empty
+            for file_path in jfiles:
+                try:
+                    os.remove(file_path)
+                except OSError as e:
+                    print(f"Error deleting {file_path}: {e}")
         slurm_commands = []
         monthly_commands = []
         weekly_commands = []
