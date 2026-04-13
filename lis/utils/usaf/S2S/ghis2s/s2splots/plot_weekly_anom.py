@@ -55,7 +55,7 @@ def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
     data_dir = cwd + f'/s2smetric/{fcst_year:04d}{fcst_mon:02d}/'
     cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     if region == 'ARCTIC':
-        var_list = ['SWE', 'SnowDepth', 'RZSM', 'TOP40SM', 'TOP40ST']
+        var_list = ['SWE', 'SnowDepth', 'RZSM', 'TOP40RELSM', 'TOP40ST']
     else:
         var_list = config["POST"]["weekly_vars"]
 
