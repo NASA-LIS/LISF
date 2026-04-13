@@ -8,20 +8,20 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: HYMAP2_getStateSpaceSize
-! \label{HYMAP2_getStateSpaceSize}
+! !ROUTINE: HYMAP3_getStateSpaceSize
+! \label{HYMAP3_getStateSpaceSize}
 !
 ! !REVISION HISTORY:
 ! 15 Apr 24: Yeosang Yoon; Initial specification
 !
 ! !INTERFACE:
-subroutine HYMAP2_getStateSpaceSize(n, size)
+subroutine HYMAP3_getStateSpaceSize(n, size)
 
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only  : LIS_verify
-  use HYMAP2_routingMod
+  use HYMAP3_routingMod
 
   implicit none
 ! !ARGUMENTS: 
@@ -38,6 +38,6 @@ subroutine HYMAP2_getStateSpaceSize(n, size)
 !  \item[n] index of the nest \newline
 !  \end{description}
 !EOP
-   size = HYMAP2_routing_struc(n)%nseqall*LIS_rc%nensem(n)
+   size = HYMAP3_routing_struc(n)%nseqall*LIS_rc%nensem(n)
 
-end subroutine HYMAP2_getStateSpaceSize
+end subroutine HYMAP3_getStateSpaceSize
