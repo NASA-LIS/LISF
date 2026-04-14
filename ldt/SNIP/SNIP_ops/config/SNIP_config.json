@@ -13,6 +13,7 @@
   "apply_viirs_mask": false,
   "source": "NOAA",
   "input_SD": "WSF",
+  "wsf_pipeline_dir": "../pipeline_config.json",
   "AMSR2_template_path": "data/template/AMSR2.nc",
   "fraction_forest_cover":"data/template/MCD12Q1_LC_frac_2019_reprojected.tif",
   "forest_density":"data/template/MOD44B_FF_2019_reprojected.tif",
