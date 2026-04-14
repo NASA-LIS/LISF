@@ -56,8 +56,9 @@ The AMSR2 SNIP system addresses the need for accurate, automated snow depth mapp
 
 | File                                        | Description                                                                                                                                                                                                                                                                                       |
 |---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ml_prediction/run_prediction.py`           | ML inference pipeline that:<br>• Loads pretrained machine learning models<br>• Runs ML predictions on processed data<br>• Applies VIIRS Snow Covered Area (SCA) masking<br>• Handles data quality flagging<br>• Reprojects results to Analysis Framework (AF) grids<br>• Saves prediction results |
+| `ml_prediction/run_prediction.py`           | ML inference pipeline that:<br>• Loads pretrained machine learning models<br>• Runs ML predictions on processed data<br>• Applies VIIRS Snow Covered Area (SCA) masking (default config false) <br>• Handles data quality flagging<br>• Reprojects results to Analysis Framework (AF) grids<br>• Saves prediction results |
 | `ml_prediction/run_traditional_approach.py` | Traditional snow depth retrival pipeline that:<br>• Calculate snow depth  using Kelly, (2009) approach and Foster et al, (2005) approach. <br>• Options provided in config file to output these two snow depth results. <br>• Saves prediction results at PMW native resolution        |
+| `ml_prediction/run_prediction_WSF.py` |   ML inference pipeline that:<br>• Loads pretrained machine learning models<br>• Runs ML predictions on hourly resampled WSF data<br>• Merged predicted snow depth every six hours for LDT post-processing<br>• Applies VIIRS Snow Covered Area (SCA) masking (default config false) <br>• Handles data quality flagging|
 
 
 ## Main Execution
@@ -100,16 +101,20 @@ Under the parent folder, we provide a SLURM job submission example to run the wo
 
 | File                   | Description                                       |
 |------------------------|---------------------------------------------------|
-| 'job_submit.sh`        | Bash script to submit a SLURM job to run the workflow |
-| 'SNIP_LDT_template.sh` | Template bash script for workflow execution                           |
+| 'job_template.sh`        | Bash script to submit a SLURM job to run the workflow for AMSR2|
+| 'submit_job.py` | Template bash script for workflow execution with AMSR2 data                           |
+| 'job_template_WSF.sh`        | Bash script to submit a SLURM job to run the workflow for WSF|
+| 'submit_job_WSF.py` | Template bash script for workflow execution with WSF data                           |
  
-For example, to run model at 06:00 UTC on 2025-01-20 on hpc11, execute the following command in the terminal: 
+For example, to run workflow with AMSR2/WSF for snow depth retrieval at 06:00 UTC on 2025-01-20 on hpc11, execute the following command in the terminal: 
 ```shell
-python submit_job.py 202501200600 --system hpc11
+python submit_job.py 202501200600 --system hpc11  # AMSR2
+python submit_job_WSF.py 202501200600 --system hpc11 # WSF
 ```
-To run model at 06:00 UTC on 2025-01-20 on discover, execute the following command in the terminal: 
+To run workflow with AMSR2/WSF for snow depth retrieval at 06:00 UTC on 2025-01-20 on discover, execute the following command in the terminal: 
 ```shell
-python submit_job.py 202501200600
+python submit_job.py 202501200600 # AMSR2
+python submit_job_WSF.py 202501200600 # WSF
 ```
 
 ## Support
