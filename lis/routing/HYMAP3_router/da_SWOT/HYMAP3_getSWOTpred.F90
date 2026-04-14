@@ -46,6 +46,7 @@ subroutine HYMAP3_getSWOTpred(n, k,obs_pred)
   integer                :: i,t,m
   real                   :: wl(HYMAP3_routing_struc(n)%nseqall*LIS_rc%nensem(n))
 
+  external :: HYMAP3_convertPatchSpaceToObsEnsSpace
 
   do i=1,HYMAP3_routing_struc(n)%nseqall
      do m=1,LIS_rc%nensem(n)
