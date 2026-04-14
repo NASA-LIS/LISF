@@ -1230,7 +1230,7 @@ contains
        end if
     end if
 
-    write(LDT_logunit,*) '[INFO] Reading AMSR2 snowdepth NETCDF file ', &
+    write(LDT_logunit,*) '[INFO] Reading PMW snowdepth NETCDF file ', &
          trim(infilename)
 
     ! Open the file for reading
