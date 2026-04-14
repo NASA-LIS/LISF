@@ -9,8 +9,9 @@ ulimit -s unlimited
 TARGET_DATETIME="{dt}"
 TARGET_DATETIME_10="{dt10}"
 SNIP_OUT="./SNIP_ops/data/output/amsr2_snip_0p1deg_{dt}_AFgrid.nc"
-AMSR2_DIR="./data/input/AMSR2_SD_retrievals"
+AMSR2_DIR="./data/input/AMSR2_SD"
 LDT_OUT="./data/output/snip/SNIP_{dt10}.nc"
+
 
 mkdir -p ./log "$AMSR2_DIR"
 [ -n "$SLURM_SUBMIT_DIR" ] && { cd "$SLURM_SUBMIT_DIR" || exit 1; }
