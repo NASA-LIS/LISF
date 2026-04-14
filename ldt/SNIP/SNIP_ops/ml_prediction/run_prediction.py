@@ -43,7 +43,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger('SnowDepthPredictor')
+logger = logging.getLogger('AMSR2SnowDepthPredictor')
 
 
 # Encoding used for all NetCDF outputs
@@ -63,7 +63,7 @@ _ENCODING = {
 # that here.
 # pylint: disable=W0718
 
-class SnowDepthPredictor:
+class AMSR2SnowDepthPredictor:
     """
     Predicts snow depth using machine learning models with passive
     microwave data.
