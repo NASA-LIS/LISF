@@ -1938,7 +1938,7 @@ class S2Srun(DownloadForecasts):
         for i, model in enumerate(self.models):
             slurm_commands = s2smetric_driver.main(self.e2esroot +'/' + self.config_file, self.year,
                                                    self.month, cwd, jobname=jobname, ntasks=1,
-                                             hours=str(1), nmme_model= model, py_call=True)
+                                             hours=str(2), nmme_model= model, py_call=True)
 
             tfile = self.sublist_to_file(slurm_commands, cwd)
             try:
