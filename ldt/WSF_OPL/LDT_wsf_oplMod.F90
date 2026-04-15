@@ -25,7 +25,6 @@ module LDT_wsf_oplMod
     character*100 :: WSFdir
     character*100 :: WSFoutdir
     character*10  :: date_curr
-    integer       :: WSFfilelistSuffixNumber
     
     real*4, allocatable :: ARFS_TB_10V(:,:)
     real*4, allocatable :: ARFS_TB_10H(:,:)
@@ -98,12 +97,6 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, WSFopl%WSFoutdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     
-    cfg_entry = "WSF filelist suffix number:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, WSFopl%WSFfilelistSuffixNumber, rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    
     ! Read snow/precip filter option (default = 1 = filter ON for SM retrieval)
     cfg_entry = "WSF filter snow and precip footprints:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
@@ -140,7 +133,7 @@ contains
     type(wsf_file_info), allocatable :: filtered_files(:)
     type(wsf_file_info), allocatable :: hour_group(:)
     character(len=255) :: fname
-    character*4 :: tmp          
+    character*10 :: tmp
     character*2 :: target_hour
     character*8 :: yyyymmdd
     integer :: ftn, ierr, fi, i, j, k
@@ -174,8 +167,8 @@ contains
     write(LDT_logunit,*) '[INFO] Target hour: ', target_hour, 'H (', target_hour_int, ')'
     
     ! Search for files
-    write(tmp,'(I4.4)') WSFopl%WSFfilelistSuffixNumber
-    call search_WSF_files(WSFopl%WSFdir, WSFopl%date_curr, WSFopl%WSFfilelistSuffixNumber)
+    tmp = trim(WSFopl%date_curr)    ! date_curr is already YYYYMMDDHH
+    call search_WSF_files(WSFopl%WSFdir, WSFopl%date_curr, tmp)   ! tmp already = date_curr
     
     allocate(wsf_files(1000))
     
@@ -545,16 +538,16 @@ contains
     implicit none
     character (len=*) :: ndir
     character (len=*) :: date_curr
-    integer           :: suffix
+    character(len=*)  :: suffix
 
     character*8       :: yyyymmdd
-    character*4       :: tmp
+    character*10      :: tmp
     character*255     :: list_files
     character*255     :: search_pattern
 
     yyyymmdd = date_curr(1:8)
     
-    write (tmp,'(I4.4)') suffix
+    tmp = trim(suffix)
     
     search_pattern = trim(ndir)//'/*WSFM_01_d'//trim(yyyymmdd)//'*_res_sdr.nc'
     
