@@ -8,18 +8,16 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! 
+!
 ! !ROUTINE: write_WSFsmobs
 ! \label{write_WSFsmobs}
-! 
-! !REVISION HISTORY: 
-! 25Jan2008: Sujay Kumar; Initial Specification
-! 06Jun2022: Yonghwan Kwon; Modified for SMAP_E_OPL soil moisture
-! 02Oct2025: Ehsan Jalilvand; Modified for WSF soil moisture
-! 
-! !INTERFACE: 
+!
+! !REVISION HISTORY:
+! 02 Oct 2025: Ehsan Jalilvand; Initial specification
+!
+! !INTERFACE:
 subroutine write_WSFsmobs(n, k, OBS_State)
-! !USES: 
+! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_logMod
@@ -27,20 +25,20 @@ subroutine write_WSFsmobs(n, k, OBS_State)
   use LIS_historyMod
   use LIS_DAobservationsMod
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
-  
+
   implicit none
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
 
-  integer,     intent(in)  :: n 
+  integer,     intent(in)  :: n
   integer,     intent(in)  :: k
   type(ESMF_State)         :: OBS_State
 !
-! !DESCRIPTION: 
-! 
-! writes the transformed (interpolated/upscaled/reprojected)  
-! LPRM AMSRE observations to a file
-! 
+! !DESCRIPTION:
+!
+! writes the transformed (interpolated/upscaled/reprojected)
+! WSF-M soil moisture observations to a file
+!
 !EOP
   type(ESMF_Field)         :: smField
   logical                  :: data_update
@@ -50,28 +48,28 @@ subroutine write_WSFsmobs(n, k, OBS_State)
   integer                  :: ftn
   integer                  :: status
 
-  call ESMF_AttributeGet(OBS_State, "Data Update Status", & 
+  call ESMF_AttributeGet(OBS_State, "Data Update Status", &
        data_update, rc=status)
   call LIS_verify(status)
 
-  if(data_update) then 
-     
+  if(data_update) then
+
      call ESMF_StateGet(OBS_State, "Observation01",smField, &
           rc=status)
      call LIS_verify(status)
-     
+
      call ESMF_FieldGet(smField, localDE=0, farrayPtr=smobs, rc=status)
      call LIS_verify(status)
 
-     if(LIS_rc%obs_ngrid(k).gt.0) then 
+     if(LIS_rc%obs_ngrid(k).gt.0) then
         call ESMF_AttributeGet(smfield,"Unscaled Obs",smobs_unsc,&
              itemCount=LIS_rc%obs_ngrid(k),rc=status)
         call LIS_verify(status, 'Error in AttributeGet-Unscaled Obs')
      endif
 
-     if(LIS_masterproc) then 
+     if(LIS_masterproc) then
         ftn = LIS_getNextUnitNumber()
-        call WSFsm_obsname(n,k,obsname)        
+        call WSFsm_obsname(n,k,obsname)
 
         call LIS_create_output_directory('DAOBS')
         open(ftn,file=trim(obsname), form='unformatted')
@@ -79,31 +77,31 @@ subroutine write_WSFsmobs(n, k, OBS_State)
 
      call LIS_writevar_gridded_obs(ftn,n,k,smobs_unsc)
      call LIS_writevar_gridded_obs(ftn,n,k,smobs)
-     
-     if(LIS_masterproc) then 
+
+     if(LIS_masterproc) then
         call LIS_releaseUnitNumber(ftn)
      endif
 
-  endif  
+  endif
 
 end subroutine write_WSFsmobs
 
 !BOP
 ! !ROUTINE: WSFsm_obsname
 ! \label{WSFsm_obsname}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
 subroutine WSFsm_obsname(n,k,obsname)
-! !USES: 
+! !USES:
   use LIS_coreMod, only : LIS_rc
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer               :: n
   integer               :: k
   character(len=*)      :: obsname
-! 
-! !DESCRIPTION: 
-! 
+!
+! !DESCRIPTION:
+!
 !EOP
 
   character(len=12) :: cdate1

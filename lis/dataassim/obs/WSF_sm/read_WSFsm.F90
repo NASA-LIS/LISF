@@ -40,10 +40,10 @@ subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
 ! !DESCRIPTION:
 !
 !  reads the WSF soil moisture observations.
-!  The data is then rescaled to the land surface model's 
+!  The data is then rescaled to the land surface model's
 !  climatology using rescaling algorithms.
-!  
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest
 !  \item[OBS\_State] observations state
@@ -145,7 +145,6 @@ subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
       if(LIS_masterproc) then
          !list_files = trim(smobsdir)//'/ARFS_SM_*' &
          !             //trim(yyyymmdd)//'T'//trim(hh)//'*.dat'
-         !EMK...Use netCDF
          list_files = trim(smobsdir)//'/ARFS_SM_*' &
               //trim(yyyymmdd)//'T'//trim(hh)//'*.nc'
          write(LIS_logunit,*) &
@@ -421,14 +420,14 @@ subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
 end subroutine read_WSFsm
 
 !BOP
-! 
+!
 ! !ROUTINE: read_WSFsm_data
 ! \label{read_WSFsm_data}
 !
 ! !INTERFACE:
 subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
-! 
-! !USES: 
+!
+! !USES:
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
@@ -440,8 +439,8 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
 
   implicit none
 !
-! !INPUT PARAMETERS: 
-! 
+! !INPUT PARAMETERS:
+!
   integer                  :: n
   integer                  :: k
   character (len=*)        :: fname
@@ -457,9 +456,8 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   integer                 :: smid
   integer                 :: ios, nid
   integer                 :: c,r
-  integer                 :: r_flip 
+  integer                 :: r_flip
   integer                 :: ftn1
-  ! EMK
   logical :: file_exists
   character(255) :: map_projection
   integer :: ncid, dim_ids(3), var_id
@@ -608,7 +606,7 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
      rc = nf90_close(ncid)
      return
   end if
-  
+
   !if (rc .ne. 0) then
      !write(LIS_logunit,*)'[ERR] Cannot read arfs_sm ', trim(fname)
      !write(LIS_logunit,*)'[ERR] LIS will continue...'

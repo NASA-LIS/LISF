@@ -10,16 +10,16 @@
 !BOP
 !
 ! !MODULE: WSFsm_Mod
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !   This module contains interfaces and subroutines to
 !   handle WSF soil moisture retrievals
-! 
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 !  2 Oct 2025 Ehsan Jalilvand; initial specification
 
 module WSFsm_Mod
-! !USES: 
+! !USES:
   use ESMF
   use map_utils
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -85,11 +85,11 @@ module WSFsm_Mod
 contains
 
 !BOP
-! 
+!
 ! !ROUTINE: WSFsm_setup
 ! \label{WSFsm_setup}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine WSFsm_setup(k, OBS_State, OBS_Pert_State)
 ! !USES:
     use LIS_coreMod
@@ -102,20 +102,20 @@ contains
 
     implicit none
 
-! !ARGUMENTS: 
+! !ARGUMENTS:
     integer                ::  k
     type(ESMF_State)       ::  OBS_State(LIS_rc%nnest)
     type(ESMF_State)       ::  OBS_Pert_State(LIS_rc%nnest)
-! 
-! !DESCRIPTION: 
-!   
-!   This routine completes the runtime initializations and 
-!   creation of data strctures required for handling WSF 
-!   soil moisture data. 
-!  
-!   The arguments are: 
+!
+! !DESCRIPTION:
+!
+!   This routine completes the runtime initializations and
+!   creation of data strctures required for handling WSF
+!   soil moisture data.
+!
+!   The arguments are:
 !   \begin{description}
-!    \item[OBS\_State]   observation state 
+!    \item[OBS\_State]   observation state
 !    \item[OBS\_Pert\_State] observation perturbations state
 !   \end{description}
 !EOP
@@ -199,7 +199,7 @@ contains
    do n=1, LIS_rc%nnest
       WSFsm_struc(n)%cdf_read_mon = .false.
 
-      call ESMF_ConfigFindLabel(LIS_config, "WSF CDF read option:", rc=status)    ! 0: read CDF for all months/year 
+      call ESMF_ConfigFindLabel(LIS_config, "WSF CDF read option:", rc=status)    ! 0: read CDF for all months/year
                                                                                          ! 1: read CDF for current month
       call ESMF_ConfigGetAttribute(LIS_config, WSFsm_struc(n)%cdf_read_opt, rc=status)
       call LIS_verify(status, "WSF CDF read option: not defined")
@@ -231,8 +231,8 @@ contains
 !   Create the array containers that will contain the observations and
 !   the perturbations. WSF
 !   observations are in the grid space. Since there is only one layer
-!   being assimilated, the array size is LIS_rc%obs_ngrid(k). 
-!   
+!   being assimilated, the array size is LIS_rc%obs_ngrid(k).
+!
 !----------------------------------------------------------------------------
 
     do n=1,LIS_rc%nnest
@@ -281,7 +281,7 @@ contains
           call LIS_readPertAttributes(1,LIS_rc%obspertAttribfile(k),&
                obs_pert)
 
-! Set obs err to be uniform (will be rescaled later for each grid point). 
+! Set obs err to be uniform (will be rescaled later for each grid point).
           ssdev = obs_pert%ssdev(1)
           WSFsm_struc(n)%ssdev_inp = obs_pert%ssdev(1)
 
@@ -290,7 +290,7 @@ contains
                rc=status)
           call LIS_verify(status)
 
-! initializing the perturbations to be zero 
+! initializing the perturbations to be zero
           call ESMF_FieldGet(pertField(n),localDE=0,farrayPtr=obs_temp,rc=status)
           call LIS_verify(status)
           obs_temp(:,:) = 0
@@ -465,7 +465,7 @@ contains
                         WSFsm_struc(n)%obs_sigma(t,jj)
                    !                c = LIS_domain(n)%grid(t)%col
                    !                r = LIS_domain(n)%grid(t)%row
-                   !                ssdev_grid(c,r) = ssdev(t) 
+                   !                ssdev_grid(c,r) = ssdev(t)
                    if(ssdev(t).lt.minssdev) then
                       ssdev(t) = minssdev
                    endif
