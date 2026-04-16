@@ -19,8 +19,6 @@
 !
 module WSFsm_obsMod
 ! !USES:
-  use ESMF
-  use map_utils
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 
   implicit none
