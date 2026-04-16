@@ -123,7 +123,6 @@ contains
   end subroutine LDT_wsf_oplInit
 
   subroutine LDT_wsf_oplRun(n)
-    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc
     use LDT_logMod
     use TOOLSUBS_WSF
@@ -360,13 +359,12 @@ contains
   end function file_overlaps_hour
 
   subroutine parse_wsf_filename_improved(filename, file_info)
-    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
     
     implicit none
     character(len=*), intent(in) :: filename
     type(wsf_file_info), intent(out) :: file_info
-    
+
     character(len=LDT_CONST_PATH_LEN) :: basename
     integer :: pos, pos_d, pos_t, pos_e, pos_i
     integer*8 :: file_size_bytes
@@ -536,7 +534,6 @@ contains
   end subroutine filter_duplicate_files_improved
 
   subroutine search_WSF_files(ndir, date_curr, suffix)
-    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
     
     implicit none

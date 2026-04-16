@@ -29,6 +29,7 @@ subroutine readWSFsmObs(n)
   use LDT_logMod
   use LDT_DAobsDataMod
   use WSFsm_obsMod
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:

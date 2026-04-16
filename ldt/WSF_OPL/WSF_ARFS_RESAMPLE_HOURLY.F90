@@ -102,7 +102,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     real :: freq
     character*1 :: pol
     character(len=LDT_CONST_PATH_LEN) :: output_filename
-    
+
     integer*4, allocatable :: ARFS_COUNT_QF(:,:)
     integer*4, allocatable :: ARFS_QUALITY_FLAG_SUM(:,:,:)  ! (2560, 1920, 8) for each bit
     
