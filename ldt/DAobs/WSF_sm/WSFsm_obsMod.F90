@@ -15,7 +15,7 @@
 !   (CDF generation) in LDT.
 !
 ! !REVISION HISTORY:
-!   2025: Initial Specification
+!   2025: Ehsan Jalilvand; Initial Specification
 !
 module WSFsm_obsMod
 ! !USES:

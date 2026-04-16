@@ -14,11 +14,12 @@
 ! \label{readWSFsmObs}
 !
 ! !REVISION HISTORY:
-!   2025: Initial Specification
-!   2026-02: Bug fix - move transfer inside file loop to composite
-!            all hourly files. Add time-of-day guard to prevent
-!            duplicate logging when LDT timestep is sub-daily.
-!            Add diagnostic counters.
+! 2025: Ehsan Jalilvand; Initial Specification
+! 2026-02: Ehsan Jalilvand; Bug fix -
+!          move transfer inside file loop to composite
+!          all hourly files. Add time-of-day guard to prevent
+!          duplicate logging when LDT timestep is sub-daily.
+!          Add diagnostic counters.
 !
 ! !INTERFACE:
 subroutine readWSFsmObs(n)

@@ -2,18 +2,24 @@
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
 ! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
 !
-! SUBROUTINE: WSF_ARFS_RESAMPLE_HOURLY
+! !ROUTINE: WSF_ARFS_RESAMPLE_HOURLY
+! \label{WSF_ARFS_RESAMPLE_HOURLY}
 !
-! DESCRIPTION: FIXED - Correct dimension ordering for snow_in/precip_in
+! !REVISION HISTORY:
+! 10 Oct 2025: Ehsan Jalilvand; Initial Specification
 !
-!-------------------------------------------------------------------------
-
+! !INTERFACE:
 subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
                                     yyyymmdd, hour_str, n, pass_suffix, &
                                     filter_snow_precip)
-
+! !USES:
     USE TOOLSUBS_WSF
     USE invdist_wsf2arfs
     USE LDT_logMod
@@ -23,8 +29,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     USE LDT_wsf_oplMod, only: wsf_file_info
 
     IMPLICIT NONE
-    
-    ! Arguments
+
+! !ARGUMENTS:
     integer, intent(in) :: n_files
     type(wsf_file_info), intent(in) :: hour_files(n_files)
     character(len=*), intent(in) :: output_dir
@@ -33,10 +39,11 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     integer, intent(in) :: n
     character(len=3), intent(in) :: pass_suffix
     integer, intent(in) :: filter_snow_precip  ! 1=filter snow/precip, 0=keep all footprints
-    
+! !EOP
+
     ! ARFS grid arrays
     real*8, allocatable :: ARFS_LAT(:), ARFS_LON(:)
-    
+
     ! Accumulated data arrays
     real*8, allocatable :: ARFS_TIME_SUM(:,:)
     real*4, allocatable :: ARFS_TB_10H_SUM(:,:), ARFS_TB_10V_SUM(:,:)
@@ -45,7 +52,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     real*4, allocatable :: ARFS_TB_36H_SUM(:,:), ARFS_TB_36V_SUM(:,:)
     real*4, allocatable :: ARFS_TB_89H_SUM(:,:), ARFS_TB_89V_SUM(:,:)
     real*4, allocatable :: ARFS_LAND_FRAC_SUM(:,:)
-    
+
     ! Count arrays
     integer*4, allocatable :: ARFS_COUNT_10H(:,:), ARFS_COUNT_10V(:,:)
     integer*4, allocatable :: ARFS_COUNT_18H(:,:), ARFS_COUNT_18V(:,:)
@@ -53,7 +60,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     integer*4, allocatable :: ARFS_COUNT_36H(:,:), ARFS_COUNT_36V(:,:)
     integer*4, allocatable :: ARFS_COUNT_89H(:,:), ARFS_COUNT_89V(:,:)
     integer*4, allocatable :: ARFS_COUNT_LAND(:,:), ARFS_COUNT_TIME(:,:)
-    
+
     ! Final arrays
     real*8, allocatable :: ARFS_TIME(:,:)
     real*4, allocatable :: ARFS_TB_10H(:,:), ARFS_TB_10V(:,:)
@@ -64,7 +71,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     real*4, allocatable :: ARFS_LAND_FRAC(:,:)
     integer*1, allocatable :: ARFS_QUALITY_FLAG(:,:)
     integer*4, allocatable :: ARFS_SAMPLE_V(:,:), ARFS_SAMPLE_H(:,:)
-    
+
     ! Temporary arrays
     real*8, allocatable :: TEMP_TIME(:,:)
     real*4, allocatable :: TEMP_TB_10H(:,:), TEMP_TB_10V(:,:)
@@ -75,7 +82,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     real*4, allocatable :: TEMP_LAND_FRAC(:,:)
     integer*1, allocatable :: TEMP_QUALITY_FLAG(:,:)
     integer*4, allocatable :: TEMP_SAMPLE_V(:,:), TEMP_SAMPLE_H(:,:)
-    
+
     ! WSF input data - FORTRAN ORDER (nFOVR, nScanR)
     real*4, allocatable :: tb_lowres(:,:,:)
     real*4, allocatable :: lat_in(:,:)
@@ -85,7 +92,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     real*4, allocatable :: earth_inc_angle(:,:,:)
     integer*4, allocatable :: snow_in(:,:)
     integer*4, allocatable :: precip_in(:,:)
-    
+
     ! Channel extraction arrays - FORTRAN ORDER (nFOVR, nScanR)
     real*4, allocatable :: tb_10h(:,:), tb_10v(:,:)
     real*4, allocatable :: tb_18h(:,:), tb_18v(:,:)
@@ -93,10 +100,10 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     real*4, allocatable :: tb_36h(:,:), tb_36v(:,:)
     real*4, allocatable :: tb_89h(:,:), tb_89v(:,:)
     real*8, allocatable :: time_array(:)
-    
+
     real*4, allocatable :: chan_frequencies(:)
     character*1, allocatable :: chan_polarizations(:)
-    
+
     integer :: i, j, r, c, ifile
     integer :: nscans, nfovs, nchans, ierr, ichan
     real :: freq
@@ -105,37 +112,37 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
 
     integer*4, allocatable :: ARFS_COUNT_QF(:,:)
     integer*4, allocatable :: ARFS_QUALITY_FLAG_SUM(:,:,:)  ! (2560, 1920, 8) for each bit
-    
+
     ! Band-specific sensor quality counters
     INTEGER, ALLOCATABLE :: sensor_10ghz_count(:,:)
     INTEGER, ALLOCATABLE :: sensor_18ghz_count(:,:)
     INTEGER, ALLOCATABLE :: sensor_23ghz_count(:,:)
     INTEGER, ALLOCATABLE :: sensor_36ghz_count(:,:)
     INTEGER, ALLOCATABLE :: sensor_89ghz_count(:,:)
-    
+
     ! Logical for checking data presence
     logical :: has_data
     logical :: do_filter  ! .true. if snow/precip filtering is enabled
-    
+
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] WSF HOURLY GROUP PROCESSING'
     write(LDT_logunit,*)'[INFO] Hour: ', hour_str, 'H'
-    write(LDT_logunit,*)'[INFO] Pass type: ', trim(pass_suffix)  
+    write(LDT_logunit,*)'[INFO] Pass type: ', trim(pass_suffix)
     write(LDT_logunit,*)'[INFO] Number of files: ', n_files
     write(LDT_logunit,*)'[INFO] ========================================='
-    
+
     ! Setup ARFS grid
     allocate(ARFS_LAT(1920))
     allocate(ARFS_LON(2560))
-    
+
     do r = 1, 1920
         ARFS_LAT(r) = 90.0 - (r - 0.5) * 0.09375
     end do
-    
+
     do c = 1, 2560
         ARFS_LON(c) = -180.0 + (c - 0.5) * 0.140625
     end do
-    
+
     ! Allocate accumulation arrays
     allocate(ARFS_TIME_SUM(2560,1920))
     allocate(ARFS_TB_10H_SUM(2560,1920), ARFS_TB_10V_SUM(2560,1920))
@@ -144,7 +151,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     allocate(ARFS_TB_36H_SUM(2560,1920), ARFS_TB_36V_SUM(2560,1920))
     allocate(ARFS_TB_89H_SUM(2560,1920), ARFS_TB_89V_SUM(2560,1920))
     allocate(ARFS_LAND_FRAC_SUM(2560,1920))
-    
+
     allocate(ARFS_COUNT_TIME(2560,1920))
     allocate(ARFS_COUNT_10H(2560,1920), ARFS_COUNT_10V(2560,1920))
     allocate(ARFS_COUNT_18H(2560,1920), ARFS_COUNT_18V(2560,1920))
@@ -152,7 +159,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     allocate(ARFS_COUNT_36H(2560,1920), ARFS_COUNT_36V(2560,1920))
     allocate(ARFS_COUNT_89H(2560,1920), ARFS_COUNT_89V(2560,1920))
     allocate(ARFS_COUNT_LAND(2560,1920))
-    
+
     allocate(TEMP_TIME(2560,1920))
     allocate(TEMP_TB_10H(2560,1920), TEMP_TB_10V(2560,1920))
     allocate(TEMP_TB_18H(2560,1920), TEMP_TB_18V(2560,1920))
@@ -169,7 +176,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     allocate(sensor_23ghz_count(2560,1920))
     allocate(sensor_36ghz_count(2560,1920))
     allocate(sensor_89ghz_count(2560,1920))    ! Initialize accumulation arrays
-    
+
     ARFS_TIME_SUM = 0.0
     ARFS_TB_10H_SUM = 0.0
     ARFS_TB_10V_SUM = 0.0
@@ -182,7 +189,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ARFS_TB_89H_SUM = 0.0
     ARFS_TB_89V_SUM = 0.0
     ARFS_LAND_FRAC_SUM = 0.0
-    
+
     ARFS_COUNT_TIME = 0
     ARFS_COUNT_10H = 0
     ARFS_COUNT_10V = 0
@@ -202,7 +209,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     sensor_23ghz_count = 0
     sensor_36ghz_count = 0
     sensor_89ghz_count = 0
-    
+
     ! Set filtering flag
     do_filter = (filter_snow_precip == 1)
     if (do_filter) then
@@ -218,7 +225,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         write(LDT_logunit,*)'[INFO] ----------------------------------------'
         write(LDT_logunit,*)'[INFO] Processing file ', ifile, '/', n_files
         write(LDT_logunit,*)'[INFO] ', trim(hour_files(ifile)%filename)
-        
+
         ! Initialize temporary arrays
         TEMP_TIME = 0.0
         TEMP_TB_10H = 0.0
@@ -235,7 +242,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         TEMP_QUALITY_FLAG = 0
         TEMP_SAMPLE_V = 0
         TEMP_SAMPLE_H = 0
-        
+
         ! Read WSF data
         call get_wsf_data_with_flags(hour_files(ifile)%filename, &
             tb_lowres, lat_in, lon_in, land_frac_low, quality_flag_in, &
@@ -243,17 +250,17 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
             nscans, nfovs, nchans, &
             chan_frequencies, chan_polarizations, &
             ierr)
-        
+
         if (ierr /= 0) then
             write(LDT_logunit,*)'[WARN] Failed to read file, skipping'
             cycle
         endif
-        
+
         write(LDT_logunit,*)'[INFO] Read data dimensions:'
         write(LDT_logunit,*)'[INFO]   nFOVR  = ', nfovs
         write(LDT_logunit,*)'[INFO]   nScanR = ', nscans
         write(LDT_logunit,*)'[INFO]   nChan  = ', nchans
-        
+
         ! Extract channels - MATCH invdist signature: (nscans, nfovs)
         allocate(tb_10h(nscans, nfovs))
         allocate(tb_10v(nscans, nfovs))
@@ -266,7 +273,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         allocate(tb_89h(nscans, nfovs))
         allocate(tb_89v(nscans, nfovs))
         allocate(time_array(nscans))
-        
+
         ! Initialize to fill values
         tb_10h = -9999.0
         tb_10v = -9999.0
@@ -278,12 +285,12 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         tb_36v = -9999.0
         tb_89h = -9999.0
         tb_89v = -9999.0
-        
+
         ! Extract each channel - TRANSPOSE from (nfovs, nscans) to (nscans, nfovs)
         do ichan = 1, nchans
             freq = chan_frequencies(ichan)
             pol = chan_polarizations(ichan)
-            
+
             if (abs(freq - 10.65) < 1.0) then
                 if (pol == 'v' .or. pol == 'V') then
                     do i = 1, nscans
@@ -361,13 +368,13 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
                 endif
             end if
         end do
-        
+
         time_array = 0.0
-        
+
         write(LDT_logunit,*)'[INFO] Calling inverse distance resampler...'
         write(LDT_logunit,*)'[INFO]   Input:  (nScanR, nFOVR) = (', nscans, ',', nfovs, ')'
         write(LDT_logunit,*)'[INFO]   Output: (2560, 1920)'
-        
+
         ! Transpose lat/lon and other 2D arrays to match invdist signature
         ! invdist expects (nscans, nfovs) but TOOLSUBS gives (nfovs, nscans)
         call WSF2ARFS_INVDIS(time_array, &
@@ -391,7 +398,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
             TEMP_QUALITY_FLAG, &
             TEMP_SAMPLE_V, TEMP_SAMPLE_H, &
             do_filter)
-        
+
         ! ACCUMULATE DATA
         do r = 1, 1920
             do c = 1, 2560
@@ -442,23 +449,23 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
                     ARFS_LAND_FRAC_SUM(c,r) = ARFS_LAND_FRAC_SUM(c,r) + TEMP_LAND_FRAC(c,r)
                     ARFS_COUNT_LAND(c,r) = ARFS_COUNT_LAND(c,r) + 1
                 endif
-                
+
                 ! ===========================================================
                 ! QUALITY FLAG ACCUMULATION (CORRECTED)
                 ! ===========================================================
-                
+
                 ! Check if this pixel has ANY valid data
                 has_data = (TEMP_TB_10V(c,r) > 0.0 .OR. TEMP_TB_10H(c,r) > 0.0 .OR. &
                            TEMP_TB_18V(c,r) > 0.0 .OR. TEMP_TB_18H(c,r) > 0.0 .OR. &
                            TEMP_TB_23V(c,r) > 0.0 .OR. TEMP_TB_23H(c,r) > 0.0 .OR. &
                            TEMP_TB_36V(c,r) > 0.0 .OR. TEMP_TB_36H(c,r) > 0.0 .OR. &
                            TEMP_TB_89V(c,r) > 0.0 .OR. TEMP_TB_89H(c,r) > 0.0)
-                
+
                 ! Bits 0-2: Footprint-level flags (ocean, precip, snow)
                 ! Count whenever ANY band has data
                 if (has_data .and. TEMP_QUALITY_FLAG(c,r) >= 0) then  ! -1 means no data
                     ARFS_COUNT_QF(c,r) = ARFS_COUNT_QF(c,r) + 1
-                    
+
                     ! Accumulate each bit separately
                     do i = 1, 8
                         if (IBITS(TEMP_QUALITY_FLAG(c,r), i-1, 1) == 1) then
@@ -466,11 +473,11 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
                         endif
                     end do
                 endif
-                
+
             end do
         end do
 
-        
+
         ! Cleanup for this file
         deallocate(tb_lowres, lat_in, lon_in)
         deallocate(land_frac_low, quality_flag_in)
@@ -479,9 +486,9 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         deallocate(tb_10h, tb_10v, tb_18h, tb_18v)
         deallocate(tb_23h, tb_23v, tb_36h, tb_36v)
         deallocate(tb_89h, tb_89v, time_array)
-        
+
     end do ! ifile loop
-    
+
     ! =====================================================================
     ! CALCULATE MEANS
     ! =====================================================================
@@ -494,7 +501,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     allocate(ARFS_LAND_FRAC(2560,1920))
     allocate(ARFS_QUALITY_FLAG(2560,1920))
     allocate(ARFS_SAMPLE_V(2560,1920), ARFS_SAMPLE_H(2560,1920))
-    
+
     ARFS_TIME = 0.0
     ARFS_TB_10H = 0.0
     ARFS_TB_10V = 0.0
@@ -510,7 +517,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ARFS_QUALITY_FLAG = 0
     ARFS_SAMPLE_V = 0
     ARFS_SAMPLE_H = 0
-    
+
     do r = 1, 1920
         do c = 1, 2560
             if (ARFS_COUNT_10H(c,r) > 0) then
@@ -570,11 +577,11 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
             else
                 ARFS_LAND_FRAC(c,r) = -9999.0
             endif
-            
+
             ! Replace quality flag creation with:
             if (ARFS_COUNT_QF(c,r) > 0) then
                 ARFS_QUALITY_FLAG(c,r) = 0
-                
+
                 ! Set each bit based on majority vote
                 do i = 1, 8
                     if (ARFS_QUALITY_FLAG_SUM(c,r,i) > ARFS_COUNT_QF(c,r)/2) then
@@ -586,7 +593,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
             endif
         end do
     end do
-    
+
     ! =====================================================================
     ! WRITE OUTPUT
     ! =====================================================================
@@ -598,13 +605,13 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         ! Unfiltered output (all footprints kept, for snow depth retrieval)
         output_filename = trim(output_dir)//'/WSF_SDR_resampled_allfp_'// &
             yyyymmdd//'_t'//hour_str//'00_'//trim(pass_suffix)//'.nc'
-    endif 
-    
+    endif
+
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Writing stitched hourly output'
     write(LDT_logunit,*)'[INFO] Output file: ', trim(output_filename)
     write(LDT_logunit,*)'[INFO] ========================================='
-    
+
     call LDT_WSF_ARFS_write_netcdf_hourly(2560, 1920, &
         ARFS_TB_10H, ARFS_TB_10V, ARFS_TB_18H, ARFS_TB_18V, &
         ARFS_TB_23H, ARFS_TB_23V, ARFS_TB_36H, ARFS_TB_36V, &
@@ -612,7 +619,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
         ARFS_QUALITY_FLAG, ARFS_SAMPLE_V, ARFS_SAMPLE_H, &
         ARFS_LAT, ARFS_LON, output_filename, &
         yyyymmdd, hour_str, n_files)
-    
+
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] Hourly stitching statistics:'
     write(LDT_logunit,*)'[INFO] Files processed: ', n_files
@@ -623,7 +630,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     write(LDT_logunit,*)'[INFO]   H-pol: ', maxval(ARFS_SAMPLE_H)
     write(LDT_logunit,*)'[INFO]   V-pol: ', maxval(ARFS_SAMPLE_V)
     write(LDT_logunit,*)'[INFO] ========================================='
-    
+
     ! Cleanup
     deallocate(ARFS_LAT, ARFS_LON)
     deallocate(ARFS_TIME_SUM, ARFS_TB_10H_SUM, ARFS_TB_10V_SUM)
