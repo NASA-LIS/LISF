@@ -1218,7 +1218,8 @@ contains
      logical, intent(inout) :: saved_good
 
      ! Locals
-     integer :: ncid, precip_var_id, plp_var_id
+     integer :: ncid, grp_ncid, precip_var_id, plp_var_id
+     character(len=NF90_MAX_NAME) :: groupname
      integer :: dimids(NF90_MAX_VAR_DIMS)
      real, allocatable :: tmp_precip_30min(:,:,:)
      integer*2, allocatable :: tmp_plp_30min(:,:,:)
@@ -1331,12 +1332,33 @@ contains
          goto 100
       end if
 
-      ! Open the precipitation dataset
-      varname = "/Grid/precipitation"
-      ierr = nf90_inq_varid(ncid, varname, precip_var_id)
+      ! Open Grid group
+      groupname = 'Grid'
+      ierr = nf90_inq_ncid(ncid, groupname, grp_ncid)
       if (ierr .ne. NF90_NOERR) then
          write(LIS_logunit,*)&
-              '[WARN] update30minImergHHV8Precip Cannot find dataset', &
+              '[WARN] update30minImergHHV8Precip Cannot find group ', &
+              trim(groupname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot find group ' // trim(groupname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Open the precipitation dataset
+      varname = "precipitation"
+      ierr = nf90_inq_varid(grp_ncid, varname, precip_var_id)
+      if (ierr .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot find dataset ', &
               trim(varname)
          flush(LIS_logunit)
          message(:) = ''
@@ -1353,7 +1375,7 @@ contains
       end if
 
       ! Get dimensions
-      ierr = nf90_inquire_variable(ncid, precip_var_id, ndims=ndims, &
+      ierr = nf90_inquire_variable(grp_ncid, precip_var_id, ndims=ndims, &
            dimids=dimids)
       if (ierr .ne. NF90_NOERR .or. ndims .ne. 3) then
          write(LIS_logunit,*)&
@@ -1373,9 +1395,9 @@ contains
          goto 100
       end if
 
-      ierr1 = nf90_inquire_dimension(ncid, dimids(1), len=nlat)
-      ierr2 = nf90_inquire_dimension(ncid, dimids(2), len=nlon)
-      ierr3 = nf90_inquire_dimension(ncid, dimids(3), len=ntime)
+      ierr1 = nf90_inquire_dimension(grp_ncid, dimids(1), len=nlat)
+      ierr2 = nf90_inquire_dimension(grp_ncid, dimids(2), len=nlon)
+      ierr3 = nf90_inquire_dimension(grp_ncid, dimids(3), len=ntime)
       if (ierr1 .ne. NF90_NOERR .or. ierr2 .ne. NF90_NOERR .or. &
            ierr3 .ne. NF90_NOERR) then
          write(LIS_logunit,*)&
@@ -1415,7 +1437,7 @@ contains
       end if
 
       allocate(tmp_precip_30min(nlat, nlon, 1))
-      ierr = nf90_get_var(ncid, precip_var_id, tmp_precip_30min, &
+      ierr = nf90_get_var(grp_ncid, precip_var_id, tmp_precip_30min, &
            start=(/1,1,1/), count=(/nlat,nlon,1/) )
       if (ierr .ne. NF90_NOERR) then
          write(LIS_logunit,*)&
@@ -1436,8 +1458,8 @@ contains
       end if
 
       ! Open the probability of liquid phase dataset
-      varname = "/Grid/probabilityLiquidPhase"
-      ierr = nf90_inq_varid(ncid, varname, plp_var_id)
+      varname = "probabilityLiquidPhase"
+      ierr = nf90_inq_varid(grp_ncid, varname, plp_var_id)
       if (ierr .ne. NF90_NOERR) then
          write(LIS_logunit,*)&
               '[WARN] update30minImergHHV8Precip Cannot find dataset', &
@@ -1457,7 +1479,7 @@ contains
       end if
 
       ! Get dimensions
-      ierr = nf90_inquire_variable(ncid, plp_var_id, ndims=ndims, &
+      ierr = nf90_inquire_variable(grp_ncid, plp_var_id, ndims=ndims, &
            dimids=dimids)
       if (ierr .ne. NF90_NOERR .or. ndims .ne. 3) then
          write(LIS_logunit,*)&
@@ -1477,9 +1499,9 @@ contains
          goto 100
       end if
 
-      ierr1 = nf90_inquire_dimension(ncid, dimids(1), len=nlat)
-      ierr2 = nf90_inquire_dimension(ncid, dimids(2), len=nlon)
-      ierr3 = nf90_inquire_dimension(ncid, dimids(3), len=ntime)
+      ierr1 = nf90_inquire_dimension(grp_ncid, dimids(1), len=nlat)
+      ierr2 = nf90_inquire_dimension(grp_ncid, dimids(2), len=nlon)
+      ierr3 = nf90_inquire_dimension(grp_ncid, dimids(3), len=ntime)
       if (ierr1 .ne. NF90_NOERR .or. ierr2 .ne. NF90_NOERR .or. &
            ierr3 .ne. NF90_NOERR) then
          write(LIS_logunit,*)&
@@ -1519,7 +1541,8 @@ contains
       end if
 
       allocate(tmp_plp_30min(nlat,nlon,1))
-      ierr = nf90_get_var(ncid, plp_var_id, tmp_plp_30min, start=(/1,1,1/), &
+      ierr = nf90_get_var(grp_ncid, plp_var_id, tmp_plp_30min, &
+           start=(/1,1,1/), &
            count=(/nlat,nlon,1/) )
       if (ierr .ne. NF90_NOERR) then
          write(LIS_logunit,*)&
@@ -1755,7 +1778,7 @@ contains
          else if (index(trim(version), 'V07') .ne. 0) then
             filename = trim(filename)//"."//trim(version)//".HDF5"
          else if (index(trim(version), 'V08') .ne. 0) then
-            filename = trim(filename)//"."//trim(version)//".NC"
+            filename = trim(filename)//"."//trim(version)//".nc"
          end if
       case ("3B-HHR-E", "3B-HHR-L")
          if (index(trim(version), 'V06') .ne. 0) then
