@@ -139,6 +139,9 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
             _f.write('unset PROJ_LIB' + '\n')
             _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
+        elif os.path.isfile(lisf + '/env/hpc11/' + lisf_module):
+            _f.write('module use -a ' + lisf + '/env/hpc11/' + '\n')
+            _f.write('module load ' + lisf_module + '\n')
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
             _f.write('module load ' + lisf_module + '\n')
@@ -371,6 +374,9 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             _f.write('unset LD_LIBRARY_PATH' + '\n')
             _f.write('module use --append ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
+        elif os.path.isfile(lisf + '/env/hpc11/' + lisf_module):
+            _f.write('module use -a ' + lisf + '/env/hpc11/' + '\n')
+            _f.write('module load ' + lisf_module + '\n')            
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
             _f.write('module load ' + lisf_module + '\n')
