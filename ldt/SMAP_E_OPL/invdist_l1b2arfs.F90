@@ -217,8 +217,6 @@
         sc_nadir_angle, antenna_scan_angle, nrows_l1btb, ncols_l1btb, &
         ref_lat, ref_lon, arfs_tim, arfs_tbv_cor)
 
-     use LDT_logMod, only: LDT_logunit
-
      INTEGER(4) :: ii, jj, k, r, c, rr, rmin, rmax, cc, cmin, cmax, nrows_l1btb, ncols_l1btb
      INTEGER(4), PARAMETER :: qualitybit = 0
      REAL(8), PARAMETER :: RE_KM = 6371.228, search_radius = 20.0, PI = 3.141592653589793238, d2r = PI/180.0

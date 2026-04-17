@@ -80,8 +80,11 @@ contains
 !
 !EOP
 
-    integer          :: status, rc
+    integer          :: status
     integer          :: n
+
+    external :: bilinear_interp_input
+    external :: upscaleByAveraging_input
 
     allocate(WSFsmobs(LDT_rc%nnest))
 

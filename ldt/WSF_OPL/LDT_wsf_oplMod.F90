@@ -136,7 +136,7 @@ contains
     character*10 :: tmp
     character*2 :: target_hour
     character*8 :: yyyymmdd
-    integer :: ftn, ierr, fi, i, j, k
+    integer :: ftn, ierr, fi, i, j
     integer :: n_filtered, n_hour_group
     integer :: target_hour_int
     logical :: file_exists
@@ -148,7 +148,6 @@ contains
     real*4, allocatable :: chan_frequencies(:)
     character*1, allocatable :: chan_polarizations(:)
     integer :: n_asc, n_desc
-    integer*8 :: file_size_bytes
     type(wsf_file_info), allocatable :: filtered_asc(:), filtered_desc(:)
 
         
@@ -544,6 +543,8 @@ contains
     character*10      :: tmp
     character*255     :: list_files
     character*255     :: search_pattern
+
+    external :: system
 
     yyyymmdd = date_curr(1:8)
     

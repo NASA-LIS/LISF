@@ -46,18 +46,17 @@ subroutine readWSFsmObs(n)
 !
 !EOP
 
-  real              :: timenow
-  logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c, r
   character*200     :: fname
   character*200     :: list_files
   character*8       :: yyyymmdd
-  character*2       :: hh
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   integer           :: ftn, ierr, rc
   integer, external :: create_filelist  ! C function
   integer           :: file_count, valid_count
+
+  external :: read_WSFsm_data_ldt
 
 !-----------------------------------------------------------------------
 !  It is assumed that CDF is computed using daily observations.
@@ -203,6 +202,9 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
   integer                 :: ntime, nlat, nlon
   real, allocatable       :: tmp(:,:,:)
   integer                 :: rc
+
+  external :: bilinear_interp
+  external :: upscaleByAveraging
 
   sm_in = LDT_rc%udef
   sm_data_b = .false.
