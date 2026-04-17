@@ -69,7 +69,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
         levels = plot_utils.dicts('anom_levels', 'standardized')
 
     # READ ANOMALIES
-    anom_crop = get_anom(data_dir, var_name, metric, boundary, [logger, None])
+    anom_crop = get_anom(data_dir, var_name, metric, boundary)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
     plot_arr = median_anom[lead_month, ]

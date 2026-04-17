@@ -19,8 +19,8 @@ import sys
 import os
 import glob
 import gc
+import xarray as xr
 import numpy as np
-from ghis2s.shared.utils import load_ncdata
 from ghis2s.s2splots import plot_utils
 
 def _get_snow_cover(sel_cim_data):
@@ -82,29 +82,44 @@ def sel_var(sel_cim_data, var_name, model):
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
+    elif var_name == "TOP10ST":
+        if model in ('NOAHMP', 'NoahMP'):
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            var_sel_clim_data = valid_data.SoilTemp_tavg.isel(soil_layer=0)
+        else:
+            print(f"[ERR] Unknown model {model}")
+            sys.exit(1)
+
     elif var_name == "TOP40ST":
         if model in ('NOAHMP', 'NoahMP'):
-            term1 = sel_cim_data.SoilTemp_tavg.isel(soil_layer=0) * 0.1
-            term2 = sel_cim_data.SoilTemp_tavg.isel(soil_layer=1) * 0.3
-            var_sel_clim_data = term1 + term2
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            term1 = valid_data.SoilTemp_tavg.isel(soil_layer=0) * w1
+            term2 = valid_data.SoilTemp_tavg.isel(soil_layer=1) * w2
+            var_sel_clim_data = (term1 + term2)/(w1 + w2)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
     elif var_name == "TOP40SM":
         if model in ('NOAHMP', 'NoahMP'):
-            term1 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=0) * 0.1
-            term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * 0.3
-            var_sel_clim_data = term1 + term2
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            term1 = valid_data.SoilMoist_tavg.isel(soil_layer=0) * w1
+            term2 = valid_data.SoilMoist_tavg.isel(soil_layer=1) * w2
+            var_sel_clim_data = (term1 + term2)/(w1 + w2)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
     elif var_name == "TOP40RELSM":
         if model in ('NOAHMP', 'NoahMP'):
-            term1 = sel_cim_data.RelSMC_tavg.isel(soil_layer=0) * 0.1
-            term2 = sel_cim_data.RelSMC_tavg.isel(soil_layer=1) * 0.3
-            var_sel_clim_data = term1 + term2
+            w1, w2 = 0.1, 0.3
+            valid_data = sel_cim_data.where(sel_cim_data != -9999.)
+            term1 = valid_data.RelSMC_tavg.isel(soil_layer=0) * w1
+            term2 = valid_data.RelSMC_tavg.isel(soil_layer=1) * w2
+            var_sel_clim_data = (term1 + term2)/(w1 + w2)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
@@ -114,11 +129,13 @@ def sel_var(sel_cim_data, var_name, model):
             # for clsm the total soil moisture is in the third layer
             var_sel_clim_data = sel_cim_data.SoilMoist_tavg.isel(soil_layer=2)
         elif model in ("NOAHMP", "NoahMP"):
-            term1 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=0) * 0.05
-            term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * 0.15
-            term3 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=2) * 0.3
-            term4 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=3) * 0.5
-            var_sel_clim_data = term1 + term2 + term3 + term4
+            w1, w2, w3, w4 = 0.1, 0.3, 0.6, 1.0
+            term1 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=0) * w1
+            term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * w2
+            term3 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=2) * w3
+            term4 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=3) * w4
+            var_sel_clim_data = (term1 + term2 + term3 + term4) \
+                /(w1 + w2 + w3 + w4)
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
@@ -269,9 +286,15 @@ def merged_metric_filename(output_dir, startdate, enddate,
     _check_filename_size(name)
     return name
 
-def get_anom(path, var_name, metric, domain, logger, weekly=False):
+def get_anom(path, var_name, metric, domain, weekly=False):
+    ''' read metrics NC files are returns ANOM/SANOM '''
     def preproc(ds_):
-        ds_ = ds_.isel(ens=0)
+        if var_name == 'Streamflow':
+            ds_ = ds_.isel(ens=0)
+        ds_ = ds_.assign_coords(
+            latitude=ds_.latitude.round(3),
+            longitude=ds_.longitude.round(3)
+        )
         return ds_
 
     if weekly:
@@ -281,19 +304,15 @@ def get_anom(path, var_name, metric, domain, logger, weekly=False):
 
     files = glob.glob(regex)
     thisvar = var_name + '_' + metric
-    if var_name == 'Streamflow':
-        kwargs = {
-            'concat_dim': 'ens', 
-            'combine': 'nested',
-            'preprocess': preproc
-        }
-    else:
-        kwargs = {
-            'concat_dim': 'ens', 
-            'combine': 'nested'
-        }
-    anom = load_ncdata(files, logger,  var_name= thisvar, **kwargs)
-    anom = anom.rename({'latitude': 'lat', 'longitude': 'lon'})
+    kwargs = {
+        'concat_dim': 'ens',
+        'combine': 'nested',
+        'join': 'override',
+        'preprocess': preproc       
+    }
+
+    anom = xr.open_mfdataset(files, **kwargs)
+    anom = anom[thisvar].rename({'latitude': 'lat', 'longitude': 'lon'})
     anom_crop = plot_utils.crop(domain, anom)
     del anom
     gc.collect()

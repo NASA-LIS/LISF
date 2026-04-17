@@ -8,6 +8,7 @@ SETUP:
   E2ESDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/
   LISFDIR: /discover/nobackup/projects/ghilis/S2S/LISF/
   LISFMOD: lisf_7.5_intel_2023.2.1_s2s
+  ##LISFMOD: lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_afw3.11-202511
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
   ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
@@ -22,9 +23,8 @@ SETUP:
 
 EXP:
   DOMAIN: GLOBAL
-  lsmdir: NOAHMP
   lsm:    noahmp401
-  routing_name: hymap2
+  routing_model: {model: hymap2, subdomains: false}
   pertmode: restart
   lead_months: 9
   NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]
@@ -39,8 +39,9 @@ BCSD:
   clim_start_year: 1991
   clim_end_year: 2020
   nof_raw_ens: 12
-  metforce_source: CFSv2
-  
+  source: {metforce: CFSv2, precip: nmme, obs: USAF-LIS7.3rc8}
+  force_corr: {lapserate: false, aspect: false}
+
 #######################################################################
 #                            LIS Forecast
 #######################################################################
@@ -48,13 +49,8 @@ BCSD:
 FCST:
   numprocx: 4
   numprocy: 72
-  JOB_SEGMENTS:
-  - CanESM5: 3
-    CESM1: 3
-    GNEMO52: 3
-    GEOSv2: 2 
-    CFSv2: 5
-    GFDL: 9
+  JOB_SEGMENTS: {CanESM5: 5, CESM1: 5, GNEMO52: 5, GEOSv2: 2, CFSv2: 5,
+                 GFDL: 9}
   
 #######################################################################
 #                          Post-processor

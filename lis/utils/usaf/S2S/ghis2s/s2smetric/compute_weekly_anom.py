@@ -50,7 +50,7 @@ BASEOUTDIR = sys.argv[5]
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     CONFIG = yaml.safe_load(file)
 
-HYD_MODEL = CONFIG["EXP"]["lsmdir"]
+HYD_MODEL = CONFIG["EXP"]["lsm"].upper()[0:6]
 DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
@@ -200,8 +200,14 @@ def process_variable(var_name, anom):
         logger.info(f"Reading target {fcst_file}", subtask=var_name)
         fcst_xr = load_ncdata(fcst_file, [logger, var_name])
         fcst_data = sel_var(fcst_xr, var_name, HYD_MODEL)
+
         mean_data = sel_var(mean_xr.isel(lead_time=lead), var_name, HYD_MODEL)
         std_data = sel_var(std_xr.isel(lead_time=lead), var_name, HYD_MODEL)
+        # mask ocean in clim data
+        land_mask_2d = fcst_data.isel(ensemble=0, time=0)
+        land_mask_2d = (land_mask_2d != -9999.) & ~np.isnan(land_mask_2d)
+        mean_data = mean_data.where(land_mask_2d)
+        std_data = std_data.where(land_mask_2d)
         this_anom = None
 
         # Initialize the anomaly array on first lead
@@ -274,7 +280,7 @@ def process_variable(var_name, anom):
     }
     anom_xr['time'].attrs = {
         'long_name': 'Forecast week',
-        'units': 'week'
+        'units': 'weeks'
     }
     anom_xr[var_name + '_' + anom].attrs = {
         'long_name': long_names[var_name],

@@ -89,7 +89,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
         config = yaml.safe_load(file)
 
     # Base forecast model
-    fcst_model = config['BCSD']['metforce_source']
+    fcst_model = config['BCSD']['source']['metforce']
 
     if fcst_model.upper() not in ['CFSV2', 'GEOSV3']:
         print(f'Unsupported forecast data {fcst_model}')
@@ -112,7 +112,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     ic_dates = calc_ic_dates(imon)
 
     # Process 6-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
-    print("[INFO] Processing CFSv2 6-hrly forecast variables")
+    print(f"[INFO] Processing {fcst_model} X-hrly forecast variables")
     nof_raw_ens = config['BCSD']['nof_raw_ens']
 
     # if the call came from s2s_run.py the method returns 3 lists
@@ -126,7 +126,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
                 if fcst_model == 'CFSv2':
                     cmd += f" {srcdir}/process_cfsv2_forcing.py"
                 if fcst_model == 'GEOSv3':
-                    cmd += f" {srcdir}/geosv3_geosv3_forcing.py"
+                    cmd += f" {srcdir}/process_geosv3_forcing.py"
                 cmd += f" {cyear:04d}"
                 cmd += f" {ens_num:02d}"
                 cmd += f" {imon}"
@@ -136,12 +136,19 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
                     for ic_date in ic_dates:
                         cmd += f" {ic_date}"
                 cmd_list.append(cmd)
-                slurm_commands.append(cmd)
-            jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
-            jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            if not py_call:
-                utils.job_script(config_file, jobfile, jobname, len(cmd_list),
-                                 hours, cwd, None, group_jobs=cmd_list)
+                jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
+                jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
+
+                if py_call:
+                    slurm_commands.append(cmd)
+                    #if resol == '25km':
+                    #    slurm_commands.append(cmd)
+                    #else:
+                    #    for lead_mon in range(config["EXP"]["lead_months"]):
+                    #        slurm_commands.append(cmd + f" {lead_mon}")
+                else:
+                    utils.job_script(config_file, jobfile, jobname, len(cmd_list),
+                                     hours, cwd, None, group_jobs=cmd_list)
 
         else:
             cmd = "python"
@@ -162,16 +169,17 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
 
             if py_call:
-                if resol == '25km':
-                    slurm_commands.append(cmd)
-                else:
-                    for lead_mon in range(config["EXP"]["lead_months"]):
-                        slurm_commands.append(cmd + f" {lead_mon}")
+                slurm_commands.append(cmd)
+                #if resol == '25km':
+                #    slurm_commands.append(cmd)
+                #else:
+                #    for lead_mon in range(config["EXP"]["lead_months"]):
+                #        slurm_commands.append(cmd + f" {lead_mon}")
             else:
                 utils.job_script(config_file, jobfile, jobname, ntasks,
                                  hours, cwd, None, in_command=cmd)
 
-    print(f"[INFO] Write command to process CFSv2 files for {imon}")
+    print(f"[INFO] Write command to process {fcst_model} files for {imon}")
     if py_call:
         return slurm_commands
 

@@ -77,7 +77,8 @@ LAT_LDT, LON_LDT = get_domain_info(CONFIG_FILE, coord=True)
 RESOL = f'{round((LAT_LDT[1] - LAT_LDT[0])*100)}km'
 with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
-FCST_DATA_TYPE = config['BCSD']['metforce_source']
+FCST_DATA_TYPE = config['BCSD']['source']['metforce']
+PRECIP_DATA_TYPE = config['BCSD']['source']['precip']
 FORCE_DT = 21600
 if FCST_DATA_TYPE == 'CFSv2':
     FORCE_DT = 21600
@@ -197,14 +198,14 @@ def process_ensemble(ens):
         os.makedirs(outdir, exist_ok=True)
 
     for lead_num in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
-        fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, 6) + \
+        fcst_date = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, FORCE_DT//3600) + \
             relativedelta(months=lead_num)
         fcst_year, fcst_month = fcst_date.year, fcst_date.month
 
         ### First read bias corrected monthly forecast data
         bc_infile = MONTHLY_BC_INFILE_TEMPLATE.format(MONTHLY_BC_FCST_DIR, FCST_VAR, MODEL_NAME,
                                                       MONTH_NAME, fcst_year, fcst_month)
-        logger.info(f"Reading bias corrected monthly forecasts {bc_infile}", [logger, task_label])
+        logger.info(f"Reading bias corrected monthly forecasts {bc_infile}", subtask=task_label)
         mon_bc_datag = load_ncdata(bc_infile, [logger, None])
 
         lons = mon_bc_datag['longitude'].values
@@ -233,9 +234,14 @@ def process_ensemble(ens):
                 MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
                 MODEL_NAME.lower(), fcst_year, fcst_month)
         else:
-            monthly_infile = MONTHLY_NMME_INFILE_TEMPLATE.format(
-                MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
-                fcst_year, fcst_month)
+            if PRECIP_DATA_TYPE is not None:
+                monthly_infile = MONTHLY_NMME_INFILE_TEMPLATE.format(
+                    MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
+                    fcst_year, fcst_month)
+            else:
+                monthly_infile = MONTHLY_RAW_INFILE_TEMPLATE.format(
+                    MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME,
+                    MODEL_NAME.lower(), fcst_year, fcst_month)
 
         logger.info(f"Reading raw monthly forecast {monthly_infile}", subtask=task_label)
         monthly_input_raw_datag = load_ncdata(monthly_infile, [logger, task_label])
@@ -281,7 +287,7 @@ def process_ensemble(ens):
             input_core_dims=[[],[],['time']],
             exclude_dims=set(('time',)),
             output_core_dims=[['time']],
-            output_sizes={'time': num_timesteps},
+            dask_gufunc_kwargs={'output_sizes': {'time': num_timesteps}},
             vectorize=True,
             dask="parallelized",
             output_dtypes=[np.float32],
@@ -301,7 +307,7 @@ def process_ensemble(ens):
         logger.info(f"Writing {outfile}", subtask=task_label)
         output_bc_data = np.ma.masked_array(output_bc_data,
                                             mask=output_bc_data == -9999.)
-        date = [fcst_date+relativedelta(hours=n*6)
+        date = [fcst_date+relativedelta(hours=n*FORCE_DT/3600)
                 for n in range(num_timesteps)]
 
         write_bc_netcdf(outfile, output_bc_data, OBS_VAR, \
