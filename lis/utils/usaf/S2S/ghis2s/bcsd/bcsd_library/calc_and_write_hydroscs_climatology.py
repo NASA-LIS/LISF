@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 """
-# Author: Shrad Shukla
-# Usage: This is a part of the BCSD code. It creates sorted time series of observed data
-# This has been created seperately so during the bias-correction process we don't need to calculate
-# This module bias corrects a forecasts following probability mapping approach as described in
-# Wood et al. 2002
-# Date: August 06, 2015
+# Author: Sarith Mahanama 
+# Usage: This computes HydroSCS climatology.
 """
 
 import os
