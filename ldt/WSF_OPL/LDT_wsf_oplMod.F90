@@ -14,18 +14,20 @@
 
 module LDT_wsf_oplMod
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   implicit none
   private
 
   public :: LDT_wsf_oplInit
   public :: LDT_wsf_oplRun
-  public :: wsf_file_info  
+  public :: wsf_file_info
 
   type, public :: wsf_opl_dec
-    character*100 :: WSFdir
-    character*100 :: WSFoutdir
+    character(len=LDT_CONST_PATH_LEN) :: WSFdir
+    character(len=LDT_CONST_PATH_LEN) :: WSFoutdir
     character*10  :: date_curr
-    
+
     real*4, allocatable :: ARFS_TB_10V(:,:)
     real*4, allocatable :: ARFS_TB_10H(:,:)
     real*4, allocatable :: ARFS_TB_18V(:,:)
@@ -48,7 +50,7 @@ module LDT_wsf_oplMod
   type(wsf_opl_dec), public :: WSFopl
 
   type :: wsf_file_info
-    character*255 :: filename
+    character(len=LDT_CONST_PATH_LEN) :: filename
     character*8   :: date_str
     character*6   :: start_time
     character*6   :: end_time
@@ -121,6 +123,7 @@ contains
   end subroutine LDT_wsf_oplInit
 
   subroutine LDT_wsf_oplRun(n)
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc
     use LDT_logMod
     use TOOLSUBS_WSF
@@ -132,7 +135,7 @@ contains
     type(wsf_file_info), allocatable :: wsf_files(:)
     type(wsf_file_info), allocatable :: filtered_files(:)
     type(wsf_file_info), allocatable :: hour_group(:)
-    character(len=255) :: fname
+    character(len=LDT_CONST_PATH_LEN) :: fname
     character*10 :: tmp
     character*2 :: target_hour
     character*8 :: yyyymmdd
@@ -357,13 +360,14 @@ contains
   end function file_overlaps_hour
 
   subroutine parse_wsf_filename_improved(filename, file_info)
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
     
     implicit none
     character(len=*), intent(in) :: filename
     type(wsf_file_info), intent(out) :: file_info
     
-    character*255 :: basename
+    character(len=LDT_CONST_PATH_LEN) :: basename
     integer :: pos, pos_d, pos_t, pos_e, pos_i
     integer*8 :: file_size_bytes
     
@@ -532,6 +536,7 @@ contains
   end subroutine filter_duplicate_files_improved
 
   subroutine search_WSF_files(ndir, date_curr, suffix)
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
     
     implicit none
@@ -541,8 +546,8 @@ contains
 
     character*8       :: yyyymmdd
     character*10      :: tmp
-    character*255     :: list_files
-    character*255     :: search_pattern
+    character(len=LDT_CONST_PATH_LEN) :: list_files
+    character(len=LDT_CONST_PATH_LEN) :: search_pattern
 
     external :: system
 

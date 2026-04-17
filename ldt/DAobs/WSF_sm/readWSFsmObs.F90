@@ -24,6 +24,7 @@
 subroutine readWSFsmObs(n)
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_DAobsDataMod
@@ -48,8 +49,8 @@ subroutine readWSFsmObs(n)
 
   logical           :: file_exists
   integer           :: c, r
-  character*200     :: fname
-  character*200     :: list_files
+  character(len=LDT_CONST_PATH_LEN) :: fname
+  character(len=LDT_CONST_PATH_LEN) :: list_files
   character*8       :: yyyymmdd
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   integer           :: ftn, ierr, rc

@@ -17,6 +17,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     USE TOOLSUBS_WSF
     USE invdist_wsf2arfs
     USE LDT_logMod
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     USE LDT_coreMod, only: LDT_rc
     USE LDT_WSF_ARFS_netcdfMod, only: LDT_WSF_ARFS_write_netcdf_hourly
     USE LDT_wsf_oplMod, only: wsf_file_info
@@ -100,7 +101,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     integer :: nscans, nfovs, nchans, ierr, ichan
     real :: freq
     character*1 :: pol
-    character(len=255) :: output_filename
+    character(len=LDT_CONST_PATH_LEN) :: output_filename
     
     integer*4, allocatable :: ARFS_COUNT_QF(:,:)
     integer*4, allocatable :: ARFS_QUALITY_FLAG_SUM(:,:,:)  ! (2560, 1920, 8) for each bit
