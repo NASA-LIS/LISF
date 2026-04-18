@@ -11,23 +11,26 @@ module LDT_runmode_pluginMod
 !BOP
 !
 ! !MODULE: LDT_runmode_pluginMod
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !   This module contains the definition of the functions used for
-!   defining routines that initialize various LDT-runmodes. 
-!   The user defined functions are incorporated into 
-!   the appropriate registry to be later invoked through generic calls. 
-!   
-! !REVISION HISTORY: 
-!  17 Feb 2004;   Sujay Kumar  Initial Specification
-! 
-!EOP  
+!   defining routines that initialize various LDT-runmodes.
+!   The user defined functions are incorporated into
+!   the appropriate registry to be later invoked through generic calls.
+!
+! !REVISION HISTORY:
+!  17 Feb 2004: Sujay Kumar; Initial Specification
+!  07 Jun 2022: Yonghwan Kwon; Add OPL E SMAP soil moisture retrieval support
+!  10 Oct 2025: Ehsan Jalilvand; Add OPL WSF brightness temperature
+!                                resampling support
+!
+!EOP
   implicit none
   PRIVATE
 !------------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !------------------------------------------------------------------------------
-  PUBLIC :: LDT_runmode_plugin  
+  PUBLIC :: LDT_runmode_plugin
 contains
 !BOP
 ! !ROUTINE: LDT_runmode_plugin
@@ -35,9 +38,9 @@ contains
 !
 ! !DESCRIPTION:
 !
-!  This is a plugin point for introducing a new LDT-runmode. 
+!  This is a plugin point for introducing a new LDT-runmode.
 !  The interface mandates that the following interfaces be implemented
-!  and registered for each LDT-runmode. 
+!  and registered for each LDT-runmode.
 !
 !
 ! !INTERFACE:
@@ -74,7 +77,7 @@ contains
 
     external LDT_init_StatDscaleMetForc
     external LDT_run_StatDscaleMetForc
-    
+
     external LDT_init_NUWRFpreproc
     external LDT_run_NUWRFpreproc
 
@@ -96,8 +99,11 @@ contains
     external LDT_init_LISHydropreproc
     external LDT_run_LISHydropreproc
 
-    external LDT_init_smap_e_opl     !Y.Kwon
-    external LDT_run_smap_e_opl      !Y.Kwon
+    external LDT_init_smap_e_opl
+    external LDT_run_smap_e_opl
+
+    external LDT_init_wsf_opl     !E.J
+    external LDT_run_wsf_opl      !E.J
 
   ! Parameter Preprocessing:
     call registerldtinit(trim(LDT_LSMparamprocId)//char(0), &
@@ -151,7 +157,7 @@ contains
          LDT_init_NUWRFpreproc)
     call registerldtrun(trim(LDT_NUWRFpreprocId)//char(0), &
          LDT_run_NUWRFpreproc)
-  
+
   ! Artificial Neural Network Approach:
     call registerldtinit(trim(LDT_ANNprocId)//char(0), &
          LDT_init_ANNproc)
@@ -188,11 +194,17 @@ contains
     call registerldtrun(trim(LDT_LISHydropreprocId)//char(0), &
          LDT_run_LISHydropreproc)
 
-  ! OPL E SMAP soil moisture retrieval  (Y.Kwon)
+  ! OPL E SMAP soil moisture retrieval
     call registerldtinit(trim(LDT_SMAP_E_OPLId)//char(0), &
          LDT_init_smap_e_opl)
     call registerldtrun(trim(LDT_SMAP_E_OPLId)//char(0), &
          LDT_run_smap_e_opl)
+
+  ! OPL WSF brightness temperature resampling
+    call registerldtinit(trim(LDT_WSF_OPLId)//char(0), &
+         LDT_init_wsf_opl)
+    call registerldtrun(trim(LDT_WSF_OPLId)//char(0), &
+         LDT_run_wsf_opl)
 
   end subroutine LDT_runmode_plugin
 

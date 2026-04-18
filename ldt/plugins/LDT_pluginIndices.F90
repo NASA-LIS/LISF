@@ -51,7 +51,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
    character*50, public,  parameter :: LDT_obsSimprocId   = "Observation simulator"
    character*50, public,  parameter :: LDT_LISHydropreprocId  = "LISHydro preprocessing for WRFHydro"
-   character*50, public,  parameter :: LDT_SMAP_E_OPLId       = "OPL E SMAP soil moisture retrieval"  !Y.Kwon
+   character*50, public,  parameter :: LDT_SMAP_E_OPLId       = "OPL E SMAP soil moisture retrieval"
+   character*50, public,  parameter :: LDT_WSF_OPLId       = "OPL WSF brightness temperature resampling"
 
 !-------------------------------------------------------------------------
 ! Domains
@@ -72,7 +73,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_LISlsmSMobsId              &
         = "LIS LSM soil moisture"
    character*50, public,  parameter :: LDT_LISlsmTEFFobsId            &
-        = "LIS LSM effective soil temperature"                               !Y.Kwon
+        = "LIS LSM effective soil temperature"
    character*50, public,  parameter :: LDT_syntheticSMobsId           &
         = "Synthetic soil moisture"
    character*50, public,  parameter :: LDT_NASA_AMSREsmobsId          &
@@ -112,11 +113,13 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
    character*50, public,  parameter :: LDT_SMAPEOPLsmobsId            &
-        = "SMAP_E_OPL soil moisture"                                        !Y.Kwon
+        = "SMAP_E_OPL soil moisture"
+   character*50, public, parameter :: LDT_WSFsmobsId                  &
+        = "WSF soil moisture"
    character*50, public,  parameter :: LDT_THySMobsId            &
         = "THySM soil moisture"
    character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
-        = "SMOS NRT NN soil moisture"                                        !Y.Kwon
+        = "SMOS NRT NN soil moisture"
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
         = "NASA SMAP vegetation optical depth"
    character*50, public,  parameter :: LDT_GLASSlaiobsId            &
@@ -128,11 +131,11 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_LISlsmPrecipobsId          &
         = "LIS LSM total precipitation"
    character*50, public,  parameter :: LDT_VIIRSgvfobsId            &
-        = "VIIRS GVF"                                                    !Y.Kwon
+        = "VIIRS GVF"
    character*50, public,  parameter :: LDT_CDFSgvfobsId            &
-        = "CDFS GVF"                                                     !Y.Kwon
+        = "CDFS GVF"
    character*50, public,  parameter :: LDT_GEOSTeffobsId            &
-        = "GEOS effective soil temperature"                              !Y.Kwon
+        = "GEOS effective soil temperature"
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------
@@ -429,7 +432,6 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_MODISOSSEmaskDataId = "MODIS"
    character*50, public,  parameter :: LDT_Sentinel1AOSSEmaskDataId = "Sentinel1A"
    character*50, public,  parameter :: LDT_TSMMOSSEmaskDataId = "TSMM"
-   
 
 !EOC
  end module LDT_pluginIndices
