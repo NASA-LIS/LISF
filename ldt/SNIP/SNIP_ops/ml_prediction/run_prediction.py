@@ -22,7 +22,7 @@ REVISION HISTORY:
 30 Oct 2025: Eric Kemp, More code cleanup.
 19 Mar 2026: Kehan Yang, Code eidt to do filter and pre-classification
 """
-
+# pylint: disable=import-error
 # Standard modules
 from datetime import datetime
 import glob
@@ -62,6 +62,8 @@ _ENCODING = {
 # Pylint flags catching general exceptions, which is excessive.  We disable
 # that here.
 # pylint: disable=W0718
+# pylint: disable=too-many-instance-attributes, invalid-name,
+# too-many-locals, too-many-statements, too-many-branches
 
 class AMSR2SnowDepthPredictor:
     """
@@ -154,11 +156,10 @@ class AMSR2SnowDepthPredictor:
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"Model file not found: {model_path}")
 
-            with open(model_path, 'rb') as f:
-                model = xgb.XGBRegressor()
-                model.load_model(model_path)
-                self.model = model
-                self.model_feature_names = model.feature_names_in_.tolist()
+            model = xgb.XGBRegressor()
+            model.load_model(model_path)
+            self.model = model
+            self.model_feature_names = model.feature_names_in_.tolist()
             txt = f"Model loaded successfully from {model_path}" + \
                   f" in {time.time() - start_time:.2f} seconds"
             logger.info(txt)
@@ -254,6 +255,7 @@ class AMSR2SnowDepthPredictor:
             return self._format_output(y_pred, output_shape, lat, lon)
 
     def add_days_since_wy(self, df):
+        """Calculate BT difference"""
         df = df.copy()
         df['date'] = pd.to_datetime(df['Date'], format="%Y%m%d%H")
 
@@ -591,8 +593,8 @@ class AMSR2SnowDepthPredictor:
 
                 snow_depth = ds_out['snow_depth']
                 snow_depth_arr = snow_depth.values.copy()
-                mask_no_snow = (depth_flag_arr == 0)
-                mask_shallow = (depth_flag_arr == 2)
+                mask_no_snow = depth_flag_arr == 0
+                mask_shallow = depth_flag_arr == 2
 
                 snow_depth_arr[mask_no_snow] = 0
                 snow_depth_arr[mask_shallow] = 0.05
@@ -614,6 +616,7 @@ class AMSR2SnowDepthPredictor:
             return False
 
     def apply_snow_mask(self, ds_out, template_data):
+        """apply viirs binary snow mask"""
         # add snow mask from viirs data
         date_str = self.target_datetime.strftime('%Y%m%d')
         viirs_path = glob.glob(os.path.join(
@@ -640,11 +643,12 @@ class AMSR2SnowDepthPredictor:
             )
             logger.info('Successfully applied snow mask from VIIRS')
             return ds_out
-        else:
-            logger.error("No VIIRS data found")
-            return ds_out  # Fixed: return original data
+
+        logger.error("No VIIRS data found")
+        return ds_out  # Fixed: return original data
 
     def apply_filter(self):
+        """apply pre-classification mask"""
         data = self.ds_result
 
         # Step 3: Test for moderate to deep snow presence
@@ -880,4 +884,3 @@ class AMSR2SnowDepthPredictor:
         except Exception as e:
             logger.error("Error in pipeline: %s", e)
             return False
-

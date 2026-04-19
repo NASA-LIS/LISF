@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# -----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
 # Version 7.5
@@ -8,7 +8,7 @@
 # Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
-#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+# -------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 """
 SCRIPT: main.py
@@ -41,12 +41,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger('main')
 
+
 # Pylint flags catching general exceptions, which is excessive.  We
 # disable the warnings.
 # pylint: disable=W0718
-
+# pylint: disable=too-few-public-methods
 class AMSR2SnowWorkflow:
     """Class for automating workflow for AMSR2 snow depth retrievals"""
+
     def __init__(self, config=None):
         self.config = config
         self.data_processor = AMSR2DataProcessor(config=config)
@@ -57,7 +59,7 @@ class AMSR2SnowWorkflow:
         try:
             # Step 1: Read and process AMSR2 data
             target_datetime = self.config.target_datetime
-            logging.info("Processing AMSR2 data for %s" ,
+            logging.info("Processing AMSR2 data for %s",
                          target_datetime)
 
             datestr = target_datetime.strftime("%Y%m%d%H%M")
@@ -87,6 +89,7 @@ class AMSR2SnowWorkflow:
         output_path = (self.config.project_path /
                        self.config.output_dir / filename)
         return output_path
+
 
 def process_single_config(config):
     """Process a single config file using AMSR2SnowWorkflow"""
@@ -128,7 +131,6 @@ def process_single_config(config):
             logging.error("Unknown input_SD type: %s",
                           config.input_SD)
             return False, config
-        
         return True, config
 
     except Exception as e:
@@ -136,15 +138,14 @@ def process_single_config(config):
         return False, config
 
 
-
 def main():
     """Main driver function"""
     parser = argparse.ArgumentParser(
         description='Generate SNIP config files for a period at ' + \
-        '6-hour intervals (00, 06, 12, 18 UTC)')
+                    '6-hour intervals (00, 06, 12, 18 UTC)')
     parser.add_argument('config_file',
                         help='Path to JSON configuration file')
-    parser.add_argument("--input", choices=["AMSR2", "WSF"], 
+    parser.add_argument("--input", choices=["AMSR2", "WSF"],
                         help="Override the input_SD from the config file")
     args = parser.parse_args()
     try:
@@ -153,7 +154,8 @@ def main():
 
         if args.input:
             config.input_SD = args.input
-            logging.info(f"User override: Setting input_SD to {args.input}")
+            logging.info("User override: Setting input_SD to %s",
+                         args.input)
 
         # Process the single config
         process_single_config(config)
@@ -161,6 +163,7 @@ def main():
     except Exception as e:
         logger.error("Failed to process config %s", e)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

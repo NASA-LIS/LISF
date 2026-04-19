@@ -19,23 +19,18 @@ from WSF data.
 REVISION HISTORY:
 12 Apr 2026: Kehan Yang, Initial specification
 """
-
+# pylint: disable=import-error
 import glob
 import logging
 import os
 import re
-import sys
 import time
-import json
-from datetime import datetime
-from pathlib import Path
 from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 import xgboost as xgb
-import rioxarray
 
 # Set up logging
 logging.basicConfig(
@@ -58,6 +53,8 @@ _ENCODING = {
 }
 
 
+# pylint: disable=too-many-instance-attributes, invalid-name,
+# too-many-locals, too-many-statements, too-many-branches
 class WSFSnowDepthPredictor:
     """
     Predicts snow depth using Two-Stage machine learning models with WSF
@@ -157,8 +154,8 @@ class WSFSnowDepthPredictor:
             return os.path.join(dir_out,
                                 f"wsf_snip_0p1deg_{match.group(1)}_"
                                 f"t{match.group(2)}.nc")
-        else:
-            return os.path.join(dir_out, f"temp_wsf_pred_{int(time.time())}.nc")
+
+        return os.path.join(dir_out, f"temp_wsf_pred_{int(time.time())}.nc")
 
     def apply_flags(self, tb_data, land_water_frac, n, m):
         """Generate snow and precipitation flags based on TB values."""
@@ -302,12 +299,12 @@ class WSFSnowDepthPredictor:
         pred_class = self.models['classifier'].predict(x_test_no_nan)
         y_pred_no_nan = np.zeros(len(x_test_no_nan))
 
-        mask_shallow = (pred_class == 1)
+        mask_shallow = pred_class == 1
         if mask_shallow.sum() > 0 and 'reg_shallow' in self.models:
             y_pred_no_nan[mask_shallow] = self.models['reg_shallow'].predict(
                 x_test_no_nan[mask_shallow])
 
-        mask_other = (pred_class == 2)
+        mask_other = pred_class == 2
         if mask_other.sum() > 0 and 'reg_other' in self.models:
             y_pred_no_nan[mask_other] = self.models['reg_other'].predict(
                 x_test_no_nan[mask_other])
@@ -492,24 +489,25 @@ class WSFSnowWorkflow:
         data_date = self.target_datetime - pd.Timedelta(hours=1)
         date_str = data_date.strftime("%Y%m%d")
         year_month_str = data_date.strftime("%Y%m")
-        
         # Directly access resampled_base from the merged config
-        if not hasattr(self.config, 'resampled_base') or not self.config.resampled_base:
-            logger.error("Configuration missing 'resampled_base'. Cannot find resampled WSF files.")
+        if not hasattr(self.config,
+                       'resampled_base') or not self.config.resampled_base:
+            logger.error(
+                "Configuration missing 'resampled_base'. "
+                "Cannot find resampled WSF files.")
             return []
 
         wsf_resample_dir = self.config.resampled_base
-        logger.info("Using resampled_base from config: %s", wsf_resample_dir)
-       
+        logger.info("Using resampled_base from config: %s",
+                    wsf_resample_dir)
 
         search_pattern = os.path.join(
             self.config.project_path, '..', wsf_resample_dir, year_month_str,
             f"*{date_str}*_t*DES.nc"
         )
-       
 
         all_files = sorted(glob.glob(search_pattern))
-        
+
         window_files = [f for f in all_files if
                         any(h in os.path.basename(f) for h in expected_hours)]
 
