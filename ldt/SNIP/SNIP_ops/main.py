@@ -75,6 +75,8 @@ class AMSR2SnowWorkflow:
             logging.info("Predicting snow depth with ML model")
             self.sd_predictor.run_pipeline(pmw_file)
 
+            return True
+
         except Exception as e:
             logging.error("Workflow failed: %s", e)
             raise
@@ -142,10 +144,16 @@ def main():
         '6-hour intervals (00, 06, 12, 18 UTC)')
     parser.add_argument('config_file',
                         help='Path to JSON configuration file')
+    parser.add_argument("--input", choices=["AMSR2", "WSF"], 
+                        help="Override the input_SD from the config file")
     args = parser.parse_args()
     try:
         # Load configuration
         config = Config(args.config_file)
+
+        if args.input:
+            config.input_SD = args.input
+            logging.info(f"User override: Setting input_SD to {args.input}")
 
         # Process the single config
         process_single_config(config)
