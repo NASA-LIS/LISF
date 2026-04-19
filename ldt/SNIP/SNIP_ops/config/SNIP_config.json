@@ -1,21 +1,32 @@
 {
   "target_datetime": "201902131800",
   "project_path": "/discover/nobackup/kyang17/projects/LISF/ldt/SNIP/SNIP_ops/",
-  "amsr2_path": "data/amsr2/",
-  "amsr2_merge_path": "data/amsr2_merge",
-  "output_dir": "data/output",
-  "model_path": "data/models/model.json",
-  "template_path": "data/template/USAFSI_2024123112.nc",
+
+  "input_SD": "WSF",
+  "model_path": "./data/models/model",
+  "output_dir": "./data/output",
+
+  "ldt": "./LDT",
+  "mpirun": "mpirun",
+  "ldt_running_mode": "OPL WSF brightness temperature resampling",
+  "ldt_config_template": "./ldt.config.global.noahmp401.7.snip",
+
+  "v522_sdr_base": "./data/input/wsf_sdr_data/v5.2.2/res_sdr_01",
+  "raw_sdr_base": "./data/input/wsf_sdr_data",
+  "resampled_base": "./data/input/output_resampled_wsf_sdr",
+
+  "AMSR2_source": "JAXA",
+  "_AMSR2_source_comment": "AMSR2_source: JAXA or NOAA",
+  "amsr2_path": "./data/amsr2_JAXA",
+  "amsr2_merge_path": "./data/amsr2_merge_JAXA",
   "viirs_path": "../data/input/viirs",
+
+  "template_path": "./data/template/USAFSI_2024123112.nc",
+  "AMSR2_template_path": "./data/template/AMSR2.nc",
+  "fraction_forest_cover": "./data/template/MCD12Q1_LC_frac_2019_reprojected.tif",
+  "forest_density": "./data/template/MOD44B_FF_2019_reprojected.tif",
+
   "flag_output_kelly": false,
   "flag_output_foster": false,
-  "reproject_USAF": true,
-  "apply_viirs_mask": false,
-  "source": "NOAA",
-  "input_SD": "WSF",
-  "wsf_pipeline_dir": "../pipeline_config.json",
-  "AMSR2_template_path": "data/template/AMSR2.nc",
-  "fraction_forest_cover":"data/template/MCD12Q1_LC_frac_2019_reprojected.tif",
-  "forest_density":"data/template/MOD44B_FF_2019_reprojected.tif",
-  "_comment": "source: JAXA or NOAA; land_frac_th: land and water fraction threshold, only grids with more than 90% of the land are used."
+  "apply_viirs_mask": false
 }
