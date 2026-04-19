@@ -62,7 +62,7 @@ The SNIP pipeline is controlled via a central JSON configuration file. Below is 
 #### Processing Flags
 * **`flag_output_kelly`**: Enable snow depth calculation using the Kelly (2009) baseline approach (default: `false`).
 * **`flag_output_foster`**: Enable snow depth calculation using the Foster et al. (2005) baseline approach, which is the method used by USAFSI (default: `false`).
-* **`apply_viirs_mask`**: Enable the application of the VIIRS snow mask (default: `true`).
+* **`apply_viirs_mask`**: Enable the application of the VIIRS snow mask (default: `false`).
 
 
 ## Data Processing 
