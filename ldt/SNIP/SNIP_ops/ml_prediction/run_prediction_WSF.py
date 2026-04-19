@@ -107,7 +107,7 @@ class WSFSnowDepthPredictor:
             base_model_path = str(
                 self.config.project_path / self.config.model_path)
 
-            base_model_path = base_model_path.split('.json')[0] + '_WSF'
+            base_model_path = base_model_path + '_WSF'
             # Load Classifier
             clf_path = f"{base_model_path}_classifier.json"
             if os.path.exists(clf_path):
@@ -492,55 +492,24 @@ class WSFSnowWorkflow:
         data_date = self.target_datetime - pd.Timedelta(hours=1)
         date_str = data_date.strftime("%Y%m%d")
         year_month_str = data_date.strftime("%Y%m")
-
-        config_path = os.path.join(self.config.project_path,
-                                   self.config.wsf_pipeline_dir)
-        if not config_path:
-            logger.error("Invalid or empty config path provided: %s",
-                         config_path)
+        
+        # Directly access resampled_base from the merged config
+        if not hasattr(self.config, 'resampled_base') or not self.config.resampled_base:
+            logger.error("Configuration missing 'resampled_base'. Cannot find resampled WSF files.")
             return []
 
-        logger.info("Attempting to read WSF pipeline config at: %s",
-                    config_path)
-
-        try:
-            # Changed encoding to utf-8 to prevent Unicode errors
-            with open(config_path, 'r', encoding="utf-8") as f:
-                # Load the full JSON dictionary
-                pipeline_config = json.load(f)
-
-                # Safely extract the nested keys
-                wsf_resample_dir = pipeline_config.get("step1_wsf_opl", {}).get(
-                    "resampled_base", "")
-
-                if not wsf_resample_dir:
-                    logger.warning(
-                        "Key 'resampled_base' not found inside "
-                        "'step1_wsf_opl' in the JSON file.")
-                else:
-                    logger.info("Successfully found resampled_base: %s",
-                                wsf_resample_dir)
-
-        except FileNotFoundError:
-            logger.error("Could not find the JSON file at: %s",
-                         config_path)
-            return []
-        except json.JSONDecodeError as e:
-            logger.error("The file at %s is not valid JSON. "
-                         "Syntax error: %s",
-                         config_path, e)
-            return []
-        except Exception as e:
-            logger.error("Unexpected error reading %s: %s",
-                         config_path, e)
-            return []
+        wsf_resample_dir = self.config.resampled_base
+        logger.info("Using resampled_base from config: %s", wsf_resample_dir)
+       
 
         search_pattern = os.path.join(
             self.config.project_path, '..', wsf_resample_dir, year_month_str,
             f"*{date_str}*_t*DES.nc"
         )
+       
 
         all_files = sorted(glob.glob(search_pattern))
+        
         window_files = [f for f in all_files if
                         any(h in os.path.basename(f) for h in expected_hours)]
 
