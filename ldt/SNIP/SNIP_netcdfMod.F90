@@ -1207,28 +1207,14 @@ contains
 
     ! See if file exists
     ! ---------------------------------------------------------
-    ! First attempt: Try to read AMSR2 data
-    ! ---------------------------------------------------------
+
     
-    infilename = trim(SNIP_settings%amsr2dir) // &
-         "amsr2_snip_0p1deg_" // date10 // "00_AFgrid.nc"
+    infilename = trim(SNIP_settings%pmw2dir)//&
+         trim(SNIP_settings%netcdf_prefix_pmw_sd)//"_snip_0p1deg_"//&
+         date10//"00_AFgrid.nc"
+         
     inquire(file=trim(infilename), exist=file_exists)
-    if (.not. file_exists) then
-       write(LDT_logunit,*)'[INFO] Cannot find AMSR2 file: ', trim(infilename)
-       write(LDT_logunit,*)'[INFO] Attempting WSF data fallback...'
-       
-       ! ---------------------------------------------------------
-       ! Second attempt: Try to read WSF data as fallback
-       ! ---------------------------------------------------------
-       infilename = trim(SNIP_settings%wsfdir) // &
-            "wsf_snip_0p1deg_" // date10 // "00_AFgrid.nc"
-       inquire(file=trim(infilename), exist=file_exists)
-       
-       if (.not. file_exists) then
-          write(LDT_logunit,*)'[WARN] Cannot find WSF file either: ', trim(infilename)
-          return
-       end if
-    end if
+    
 
     write(LDT_logunit,*) '[INFO] Reading PMW snowdepth NETCDF file ', &
          trim(infilename)
@@ -1300,7 +1286,7 @@ contains
     integer, intent(out) :: ierr
     ierr = 1
     write(LDT_logunit,*)'[ERR] LDT not compiled with NETCDF support!'
-    write(LDT_logunit,*)'Cannot read in ASMR2 SD NETCDF data'
+    write(LDT_logunit,*)'Cannot read in ML-based PMW SD NETCDF data'
     write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
     call LDT_endrun()
   end subroutine SNIP_read_netcdf_amsr2_sd

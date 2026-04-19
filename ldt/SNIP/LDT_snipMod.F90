@@ -39,8 +39,7 @@ module LDT_snipMod
      character(LDT_CONST_PATH_LEN) :: static
 
      character(LDT_CONST_PATH_LEN) :: viirsdir
-     character(LDT_CONST_PATH_LEN) :: amsr2dir
-     character(LDT_CONST_PATH_LEN) :: wsfdir
+     character(LDT_CONST_PATH_LEN) :: pmw2dir
 
      ! Former namelist variables
      real :: clmadj
@@ -93,6 +92,7 @@ module LDT_snipMod
      ! Output file name (prefix)
      character*20 :: netcdf_prefix_snip
      character*20 :: netcdf_prefix_usafsi
+     character*20 :: netcdf_prefix_pmw_sd
 
      ! option for snow climatology
      integer       :: climo_option
@@ -206,21 +206,16 @@ contains
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! TODO:  Directory for reading AMSR2 AI/ML retrievals
+    ! TODO:  Directory for reading PMW AI/ML retrievals
     ! Get viirsdir
-    cfg_entry = "SNIP AMSR2 snowdepth data directory:"
+    cfg_entry = "SNIP ML-based PMW snowdepth data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%amsr2dir, &
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%pmw2dir, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! TODO: Directory for reading WSF AI/ML retrievals
-    cfg_entry = "SNIP WSF snowdepth data directory:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%wsfdir, rc=rc)
-    call LDT_verify(rc, "Error reading "//trim(cfg_entry))
+   
 
     ! get option for snow climatology
     cfg_entry = "SNIP Snow Climatology:"
@@ -268,7 +263,7 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get minsat
-    cfg_entry = "SNIP AMSR2 shallow snow depth threshold (m):"
+    cfg_entry = "SNIP shallow snow depth threshold (m):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minsat,&
@@ -601,6 +596,17 @@ contains
          snip_settings%netcdf_prefix_usafsi, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! Get USAFSI output file name (prefix)
+    cfg_entry = "SNIP PMW snow depth filename prefix:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, &
+         snip_settings%netcdf_prefix_pmw_sd, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    
 
   end subroutine LDT_snipInit
 
