@@ -130,7 +130,7 @@ class AMSR2SnowDepthPredictor:
     def _add_tb_differences(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Add brightness temperature difference features to df.
-        Skips any pair where either channel is missing.
+        Skips any pair where either channel is missing.sq
         """
         for c1, c2, name in self.TB_DIFF_PAIRS:
             if c1 in df.columns and c2 in df.columns:
@@ -150,7 +150,7 @@ class AMSR2SnowDepthPredictor:
         """
         try:
             start_time = time.time()
-            model_path = self.config.project_path / self.config.model_path
+            model_path = self.config.project_path / (str(self.config.model_path) + '_AMSR2.json')
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"Model file not found: {model_path}")
 
@@ -233,7 +233,7 @@ class AMSR2SnowDepthPredictor:
             xr.DataArray: Snow depth predictions
         """
         # Open PMW dataset
-        with xr.open_dataset(pmw_file) as ds_pmw:
+        with xr.open_dataset(pmw_file, decode_timedelta=False) as ds_pmw:
             logger.info('%s file opened', pmw_file)
 
             # Extract data for model input
@@ -504,7 +504,7 @@ class AMSR2SnowDepthPredictor:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
             # open pmw file
-            ds_pmw = xr.open_dataset(pmw_file).squeeze()
+            ds_pmw = xr.open_dataset(pmw_file, decode_timedelta=False).squeeze()
             self.ds_result = ds_pmw
 
             # Apply land ocean frac threshold - only predict land
@@ -622,7 +622,8 @@ class AMSR2SnowDepthPredictor:
 
         if len(viirs_path) == 1:
             ds_viirs = xr.open_dataset(viirs_path[0],
-                                       engine='rasterio')
+                                       engine='rasterio',
+                                       decode_timedelta=False)
             ds_viirs = ds_viirs.rio.write_crs(self.config.proj)
             ds_viirs = ds_viirs.squeeze()
             ds_viirs_repro = ds_viirs.rio.reproject_match(
@@ -705,10 +706,10 @@ class AMSR2SnowDepthPredictor:
             try:
                 template_path = self.config.project_path / \
                                 self.config.template_path
-                template_data = xr.open_dataset(template_path)
+                template_data = xr.open_dataset(template_path, decode_timedelta=False)
 
                 # open snow depth data
-                ds_sd = xr.open_dataset(output_file)
+                ds_sd = xr.open_dataset(output_file, decode_timedelta=False)
 
                 # reproject snow depth data based on template
                 # Ensure SCA has CRS
@@ -809,7 +810,7 @@ class AMSR2SnowDepthPredictor:
                 logger.info("ML output already exists, skipping: %s",
                             output_file)
                 # still need ds_result loaded for traditional methods below
-                self.ds_result = xr.open_dataset(pmw_file).squeeze()
+                self.ds_result = xr.open_dataset(pmw_file, decode_timedelta=False).squeeze()
             else:
                 output = self.predict_snow_depth(pmw_file=pmw_file)
                 if output is None:
@@ -824,23 +825,22 @@ class AMSR2SnowDepthPredictor:
                             time.time() - start_time)
 
             # ── Step 2: Reproject to USAF grid ────────────────────────
-            if self.config.reproject_USAF:
-                base_name = os.path.splitext(os.path.basename(output_file))[0]
-                af_path = os.path.join(dir_out, f"{base_name}_AFgrid.nc")
+            base_name = os.path.splitext(os.path.basename(output_file))[0]
+            af_path = os.path.join(dir_out, f"{base_name}_AFgrid.nc")
 
-                if os.path.exists(af_path):
+            if os.path.exists(af_path):
+                logger.info(
+                    "AF grid output already exists, skipping: %s",
+                    af_path)
+            else:
+                logger.info("Reprojecting to USAF grid ...")
+                reproject_success = self.reproject_to_usaf()
+                if reproject_success:
                     logger.info(
-                        "AF grid output already exists, skipping: %s",
-                        af_path)
+                        "USAF reprojection completed successfully")
                 else:
-                    logger.info("Reprojecting to USAF grid ...")
-                    reproject_success = self.reproject_to_usaf()
-                    if reproject_success:
-                        logger.info(
-                            "USAF reprojection completed successfully")
-                    else:
-                        logger.warning("USAF reprojection failed, but "
-                                       "primary output was saved successfully")
+                    logger.warning("USAF reprojection failed, but "
+                                   "primary output was saved successfully")
 
             # ── Step 3: Traditional methods ────────────────────────────
             if self.config.flag_output_kelly or self.config.flag_output_foster:
