@@ -62,7 +62,7 @@ The SNIP pipeline is controlled via a central JSON configuration file. Below is 
 #### Processing Flags
 * **`flag_output_kelly`**: Enable snow depth calculation using the Kelly (2009) baseline approach (default: `false`).
 * **`flag_output_foster`**: Enable snow depth calculation using the Foster et al. (2005) baseline approach, which is the method used by USAFSI (default: `false`).
-* **`apply_viirs_mask`**: Enable the application of the VIIRS snow mask (default: `false`).
+* **`apply_viirs_mask`**: Enable the application of the VIIRS snow mask for AMSR2 processing (default: `false`).
 
 
 ## Data Processing 
@@ -110,31 +110,32 @@ This use case runs LDT to generate SNIP snow and ice analyses for the 557WW ~10-
 
 ## Usage
 * Generate the LDT executable following the build instructions with the
-  software.  Be sure to select "little endian".
-* Run the LDT executable using the lis_input.nrt_streamflow.noah39.nc file
+  software. Be sure to select "little endian".
+* Run the LDT executable using the `lis_input.nrt_streamflow.noah39.nc` file
   and the input datasets.
-* Output netCDF files will be in the ../data/output/snip directory with the log file saved in ../data/output/logs
+* Output netCDF files will be in the `../data/output/snip` directory with the log file saved in `../data/output/logs`.
 
-## Operational usage
-Under the parent folder, we provide a SLURM job submission example to run the workflow for a single time step.
+## Operational Usage
+Under the parent folder, we provide a unified SLURM job submission script to automatically run the workflow for a single time step.
 
-| File                   | Description                                       |
-|------------------------|---------------------------------------------------|
-| 'job_template.sh`        | Bash script to submit a SLURM job to run the workflow for AMSR2|
-| 'submit_job_AMSR2.py` | Template bash script for workflow execution with AMSR2 data                           |
-| 'job_template_WSF.sh`        | Bash script to submit a SLURM job to run the workflow for WSF|
-| 'submit_job_WSF.py` | Template bash script for workflow execution with WSF data                           |
+| File               | Description                                                                                     |
+|--------------------|-------------------------------------------------------------------------------------------------|
+| `submit_job.py`    | Unified Python manager script to generate and submit SLURM jobs for both AMSR2 and WSF pipelines|
+| `job_template.sh`  | Template bash script used by `submit_job.py` to construct the batch job                         |
  
-For example, to run workflow with AMSR2/WSF for snow depth retrieval at 06:00 UTC on 2025-01-20 on hpc11, execute the following command in the terminal: 
+### Command Line Examples
+The `submit_job.py` script requires the target datetime and the `--input` flag (`AMSR2` or `WSF`) to determine which data pipeline to run. The `--system` flag can be used to specify the HPC environment (defaults to auto-detecting Discover or HPC11).
+
+**To run the workflow for snow depth retrieval at 06:00 UTC on 2025-01-20 on HPC11:** 
 ```shell
-python submit_job_AMSR2.py 202501200600 --system hpc11  # AMSR2
-python submit_job_WSF.py 202501200600 --system hpc11 # WSF
+python submit_job.py 202501200600 --input AMSR2 --system hpc11  # For AMSR2
+python submit_job.py 202501200600 --input WSF --system hpc11    # For WSF
 ```
-To run workflow with AMSR2/WSF for snow depth retrieval at 06:00 UTC on 2025-01-20 on discover, execute the following command in the terminal: 
+**To run the workflow for snow depth retrieval at 06:00 UTC on 2025-01-20 on Discover:** 
 ```shell
-python submit_job_AMSR2.py 202501200600 # AMSR2
-python submit_job_WSF.py 202501200600 # WSF
-```
+python submit_job.py 202501200600 --input AMSR2 # For AMSR2
+python submit_job.py 202501200600 --input WSF   # For WSF
+```            
 
 ## Support
 - Technical Contact: kehan.yang@nasa.gov
