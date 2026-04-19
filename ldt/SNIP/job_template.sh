@@ -50,9 +50,14 @@ run_snip() {
     local tmp_cfg
     tmp_cfg=$(mktemp ./config/SNIP_config_${TARGET_DATETIME}_XXXXXX.json) || return 1
     cp "./config/SNIP_config.json" "$tmp_cfg"
+    
+    # Update target_datetime in the JSON (your original code)
     sed -i '/\"target_datetime\"/s/: \"[^\"]*\"/: \"'${TARGET_DATETIME}'\"/g' "$tmp_cfg"
-    python main.py "$tmp_cfg" 2>&1
-    local rc=$PIPESTATUS
+    
+    # Run main.py with the config file AND the new --input flag
+    python main.py "$tmp_cfg" --input "${INPUT_TYPE}" 2>&1
+    
+    local rc=$?  # Safely capture the exit code of python
     rm -f "$tmp_cfg"
     return $rc
 }
@@ -77,17 +82,17 @@ if [ -e "$SNIP_OUT" ] && [ ! -e "$TARGET_NC" ]; then
 fi
 
 # ── STEP 2: LDT ────────────────────────────────────────────────────────
-log "STEP 2: Running LDT_SNIP..."
+log "STEP 2: Running SNIP LDT..."
 [ ! -f ./ldt.config ] && die "ldt.config not found"
-[ ! -x ./LDT_SNIP ]   && die "LDT_SNIP executable not found"
+[ ! -x ./LDT ]   && die "SNIP LDT executable not found"
 
 if [ -f "$LDT_OUT" ]; then
     log "LDT output already exists – skipping"
 else
     sed -i "s/SNIP valid date (YYYYMMDDHH):[[:space:]]*[0-9]\{10\}/SNIP valid date (YYYYMMDDHH):                    ${TARGET_DATETIME_10}/g" ldt.config
     
-    mpirun -np 1 ./LDT_SNIP ldt.config 2>&1
-    [ -f "$LDT_OUT" ] || die "LDT_SNIP finished but output file not found"
+    mpirun -np 1 ./LDT ldt.config 2>&1
+    [ -f "$LDT_OUT" ] || die "SNIP LDT finished but output file not found"
 
     # Rename ldtlog.0000 to preserve it across runs
     if [ -f "$LDTLOG" ]; then
@@ -99,4 +104,4 @@ fi
 # ── Summary ────────────────────────────────────────────────────────────
 log "=== DONE $(date) ==="
 $snip_done && log "SNIP: SUCCESS" || log "SNIP: FAILED"
-log "LDT_SNIP: SUCCESS"
+log "LDT: SUCCESS"

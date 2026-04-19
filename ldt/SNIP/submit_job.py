@@ -179,13 +179,13 @@ def write_config(template, dt, src, out):
     cfg.write_text(text, encoding='utf-8')
     return cfg
 
-def run_resampling(s1, program, template, out_base, start, end, batch_size, force):
+def run_resampling(cfg, program, template, out_base, start, end, batch_size, force):
     print("\n=== OPL Resampling (WSF) ===")
     Path("log").mkdir(exist_ok=True)
     CHECKPOINT.touch()
 
-    hours  = find_hours(s1["v522_sdr_base"], start, end, hi=V522_LAST)
-    hours |= find_hours(s1["raw_sdr_base"],  start, end, lo=str(int(V522_LAST) + 1))
+    hours  = find_hours(cfg["v522_sdr_base"], start, end, hi=V522_LAST)
+    hours |= find_hours(cfg["raw_sdr_base"],  start, end, lo=str(int(V522_LAST) + 1))
     done    = set() if force else set(CHECKPOINT.read_text(encoding='utf-8').split())
     pending = sorted(hours - done)
 
@@ -203,7 +203,7 @@ def run_resampling(s1, program, template, out_base, start, end, batch_size, forc
 
         procs = []
         for dt in batch:
-            sd = src_dir(dt, s1["v522_sdr_base"], s1["raw_sdr_base"])
+            sd = src_dir(dt, cfg["v522_sdr_base"], cfg["raw_sdr_base"])
             if not sd.is_dir():
                 print(f"    SKIP {dt}: {sd} not found")
                 n_skip += 1
@@ -255,7 +255,7 @@ def main() -> None:
     
     # Mode 2: Worker Arguments (WSF Only)
     parser.add_argument("--resample", nargs=2, metavar=("START_DT", "END_DT"), help="Worker mode: Run OPL resampling (WSF only)")
-    parser.add_argument("--config", default="./pipeline_config.json", help="Path to config (for WSF resampling)")
+    parser.add_argument("--config", default="./SNIP_ops/config/SNIP_config.json", help="Path to config (for WSF resampling)")
     parser.add_argument("--batch-size", type=int, default=int(os.environ.get("MAX_PARALLEL", max(10, (os.cpu_count() or 10) // 10 * 10))), help="Max parallel LDT jobs")
     parser.add_argument("--force", action="store_true", help="Ignore checkpoint during resampling")
     
@@ -274,12 +274,11 @@ def main() -> None:
             
         start_dt, end_dt = args.resample
         cfg = json.loads(config_path.read_text(encoding='utf-8'))
-        s1 = cfg["step1_wsf_opl"]
-        program = Path(cfg["executables"]["ldt"]).resolve()
-        template = Path(s1["ldt_config_template"]).resolve()
-        out_base = Path(s1["resampled_base"])
+        program = Path(cfg["ldt"]).resolve()
+        template = Path(cfg["ldt_config_template"]).resolve()
+        out_base = Path(cfg["resampled_base"])
 
-        run_resampling(s1, program, template, out_base, start_dt, end_dt, args.batch_size, args.force)
+        run_resampling(cfg, program, template, out_base, start_dt, end_dt, args.batch_size, args.force)
         sys.exit(0)
 
     # ---------------------------------------------------------
