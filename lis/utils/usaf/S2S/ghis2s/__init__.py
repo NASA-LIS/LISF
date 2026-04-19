@@ -1,4 +1,4 @@
-from . import s2s_app
+from . import main 
 from . import lis_darun
 from . import ldt_ics
 from . import bcsd

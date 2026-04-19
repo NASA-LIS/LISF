@@ -179,7 +179,6 @@ subroutine LIS_DAobs_plugin
 !   use SMOPSsm_Mod,             only : SMOPSsm_setup
 #endif
 
-!MN
 #if ( defined DA_OBS_SMOPS_ASCATSM )
    use SMOPS_ASCATsm_Mod,             only : SMOPS_ASCATsm_setup
 #endif
@@ -259,14 +258,16 @@ subroutine LIS_DAobs_plugin
     use cdfTransfer_NASASMAPsm_Mod,   only : cdfTransfer_NASASMAPsm_setup
 #endif
 
-!YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
     use SMOSNRTNNL2sm_Mod,       only : SMOSNRTNNL2sm_setup
 #endif
 
-!YK
 #if ( defined DA_OBS_SMAP_E_OPL_SM )
     use SMAPEOPLsm_Mod,       only : SMAPEOPLsm_setup
+#endif
+
+#if ( defined DA_OBS_WSF_SM )
+    use WSFsm_Mod,       only : WSFsm_setup
 #endif
 
 #if ( defined DA_OBS_NASA_SMAPVOD )
@@ -280,11 +281,10 @@ subroutine LIS_DAobs_plugin
     use MCD15A2HLAI_Mod,       only : MCD15A2Hlai_setup
 #endif
 
-!Y.Kwon
 #if ( defined DA_OBS_VIIRS_GVF )
     use VIIRSgvf_Mod,       only : VIIRSgvf_setup
 #endif
-!Y.Kwon
+
 #if ( defined DA_OBS_CDFS_GVF )
     use CDFSgvf_Mod,       only : CDFSgvf_setup
 #endif
@@ -389,7 +389,6 @@ subroutine LIS_DAobs_plugin
 !   external read_SMOPSsm, write_SMOPSsmobs
 #endif
 
-!MN
 #if ( defined DA_OBS_SMOPS_ASCATSM )
    external read_SMOPS_ASCATsm, write_SMOPS_ASCATsmobs
 #endif
@@ -477,14 +476,16 @@ subroutine LIS_DAobs_plugin
     external read_cdfTransfer_NASASMAPsm, write_cdfTransfer_NASASMAPsmobs
 #endif
 
-!YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
     external read_SMOSNRTNNL2sm, write_SMOSNRTNNL2smobs
 #endif
 
-!YK
 #if ( defined DA_OBS_SMAP_E_OPL_SM)
     external read_SMAPEOPLsm, write_SMAPEOPLsmobs
+#endif
+
+#if ( defined DA_OBS_WSF_SM)
+    external read_WSFsm, write_WSFsmobs
 #endif
 
 #if ( defined DA_OBS_NASA_SMAPVOD)
@@ -507,11 +508,10 @@ subroutine LIS_DAobs_plugin
     external read_MODISsportLAI, write_MODISsportLAI
 #endif
 
-!Y.Kwon
 #if ( defined DA_OBS_VIIRS_GVF )
     external read_VIIRSgvf, write_VIIRSgvfobs
 #endif
-!Y.Kwon
+
 #if ( defined DA_OBS_CDFS_GVF )
     external read_CDFSgvf, write_CDFSgvfobs
 #endif
@@ -775,14 +775,14 @@ subroutine LIS_DAobs_plugin
         write_SYN_LBAND_TB)
 #endif
 
-! MN : SMOPS soil moisture ! delete
+!SMOPS soil moisture ! delete
 #if ( defined DA_OBS_SMOPSSM )
 !   call registerdaobssetup(trim(LIS_SMOPSsmobsId)//char(0),SMOPSsm_setup)
 !   call registerreaddaobs(trim(LIS_SMOPSsmobsId)//char(0),read_SMOPSsm)
 !   call registerwritedaobs(trim(LIS_SMOPSsmobsId)//char(0),write_SMOPSsmobs)
 #endif
 
-! MN : SMOPS ASCAT soil moisture
+!SMOPS ASCAT soil moisture
 #if ( defined DA_OBS_SMOPS_ASCATSM )
    call registerdaobsclass(trim(LIS_SMOPS_ASCATsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMOPS_ASCATsmobsId)//char(0), &
@@ -793,7 +793,7 @@ subroutine LIS_DAobs_plugin
         write_SMOPS_ASCATsmobs)
 #endif
 
-! MN : SMOPS SMOS soil moisture
+!SMOPS SMOS soil moisture
 #if ( defined DA_OBS_SMOPS_SMOSSM )
    call registerdaobsclass(trim(LIS_SMOPS_SMOSsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMOPS_SMOSsmobsId)//char(0), &
@@ -804,7 +804,7 @@ subroutine LIS_DAobs_plugin
         write_SMOPS_SMOSsmobs)
 #endif
 
-! MN : SMOPS AMSR2 soil moisture
+!SMOPS AMSR2 soil moisture
 #if ( defined DA_OBS_SMOPS_AMSR2SM )
    call registerdaobsclass(trim(LIS_SMOPS_AMSR2smobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMOPS_AMSR2smobsId)//char(0), &
@@ -815,7 +815,7 @@ subroutine LIS_DAobs_plugin
         write_SMOPS_AMSR2smobs)
 #endif
 
-! MN : SMOPS SMAP soil moisture
+!SMOPS SMAP soil moisture
 #if ( defined DA_OBS_SMOPS_SMAPSM )
    call registerdaobsclass(trim(LIS_SMOPS_SMAPsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMOPS_SMAPsmobsId)//char(0), &
@@ -893,7 +893,6 @@ subroutine LIS_DAobs_plugin
         write_cdfTransfer_NASASMAPsmobs)
 #endif
 
-!YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
    call registerdaobsclass(trim(LIS_SMOSNRTNNL2smobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMOSNRTNNL2smobsId)//char(0),&
@@ -904,7 +903,6 @@ subroutine LIS_DAobs_plugin
         write_SMOSNRTNNL2smobs)
 #endif
 
-!YK
 #if ( defined DA_OBS_SMAP_E_OPL_SM )
    call registerdaobsclass(trim(LIS_SMAPEOPLsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMAPEOPLsmobsId)//char(0),&
@@ -913,6 +911,16 @@ subroutine LIS_DAobs_plugin
         read_SMAPEOPLsm)
    call registerwritedaobs(trim(LIS_SMAPEOPLsmobsId)//char(0),&
         write_SMAPEOPLsmobs)
+#endif
+
+#if ( defined DA_OBS_WSF_SM )
+   call registerdaobsclass(trim(LIS_WSFsmobsId),"LSM")
+   call registerdaobssetup(trim(LIS_WSFsmobsId)//char(0),&
+        WSFsm_setup)
+   call registerreaddaobs(trim(LIS_WSFsmobsId)//char(0),&
+        read_WSFsm)
+   call registerwritedaobs(trim(LIS_WSFsmobsId)//char(0),&
+        write_WSFsmobs)
 #endif
 
 #if ( defined DA_OBS_NASA_SMAPVOD )
@@ -945,7 +953,6 @@ subroutine LIS_DAobs_plugin
         write_MCD15A2Hlai)
 #endif
 
-!Y.Kwon
 #if ( defined DA_OBS_VIIRS_GVF )
    call registerdaobsclass(trim(LIS_VIIRSgvfobsId),"LSM")
    call registerdaobssetup(trim(LIS_VIIRSgvfobsId)//char(0),&
@@ -955,7 +962,7 @@ subroutine LIS_DAobs_plugin
    call registerwritedaobs(trim(LIS_VIIRSgvfobsId)//char(0),&
         write_VIIRSgvfobs)
 #endif
-!Y.Kwon
+
 #if ( defined DA_OBS_CDFS_GVF )
    call registerdaobsclass(trim(LIS_CDFSgvfobsId),"LSM")
    call registerdaobssetup(trim(LIS_CDFSgvfobsId)//char(0),&
@@ -1018,7 +1025,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_SNODAS )
-!MLW: SNODAS snow depth
+!SNODAS snow depth
    call registerdaobsclass(trim(LIS_SNODASobsId),"LSM")
    call registerdaobssetup(trim(LIS_SNODASobsId)//char(0), &
         SNODAS_setup)
@@ -1047,7 +1054,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 #if ( defined DA_OBS_WUSUCLA )
-!MLW: SNODAS snow depth
+!SNODAS snow depth
    call registerdaobsclass(trim(LIS_wusUCLAobsId),"LSM")
    call registerdaobssetup(trim(LIS_wusUCLAobsId)//char(0), &
         WUS_UCLAsnow_setup)

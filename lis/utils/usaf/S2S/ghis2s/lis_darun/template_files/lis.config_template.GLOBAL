@@ -62,8 +62,8 @@ Minimum cutoff percentage (aspect bands):         0.05
 #Should match the total number of processors used
 # S2S-Global specs:
 # Nodes: 12; Proc: 24 ==> 288
-Number of processors along x:          4
-Number of processors along y:          72
+Number of processors along x:          NUMPROCX
+Number of processors along y:          NUMPROCY
 Halo size along x:                     0
 Halo size along y:                     0
 
@@ -85,7 +85,7 @@ Data assimilation output ensemble spread:             0
 
 # Check LDT-generated domain mask path:
 # S2S-Global domain:
-Data assimilation observation domain file:   ./input/lis_input.s2s_global.noahmp401_hymap2.25km.nc
+Data assimilation observation domain file:   ./input/LDTINPUTFILE
 ##
 Data assimilation scaling strategy:                   "CDF matching"
 
@@ -142,7 +142,7 @@ SMAP(NRT) CDF read option:                                      1
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
 
-LIS domain and parameter data file:     ./input/lis_input.s2s_global.noahmp401_hymap2.25km.nc
+LIS domain and parameter data file:     ./input/LDTINPUTFILE
 
 Landmask data source:                   LDT
 Landcover data source:                  LDT

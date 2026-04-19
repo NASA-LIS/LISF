@@ -27,7 +27,7 @@ def cylc(workflow):
     print("                          STATUS OF CYLC JOBS")
     print("#" * 71)
     print()
-    print("            TASK NAME                    WALLTIME (HH:MM:SS)")
+    print("            TASK NAME                                 WALLTIME (HH:MM:SS)")
     print()
 
     earliest_start = None
@@ -77,7 +77,7 @@ def cylc(workflow):
 
                         # Format and print task info
                         task_display = task
-                        print(f"{task_display:<30}                    {hours:2d}h {minutes:2d}m {seconds:2d}s")
+                        print(f"{task_display:<43}                    {hours:2d}h {minutes:2d}m {seconds:2d}s")
 
                     except (ValueError, TypeError):
                         continue
@@ -104,7 +104,7 @@ def slurm(scrdir):
     print("                          STATUS OF SLURM JOBS")
     print("#" * 71)
     print(" ")
-    print("            JOB FILE                 WALLTIME (HH:MM:SS)")
+    print("            JOB FILE                                 WALLTIME (HH:MM:SS)")
     print(" ")
 
     def datetime_to_seconds(dt_str):
