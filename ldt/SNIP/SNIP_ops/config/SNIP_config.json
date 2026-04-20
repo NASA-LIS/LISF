@@ -28,5 +28,5 @@
 
   "flag_output_kelly": false,
   "flag_output_foster": false,
-  "apply_viirs_mask": true
+  "apply_viirs_mask": false
 }
