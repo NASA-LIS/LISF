@@ -5386,7 +5386,7 @@ SMAP_E_OPL landcover file:                          ../../data/PRMS_RETRIEVAL_AR
 === WSF OPL brightness temperature resampling
 
 This section describes the configuration options for the
-`"OPL WSF brightness temperature resampling"` running mode, which resamples
+"`OPL WSF brightness temperature resampling`" running mode, which resamples
 raw WSF-M (Weather Satellite Follow-on) Level-1 SDR brightness temperature files to the
 10-km global model grid. One LDT instance is invoked per hour; the
 `wsf_opl.py` pipeline script populates the time-varying fields automatically
