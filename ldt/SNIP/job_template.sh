@@ -39,7 +39,7 @@ if [ "$INPUT_TYPE" = "WSF" ]; then
 
     # Calculate the start time (6 hours ago)
     START_DATETIME=$(date -u -d "${YYYY}-${MM}-${DD} ${HH}:00:00Z 6 hours ago" +"%Y%m%d%H%M")
-    
+
     log "--- STEP 0: Running WSF resampling from ${START_DATETIME} to ${TARGET_DATETIME} ---"
     python submit_job.py --input WSF --resample "${START_DATETIME}" "${TARGET_DATETIME}" || die "WSF resampling failed"
     log "STEP 0: WSF resampling finished ---"
@@ -50,13 +50,13 @@ run_snip() {
     local tmp_cfg
     tmp_cfg=$(mktemp ./config/SNIP_config_${TARGET_DATETIME}_XXXXXX.json) || return 1
     cp "./config/SNIP_config.json" "$tmp_cfg"
-    
+
     # Update target_datetime in the JSON (your original code)
     sed -i '/\"target_datetime\"/s/: \"[^\"]*\"/: \"'${TARGET_DATETIME}'\"/g' "$tmp_cfg"
-    
+
     # Run main.py with the config file AND the new --input flag
     python main.py "$tmp_cfg" --input "${INPUT_TYPE}" 2>&1
-    
+
     local rc=$?  # Safely capture the exit code of python
     rm -f "$tmp_cfg"
     return $rc
@@ -94,8 +94,8 @@ else
 
     # 2. Replace the Input Type (amsr2 or wsf)
     sed -i "s/\(SNIP PMW snow depth filename prefix:[[:space:]]*\)[a-zA-Z0-9_]*/\1${INPUT_LOWER}/g" ldt.config
-    
-    
+
+
     mpirun -np 1 ./LDT ldt.config 2>&1
     [ -f "$LDT_OUT" ] || die "SNIP LDT finished but output file not found"
 
