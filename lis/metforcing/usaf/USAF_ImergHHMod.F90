@@ -24,6 +24,7 @@
 ! Updated 14 Jul 2022 by Eric Kemp/SSAI, to support IMERG V07
 ! Updated 24 Aug 2023 by Eric Kemp/SSAI, to add alert files if problem
 !   occurs with fetching IMERG.
+! Updated 09 Mar 2026 by Eric Kemp/SSAI, to support IMERG V08 netCDF files
 module USAF_ImergHHMod
 
    ! Imports
@@ -70,9 +71,9 @@ contains
       this%nlats = nlats
       this%nlons = nlons
       this%ntimes = ntimes
-      !NOTE:  IMERG HDF5 grids are dimensioned lat,lon
+      !NOTE:  IMERG HDF5 and netCDF grids are dimensioned lat,lon
       allocate(this%precip_cal_3hr(nlats, nlons))
-      this%precip_cal_3hr(:,:) = 0
+      this%precip_cal_3hr = 0
       this%swlat =  -89.95
       this%swlon = -179.95
       this%dlat = 0.1
@@ -185,7 +186,6 @@ contains
       character(22) :: varname
       logical :: apply_irkalman_test
       integer, save :: alert_number = 1
-      logical :: file_exists
 
       TRACE_ENTER("update30minImergHHPrecip")
 
@@ -200,13 +200,16 @@ contains
          version_good = .true.
       else if (index(trim(version), 'V07') .ne. 0) then
          version_good = .true.
+      else if (index(trim(version), 'V08') .ne. 0) then
+         version_good = .true.
       end if
       if (.not. version_good) then
          write(LIS_logunit,*)&
               '[ERR] update30minImergHHPrecip Invalid IMERG Version  ', &
               trim(version)
          write(LIS_logunit,*) &
-              'Only version generations 6 and 7 supported! '
+              'Only version generations 6, 7, and 8 supported! '
+
          flush(LIS_logunit)
          message(:) = ''
          message(1) = '[ERR] Program:  LIS'
@@ -245,6 +248,14 @@ contains
 #if (defined SPMD)
          call MPI_Barrier(LIS_MPI_COMM, ierr)
 #endif
+      end if
+
+      ! Handle V08 netCDF data
+      if (index(trim(version), 'V08') .ne. 0) then
+         call update30minImergHHV8Precip(this, itime, filename, plp_thresh, &
+              version, saved_good)
+         TRACE_EXIT("update30minImergHHPrecip")
+         return
       end if
 
       ! Initialize IDs.  Useful later for error handling.
@@ -1181,6 +1192,441 @@ contains
 
    end subroutine update30minImergHHPrecip
 
+   ! V08 version with netCDF support
+   subroutine update30minImergHHV8Precip(this, itime, filename, plp_thresh, &
+        version, saved_good)
+
+     ! Imports
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4)
+     use netcdf
+#endif
+     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+     use LIS_coreMod, only: LIS_masterproc
+     use LIS_logMod, only: LIS_logunit, LIS_abort, LIS_endrun, &
+          LIS_alert
+     use LIS_mpiMod
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     type(ImergHHPrecip), intent(inout) :: this
+     integer, intent(in) :: itime
+     character(len=*), intent(in) :: filename
+     integer*2, intent(in) :: plp_thresh
+     character(len=*), intent(in) :: version
+     logical, intent(inout) :: saved_good
+
+     ! Locals
+     integer :: ncid, grp_ncid, precip_var_id, plp_var_id
+     character(len=NF90_MAX_NAME) :: groupname
+     integer :: dimids(NF90_MAX_VAR_DIMS)
+     real, allocatable :: tmp_precip_30min(:,:,:)
+     integer*2, allocatable :: tmp_plp_30min(:,:,:)
+     integer :: icount
+     character(len=LIS_CONST_PATH_LEN) :: message(20)
+     integer :: ndims, nlat, nlon, ntime
+     integer :: ierr, ierr1, ierr2, ierr3
+     logical :: version_good
+     character(22) :: varname
+     integer, save :: alert_number = 1
+     logical :: file_exists
+     integer :: i, j
+
+     TRACE_ENTER("update30minImergHHV8Precip")
+
+     saved_good = .false.
+
+     ! Only define actual subroutine if LIS was compiled with netCDF support.
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+
+     ! Only IMERG V08 supported
+     version_good = .false.
+     if (index(trim(version), 'V08') .ne. 0) then
+        version_good = .true.
+     endif
+     if (.not. version_good) then
+        write(LIS_logunit,*)&
+             '[ERR] update30minImergHHPrecip Invalid IMERG Version  ', &
+             trim(version)
+        write(LIS_logunit,*) &
+             'Only version generation 8 supported! '
+        flush(LIS_logunit)
+        message(:) = ''
+        message(1) = '[ERR] Program:  LIS'
+        message(2) = '  Routine: update30minImergHHPV8recip.'
+        message(3) = '  Invalid IMERG Version ' // trim(version)
+        if(LIS_masterproc) then
+           call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                alert_number, &
+                message )
+           alert_number = alert_number + 1
+           call LIS_abort( message)
+        endif
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+     end if
+
+     ! Sanity checks
+     if (itime .lt. 1 .or. itime .gt. this%ntimes) then
+        write(LIS_logunit,*)&
+             '[ERR] update30minImergHHV8Precip Invalid time level ', itime
+        write(LIS_logunit,*) 'Must be in range from 1 to ', this%ntimes
+        flush(LIS_logunit)
+        message(:) = ''
+        message(1) = '[ERR] Program:  LIS'
+        message(2) = '  Routine: update30minImergHHV8Precip.'
+        message(3) = '  Invalid time level selected'
+        if(LIS_masterproc) then
+           call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                alert_number, &
+                message )
+           alert_number = alert_number + 1
+           call LIS_abort( message)
+        endif
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+     end if
+
+     ! See if netCDF file exists
+     inquire(file=filename, exist=file_exists)
+     if (.not. file_exists) then
+        write(LIS_logunit,*) '[WARN] Cannot find ', trim(filename)
+        write(LIS_logunit,*)&
+             '[WARN] update30minImergHHV8Precip Cannot open IMERG file', &
+             trim(filename)
+        flush(LIS_logunit)
+        message(:) = ''
+        message(1) = '[WARN] Program:  LIS'
+        message(2) = '  Routine: update30minImergHHV8Precip.'
+        message(3) = '  Cannot open IMERG file ' // trim(filename)
+        if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Open netCDF file
+      ierr = nf90_open(path=filename, mode=NF90_NOWRITE, ncid=ncid)
+      if (ierr .ne. NF90_NOERR) then
+         write(LIS_logunit,*) '[WARN] Cannot open ', trim(filename)
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot open IMERG file', &
+              trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot open IMERG file ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Open Grid group
+      groupname = 'Grid'
+      ierr = nf90_inq_ncid(ncid, groupname, grp_ncid)
+      if (ierr .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot find group ', &
+              trim(groupname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot find group ' // trim(groupname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Open the precipitation dataset
+      varname = "precipitation"
+      ierr = nf90_inq_varid(grp_ncid, varname, precip_var_id)
+      if (ierr .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot find dataset ', &
+              trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot find dataset ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Get dimensions
+      ierr = nf90_inquire_variable(grp_ncid, precip_var_id, ndims=ndims, &
+           dimids=dimids)
+      if (ierr .ne. NF90_NOERR .or. ndims .ne. 3) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dimension data', &
+              ' for ', trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dimension data for ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ierr1 = nf90_inquire_dimension(grp_ncid, dimids(1), len=nlat)
+      ierr2 = nf90_inquire_dimension(grp_ncid, dimids(2), len=nlon)
+      ierr3 = nf90_inquire_dimension(grp_ncid, dimids(3), len=ntime)
+      if (ierr1 .ne. NF90_NOERR .or. ierr2 .ne. NF90_NOERR .or. &
+           ierr3 .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dimension data', &
+              ' for ', trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dimension data for ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      if (this%nlats .ne. nlat .or. this%nlons .ne. nlon .or. &
+           ntime .ne. 1) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dimension data', &
+              ' for ', trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dimension data for ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      allocate(tmp_precip_30min(nlat, nlon, 1))
+      ierr = nf90_get_var(grp_ncid, precip_var_id, tmp_precip_30min, &
+           start=(/1,1,1/), count=(/nlat,nlon,1/) )
+      if (ierr .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dataset', &
+              trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dataset ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Open the probability of liquid phase dataset
+      varname = "probabilityLiquidPhase"
+      ierr = nf90_inq_varid(grp_ncid, varname, plp_var_id)
+      if (ierr .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot find dataset', &
+              trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot find dataset ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Get dimensions
+      ierr = nf90_inquire_variable(grp_ncid, plp_var_id, ndims=ndims, &
+           dimids=dimids)
+      if (ierr .ne. NF90_NOERR .or. ndims .ne. 3) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dimension data', &
+              ' for ', trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dimension data for ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ierr1 = nf90_inquire_dimension(grp_ncid, dimids(1), len=nlat)
+      ierr2 = nf90_inquire_dimension(grp_ncid, dimids(2), len=nlon)
+      ierr3 = nf90_inquire_dimension(grp_ncid, dimids(3), len=ntime)
+      if (ierr1 .ne. NF90_NOERR .or. ierr2 .ne. NF90_NOERR .or. &
+           ierr3 .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dimension data', &
+              ' for ', trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dimension data for ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      if (this%nlats .ne. nlat .or. this%nlons .ne. nlon .or. &
+           ntime .ne. 1) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dimension data', &
+              ' for ', trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dimension data for ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      allocate(tmp_plp_30min(nlat,nlon,1))
+      ierr = nf90_get_var(grp_ncid, plp_var_id, tmp_plp_30min, &
+           start=(/1,1,1/), &
+           count=(/nlat,nlon,1/) )
+      if (ierr .ne. NF90_NOERR) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHV8Precip Cannot get dataset', &
+              trim(varname)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[WARN] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHV8Precip.'
+         message(3) = '  Cannot get dataset ' // trim(varname)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHV8Precip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
+      ! Save the "good" precipitation data
+      ! Precipitation units are converted from rate (mm/hr) to accumulation
+      ! (mm)
+      saved_good = .true.
+      icount = 0
+      do j = 1, this%nlons
+         do i = 1, this%nlats
+
+            ! Reject if we are missing data at an earlier time.
+            if (this%precip_cal_3hr(i,j) < 0) cycle
+
+            ! Gross error checks
+            if (tmp_precip_30min(i,j,1) < 0 .or. &
+                 tmp_plp_30min(i,j,1) < plp_thresh) then
+               this%precip_cal_3hr(i,j) = -9999
+               cycle
+            end if
+
+            ! Estimate is good
+            this%precip_cal_3hr(i,j) = this%precip_cal_3hr(i,j) + &
+                 (tmp_precip_30min(i,j,1) * 0.5)
+
+            icount = icount + 1
+
+         end do ! i
+      end do ! j
+
+      write(LIS_logunit,*) &
+           '[INFO] update30minImergHHV8Precip found ', icount, &
+           ' good 30-min calibrated estimates'
+
+      ! Clean up before returning.
+100   continue
+      if (.not. saved_good) this%precip_cal_3hr = -9999
+      if (allocated(tmp_precip_30min)) deallocate(tmp_precip_30min)
+      if (allocated(tmp_plp_30min)) deallocate(tmp_plp_30min)
+      ierr = nf90_close(ncid)
+
+#else
+      write(LIS_logunit,*) &
+           '[ERR] Cannot read IMERG V8 data unless LIS is compiled with netCDF'
+      write(LIS_logunit,*) &
+           'Recompile with netCDF and try again'
+      write(LIS_logunit,*)'ABORTING'
+      flush(LIS_logunit)
+      message(:) = ''
+      message(1) = '[ERR] Program: LIS'
+      message(2) = '  Routine update30minImergHHV8Precip.'
+      message(3) = '  LIS was not compiled with netCDF support'
+      if (LIS_masterproc) then
+         call LIS_alert('LIS.update30minImergHHV8Precip', alert_number, &
+              message)
+         alert_number = alert_number + 1
+         call LIS_abort(message)
+      end if
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+
+      TRACE_EXIT("update30minImergHHV8Precip")
+
+#endif
+
+   end subroutine update30minImergHHV8Precip
+
    ! Determine number of Imerg points with valid data
    function count3hrObsImergHHPrecip(this) result(icount)
 
@@ -1256,7 +1702,6 @@ contains
       character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer :: ierr
       integer, save :: alert_number = 1
-      logical :: file_exists
       integer :: rc
 
       TRACE_ENTER("create_Imerg_HH_filename")
@@ -1328,9 +1773,21 @@ contains
       ! EMK...Accomodate Final Run
       select case (trim(product))
       case ("3B-HHR")
-         filename = trim(filename)//"."//trim(version)//".HDF5"
+         if (index(trim(version), 'V06') .ne. 0) then
+            filename = trim(filename)//"."//trim(version)//".HDF5"
+         else if (index(trim(version), 'V07') .ne. 0) then
+            filename = trim(filename)//"."//trim(version)//".HDF5"
+         else if (index(trim(version), 'V08') .ne. 0) then
+            filename = trim(filename)//"."//trim(version)//".nc"
+         end if
       case ("3B-HHR-E", "3B-HHR-L")
-         filename = trim(filename)//"."//trim(version)//".RT-H5"
+         if (index(trim(version), 'V06') .ne. 0) then
+            filename = trim(filename)//"."//trim(version)//".RT-H5"
+         else if (index(trim(version), 'V07') .ne. 0) then
+            filename = trim(filename)//"."//trim(version)//".RT-H5"
+         else if (index(trim(version), 'V08') .ne. 0) then
+            filename = trim(filename)//"."//trim(version)//".RT-NC"
+         end if
       case default
          write(LIS_logunit,*) &
               '[ERR] Invalid IMERG product!'
