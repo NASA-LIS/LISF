@@ -36,7 +36,7 @@ SYSTEMS = {
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --time=1:00:00
-#SBATCH --constraint="cas"
+#SBATCH --constraint="mil"
 #SBATCH --mail-type=ALL
 #SBATCH --account=s1189
 #SBATCH --qos=debug""",
@@ -107,7 +107,7 @@ def build_script(dt: str, system: str, input_type: str) -> str:
         .replace("{dt}", dt)
         .replace("{dt10}", dt10)
         .replace("{input_type}", input_type)
-        .replace("{system}", system)     
+        .replace("{system}", system)
         .replace("{sbatch_header}", cfg["sbatch_header"])
         .replace("{modules}", cfg["modules"])
     )
@@ -211,7 +211,7 @@ def run_resampling(cfg, program, template, out_base, start, end, batch_size, for
             od = out_base / dt[:6]
             od.mkdir(parents=True, exist_ok=True)
             cfg_file = write_config(template, dt, sd, od)
-            
+
             proc = subprocess.Popen([str(program), str(cfg_file)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             procs.append((dt, proc, cfg_file))
 
@@ -244,21 +244,21 @@ def run_resampling(cfg, program, template, out_base, start, end, batch_size, for
 # =============================================================================
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    
+
     # Required Input selection
     parser.add_argument("--input", choices=["AMSR2", "WSF"], required=True, help="Input data type to process (AMSR2 or WSF)")
-    
+
     # Mode 1: Submission Arguments
     parser.add_argument("datetime", nargs="?", default=None, help="Target datetime in YYYYMMDDHHMM format")
     parser.add_argument("--system", choices=list(SYSTEMS), default=None, help="HPC system profile (default: auto-detect)")
     parser.add_argument("--dry-run", action="store_true", help="Write the script but do not call sbatch")
-    
+
     # Mode 2: Worker Arguments (WSF Only)
     parser.add_argument("--resample", nargs=2, metavar=("START_DT", "END_DT"), help="Worker mode: Run OPL resampling (WSF only)")
     parser.add_argument("--config", default="./SNIP_ops/config/SNIP_config.json", help="Path to config (for WSF resampling)")
     parser.add_argument("--batch-size", type=int, default=int(os.environ.get("MAX_PARALLEL", max(10, (os.cpu_count() or 10) // 10 * 10))), help="Max parallel LDT jobs")
     parser.add_argument("--force", action="store_true", help="Ignore checkpoint during resampling")
-    
+
     args = parser.parse_args()
 
     # ---------------------------------------------------------
@@ -267,11 +267,11 @@ def main() -> None:
     if args.resample:
         if args.input != "WSF":
             parser.error("Resampling is only supported when --input WSF is selected.")
-        
+
         config_path = Path(args.config)
         if not config_path.exists():
             sys.exit(f"ERROR: Configuration file '{args.config}' not found.")
-            
+
         start_dt, end_dt = args.resample
         cfg = json.loads(config_path.read_text(encoding='utf-8'))
         program = Path(cfg["ldt"]).resolve()
