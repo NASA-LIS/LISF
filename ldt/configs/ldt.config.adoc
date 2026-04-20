@@ -4403,13 +4403,6 @@ SMOS NRT NN search radius for openwater proximity detection: 3
 THySM observation directory: ../THySM
 ....
 
-`WSF soil moisture data directory:` specifies the location of the data directory containing the WSF soil moisture data data.
-
-.Example _ldt.config_ entry
-....
-WSF soil moisture data directory: ../wsf
-....
-
 `SMAP_E_OPL soil moisture observation directory:` specifies the location of the data directory containing the SMAP_E_OPL soil moisture data
 
 .Example _ldt.config_ entry
