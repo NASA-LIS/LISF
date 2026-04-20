@@ -1208,13 +1208,16 @@ contains
     ! See if file exists
     ! ---------------------------------------------------------
 
-    
     infilename = trim(SNIP_settings%pmw2dir)//&
          trim(SNIP_settings%netcdf_prefix_pmw_sd)//"_snip_0p1deg_"//&
          date10//"00_AFgrid.nc"
-         
+
     inquire(file=trim(infilename), exist=file_exists)
-    
+
+    if (.not. file_exists) then
+       write(LDT_logunit,*)'[WARN] Cannot find ', trim(infilename)
+       return
+    end if
 
     write(LDT_logunit,*) '[INFO] Reading PMW snowdepth NETCDF file ', &
          trim(infilename)
