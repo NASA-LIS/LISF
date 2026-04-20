@@ -89,7 +89,12 @@ log "STEP 2: Running SNIP LDT..."
 if [ -f "$LDT_OUT" ]; then
     log "LDT output already exists – skipping"
 else
+    # 1. Replace the Date
     sed -i "s/SNIP valid date (YYYYMMDDHH):[[:space:]]*[0-9]\{10\}/SNIP valid date (YYYYMMDDHH):                    ${TARGET_DATETIME_10}/g" ldt.config
+
+    # 2. Replace the Input Type (amsr2 or wsf)
+    sed -i "s/\(SNIP PMW snow depth filename prefix:[[:space:]]*\)[a-zA-Z0-9_]*/\1${INPUT_LOWER}/g" ldt.config
+    
     
     mpirun -np 1 ./LDT ldt.config 2>&1
     [ -f "$LDT_OUT" ] || die "SNIP LDT finished but output file not found"
