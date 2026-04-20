@@ -1,3 +1,12 @@
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 """
 SCRIPT: traditional_predictor.py
 
@@ -6,6 +15,7 @@ Traditional physical algorithms for snow depth retrieval from AMSR2 data.
   - Kelly, 2009
 
 REVISION HISTORY:
+19 Mar 2026: Kehan Yang, Initial specification
 """
 # pylint: disable=import-error
 # pylint: disable=invalid-name, too-many-locals
