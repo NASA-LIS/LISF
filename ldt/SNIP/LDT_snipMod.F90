@@ -7,8 +7,6 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-#include "LDT_misc.h"
-#include "LDT_NetCDF_inc.h"
 
 module LDT_snipMod
 
@@ -214,8 +212,6 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, snip_settings%pmw2dir, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-   
 
     ! get option for snow climatology
     cfg_entry = "SNIP Snow Climatology:"
@@ -605,8 +601,6 @@ contains
          snip_settings%netcdf_prefix_pmw_sd, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-
-    
 
   end subroutine LDT_snipInit
 
