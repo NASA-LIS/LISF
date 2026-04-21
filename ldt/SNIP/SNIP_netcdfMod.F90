@@ -37,7 +37,7 @@ module SNIP_netcdfMod
   public :: SNIP_read_netcdf_12z
   public :: SNIP_read_netcdf_usafsi
   public :: SNIP_read_netcdf_usafsi_12z
-  public :: SNIP_read_netcdf_amsr2_sd
+  public :: SNIP_read_netcdf_pmw_sd
 
 contains
 
@@ -1173,7 +1173,7 @@ contains
 
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-  subroutine SNIP_read_netcdf_amsr2_sd(date10, ierr)
+  subroutine SNIP_read_netcdf_pmw_sd(date10, ierr)
 
     ! Imports
     use LDT_constantsMod, only: LDT_CONST_PATH_LEN
@@ -1203,7 +1203,7 @@ contains
     nc = LDT_rc%lnc(1)
     nr = LDT_rc%lnr(1)
 
-    SNIP_arrays%amsr2_snowdepth = misanl
+    SNIP_arrays%pmw_snowdepth = misanl
 
     ! See if file exists
     ! ---------------------------------------------------------
@@ -1251,7 +1251,7 @@ contains
     if (nlat .ne. nr .or. &
          nlon .ne. nc) then
        write(LDT_logunit, *) &
-            '[ERR] Dimension mismatch between LDT and AMSR2 input'
+            '[ERR] Dimension mismatch between LDT and PMW input'
        write(LDT_logunit,*) &
             '[ERR] Expected lat = ', nr, ' lon = ', nc
        write(LDT_logunit,*) &
@@ -1259,7 +1259,7 @@ contains
        call LDT_endrun()
     end if
 
-    ! Fetch the AMSR2 snow depth variable ID
+    ! Fetch the PMW snow depth variable ID
     call LDT_verify(nf90_inq_varid(ncid=ncid, &
          name='snowdepth', &
          varid=snowdepth_varid), &
@@ -1268,7 +1268,7 @@ contains
     ! Read the snowdepth variable
     call LDT_verify(nf90_get_var(ncid=ncid, &
          varid=snowdepth_varid, &
-         values=SNIP_arrays%amsr2_snowdepth), &
+         values=SNIP_arrays%pmw_snowdepth), &
          '[ERR] Error in nf90_get_var for snowdepth')
 
     ! Close the file
@@ -1278,11 +1278,11 @@ contains
     ! Normal exit
     ierr = 0
 
-  end subroutine SNIP_read_netcdf_amsr2_sd
+  end subroutine SNIP_read_netcdf_pmw_sd
 
 #else
   ! Dummy version
-  subroutine SNIP_read_netcdf_amsr2_sd(date10, ierr)
+  subroutine SNIP_read_netcdf_pm_sd(date10, ierr)
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     implicit none
     character*10, intent(in) :: date10
@@ -1292,7 +1292,7 @@ contains
     write(LDT_logunit,*)'Cannot read in ML-based PMW SD NETCDF data'
     write(LDT_logunit,*)'Recompile with NETCDF support and try again!'
     call LDT_endrun()
-  end subroutine SNIP_read_netcdf_amsr2_sd
+  end subroutine SNIP_read_netcdf_pmw_sd
 
 #endif
 end module SNIP_netcdfMod
