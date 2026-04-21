@@ -57,7 +57,7 @@ subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
    integer                :: grid_index
    character(len=LIS_CONST_PATH_LEN) :: smobsdir
    character(len=LIS_CONST_PATH_LEN) :: fname
-   logical                :: alarmCheck, file_exists
+   logical                :: alarmCheck
    integer                :: t, c, r, jj
    real,          pointer :: obsl(:)
    type(ESMF_Field)       :: smfield, pertField
@@ -68,21 +68,16 @@ subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
    logical                :: data_upd_flag(LIS_npes)
    logical                :: data_upd_flag_local
    logical                :: data_upd
-   real                   :: smobs(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
    real                   :: smobs_D(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
    real                   :: smobs_A(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
    real                   :: sm_current(LIS_rc%obs_lnc(k), LIS_rc%obs_lnr(k))
    real                   :: dt
-   real                   :: lon
-   real                   :: lhour
    real                   :: gmt
-   integer                :: zone
    integer                :: fnd
    real, allocatable      :: ssdev(:)
-   character*4            :: yyyy
    character*8            :: yyyymmdd
-   character*2            :: mm, dd, hh
-   integer                :: yr, mo, da, hr, mn, ss
+   character*2            :: hh
+   integer                :: mn, ss
    integer                :: cyr, cmo, cda, chr, cmn, css
    integer                :: nyr, nmo, nda, nhr, nmn, nss
    real*8                 :: timenow, time1,time2,time3
@@ -91,8 +86,10 @@ subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
    integer                :: mn_ind
    integer                :: ftn, ierr
    integer                :: rc
-   character(len=3)       :: CRID
    integer, external      :: create_filelist ! C function
+
+   external :: read_WSFsm_data
+   external :: lsmdaqcobsstate
 
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
                           smobsdir, rc=status)
@@ -448,22 +445,22 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   real*8                   :: time
 !EOP
   integer,  parameter     :: nc=2560, nr=1920
-  real*4                  :: sm_raw(WSFsm_struc(n)%nc,WSFsm_struc(n)%nr)
   real                    :: sm_in(WSFsm_struc(n)%nc*WSFsm_struc(n)%nr)
   real                    :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
   logical*1               :: sm_data_b(WSFsm_struc(n)%nc*WSFsm_struc(n)%nr)
   logical*1               :: smobs_b_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
-  integer                 :: smid
-  integer                 :: ios, nid
+  integer                 :: ios
   integer                 :: c,r
   integer                 :: r_flip
-  integer                 :: ftn1
   logical :: file_exists
   character(255) :: map_projection
   integer :: ncid, dim_ids(3), var_id
   integer :: ntime, nlat, nlon
   real, allocatable :: tmp(:,:,:)
   integer :: rc
+
+  external :: bilinear_interp
+  external :: upscaleByAveraging
 
   sm_in = LIS_rc%udef
   sm_data_b = .false.

@@ -120,7 +120,7 @@ contains
 !   \end{description}
 !EOP
     real, parameter                   ::  minssdev =0.001
-    integer                           ::  n,i,t,kk,jj
+    integer                           ::  n,i,t,jj
     integer                           ::  ftn
     integer                           ::  status
     type(ESMF_Field)                  ::  obsField(LIS_rc%nnest)
@@ -136,11 +136,10 @@ contains
     type(pert_dec_type)               ::  obs_pert
     real, pointer                     ::  obs_temp(:,:)
     real, allocatable                 ::  ssdev(:)
-    real, allocatable                 ::  obserr(:,:)
-    real, allocatable                 ::  lobserr(:,:)
-    integer                           ::  c,r
-    real, allocatable                 ::  ssdev_grid(:,:)
     integer                           ::  ngrid
+
+    external :: bilinear_interp_input_withgrid
+    external :: upscaleByAveraging_input
 
     allocate(WSFsm_struc(LIS_rc%nnest))
 
