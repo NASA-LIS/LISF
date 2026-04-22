@@ -3438,13 +3438,13 @@ SNODAS snow depth data directory:                  ./FORCING/SNODAS
 
 `SWOT water level map:` specifies the assimilation map file and its associated sequential ID.
 
-`Data assimilation frequency::` specifies the DA frequency: minimum 15mn and maximum 1da.
+`Data assimilation frequency:` specifies the DA frequency: minimum 15mn and maximum 1da.
 
 .Example _lis.config_ entry
 ....
 SWOT water level data directory:             ./input/SWOT_obs
 SWOT water level map:                        ./SWOT_lis_id.nc
-Data assimilation frequency                  "15mn"
+Data assimilation frequency:                 "15mn"
 ....
 
 [[ssec_rtms,Radiative Transfer/Forward Models]]
@@ -10998,8 +10998,7 @@ active restart file.
 `HYMAP2 2-way coupling flooded fraction threshold:` specifies the flooded fraction
 threshold used in the 2-way coupling mode.
 
-`HYMAP2 use localization update in DA:` specifies whether to enable the localization 
-scheme for DA.
+`HYMAP2 use localization update in DA:` specifies whether to enable the localization scheme for DA.
 
 Acceptable values are:
 
@@ -11212,7 +11211,7 @@ Acceptable values are:
 |Value | Description
 
 |0     | Do not use
-|1     | Use 
+|1     | Use
 |====
 
 .Example _lis.config_ entry

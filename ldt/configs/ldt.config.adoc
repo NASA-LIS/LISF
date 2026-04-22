@@ -4403,13 +4403,6 @@ SMOS NRT NN search radius for openwater proximity detection: 3
 THySM observation directory: ../THySM
 ....
 
-`WSF soil moisture data directory:` specifies the location of the data directory containing the WSF soil moisture data data.
-
-.Example _ldt.config_ entry
-....
-WSF soil moisture data directory: ../wsf
-....
-
 `SMAP_E_OPL soil moisture observation directory:` specifies the location of the data directory containing the SMAP_E_OPL soil moisture data
 
 .Example _ldt.config_ entry
@@ -5393,7 +5386,7 @@ SMAP_E_OPL landcover file:                          ../../data/PRMS_RETRIEVAL_AR
 === WSF OPL brightness temperature resampling
 
 This section describes the configuration options for the
-`"OPL WSF brightness temperature resampling"` running mode, which resamples
+"`OPL WSF brightness temperature resampling`" running mode, which resamples
 raw WSF-M (Weather Satellite Follow-on) Level-1 SDR brightness temperature files to the
 10-km global model grid. One LDT instance is invoked per hour; the
 `wsf_opl.py` pipeline script populates the time-varying fields automatically
