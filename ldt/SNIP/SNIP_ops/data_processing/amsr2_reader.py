@@ -67,7 +67,7 @@ class AMSR2DataProcessor:
                 for file_path in available_files:
                     tb_data = self.get_amsr_l1r(file_path)
                     # extract descending data only for NOAA/NESDIS AMSR2 L1R dataset
-                    if self.config.source == 'NOAA':
+                    if self.config.AMSR2_source == 'NOAA':
                         tb_data = self.get_descending_orbit(tb_data)
                     processed_data.append(tb_data)
 
@@ -177,11 +177,11 @@ class AMSR2DataProcessor:
             month = prev_datetime.strftime('%m')
             day_of_year = prev_datetime.strftime('%j')
 
-        if self.config.source == 'NOAA':
+        if self.config.AMSR2_source == 'NOAA':
             amsr2_path = os.path.join(amsr2_path_root, year_str, day_of_year)
             logger.info(f"Search NOAA data in: {amsr2_path}")
 
-        elif self.config.source == 'JAXA':
+        elif self.config.AMSR2_source == 'JAXA':
             amsr2_path = os.path.join(amsr2_path_root, year_str, month)
             logger.info(f"Search JAXA data in: {amsr2_path}")
         else:
@@ -222,7 +222,7 @@ class AMSR2DataProcessor:
             try:
                 filename = os.path.basename(file_path)
                 
-                if self.config.source == 'JAXA':  # "JAXA" or "NOAA":
+                if self.config.AMSR2_source == 'JAXA':  # "JAXA" or "NOAA":
                     if 'L1SGRTBR' not in filename:
                         logger.error(
                             'Unexpected JAXA label in filename '
@@ -244,7 +244,7 @@ class AMSR2DataProcessor:
                             continue
                         if start_time <= file_datetime <= target_datetime:
                             file_list.append(file_path)
-                elif self.config.source == 'NOAA':  # "JAXA" or "NOAA":
+                elif self.config.AMSR2_source == 'NOAA':  # "JAXA" or "NOAA":
                     if 'L1DLRTBR' not in filename:
                         logger.error(
                             'Unexpected NOAA '

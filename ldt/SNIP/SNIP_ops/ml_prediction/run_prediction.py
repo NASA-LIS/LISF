@@ -22,7 +22,7 @@ REVISION HISTORY:
 30 Oct 2025: Eric Kemp, More code cleanup.
 19 Mar 2026: Kehan Yang, Code eidt to do filter and pre-classification
 """
-
+# pylint: disable=import-error
 # Standard modules
 from datetime import datetime
 import glob
@@ -43,7 +43,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger('SnowDepthPredictor')
+logger = logging.getLogger('AMSR2SnowDepthPredictor')
 
 
 # Encoding used for all NetCDF outputs
@@ -62,8 +62,10 @@ _ENCODING = {
 # Pylint flags catching general exceptions, which is excessive.  We disable
 # that here.
 # pylint: disable=W0718
+# pylint: disable=too-many-instance-attributes, invalid-name,
+# too-many-locals, too-many-statements, too-many-branches
 
-class SnowDepthPredictor:
+class AMSR2SnowDepthPredictor:
     """
     Predicts snow depth using machine learning models with passive
     microwave data.
@@ -130,7 +132,7 @@ class SnowDepthPredictor:
     def _add_tb_differences(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Add brightness temperature difference features to df.
-        Skips any pair where either channel is missing.
+        Skips any pair where either channel is missing.sq
         """
         for c1, c2, name in self.TB_DIFF_PAIRS:
             if c1 in df.columns and c2 in df.columns:
@@ -150,15 +152,14 @@ class SnowDepthPredictor:
         """
         try:
             start_time = time.time()
-            model_path = self.config.project_path / self.config.model_path
+            model_path = self.config.project_path / (str(self.config.model_path) + '_AMSR2.json')
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"Model file not found: {model_path}")
 
-            with open(model_path, 'rb') as f:
-                model = xgb.XGBRegressor()
-                model.load_model(model_path)
-                self.model = model
-                self.model_feature_names = model.feature_names_in_.tolist()
+            model = xgb.XGBRegressor()
+            model.load_model(model_path)
+            self.model = model
+            self.model_feature_names = model.feature_names_in_.tolist()
             txt = f"Model loaded successfully from {model_path}" + \
                   f" in {time.time() - start_time:.2f} seconds"
             logger.info(txt)
@@ -233,7 +234,7 @@ class SnowDepthPredictor:
             xr.DataArray: Snow depth predictions
         """
         # Open PMW dataset
-        with xr.open_dataset(pmw_file) as ds_pmw:
+        with xr.open_dataset(pmw_file, decode_timedelta=False) as ds_pmw:
             logger.info('%s file opened', pmw_file)
 
             # Extract data for model input
@@ -254,6 +255,7 @@ class SnowDepthPredictor:
             return self._format_output(y_pred, output_shape, lat, lon)
 
     def add_days_since_wy(self, df):
+        """Calculate BT difference"""
         df = df.copy()
         df['date'] = pd.to_datetime(df['Date'], format="%Y%m%d%H")
 
@@ -504,7 +506,7 @@ class SnowDepthPredictor:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
             # open pmw file
-            ds_pmw = xr.open_dataset(pmw_file).squeeze()
+            ds_pmw = xr.open_dataset(pmw_file, decode_timedelta=False).squeeze()
             self.ds_result = ds_pmw
 
             # Apply land ocean frac threshold - only predict land
@@ -591,8 +593,8 @@ class SnowDepthPredictor:
 
                 snow_depth = ds_out['snow_depth']
                 snow_depth_arr = snow_depth.values.copy()
-                mask_no_snow = (depth_flag_arr == 0)
-                mask_shallow = (depth_flag_arr == 2)
+                mask_no_snow = depth_flag_arr == 0
+                mask_shallow = depth_flag_arr == 2
 
                 snow_depth_arr[mask_no_snow] = 0
                 snow_depth_arr[mask_shallow] = 0.05
@@ -614,6 +616,7 @@ class SnowDepthPredictor:
             return False
 
     def apply_snow_mask(self, ds_out, template_data):
+        """apply viirs binary snow mask"""
         # add snow mask from viirs data
         date_str = self.target_datetime.strftime('%Y%m%d')
         viirs_path = glob.glob(os.path.join(
@@ -622,7 +625,8 @@ class SnowDepthPredictor:
 
         if len(viirs_path) == 1:
             ds_viirs = xr.open_dataset(viirs_path[0],
-                                       engine='rasterio')
+                                       engine='rasterio',
+                                       decode_timedelta=False)
             ds_viirs = ds_viirs.rio.write_crs(self.config.proj)
             ds_viirs = ds_viirs.squeeze()
             ds_viirs_repro = ds_viirs.rio.reproject_match(
@@ -639,11 +643,12 @@ class SnowDepthPredictor:
             )
             logger.info('Successfully applied snow mask from VIIRS')
             return ds_out
-        else:
-            logger.error("No VIIRS data found")
-            return ds_out  # Fixed: return original data
+
+        logger.error("No VIIRS data found")
+        return ds_out  # Fixed: return original data
 
     def apply_filter(self):
+        """apply pre-classification mask"""
         data = self.ds_result
 
         # Step 3: Test for moderate to deep snow presence
@@ -705,10 +710,10 @@ class SnowDepthPredictor:
             try:
                 template_path = self.config.project_path / \
                                 self.config.template_path
-                template_data = xr.open_dataset(template_path)
+                template_data = xr.open_dataset(template_path, decode_timedelta=False)
 
                 # open snow depth data
-                ds_sd = xr.open_dataset(output_file)
+                ds_sd = xr.open_dataset(output_file, decode_timedelta=False)
 
                 # reproject snow depth data based on template
                 # Ensure SCA has CRS
@@ -809,7 +814,7 @@ class SnowDepthPredictor:
                 logger.info("ML output already exists, skipping: %s",
                             output_file)
                 # still need ds_result loaded for traditional methods below
-                self.ds_result = xr.open_dataset(pmw_file).squeeze()
+                self.ds_result = xr.open_dataset(pmw_file, decode_timedelta=False).squeeze()
             else:
                 output = self.predict_snow_depth(pmw_file=pmw_file)
                 if output is None:
@@ -824,23 +829,22 @@ class SnowDepthPredictor:
                             time.time() - start_time)
 
             # ── Step 2: Reproject to USAF grid ────────────────────────
-            if self.config.reproject_USAF:
-                base_name = os.path.splitext(os.path.basename(output_file))[0]
-                af_path = os.path.join(dir_out, f"{base_name}_AFgrid.nc")
+            base_name = os.path.splitext(os.path.basename(output_file))[0]
+            af_path = os.path.join(dir_out, f"{base_name}_AFgrid.nc")
 
-                if os.path.exists(af_path):
+            if os.path.exists(af_path):
+                logger.info(
+                    "AF grid output already exists, skipping: %s",
+                    af_path)
+            else:
+                logger.info("Reprojecting to USAF grid ...")
+                reproject_success = self.reproject_to_usaf()
+                if reproject_success:
                     logger.info(
-                        "AF grid output already exists, skipping: %s",
-                        af_path)
+                        "USAF reprojection completed successfully")
                 else:
-                    logger.info("Reprojecting to USAF grid ...")
-                    reproject_success = self.reproject_to_usaf()
-                    if reproject_success:
-                        logger.info(
-                            "USAF reprojection completed successfully")
-                    else:
-                        logger.warning("USAF reprojection failed, but "
-                                       "primary output was saved successfully")
+                    logger.warning("USAF reprojection failed, but "
+                                   "primary output was saved successfully")
 
             # ── Step 3: Traditional methods ────────────────────────────
             if self.config.flag_output_kelly or self.config.flag_output_foster:
@@ -880,4 +884,3 @@ class SnowDepthPredictor:
         except Exception as e:
             logger.error("Error in pipeline: %s", e)
             return False
-

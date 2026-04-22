@@ -222,7 +222,7 @@ subroutine SNIP_run(n)
      allocate (SNIP_arrays%sst              (nc,     nr))
      allocate (SNIP_arrays%viirsmap         (nc,     nr))
      allocate (SNIP_arrays%navy_icecon(nc,nr))
-     allocate (SNIP_arrays%amsr2_snowdepth(nc,nr))
+     allocate (SNIP_arrays%pmw_snowdepth(nc,nr))
 
      ! RETRIEVE STATIC DATA SETS.
      write (LDT_logunit,*) '[INFO] CALLING GETGEO TO GET STATIC FIELDS'
@@ -425,8 +425,8 @@ subroutine SNIP_run(n)
            if (ierr == 0) found_navy_cice = .true.
         end if
 
-        ! Read externally generated AMSR2 snow depth retrievals.
-        call SNIP_read_netcdf_amsr2_sd(date10, ierr)
+        ! Read externally generated PMW snow depth retrievals.
+        call SNIP_read_netcdf_pmw_sd(date10, ierr)
 
         ! RETRIEVE VIIRS DATA.
         if (SNIP_settings%useviirs) then

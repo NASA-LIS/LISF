@@ -1,3 +1,12 @@
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 """
 SCRIPT: traditional_predictor.py
 
@@ -6,8 +15,10 @@ Traditional physical algorithms for snow depth retrieval from AMSR2 data.
   - Kelly, 2009
 
 REVISION HISTORY:
+19 Mar 2026: Kehan Yang, Initial specification
 """
-
+# pylint: disable=import-error
+# pylint: disable=invalid-name, too-many-locals
 # Standard modules
 import logging
 import os
@@ -109,7 +120,7 @@ class SnowDepthPredictorTraditional(SnowDepthPredictor):
         denominator = 1 - ff
         denominator = xr.where(denominator <= 0, np.nan, denominator)
 
-        sd = 1.59 * tb_diff / denominator / 100 # cm to meter
+        sd = 1.59 * tb_diff / denominator / 100  # cm to meter
         sd = xr.where(sd < 0, 0.0, sd)  # No negative snow depth
         sd = xr.where(sd > 5, np.nan, sd)  # Max realistic snow depth 5 cm
 
@@ -147,7 +158,7 @@ class SnowDepthPredictorTraditional(SnowDepthPredictor):
         ff: fractional forest cover from MCD12Q1
         fd: forest density from MOD44B
         """
-        data  = ds_pmw
+        data = ds_pmw
         ds_ff = xr.open_dataset(self.config.fraction_forest_cover).squeeze()
         ds_fd = xr.open_dataset(self.config.forest_density).squeeze()
 
@@ -176,7 +187,6 @@ class SnowDepthPredictorTraditional(SnowDepthPredictor):
         fd = xr.where(fd < 0, np.nan, fd)
         fd = xr.where(fd > 1, 1.0, fd)
 
-
         pol36 = data['tb_36v'] - data['tb_36h']
         pol18 = data['tb_18v'] - data['tb_18h']
         pol36 = xr.where(pol36 > 0, pol36, np.nan)
@@ -194,7 +204,7 @@ class SnowDepthPredictorTraditional(SnowDepthPredictor):
                (1 / np.log10(pol18) *
                 (data['tb_10v'] - data['tb_18v'])))
 
-        sd = (ff * SDf + (1 - ff) * SD0) / 100 # cm to meter
+        sd = (ff * SDf + (1 - ff) * SD0) / 100  # cm to meter
 
         sd = xr.where(sd < 0, 0.0, sd)
         sd = xr.where(sd > 5, np.nan, sd)
@@ -240,7 +250,7 @@ class SnowDepthPredictorTraditional(SnowDepthPredictor):
         """
 
         target_datetime = self.target_datetime.strftime("%Y%m%d%H")
-        dir_out         = self.config.project_path / self.config.output_dir
+        dir_out = self.config.project_path / self.config.output_dir
         os.makedirs(dir_out, exist_ok=True)
 
         output_file = os.path.join(
@@ -276,7 +286,8 @@ class SnowDepthPredictorTraditional(SnowDepthPredictor):
         # Wrap in a Dataset so encoding keys match variable names
         ds_out = sd.to_dataset(name='snow_depth')
         ds_out.to_netcdf(output_file, encoding=_ENCODING, format='NETCDF4')
-        logger.info('%s output saved to %s', method.capitalize(), output_file)
+        logger.info('%s output saved to %s',
+                    method.capitalize(), output_file)
         return output_file
 
     # ──────────────────────────────────────────────────────────────
@@ -318,6 +329,6 @@ class SnowDepthPredictorTraditional(SnowDepthPredictor):
 
         if save:
             self._save_sd(sd, method)
-            logger.info(f"Save {method} SD results")
+            logger.info("Save %s SD results", method)
 
         return sd
