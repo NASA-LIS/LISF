@@ -120,6 +120,7 @@ contains
 
 #if ( defined ROUTE_HYMAP3_ROUTER )
     use HYMAP3_dawL_Mod
+    use HYMAP3_daSWOT_Mod
 #endif
 
     implicit none
@@ -171,6 +172,17 @@ contains
     external HYMAP3_descale_WL
     external HYMAP3_updateWL
     external HYMAP3_setPertStates
+
+    !external HYMAP3_getStateSpaceSize
+    external HYMAP3_getSWOT
+    external HYMAP3_setSWOT
+    external HYMAP3_getSWOTpred
+    external HYMAP3_qcSWOT
+    external HYMAP3_qc_SWOTobs
+    external HYMAP3_scale_SWOT
+    external HYMAP3_descale_SWOT
+    external HYMAP3_updateSWOT
+    !external HYMAP3_setPertStates
 #endif
 
 #if ( defined ROUTE_HYMAP2_ROUTER )
@@ -298,6 +310,29 @@ contains
          trim(LIS_hydrowebwlId)//char(0),HYMAP3_updateWL)
     call registerroutingdasetpertstates(trim(LIS_HYMAP3routerId)//"+"//&
          trim(LIS_hydrowebwlId)//char(0),HYMAP3_setPertStates)
+
+    call registerroutingdainit(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_daSWOT_init)
+   call registerroutingdagetstatespacesize(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_getStateSpaceSize)
+   call registerroutingdagetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_getSWOT)
+   call registerroutingdasetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_setSWOT)
+   call registerroutingdagetobspred(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_getSWOTpred)
+   call registerroutingdaqcstate(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_qcSWOT)
+   call registerroutingdaqcobsstate(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_qc_SWOTobs)
+   call registerroutingdascalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_scale_SWOT)
+   call registerroutingdadescalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_descale_SWOT)
+   call registerroutingdaupdatestate(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_updateSWOT)
+   call registerroutingdasetpertstates(trim(LIS_HYMAP3routerId)//"+"//&
+        trim(LIS_swotwlId)//char(0),HYMAP3_setPertStates)
 #endif
 
 #endif
