@@ -21,12 +21,12 @@ import sys
 import time
 
 _VARS = ["SoilMoist_tavg", "SoilTemp_tavg",
-        "RHMin_inst",
-        "Evap_tavg", "LWdown_f_tavg",
-        "SWdown_f_tavg",
-        "Tair_f_max",
-        "Tair_f_tavg",
-        "TotalPrecip_acc", "Wind_f_tavg"]
+         "RHMin_inst",
+         "Evap_tavg", "LWdown_f_tavg", "PotEvap_tavg",
+         "SWdown_f_tavg",
+         "Tair_f_max",
+         "Tair_f_tavg",
+         "TotalPrecip_acc", "Wind_f_tavg"]
 
 def _main():
     """Main driver"""

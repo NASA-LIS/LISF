@@ -105,7 +105,7 @@ _LVT_NOAHMP_INVOCATIONS_3HR = ['Albedo_tavg',
                                'Tair_f_tavg',
                                'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
 
-_LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
+_LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg','PotEvap_tavg',
                                 'RHMin_inst',
                                 'SoilMoist_tavg', 'SoilTemp_tavg',
                                 'SWdown_f_tavg', 'Tair_f_max',
