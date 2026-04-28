@@ -8,7 +8,7 @@ Last updated 17 Nov 2025
 
 * On HPC-11, the latest module is:
     lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_s2s
-  which uses afw-python/3.11-202501
+  which uses afw-python/3.11-202511
 
 There are 3 scripts used to configure and run LIS to generate USAF global
 atmospheric forcing data via "AGRMET Ops" mode.  These are located in the

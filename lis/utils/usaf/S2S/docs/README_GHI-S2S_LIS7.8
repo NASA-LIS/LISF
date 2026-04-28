@@ -1,9 +1,9 @@
 
-        557WW LIS 7.7 - Global-Hydro Information (GHI) 
+        557WW LIS 7.8 - Global-Hydro Information (GHI) 
   Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 12 Jan 2026
+  Last Modified 27 Apr 2026
 
 		TABLE OF CONTENTS
 		_________________
@@ -58,27 +58,27 @@
 
   2.1  SOFTWARE REQUIREMENTS
 
-* LIS 7.7, compiled with GRIB2 support (ecCodes and AFWA-specific
+* LIS 7.8, compiled with GRIB2 support (ecCodes and AFWA-specific
     grib configuration settings), and netCDF4.
 
 * For running on Discover, you will load the following module:
-  LISF/env/discover/lisf_7.7_intel_2023.2.1_s2s
+  LISF/env/discover/lisf_7.8_intel_2023.2.1_s2s
 
 * Python 3.11, with the following extra libraries installed:
                 NCCS        HPC
-  - Cartopy     0.24.0      0.24.0
-  - cfgrib      0.9.15.0    0.9.15.0
+  - Cartopy     0.24.0      0.25.0
+  - cfgrib      0.9.15.0    0.9.15.1
   - dask        2024.8.1    2024.8.1
   - dateutil    2.9.0.post0 2.9.0.post0
-  - GDAL/OSGEO  3.9.1       3.9.1
-  - Matplotlib  3.8.4       3.8.4
+  - GDAL/OSGEO  3.9.1       3.9.2
+  - Matplotlib  3.8.4       3.9.4
   - NetCDF4     1.7.2       1.7.2
   - numpy       1.26.4      1.26.4
-  - pandas      2.2.3       2.2.3
-  - PyYAML      6.0.2       6.0.2
-  - rasterio    1.3.10      1.3.10
-  - xarray      2025.1.1    2025.1.1
-  - xesmf       0.8.8       0.8.8
+  - pandas      2.2.3       2.3.3
+  - PyYAML      6.0.2       6.0.3
+  - rasterio    1.3.10      1.4.1
+  - xarray      2025.1.1    2025.6.1
+  - xesmf       0.8.8       0.8.10
 
   ** Note:  Updates to the above libraries and modules
         could get updated as frequent as every 3- to
@@ -88,15 +88,15 @@
   2.2  SETTING UP THE EXPERIMENT DIRECTORY
 
  The main GHI S2S subsystem software is found in your
-  latest LIS 7.7 557WW code tarball, within the directory
+  latest LIS 7.8 557WW code tarball, within the directory
   structure:
 
-   lisf-557ww-7.7/lis/utils/usaf/S2S/
+   lisf-557ww-7.8/lis/utils/usaf/S2S/
 
  The main E2ES script that runs the S2S subsystem is a 
   Python script and is located in the directory:   
 
-   in lisf-557ww-7.7/lis/utils/usaf/S2S/ghis2s/s2s_app
+   in lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/s2s_app
 
    s2s_run.py
   
@@ -120,7 +120,7 @@
   LISFDIR:  [DIRECTORY_PATH_OF_YOUR_LISF_TOP-LEVEL-CODE_DIRECTORY]
   E2ESDIR:  [YOUR_LOCAL_WORKING-RUN_DIRECTORY_PATH]
   METFORC:  [MAIN_USAF_FORCING_AND_SATELLITE_DATA_DIRECTORY_PATH]
-  LISFMOD: lisf_7.7_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
+  LISFMOD: lisf_7.8_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
   SPCODE:  s1189     [YOUR LOCAL MACHINE GROUPID CODE]
   DATATYPE: forecast  [OPTIONS INCLUDE:  "forecast" or "hindcast"]
   supplementarydir:  [YOUR GHI_S2S/supplementary_files DIRECTORY PATH WITH RUNTIME INPUT FILES]
@@ -168,6 +168,10 @@
 
    (or make sure "s2s_run.py" has executable permission 
     and run as:  ./s2s_app/s2s_run.py)
+
+  OR you must specify the "PYTHONPATH" environmental variable, e.g.,
+
+    export PYTHONPATH="[YOUR_LISFDIR]/lis/utils/usaf/S2S/"
  
   The main usage with mandatory and optional entries is:
 
@@ -221,7 +225,7 @@
 
    3.1.2  New Cylc workflow script - ghis2s_program.py
 
-   The latest LISV7.7 S2S code and scripts include new coupling with the Cylc
+   The latest LISV7.8 S2S code and scripts include new coupling with the Cylc
     workflow software. To help set up and run with Cylc directories and files,
     a more complete set of instructions have been outlined and described in this
     companion README file found here:
@@ -353,11 +357,20 @@
   the LDT and LIS executables needed, follow the below 
   main heirarchy.
 
+ NOTE: New "main" directory structure included with LISV7.8:
+
+ lis/utils/usaf/S2S/ghis2s/main/
+ ---------------------------------
+ ├── experiment_setup.py
+ ├── hcast_module.py
+ ├── hymap_basins.py
+ ├── __init__.py
+ ├── s2s_api.py
+ └── walltime.py
+
  lis/utils/usaf/S2S/ghis2s/s2s_app/
  ---------------------------------
  ├── s2s_run.py
- ├── s2s_api.py
- ├── walltime.py
  └── s2s_config_global_fcast
 
  (Note: Only listing main scripts and files
@@ -366,10 +379,12 @@
  lis/utils/usaf/S2S/ghis2s/
  --------------------------
  ├── bcsd
- │   └── bcsd_library
+ │   ├── bcsd_library
+ │   └── geosv3_radiation
  ├── cylc_script
  ├── ldt_ics
- │   └── template_files
+ │   ├── ldt.config_noahmp401_nmme_TEMPLATE.10km
+ │   └── ldt.config_noahmp401_nmme_TEMPLATE.GLOBAL
  ├── lis_darun
  │   ├── attribs
  │   ├── noahmp401_parms
@@ -378,6 +393,7 @@
  ├── lis_fcst
  │   ├── tables
  │   └── template_files
+ ├── main
  ├── s2s_app
  ├── s2smetric
  ├── s2splots
@@ -572,7 +588,7 @@
   - This step preprocesses CFSv2 (non-precip) and 6 separate NMME
     forecast model precipitation data for driving the models offline in LIS.
     The forecasts are for the 557 WW ~25KM global domain, bias-corrected
-    using the USAF-LIS7.7-S2S (e.g., NAFPA precipitation) dataset, and covers
+    using the USAF-LIS7.8-S2S (e.g., NAFPA precipitation) dataset, and covers
     up to 9 months of forecast as input data to LIS.
 
   - This step occurs now just before the LIS FCST step and runs
@@ -679,7 +695,7 @@
     NMME model's LIS-based hydrologic monthly forecasts out to 9 months
     for a given month and year's initial condition.
 
-    ** Note:  New with LISV7.7 -- new weekly S2S metric anomaly and 
+    ** Note:  New with LISV7.8 -- new weekly S2S metric anomaly and 
                standardized anomaly files, which go out to 6-week leads.
 
   - The scripts read in the weekly or monthly post-processed files from the 
@@ -777,6 +793,15 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
 
  APPENDIX A.  GHI S2S E2ES -- Full Directory Structure
 
+ lis/utils/usaf/S2S/ghis2s/main/
+ ----------------------------------
+ ├── experiment_setup.py
+ ├── hcast_module.py
+ ├── hymap_basins.py
+ ├── __init__.py
+ ├── s2s_api.py
+ └── walltime.py
+
  lis/utils/usaf/S2S/ghis2s/s2s_app/
  ----------------------------------
  ├── check_cfsv2_bcsd.py
@@ -789,13 +814,15 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  ├── lis_s2s_monthly.py
  ├── nctool.py
  ├── README_CFSv2_PATCHING
- ├── s2s_api.py
  ├── s2s_config_global_fcast
+ ├── s2s_config_global_hcast
+ ├── s2s_config_hydrosfs_fcast
+ ├── s2s_config_hydrosfs_hcast
  ├── s2s_hcst.py
+ ├── s2s_hydrosfs.py
  ├── s2s_run.py
  ├── submit_hcast.sh
  ├── verify_tiff.py
- ├── walltime.py
  └── wget_cfsv2_oper_ts_e2es.sh
 
  lis/utils/usaf/S2S/ghis2s/
@@ -805,10 +832,12 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   │   ├── bcsd_functions.py
  │   │   ├── bias_correction_module.py
  │   │   ├── calc_and_write_forecast_climatology.py
+ │   │   ├── calc_and_write_hydroscs_climatology.py
  │   │   ├── calc_and_write_nmme_forecast_climatology.py
  │   │   ├── calc_and_write_observational_climatology.py
  │   │   ├── combine_sub_daily_downscaled_forcings.py
  │   │   ├── convert_forecast_data_to_netcdf.py
+ │   │   ├── __init__.py
  │   │   ├── nmme_module.py
  │   │   ├── process_cfsv2_forcing.py
  │   │   ├── process_geosv3_forcing.py
@@ -817,6 +846,13 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   ├── check_preprocess_forecast_files.py
  │   ├── combine_forcings.py
  │   ├── create_weight_files.py
+ │   ├── geosv3_radiation
+ │   │   ├── bcsd_filename_functions.py
+ │   │   ├── bcsd_geosv3_functions.py
+ │   │   ├── bcsd_helper_functions.py
+ │   │   ├── dict_variables.py
+ │   │   └── driver.py
+ │   ├── __init__.py
  │   ├── metforce_biascorrection.py
  │   ├── metforce_regridding.py
  │   ├── metforce_temporal_disaggregation.py
