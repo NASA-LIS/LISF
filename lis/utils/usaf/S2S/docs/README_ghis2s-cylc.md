@@ -145,11 +145,9 @@ NMME_models: [CESM1]
 **c) Increase job segmentation to reduce walltime requirements:**
 ```yaml
 Change from:
-JOB_SEGMENTS:
-    CESM1: 3    # [1-3], [4-6], [7-9]
+JOB_SEGMENTS:  {CESM1: 3}    # [1-3], [4-6], [7-9]
 To:
-JOB_SEGMENTS:
-    CESM1: 5    # [1-2], [3-4], [5-6], [7-8], [9]
+JOB_SEGMENTS:  {CESM1: 5}    # [1-2], [3-4], [5-6], [7-8], [9]
 ```
 
 ### Step 2: Execute Recovery Forecast ###
