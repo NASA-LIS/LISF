@@ -380,7 +380,14 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     logger.info(f"Writing: {outfile}", subtask=subtask)
     write_ncfile(monthly_ds, outfile, encoding, [logger, subtask])
 
-    ds_all.close()
+    try:
+        ds_all.close()
+    except RuntimeError as e:
+        # Ignore "NetCDF: Not a valid ID" errors on close, as it means the 
+        # file descriptor was already cleaned up by xarray/Dask.
+        if "Not a valid ID" not in str(e):
+            logger.error("Closing daily files failed", subtask=subtask)
+            raise
     monthly_ds.close()
 
     return outfile

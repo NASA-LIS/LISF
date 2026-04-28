@@ -818,6 +818,9 @@ class S2Srun(DownloadForecasts):
         is_nccs = True
         if os.path.isfile(self.lisfdir + 'env/discover/' + self.lishmod):
             modulepath = self.lisfdir + 'env/discover/'
+        elif os.path.isfile(self.lisfdir + 'env/hpc11/' + self.lishmod):
+            modulepath = self.lisfdir + 'env/hpc11/'
+            is_nccs = False
         else:
             modulepath = self.config['SETUP']['supplementarydir'] + '/env/'
             is_nccs = False
@@ -854,6 +857,8 @@ class S2Srun(DownloadForecasts):
         """ writes Cylc runtime snippet """
         if os.path.isfile(self.lisfdir + 'env/discover/' + self.lishmod):
             modulepath = self.lisfdir + 'env/discover/'
+        elif os.path.isfile(self.lisfdir + 'env/hpc11/' + self.lishmod):
+            modulepath = self.lisfdir + 'env/hpc11/'
         else:
             modulepath = self.config['SETUP']['supplementarydir'] + '/env/'
 
