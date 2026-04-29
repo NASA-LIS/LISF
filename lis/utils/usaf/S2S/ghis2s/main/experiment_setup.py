@@ -1943,13 +1943,13 @@ class S2Srun(DownloadForecasts):
         for i, model in enumerate(self.models):
             slurm_commands = s2smetric_driver.main(self.e2esroot +'/' + self.config_file, self.year,
                                                    self.month, cwd, jobname=jobname, ntasks=1,
-                                             hours=str(2), nmme_model= model, py_call=True)
+                                                   hours=str(2), nmme_model= model, py_call=True)
 
             tfile = self.sublist_to_file(slurm_commands, cwd)
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
                                         f'{i+1:02d}_run.j',
-                                        jobname + f'{i+1:02d}_', 1, str(1), cwd, tfile.name,
+                                        jobname + f'{i+1:02d}_', 1, str(2), cwd, tfile.name,
                                         parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2smetric', prev=prev)
             finally:
@@ -1981,7 +1981,7 @@ class S2Srun(DownloadForecasts):
             tfile = self.sublist_to_file(slurm_commands, cwd)
             try:
                 s2s_api.python_job_file(self.e2esroot +'/' + self.config_file, jobname + \
-                                        f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1, str(1),
+                                        f'{i+1:02d}_run.j', jobname + f'{i+1:02d}_', 1, str(2),
                                         cwd, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + f'{i+1:02d}_run.j', 's2smetric', prev=prev)
             finally:

@@ -27,6 +27,7 @@
 import glob
 import os
 import sys
+import gc
 import time
 import platform
 import math
@@ -453,8 +454,8 @@ def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **
     ''' Generic function to load netcdf file[s] as an xarray dataset/dataarray logic '''
     kwargs.setdefault('decode_cf', False)
     kwargs.setdefault('decode_timedelta', False)
-    
-    # 1. Resolve files first 
+
+    # 1. Resolve files first
     if isinstance(infile, str) and ('*' in infile or '?' in infile):
         matching_files = glob.glob(infile)
         if not matching_files:
@@ -471,26 +472,36 @@ def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **
     # 2. Retry Loop
     for attempt in range(max_retries):
         try:
-            if var_name is not None:
-                # Extract the variable
-                if isinstance(infile, str):
-                    dataset = xr.open_dataset(infile, **kwargs)
-                else:
-                    dataset = xr.open_mfdataset(infile, **kwargs)
+            dataset = None 
+            if isinstance(infile, str):
+                dataset = xr.open_dataset(infile, **kwargs)
+            else:
+                dataset = xr.open_mfdataset(infile, **kwargs)
 
+            if var_name is not None:
                 data = dataset[var_name]
                 dataset.close()
                 del dataset
                 return data
 
-            # Return full dataset
-            if isinstance(infile, str):
-                return xr.open_dataset(infile, **kwargs)
-            else:
-                return xr.open_mfdataset(infile, **kwargs)
+            return dataset
 
         except Exception as e:
             # loop through max retries, wait and try again
+            if dataset is not None:
+                try:
+                    dataset.close()
+                except Exception as close_error:
+                    logger[0].warning(f"Error closing dataset during cleanup: {close_error}", subtask=logger[1])
+                finally:
+                    del dataset
+            # Purge xarray's hidden global file cache 
+            try:
+                xr.backends.file_manager.FILE_CACHE.clear()
+            except AttributeError:
+                pass
+            gc.collect()
+
             if attempt < max_retries - 1:
                 logger[0].warning(f"Attempt {attempt + 1}/{max_retries} failed opening files. Retrying in {retry_delay}s... Error: {e}", subtask=logger[1])
                 time.sleep(retry_delay)
@@ -499,7 +510,7 @@ def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **
                 logger[0].error(f"Couldn't open files after {max_retries} attempts: {infile}", subtask=logger[1])
                 logger[0].error(f"xarray error {e}", subtask=logger[1])
                 sys.exit(1)
-                
+
 def detect_spatial_dimensions(out_xr):
     """Detect spatial dimension """
     lat_names = ['latitude', 'lat', 'lats', 'y', 'north_south']
@@ -655,7 +666,6 @@ def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-
     This triggers parallel dask computation across all variables.
     Uses memory-efficient processing with proper -9999 handling.
     """
-    import gc
     import dask
     import dask.array
 
