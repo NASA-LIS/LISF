@@ -42,15 +42,13 @@ python ghis2s_program.py
 [ "$SUBMIT_JOB" = "true" ] && exit
 
 # Run Cylc
-export USE_CYLC_ENV=1
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
     module purge
+    export USE_CYLC_ENV=1
     module use -a "${LISFDIR}/env/discover/"
     module --ignore-cache load $LISFMOD
 else
-    # non-Discover: LISFMOD is in ${supplementary}/env/
-    module use -a $SUPDIR/env/
-    module load $LISFMOD
+    module load cylc/8.5.0
 fi
 
 if [ $FORECAST_MONTH -lt 10 ]; then
@@ -80,7 +78,7 @@ if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
     echo "module use -a ${LISFDIR}/env/discover/"
     echo "module --ignore-cache load $LISFMOD"
 else
-    echo "module load cylc/8.5.0”
+    echo "module load cylc/8.5.0"
 fi
 echo
 echo "Run ${WORKFLOW_NAME}: cylc play ${WORKFLOW_NAME}"
