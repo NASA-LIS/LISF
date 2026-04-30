@@ -72,6 +72,7 @@ Number of application models:           0
 Number of data assimilation instances:                3
 Data assimilation algorithm:                          "EnKF"                                     "EnKF"                                     "EnKF"
 Data assimilation set:                                "USAFSI"                                   "WSF soil moisture"                "SMAP_E_OPL soil moisture"
+#Data assimilation set:                                "USAFSI"                                   "WSF soil moisture"                "SMAP(NRT) soil moisture"
 Data assimilation exclude analysis increments:        0                                          0                                          0
 Data assimilation number of observation types:        1                                          1                                          1
 Data assimilation output interval for diagnostics:    1mo                                        1mo                                        1mo
@@ -113,9 +114,6 @@ Observation perturbation frequency:                   6hr                       
 Observation attributes file:                          ./input/attribs/usafsi_attribs.txt          ./input/attribs/smap_attribs.txt         ./input/attribs/smap_attribs.txt
 Observation perturbation attributes file:             ./input/attribs/usafsi_pertattribs.txt      ./input/attribs/smap_pertattribs.txt     ./input/attribs/smap_pertattribs.txt
 
-SNIP data directory:                                ./input/SNIP_AMSR2
-SNIP netcdf filename prefix:                        SNIP
-
 USAFSI data directory:                              ./input/USAFSI
 USAFSI netcdf filename prefix:                        USAFSI
 
@@ -134,6 +132,13 @@ SMAP_E_OPL model CDF file:                                   ./input/cdf/noahmp4
 SMAP_E_OPL observation CDF file:                             ./input/cdf/SMAP_cdf_10km_30obs.nc
 SMAP_E_OPL soil moisture number of bins in the CDF:          100
 SMAP_E_OPL CDF read option:                                  1
+
+SMAP(NRT) soil moisture data directory:               ./input//SMAP_L2_SM_NRT
+SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc
+SMAP(NRT) observation CDF file:                       ./input/cdf/SMAP_cdf_10km_30obs.nc
+SMAP(NRT) soil moisture number of bins in the CDF:              100
+SMAP(NRT) soil moisture use scaled standard deviation model:    0
+SMAP(NRT) CDF read option:
 
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
