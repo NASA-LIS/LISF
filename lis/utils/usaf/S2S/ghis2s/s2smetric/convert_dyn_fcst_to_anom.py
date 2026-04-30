@@ -328,7 +328,7 @@ while job_queue and RETRY_COUNT <= MAX_RETRIES:
         start_time = time.time()
         COMPLETED_COUNT = 0
 
-        for future in as_completed(future_to_job, timeout=20*60):
+        for future in as_completed(future_to_job, timeout=90*60):
             _var_name, proc_type = future_to_job[future]
             try:
                 result = future.result(timeout=1)
