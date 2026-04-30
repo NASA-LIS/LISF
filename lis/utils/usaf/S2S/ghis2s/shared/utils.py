@@ -27,6 +27,8 @@
 import glob
 import os
 import sys
+import gc
+import time
 import platform
 import math
 import shutil
@@ -140,7 +142,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
             _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
         elif os.path.isfile(lisf + '/env/hpc11/' + lisf_module):
-            _f.write('module use -a ' + lisf + '/env/hpc11/' + '\n')
+            _f.write('module use -a ' + lisf + 'env/hpc11/' + '\n')
             _f.write('module load ' + lisf_module + '\n')
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
@@ -149,6 +151,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
         _f.write('\n')
         _f.write('export PYTHONPATH='+ pythonpath + '\n')
         _f.write('export SCRIPT_NAME='+ job_name + 'run.j' + '\n')
+        _f.write('export HDF5_USE_FILE_LOCKING=FALSE' + '\n')
         if parallel_run is not None:
             _f.write('export NUM_WORKERS='+ parallel_run['CPT'] + '\n')
 
@@ -375,7 +378,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             _f.write('module use --append ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
         elif os.path.isfile(lisf + '/env/hpc11/' + lisf_module):
-            _f.write('module use -a ' + lisf + '/env/hpc11/' + '\n')
+            _f.write('module use -a ' + lisf + 'env/hpc11/' + '\n')
             _f.write('module load ' + lisf_module + '\n')            
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
@@ -448,39 +451,67 @@ def tiff_to_da(file):
     tiff2da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
     return tiff2da
 
-def load_ncdata(infile, logger,  var_name=None, **kwargs):
-    ''' generic function to load letcdf file[s] as a xarray dataset/datarray'''
+def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **kwargs):
+    ''' Generic function to load netcdf file[s] as an xarray dataset/dataarray logic '''
     kwargs.setdefault('decode_cf', False)
     kwargs.setdefault('decode_timedelta', False)
-    try:
-        if isinstance(infile, str) and ('*' in infile or '?' in infile):
-            matching_files = glob.glob(infile)
-            if not matching_files:
-                logger[0].error(f"No files found matching pattern: {infile}", subtask=logger[1])
-                sys.exit(1)
-            elif len(matching_files) == 1:
-                infile = matching_files[0]
-                multi_file_kwargs = ['combine', 'concat_dim', 'data_vars', 'coords', 'compat', 'join']
-                kwargs = {k: v for k, v in kwargs.items() if k not in multi_file_kwargs}
-            else:
-                infile = matching_files
-        if var_name is not None:
+
+    # 1. Resolve files first
+    if isinstance(infile, str) and ('*' in infile or '?' in infile):
+        matching_files = glob.glob(infile)
+        if not matching_files:
+            logger[0].error(f"No files found matching pattern: {infile}", subtask=logger[1])
+            sys.exit(1)
+        elif len(matching_files) == 1:
+            infile = matching_files[0]
+            # Strip out mfdataset specific kwargs if only one file is found
+            multi_file_kwargs = ['combine', 'concat_dim', 'data_vars', 'coords', 'compat', 'join', 'parallel']
+            kwargs = {k: v for k, v in kwargs.items() if k not in multi_file_kwargs}
+        else:
+            infile = matching_files
+
+    # 2. Retry Loop
+    for attempt in range(max_retries):
+        try:
+            dataset = None 
             if isinstance(infile, str):
                 dataset = xr.open_dataset(infile, **kwargs)
             else:
                 dataset = xr.open_mfdataset(infile, **kwargs)
-            data = dataset[var_name]
-            dataset.close()
-            del dataset
-            return data
-        if isinstance(infile, str):
-            return xr.open_dataset(infile, **kwargs)
-        return xr.open_mfdataset(infile, **kwargs)
 
-    except Exception as e:
-        logger[0].error(f"Couldn't open {infile}", subtask=logger[1])
-        logger[0].error(f"xarray error {e}", subtask=logger[1])
-        sys.exit(1)
+            if var_name is not None:
+                with da.config.set(scheduler='single-threaded'):
+                    data = dataset[var_name].load()
+                dataset.close()
+                del dataset
+                return data
+
+            return dataset
+
+        except Exception as e:
+            # loop through max retries, wait and try again
+            if dataset is not None:
+                try:
+                    dataset.close()
+                except Exception as close_error:
+                    logger[0].warning(f"Error closing dataset during cleanup: {close_error}", subtask=logger[1])
+                finally:
+                    del dataset
+            # Purge xarray's hidden global file cache 
+            try:
+                xr.backends.file_manager.FILE_CACHE.clear()
+            except AttributeError:
+                pass
+            gc.collect()
+
+            if attempt < max_retries - 1:
+                logger[0].warning(f"Attempt {attempt + 1}/{max_retries} failed opening files. Retrying in {retry_delay}s... Error: {e}", subtask=logger[1])
+                time.sleep(retry_delay)
+            else:
+                # Out of retries, log the error and fail
+                logger[0].error(f"Couldn't open files after {max_retries} attempts: {infile}", subtask=logger[1])
+                logger[0].error(f"xarray error {e}", subtask=logger[1])
+                sys.exit(1)
 
 def detect_spatial_dimensions(out_xr):
     """Detect spatial dimension """
@@ -637,7 +668,6 @@ def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-
     This triggers parallel dask computation across all variables.
     Uses memory-efficient processing with proper -9999 handling.
     """
-    import gc
     import dask
     import dask.array
 
