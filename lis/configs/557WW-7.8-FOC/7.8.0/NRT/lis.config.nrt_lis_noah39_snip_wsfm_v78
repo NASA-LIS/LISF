@@ -120,9 +120,6 @@ Observation perturbation attributes file:             ./input/attribs/usafsi_per
 SNIP data directory:                                ./input/SNIP_WSFM
 SNIP netcdf filename prefix:                        SNIP
 
-USAFSI data directory:                              ./input/USAFSI
-USAFSI netdf filename prefix:                       USAFSI
-
 #-----------------WSF Soil Moisture Observation Settings--------------
 WSF soil moisture data directory:               ./input/WSF_M_OPL
 WSF model CDF file:                             ./input/cdf/noah39_cdf_200obs.nc

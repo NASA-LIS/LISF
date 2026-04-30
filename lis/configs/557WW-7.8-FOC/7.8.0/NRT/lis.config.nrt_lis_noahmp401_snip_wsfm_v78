@@ -73,6 +73,7 @@ Number of application models:           0
 Number of data assimilation instances:                3
 Data assimilation algorithm:                          "EnKF"                                  "EnKF"                                  "EnKF"
 Data assimilation set:                                "SNIP"                                "WSF soil moisture"             "SMAP_E_OPL soil moisture"
+#Data assimilation set:                                "SNIP"                                "WSF soil moisture"             "SMAP(NRT) soil moisture"
 Data assimilation exclude analysis increments:        0                                       0                                       0
 Data assimilation number of observation types:        1                                       1                                       1
 Data assimilation output interval for diagnostics:    1mo                                     1mo                                     1mo
@@ -113,9 +114,6 @@ Observation perturbation algorithm:                   "GMAO scheme"             
 Observation perturbation frequency:                   6hr                                     6hr                                     6hr
 Observation attributes file:                          ./input/attribs/usafsi_attribs.txt      ./input/attribs/smap_attribs.txt       ./input/attribs/smap_attribs.txt
 Observation perturbation attributes file:             ./input/attribs/usafsi_pertattribs.txt  ./input/attribs/smap_pertattribs.txt   ./input/attribs/smap_pertattribs.txt
-
-USAFSI data directory:                                ./input/USAFSI
-USAFSI netcdf filename prefix:                        USAFSI
 
 SNIP data directory:                                ./input/SNIP_WSFM
 SNIP netcdf filename prefix:                        SNIP
