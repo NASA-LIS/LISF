@@ -1,0 +1,242 @@
+# IMPORTANT NOTE:  
+# if more than one LDT job is running the same directory we need to change 
+#        "AMSR_OPL filelist suffix number:" for eahc ldt.config
+
+#Overall driver options
+LDT running mode:                       "OPL WSF brightness temperature resampling" #"LSM parameter processing"
+Processed LSM parameter filename:       ./output/lis_input.global.noahmp401.nc
+LIS number of nests:                    1
+Number of surface model types:          2
+Surface model types:                    "LSM"  "Openwater"
+Land surface model:                     "Noah-MP.4.0.1"
+Routing model:                          none
+Lake model:                             none
+Water fraction cutoff value:            0.5
+Incorporate crop information:           .false.
+Number of met forcing sources:          0
+Met forcing sources:                    none
+LDT diagnostic file:                    log/ldtlog
+Mask-parameter fill diagnostic file:    MaskParamFill.global.noahmp401.log
+LDT output directory:                   LDTOUT
+Undefined value:                        -9999.0
+Number of ensembles per tile: 1
+
+#Rotated GALWEM 10-km domain
+Map projection of the LIS domain:       latlon
+Run domain lower left lat:               -89.9531250
+Run domain lower left lon:              -179.9296875
+Run domain upper right lat:               89.9531250
+Run domain upper right lon:              179.9296875
+Run domain resolution (dx):                0.1406250
+Run domain resolution (dy):                0.0937500
+
+#Landcover parameter inputs
+Landcover data source:                  "MODIS_Native"
+Landcover classification:               "IGBPNCEP"
+Landcover file:                         ../input/LS_PARAMETERS/noah_2dparms/igbp.bin
+Landcover spatial transform:            tile
+Landcover map projection:               latlon
+Landcover fill option:                  neighbor
+Landcover fill radius:                  5
+Landcover fill value:                   10
+
+#Landmask parameter inputs
+Create or readin landmask:              "readin"
+Landmask data source:                   "UKMO_CAP_Netcdf"
+Landmask file:                          ../data/cap2ldt_ps41.nc
+Landmask spatial transform:             none
+Landmask map projection:                latlon
+Landmask fill option:                   none
+Landmask lower left lat:                 -89.9531250
+Landmask lower left lon:                -179.9296875
+Landmask upper right lat:                 89.9531250
+Landmask upper right lon:                179.9296875
+Landmask resolution (dx):                  0.1406250
+Landmask resolution (dy):                  0.0937500
+
+#Soil parameter inputs
+Soil fraction data source:              none
+Soils spatial transform:                none
+Soils map projection:                   latlon
+Soils fill option:                      none
+Porosity data source:                   none
+Porosity map:                           none
+
+#Soil texture inputs
+Soil texture data source:               "STATSGOFAO_Native"
+Soil texture map:                       ../input/LS_PARAMETERS/noah_2dparms/topsoil30snew
+Soil texture spatial transform:         mode
+Soil texture map projection:            latlon
+Soil texture fill option:               neighbor
+Soil texture fill radius:               5
+Soil texture fill value:                6
+Soil texture fill value for Antarctica: 16
+Soil texture force exclusion of water points during fill: true
+
+#Topography parameter inputs
+Elevation data source:                  "SRTM_Native"
+Elevation number of bands:              1
+Elevation map:                          ../input/LS_PARAMETERS/topo_parms/SRTM/SRTM30/raw_wgtopo30antarc
+Elevation fill option:                  none
+Elevation fill radius:                  5
+Elevation fill value:                   0
+
+Slope data source:                      "SRTM_Native"
+Slope number of bands:                  1
+Slope map:                              ../input/LS_PARAMETERS/topo_parms/SRTM/SRTM30/raw_wgtopo30antarc
+Slope fill option:                      none
+Slope fill radius:                      5
+Slope fill value:                       0
+
+Aspect data source:                     "SRTM_Native"
+Aspect number of bands:                 1
+Aspect map:                             ../input/LS_PARAMETERS/topo_parms/SRTM/SRTM30/raw_wgtopo30antarc
+Aspect fill option:                     none
+Aspect fill radius:                     5
+Aspect fill value:                      3.14159
+
+Topography spatial transform:           average
+Topography map projection:              latlon
+
+#Albedo inputs
+Albedo data source:                     "NCEP_Native"
+Albedo map:                             ../input/LS_PARAMETERS/noah_2dparms/albedo
+Albedo climatology interval:            monthly
+Albedo spatial transform:               "budget-bilinear"
+Albedo map projection:                  latlon
+Albedo fill option:                     neighbor
+Albedo fill radius:                     5
+Albedo fill value:                      0.15
+
+#Maximum snow albedo inputs
+Max snow albedo data source:            "Barlage_Native"
+Max snow albedo map:                    ../input/LS_PARAMETERS/noah_2dparms/maximum_snow_albedo.hdf
+Max snow albedo spatial transform:      average
+Max snow albedo map projection:         latlon
+Max snow albedo fill option:            neighbor
+Max snow albedo fill radius:            5
+Max snow albedo fill value:             0.3
+
+#Greenness inputs
+Greenness data source:                  "NCEP_Native"
+Greenness fraction map:                 ../input/LS_PARAMETERS/noah_2dparms/gfrac
+Greenness climatology interval:         monthly
+Calculate min-max greenness fraction:   .false.
+Greenness maximum map:                  ../input/LS_PARAMETERS/noah_2dparms/gfrac_max.asc
+Greenness minimum map:                  ../input/LS_PARAMETERS/noah_2dparms/gfrac_min.asc
+Greenness spatial transform:            "budget-bilinear"
+Greenness map projection:               latlon
+Greenness fill option:                  neighbor
+Greenness fill radius:                  5
+Greenness fill value:                   0.3
+Greenness maximum fill value:           1.0
+Greenness minimum fill value:           0.0
+
+#Slope type inputs
+Slope type data source:                 none
+
+#Bottom temperature inputs
+Bottom temperature data source:         "ISLSCP1"
+Bottom temperature map:                 ../input/LS_PARAMETERS/noah_2dparms/SOILTEMP.60
+Bottom temperature spatial transform:   "budget-bilinear"
+Bottom temperature map projection:      latlon
+Bottom temperature fill option:         average
+Bottom temperature fill radius:         5
+Bottom temperature fill value:          287.0
+Bottom temperature topographic downscaling:  "lapse-rate"
+
+#Noah-MP LSM inputs
+Noah-MP PBL Height Value:               900.
+
+Maximum number of surface type tiles per grid:     1
+Minimum cutoff percentage (surface type tiles):    0.05
+Maximum number of soil texture tiles per grid:     1
+Minimum cutoff percentage (soil texture tiles):    0.05
+Maximum number of soil fraction tiles per grid:    1
+Minimum cutoff percentage (soil fraction tiles):   0.05
+Maximum number of elevation bands per grid:        1
+Minimum cutoff percentage (elevation bands):       0.05
+Maximum number of slope bands per grid:            1
+Minimum cutoff percentage (slope bands):           0.05
+Maximum number of aspect bands per grid:           1
+Minimum cutoff percentage (aspect bands):          0.05
+
+# ------------------------
+# Section for Operational enhanced SMAP soil moisture retrieval
+SMAP_E_OPL valid date (YYYYMMDDHH):              2015033100
+SMAP_E_OPL soil moisture output directory:       ./SM_retrieval
+SMAP_E_OPL L1B data directory:                   ../SMAP_L1B_TB_NRT  #../SMAP_L1B_TB_historical
+SMAP_E_OPL L1B data type:                        1   #1: NRT; 2: Historical(for evaluations)
+SMAP_E_OPL write L1B resampled output:           0   #0: off; 1: on
+SMAP_E_OPL L1B resampled output directory:       ./ARFS_RESAMPLE
+SMAP_E_OPL LIS soil temperature directory:       ./noahmp401/jul2021  # ../Noahmp401_OL
+SMAP_E_OPL apply soil temperature bias correction:  1   
+SMAP_E_OPL reference Teff daily statistics file:  ../Operational_Retrieval_proc_GEOS/LDTOUT/geos_daily_statistics_15obs.nc  # ../geos_daily_statistics_15obs.nc
+SMAP_E_OPL LIS Teff daily statistics file:       ../Soil_temp_CDFs_from_GHI/LDTOUT_NoahMP/noahmp401_daily_statistics_15obs.nc # new_noahmp401_cdfs/noahmp401_daily_statistics_15obs.nc # ../noahmp401_daily_statistics_15obs.nc
+SMAP_E_OPL LIS snow directory:                   ./USAFSI # ../Noahmp401_snow
+SMAP_E_OPL snow depth threshold:                 0.05  #unit: m
+SMAP_E_OPL TAU directory:                        ../../data/TAU_ARFS_DAILY
+SMAP_E_OPL OMEGA file:                           ../../data/PRMS_RETRIEVAL_ARFS/omega_arfs.dat
+SMAP_E_OPL soil bulk density file:               ../../data/PRMS_RETRIEVAL_ARFS/bd_arfs_006.dat
+SMAP_E_OPL soil clay fraction file:              ../../data/PRMS_RETRIEVAL_ARFS/clay_arfs_006.dat
+SMAP_E_OPL roughness file:                       ../../data/PRMS_RETRIEVAL_ARFS/hvalue_arfs.dat
+SMAP_E_OPL landcover file:                       ../../data/PRMS_RETRIEVAL_ARFS/SMAP_LC_ARFS.bin
+SMAP_E_OPL filelist suffix number:                  1 # if more than one LDT job is running the same directory we need to change this for eahc ldt.config 
+
+# Settings for USAF NRT GHI history files
+SMAP_E_OPL LIS ensemble size: 12
+SMAP_E_OPL LIS total number of tiles (including ensembles): 58982400
+SMAP_E_OPL LIS number of tiles per grid point: 1
+
+#----------------------------------------------------
+# Section for Operational AMSR soil moisture retrieval
+#LDT running mode:                       "OPL AMSR soil moisture retrieval"
+#AMSR_OPL valid date (YYYYMMDDHH):              2019060101
+#AMSR_OPL soil moisture output directory:       ./SM_retrieval_par
+#AMSR_OPL L1R data directory:                   /discover/nobackup/ejalilva/data/AMSR2/PMW/06
+#/discover/nobackup/projects/usaf_lis/kyang17/data/amsr2/2019/06
+#AMSR_OPL L1R data type:                        2   #1: NRT; 2: Historical
+#AMSR_OPL write L1R resampled output:           1   #0: off; 1: on
+#AMSR_OPL L1R resampled output directory:       ./ARFS_RESAMPLE
+#AMSR_OPL LIS soil temperature directory:       /discover/nobackup/dmocko/LIS/557/run/lis/spinup/noahmp401/dec2021
+#AMSR_OPL LIS snow directory:                   ./USAFSI
+#AMSR_OPL snow depth threshold:                 0.05  #unit: m
+#AMSR_OPL TAU directory:                        ./data/TAU_ARFS_DAILY
+#AMSR_OPL OMEGA file:                           ./data/PRMS_RETRIEVAL_ARFS/omega_arfs.dat
+#AMSR_OPL soil bulk density file:               ./data/PRMS_RETRIEVAL_ARFS/bd_arfs_006.dat
+#AMSR_OPL soil clay fraction file:              ./data/PRMS_RETRIEVAL_ARFS/clay_arfs_006.dat
+#AMSR_OPL roughness file:                       ./data/PRMS_RETRIEVAL_ARFS/hvalue_arfs.dat
+#AMSR_OPL landcover file:                       ./data/PRMS_RETRIEVAL_ARFS/SMAP_LC_ARFS.bin
+#AMSR_OPL filelist suffix number:               1   # if more than one LDT job is running the same directory we need to change this for each ldt.config
+
+# Settings for USAF NRT GHI history files
+#AMSR_OPL LIS ensemble size:                    12
+#AMSR_OPL LIS total number of tiles (including ensembles): 58982400
+#AMSR_OPL LIS number of tiles per grid point:   1
+
+# =============================================================================
+# WSF OPL Configuration Section
+# =============================================================================
+WSF valid date (YYYYMMDDHH):            2025060100
+# WSF input data directory (where raw WSF NetCDF files are located)
+WSF input directory:                    /discover/nobackup/projects/usaf_lis/MET_FORCING/WSF/202506
+#/discover/nobackup/ejalilva/SHARE/WSF_TB_resampling/data
+WSF filelist suffix number:             1
+# WSF output directory (where resampled files will be written)
+WSF output directory:                   /discover/nobackup/projects/usaf_lis/ejalilvand/data/WSF_TB_resampled_hourly
+WSF filter snow and precip footprints:  0
+
+# Values:
+#   1  = Filter ON  (default) — Footprints with snow or precip flags are
+#        excluded from TB accumulation during resampling. Use this for
+#        soil moisture retrieval.
+#        Output: WSF_SDR_resampled_YYYYMMDD_tHH00_ASC.nc  (unchanged)
+#
+#   0  = Filter OFF — All footprints are kept, including those with snow
+#        or precip flags. Snow/precip flags are still detected and recorded
+#        in the quality flag (bits 1 and 2) for downstream use.
+#        Use this for snow depth retrieval.
+#        Output: WSF_SDR_resampled_allfp_YYYYMMDD_tHH00_ASC.nc
+#
+# If this line is omitted from ldt.config, the default behavior is 1
+# (filter ON), preserving backward compatibility.
