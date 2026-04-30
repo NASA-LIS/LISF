@@ -151,6 +151,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
         _f.write('\n')
         _f.write('export PYTHONPATH='+ pythonpath + '\n')
         _f.write('export SCRIPT_NAME='+ job_name + 'run.j' + '\n')
+        _f.write('export HDF5_USE_FILE_LOCKING=FALSE' + '\n')
         if parallel_run is not None:
             _f.write('export NUM_WORKERS='+ parallel_run['CPT'] + '\n')
 
@@ -479,7 +480,8 @@ def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **
                 dataset = xr.open_mfdataset(infile, **kwargs)
 
             if var_name is not None:
-                data = dataset[var_name].load()
+                with da.config.set(scheduler='single-threaded'):
+                    data = dataset[var_name].load()
                 dataset.close()
                 del dataset
                 return data
