@@ -479,7 +479,7 @@ def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **
                 dataset = xr.open_mfdataset(infile, **kwargs)
 
             if var_name is not None:
-                data = dataset[var_name]
+                data = dataset[var_name].load()
                 dataset.close()
                 del dataset
                 return data
