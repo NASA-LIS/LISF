@@ -113,7 +113,7 @@ Observation perturbation frequency:                   6hr                       
 Observation attributes file:                          ./input/attribs/usafsi_attribs.txt          ./input/attribs/smap_attribs.txt         ./input/attribs/smap_attribs.txt
 Observation perturbation attributes file:             ./input/attribs/usafsi_pertattribs.txt      ./input/attribs/smap_pertattribs.txt     ./input/attribs/smap_pertattribs.txt
 
-SNIP data directory:                                ./input/SNIP_ASMR2
+SNIP data directory:                                ./input/SNIP_AMSR2
 SNIP netcdf filename prefix:                        SNIP
 
 USAFSI data directory:                              ./input/USAFSI
