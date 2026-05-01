@@ -451,7 +451,7 @@ def tiff_to_da(file):
     tiff2da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
     return tiff2da
 
-def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **kwargs):
+def load_ncdata(infile, logger, var_name=None, dask_lazy=True, max_retries=5, retry_delay=10, **kwargs):
     ''' Generic function to load netcdf file[s] as an xarray dataset/dataarray logic '''
     kwargs.setdefault('decode_cf', False)
     kwargs.setdefault('decode_timedelta', False)
@@ -481,7 +481,10 @@ def load_ncdata(infile, logger, var_name=None, max_retries=5, retry_delay=10, **
 
             if var_name is not None:
                 with da.config.set(scheduler='single-threaded'):
-                    data = dataset[var_name].load()
+                    if not dask_lazy:
+                        data = dataset[var_name].load()
+                    else:
+                        data = dataset[var_name]
                 dataset.close()
                 del dataset
                 return data
