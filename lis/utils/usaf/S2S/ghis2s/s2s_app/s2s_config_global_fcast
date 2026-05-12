@@ -8,7 +8,6 @@ SETUP:
   E2ESDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/
   LISFDIR: /discover/nobackup/projects/ghilis/S2S/LISF/
   LISFMOD: lisf_7.5_intel_2023.2.1_s2s
-  ##LISFMOD: lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_afw3.11-202511
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
   ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc

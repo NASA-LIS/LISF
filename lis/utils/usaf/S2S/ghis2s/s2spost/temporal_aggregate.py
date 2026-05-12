@@ -263,8 +263,9 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
                                 combine='nested',
                                 compat='override',
                                 coords='minimal',
-                                parallel=True,
+                                parallel=False,
                                 data_vars=time_varying_vars,
+                                dask_lazy=False,
                                 decode_cf=False))
 
     # Process accumulation variables (sum over time)
