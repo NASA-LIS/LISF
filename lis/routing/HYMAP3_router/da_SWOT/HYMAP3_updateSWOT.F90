@@ -70,11 +70,13 @@ subroutine HYMAP3_updateSWOT(n, Routing_State, Routing_Incr_State)
   call LIS_verify(status,&
        "ESMF_FieldGet: Surface elevation failed in HYMAP3_updateSWOT")
 
-  call ESMF_StateGet(Routing_Incr_State,"Surface elevation",sfcelevIncrField,rc=status)
+  call ESMF_StateGet(Routing_Incr_State,"Surface elevation",sfcelevIncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Surface elevation failed in HYMAP3_updateSWOT")
 
-  call ESMF_FieldGet(sfcelevIncrField,localDE=0,farrayPtr=sfcelevIncr,rc=status)
+  call ESMF_FieldGet(sfcelevIncrField,localDE=0,farrayPtr=sfcelevIncr, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet: Surface elevation failed in HYMAP3_updateSWOT")
 
@@ -171,8 +173,8 @@ subroutine HYMAP3_updateSWOT(n, Routing_State, Routing_Incr_State)
      enddo
   enddo
 
- deallocate(sfcelevIncr_tmp)
- deallocate(nsfcelevIncr_tmp)
- deallocate(checkWeight)
+  deallocate(sfcelevIncr_tmp)
+  deallocate(nsfcelevIncr_tmp)
+  deallocate(checkWeight)
 
 end subroutine HYMAP3_updateSWOT

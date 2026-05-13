@@ -25,7 +25,7 @@ subroutine HYMAP3_scale_SWOT(n, Routing_State)
   use HYMAP3_routingMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
 !
@@ -33,8 +33,8 @@ subroutine HYMAP3_scale_SWOT(n, Routing_State)
 !
 !  Scales the water level state prognostic variables for
 !  data assimilation (currently empty)
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline

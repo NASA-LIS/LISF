@@ -24,7 +24,7 @@ subroutine HYMAP3_getStateSpaceSize(n, size)
   use HYMAP3_routingMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   integer                :: size
 !
@@ -32,8 +32,8 @@ subroutine HYMAP3_getStateSpaceSize(n, size)
 !
 !  Returns the water level DA related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \end{description}

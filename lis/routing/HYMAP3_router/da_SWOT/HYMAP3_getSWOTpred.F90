@@ -27,24 +27,24 @@ subroutine HYMAP3_getSWOTpred(n, k,obs_pred)
 !EOP
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   integer, intent(in)    :: k
   real                   :: obs_pred(LIS_rc%obs_ngrid(k),LIS_rc%nensem(n))
 !
 ! !DESCRIPTION:
 !
-!  Returns the SWOT obs pred (model's estimate of 
+!  Returns the SWOT obs pred (model's estimate of
 !  observations) for data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[obs\_pred] model's estimate of observations \newline
 !  \end{description}
 !EOP
-  integer                :: i,t,m
-  real                   :: wl(HYMAP3_routing_struc(n)%nseqall*LIS_rc%nensem(n))
+  integer               :: i,t,m
+  real                  :: wl(HYMAP3_routing_struc(n)%nseqall*LIS_rc%nensem(n))
 
   external :: HYMAP3_convertPatchSpaceToObsEnsSpace
 
@@ -58,5 +58,5 @@ subroutine HYMAP3_getSWOTpred(n, k,obs_pred)
   call HYMAP3_convertPatchSpaceToObsEnsSpace(n,k,&
        wl,&
        obs_pred)
-  
+
 end subroutine HYMAP3_getSWOTpred

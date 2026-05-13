@@ -34,14 +34,14 @@ subroutine HYMAP3_descale_SWOT(n, Routing_State, Routing_Incr_State)
 !
 !  Descales the SWOT state prognostic variables for
 !  data assimilation (currently empty)
-! 
-! 
-!  The arguments are: 
+!
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
 !  \end{description}
 !EOP
- 
+
 
 end subroutine HYMAP3_descale_SWOT

@@ -25,7 +25,7 @@ subroutine HYMAP3_qcSWOT(n, Routing_State)
   use HYMAP3_routingMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
 !
@@ -33,13 +33,13 @@ subroutine HYMAP3_qcSWOT(n, Routing_State)
 !
 !  QCs the water level related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[Routing\_State] ESMF State container for Routing state variables \newline
 !  \end{description}
 !EOP
- 
+
 
 end subroutine HYMAP3_qcSWOT
