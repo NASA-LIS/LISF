@@ -20,10 +20,11 @@ subroutine HYMAP3_getSWOT(n, Routing_State)
 
 ! !USES:
   use ESMF
+  use HYMAP3_modelMod, only: HYMAP3_get_elevation_profile
+  use HYMAP3_routingMod, only: HYMAP3_routing_struc
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only  : LIS_verify
-  use HYMAP3_routingMod
-  use HYMAP3_modelMod
+
 
   implicit none
 ! !ARGUMENTS:

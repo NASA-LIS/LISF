@@ -18,12 +18,9 @@
 ! !INTERFACE:
 subroutine HYMAP3_getSWOTpred(n, k,obs_pred)
 ! !USES:
-  use ESMF
-  use LIS_constantsMod
-  use LIS_coreMod
-  use LIS_dataAssimMod
-  use LIS_DAobservationsMod
-  use HYMAP3_routingMod
+  use HYMAP3_routingMod, only: HYMAP3_routing_struc
+  use LIS_coreMod, only: LIS_rc
+
 !EOP
 
   implicit none

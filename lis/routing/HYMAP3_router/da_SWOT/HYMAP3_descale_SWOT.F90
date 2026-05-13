@@ -20,12 +20,9 @@ subroutine HYMAP3_descale_SWOT(n, Routing_State, Routing_Incr_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
-  use LIS_logMod,  only  : LIS_verify
-  use HYMAP3_routingMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: Routing_State
   type(ESMF_State)       :: Routing_Incr_State

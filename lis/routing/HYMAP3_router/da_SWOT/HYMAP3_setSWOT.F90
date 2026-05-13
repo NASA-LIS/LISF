@@ -19,10 +19,10 @@
 subroutine HYMAP3_setSWOT(n, Routing_State)
 ! !USES:
   use ESMF
-  use LIS_coreMod
-  use LIS_logMod
-  use HYMAP3_routingMod
-  use HYMAP3_modelMod
+  use HYMAP3_modelMod, only: HYMAP3_get_volume_profile
+  use HYMAP3_routingMod, only: HYMAP3_routing_struc
+  use LIS_coreMod, only: LIS_rc
+  use LIS_logMod, only: LIS_verify
 
   implicit none
 ! !ARGUMENTS:

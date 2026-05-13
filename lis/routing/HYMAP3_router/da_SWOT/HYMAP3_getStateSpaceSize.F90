@@ -18,10 +18,9 @@
 subroutine HYMAP3_getStateSpaceSize(n, size)
 
 ! !USES:
-  use ESMF
+  !use ESMF
   use LIS_coreMod, only : LIS_rc
-  use LIS_logMod,  only  : LIS_verify
-  use HYMAP3_routingMod
+  use HYMAP3_routingMod, only : HYMAP3_routing_struc
 
   implicit none
 ! !ARGUMENTS:

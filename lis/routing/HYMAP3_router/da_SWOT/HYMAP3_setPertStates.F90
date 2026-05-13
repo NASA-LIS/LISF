@@ -20,9 +20,10 @@ subroutine HYMAP3_setPertStates(n,Nstate,pert_State,progpert)
 
 ! !USES:
   use ESMF
+  use HYMAP3_routingMod, only: HYMAP3_routing_struc
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only  : LIS_verify
-  use HYMAP3_routingMod
+
 
   implicit none
 ! !ARGUMENTS:

@@ -312,27 +312,27 @@ contains
          trim(LIS_hydrowebwlId)//char(0),HYMAP3_setPertStates)
 
     call registerroutingdainit(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_daSWOT_init)
-   call registerroutingdagetstatespacesize(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_getStateSpaceSize)
-   call registerroutingdagetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_getSWOT)
-   call registerroutingdasetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_setSWOT)
-   call registerroutingdagetobspred(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_getSWOTpred)
-   call registerroutingdaqcstate(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_qcSWOT)
-   call registerroutingdaqcobsstate(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_qc_SWOTobs)
-   call registerroutingdascalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_scale_SWOT)
-   call registerroutingdadescalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_descale_SWOT)
-   call registerroutingdaupdatestate(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_updateSWOT)
-   call registerroutingdasetpertstates(trim(LIS_HYMAP3routerId)//"+"//&
-        trim(LIS_swotwlId)//char(0),HYMAP3_setPertStates)
+         trim(LIS_swotwlId)//char(0),HYMAP3_daSWOT_init)
+    call registerroutingdagetstatespacesize(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_getStateSpaceSize)
+    call registerroutingdagetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_getSWOT)
+    call registerroutingdasetstatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_setSWOT)
+    call registerroutingdagetobspred(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_getSWOTpred)
+    call registerroutingdaqcstate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_qcSWOT)
+    call registerroutingdaqcobsstate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_qc_SWOTobs)
+    call registerroutingdascalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_scale_SWOT)
+    call registerroutingdadescalestatevar(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_descale_SWOT)
+    call registerroutingdaupdatestate(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_updateSWOT)
+    call registerroutingdasetpertstates(trim(LIS_HYMAP3routerId)//"+"//&
+         trim(LIS_swotwlId)//char(0),HYMAP3_setPertStates)
 #endif
 
 #endif

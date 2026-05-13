@@ -19,11 +19,6 @@ module HYMAP3_daSWOT_Mod
 ! 15 Apr 24: Yeosang Yoon; Initial specification;
 ! 24 Mar 26: Yeosang Yoon; Updated the code to fit HyMAP3
 !
-! !USES:
-  use ESMF
-  use LIS_coreMod
-  use LIS_dataAssimMod
-  use LIS_logMod
 
   implicit none
 
@@ -62,9 +57,10 @@ contains
 ! !INTERFACE:
   subroutine HYMAP3_daSWOT_init(k)
 ! !USES:
-    use HYMAP3_routingMod
-    use HYMAP3_initMod
+    use ESMF
     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+    use LIS_coreMod
+    use LIS_logMod, only: lis_verify, lis_endrun, LIS_logunit
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif

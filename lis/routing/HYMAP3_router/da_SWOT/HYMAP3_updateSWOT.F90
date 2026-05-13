@@ -19,11 +19,12 @@
 subroutine HYMAP3_updateSWOT(n, Routing_State, Routing_Incr_State)
 ! !USES:
   use ESMF
-  use LIS_coreMod
-  use LIS_logMod
-  use LIS_routingMod
-  use HYMAP3_routingMod
-  use HYMAP3_daSWOT_Mod
+  use HYMAP3_daSWOT_Mod, only: HYMAP3_daSWOT_struc
+  use HYMAP3_routingMod, only: HYMAP3_routing_struc
+  use LIS_coreMod, only: LIS_rc, LIS_routing, LIS_localpet, &
+       LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+       LIS_nss_halo_ind, LIS_nse_halo_ind
+  use LIS_logMod, only: LIS_verify
 
   implicit none
 

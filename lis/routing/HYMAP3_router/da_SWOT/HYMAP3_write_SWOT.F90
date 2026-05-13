@@ -20,8 +20,6 @@ subroutine HYMAP3_write_SWOT(ftn,n, Routing_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
-  use LIS_historyMod, only : LIS_writevar_restart
 
   implicit none
 ! !ARGUMENTS:
