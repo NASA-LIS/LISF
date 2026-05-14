@@ -761,7 +761,6 @@ contains
 
     ! _____________________LU_INDEX_____________________________
        nlctypes= LDT_LSMparam_struc(n)%landcover%num_bins  !size(landcover,3)
-       !print*, "nlctypes:", nlctypes
        allocate(luindex(LDT_rc%lnc(n),LDT_rc%lnr(n)))
        allocate(landcover1(LDT_rc%lnc(n),LDT_rc%lnr(n),nlctypes))
        landcover1 = LDT_LSMparam_struc(n)%landcover%value
@@ -863,8 +862,13 @@ contains
            LDT_LSMparam_struc(n)%regmask)
     endif
 
-    call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
-         LDT_rc%lc_type(n)))
+    if( LDT_rc%crop_classification(1) .eq. "none" ) then
+      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
+           LDT_rc%lc_type(n)))
+    else
+      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
+           (trim(LDT_rc%lc_type(n))//"+"//LDT_rc%crop_classification(1))))
+    endif
 
   ! Attributes serving Noah-MP only (at this time):
     if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
@@ -1223,7 +1227,6 @@ contains
 
     nr=size(LDT_LSMparam_struc(n)%luindex%value,1)
     nc=size(LDT_LSMparam_struc(n)%luindex%value,2)
-    !print *, "nr and nc", nr, nc
     call LDT_verify(nf90_put_var(ftn,&
             LDT_LSMparam_struc(n)%luindexId, LDT_LSMparam_struc(n)%luindex%value(:,:,1),&
             (/1,1/),(/nr, nc/)),&

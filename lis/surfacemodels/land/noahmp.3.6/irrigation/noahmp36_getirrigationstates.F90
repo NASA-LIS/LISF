@@ -21,7 +21,9 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
   use LIS_coreMod
   use LIS_logMod
   use NoahMP36_lsmMod
+#if 0
   use MODULE_SF_NOAHMPLSM_36, only: MAXSMC, REFSMC, WLTSMC
+#endif
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
 ! use MODULE_SF_NOAHMPLSM_36, only: SMCMAX, PSISAT, DKSAT, BEXP
  
@@ -79,9 +81,12 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
   integer, parameter   :: nsoil = 4
 
   integer              :: n
+#if 0
   integer              :: rc
   integer              :: t,k,gid,vegt,l
+#endif
   type(ESMF_State)     :: irrigState
+#if 0
   type(ESMF_Field)     :: irrigRateField,irrigFracField
   type(ESMF_Field)     :: irrigRootDepthField,irrigScaleField
   
@@ -94,14 +99,17 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
   real                 :: zdpth(nsoil)
   real                 :: water(nsoil)
   real                 :: twater, twater1, twater2
+  !real                 :: smcref1, smcwlt1, shdfac
+
   real                 :: ippix, crootd
   real                 :: smcmax, smcref, smcwlt
-  !real                 :: smcref1, smcwlt1, shdfac
+
   real                 :: smhigh, smlow
   integer              :: lroot,veg_index1,veg_index2
   real                 :: gsthresh, ltime
   real                 :: shdfac, shdmin, shdmax
   real                 :: timestep, shift_otimes, shift_otimee
+
 ! _______________wanshu  add GW extraction_______________________________
   real                 :: AWS
   real                 :: Dtime
@@ -111,7 +119,9 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
   real, allocatable    :: placeshdmax(:,:), placeshdmin(:,:)
 !--------------wanshu-----add temp check-------
   real                 :: sfctemp, tempcheck
+#endif
 
+#if 0
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
   call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
   call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=rc)
@@ -460,4 +470,5 @@ subroutine noahmp36_getirrigationstates(n,irrigState)
        end if
 
     enddo
+#endif
   end subroutine noahmp36_getirrigationstates

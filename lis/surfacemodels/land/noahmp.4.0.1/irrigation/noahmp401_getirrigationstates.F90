@@ -21,10 +21,13 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   use LIS_coreMod
   use LIS_logMod
   use NoahMP401_lsmMod
+#if 0
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE, SMCWLT_TABLE, SMCREF_TABLE
+#endif
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
+#if 0
   use MODULE_SF_NOAHMPLSM_401, only: DVEG
-
+#endif
 ! !DESCRIPTION:        
 !
 ! Calculate water requirement and apply the amount to precipitation.
@@ -82,9 +85,12 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   integer, parameter   :: nsoil = 4
 
   integer              :: n
+#if 0
   integer              :: rc
   integer              :: t,k,gid,vegt,l
+#endif
   type(ESMF_State)     :: irrigState
+#if 0
   type(ESMF_Field)     :: irrigRateField,irrigFracField
   type(ESMF_Field)     :: irrigRootDepthField,irrigScaleField
   
@@ -118,7 +124,9 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   real                 :: sfctemp_avg
   real                 :: shdfac_avg
   real                 :: smc_avg(nsoil)
+#endif
 
+#if 0
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
   call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
   call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=rc)
@@ -511,5 +519,5 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
 
     end do
   end do
-
+#endif
   end subroutine noahmp401_getirrigationstates
