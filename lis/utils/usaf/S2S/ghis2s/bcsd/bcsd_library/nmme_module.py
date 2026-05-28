@@ -3,6 +3,7 @@ import os
 import sys
 from time import ctime as t_ctime
 from time import time as t_time
+import calendar
 from datetime import datetime
 import numpy as np
 import xarray as xr
@@ -84,23 +85,49 @@ class NMMEParams():
         }
         return fcast_ens_index[self.model]
 
+    def nmme_filename(self, config, month, cyr, y2=None):
+        ''' Get NMME file name: IRI-NMME OR CCSR-NMME (forecast/hindcast)'''
+        pforce = config['BCSD']['source']['precip']
+        dtype = config['SETUP']['DATATYPE']
+        nmme_path_ = nmme_path_dict[self.model]
+        if pforce == 'nmme':
+            # IRI NMME
+            if dtype == 'forecast':
+                infile_temp = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
+                infile = infile_temp.format(config['BCSD']['nmme_download_dir'],
+                                            nmme_path_[0], nmme_path_[1], MON[month], cyr)
+            else:
+                infile_temp = '{}/{}/prec.{}.mon_{}_{:04d}_{:04d}.nc'
+                infile = infile_temp.format(config['BCSD']['nmme_download_dir'],
+                                            nmme_path_[0], nmme_path_[1], MON[month], cyr, y2)
+        elif pforce == 'ccsr-nmme':
+            # CCSR-NMME
+            infile_temp = '{}/{}/{}/{}_{}_prcp_{:04d}_{:02d}.nc'
+            if dtype == 'forecast':
+                infile = infile_temp.format(config['BCSD']['nmme_download_dir'], nmme_path_[0], 'forecast',
+                                            nmme_path_[0], 'forecast', cyr, month+1)
+            else:
+                infile = infile_temp.format(config['BCSD']['nmme_download_dir'], nmme_path_[0], 'hindcast',
+                                            nmme_path_[0], 'hindcast', cyr, month+1)
+        return infile
+
     def check_file(self, setup):
         ''' checks NMME file for availability and missing layers '''
         bad_layers = False
-        infile_temp = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
-        nmme_path_ = nmme_path_dict[self.model]
-        infile = infile_temp.format(setup.config['BCSD']['nmme_download_dir'],
-                                    nmme_path_[0], nmme_path_[1], MON[setup.month-1], setup.year)
-
+        infile = self.nmme_filename(setup.config, setup.month-1, setup.year)
+        pforce = setup.config['BCSD']['source']['precip']
         if not os.path.exists(infile):
             return infile, infile, bad_layers
 
         # File exists  run data quality checks
         with xr.open_dataset(infile.strip(), decode_times=False) as nmme_xr:
-            if self.model in ['CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52']:
-                prec_da = nmme_xr.transpose('S', 'L', 'M', 'Y', 'X')['prec']
-            else:
-                prec_da = nmme_xr['prec']
+            if pforce == 'nmme':
+                if self.model in ['CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52']:
+                    prec_da = nmme_xr.transpose('S', 'L', 'M', 'Y', 'X')['prec']
+                else:
+                    prec_da = nmme_xr['prec']
+            elif pforce == 'ccsr-nmme':
+                prec_da = nmme_xr['prcp'].transpose('L', 'M', 'Y', 'X')
 
             # Slice to the ensemble/lead months we actually use
             prec_da = prec_da.isel(
@@ -133,6 +160,8 @@ class NMMEParams():
 
             # CHECK 3: Physically unreasonable values
             precip_max = 3000.0  # mm/day
+            if pforce == 'ccsr-nmme':
+                precip_max = 90000.0
             precip_min = -1e-6
             has_crazy_high = (prec_da > precip_max).any(dim=['Y', 'X'])
             has_crazy_low  = (prec_da < precip_min).any(dim=['Y', 'X'])
@@ -196,20 +225,22 @@ if __name__ == "__main__":
     DATATYPE = config['SETUP']['DATATYPE']
     SUPPLEMENTARY_DIR = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
     ENS_NUM = NMMEParams(NMME_MODEL).ens_num
-    NMME_DOWNLOAD_DIR = config['BCSD']['nmme_download_dir']
+    PFORCE = config['BCSD']['source']['precip']
+    if PFORCE == 'nmme':
+        VAR_NAME = 'prec'
+    elif PFORCE == 'ccsr-nmme':
+        VAR_NAME = 'prcp'
 
     # Set up variables based on DATATYPE
     if DATATYPE == 'hindcast':
         YEAR0 = 1982
         YEAR_BEGIN = YEAR0
         YEAR_END = YEAR0 + 40
-        INFILE_TEMP = '{}/{}/prec.{}.mon_{}_{:04d}_{:04d}.nc'
         log_msg = f'bcsd/bcsd_library/nmme_module.py processing {NMME_MODEL} hindcast for month {CMN:02d}'
 
     else:
         YEAR_BEGIN = CYR
         YEAR_END = CYR+1
-        INFILE_TEMP = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
         log_msg = f'bcsd/bcsd_library/nmme_module.py processing {NMME_MODEL} for {CYR:04d}{CMN:02d} forecast'
 
     OUTDIR_TEMPLATE = '{}/{}/{}/{:04d}/ens{}/'
@@ -260,16 +291,19 @@ if __name__ == "__main__":
     if DATATYPE == 'forecast':
         nmme_path = nmme_path_dict[NMME_MODEL]
         ens_index = NMMEParams(NMME_MODEL).ens_index
-        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1], MON[MM], CYR)
+        INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, CYR)
 
         logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-        nmme_da = load_ncdata(INFILE.strip(), [logger, SUBTASK], var_name="prec",
+        nmme_da = load_ncdata(INFILE.strip(), [logger, SUBTASK], var_name=VAR_NAME,
                               decode_times=False)
 
-        if NMME_MODEL in ['CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52']:
-            nmme_da = nmme_da.transpose('S', 'L', 'M', 'Y', 'X')
-
-        XPREC = np.array(nmme_da.values[:,0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
+        if PFORCE == 'nmme':
+            if NMME_MODEL in ['CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52']:
+                nmme_da = nmme_da.transpose('S', 'L', 'M', 'Y', 'X')
+                XPREC = np.array(nmme_da.values[:,0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
+        elif PFORCE == 'ccsr-nmme':
+            nmme_da = nmme_da.transpose('L', 'M', 'Y', 'X')
+            XPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
 
     else:
         XPREC = np.empty([40, LEAD_MONS, ENS_NUM, 181, 360])
@@ -280,10 +314,9 @@ if __name__ == "__main__":
             p1 = hcast_p1[NMME_MODEL]
             y1 = p1[0] - YEAR0
             y2 = p1[1] - YEAR0 + 1
-            INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                        MON[MM], p1[0], p1[1])
+            INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, p1[0], y2=p1[1])
             logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-            nmme_da = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec", decode_times=False)
+            nmme_da = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME, decode_times=False)
             if NMME_MODEL in ['CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52']:
                 nmme_da = nmme_da.transpose('S', 'L', 'M', 'Y', 'X')
             XPREC[y1:y2,:,:,:,:] = np.array(nmme_da.values[:, 0:LEAD_MONS,
@@ -293,28 +326,25 @@ if __name__ == "__main__":
             if MON[MM] == 'Jan' or MON[MM] == 'Feb':
                 SYR2 = 2011
                 EYR2 = 2011
-                INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                            MON[MM], SYR2, EYR2)
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR2, y2=EYR2)
                 logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                        decode_times=False)
                 XPREC[29,:,:,:,:] = np.array(nmme_da2.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
 
                 SYR3 = 2011
                 EYR3 = 2021
-                INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                            MON[MM], SYR3, EYR3)
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR3, y2=EYR3)
                 logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-                nmme_da3 = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+                nmme_da3 = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                        decode_times=False)
                 XPREC[30:40,:,:,:,:] = np.array(nmme_da3.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
             else:
                 SYR2 = 2011
                 EYR2 = 2021
-                INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                            MON[MM], SYR2, EYR2)
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR2, y2=EYR2)
                 logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                        decode_times=False)
                 XPREC[29:40,:,:,:,:] = np.array(nmme_da2.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
 
@@ -323,55 +353,54 @@ if __name__ == "__main__":
             if MM == 0:
                 SYR1 = 1982
                 EYR1 = 2017
-                INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                            MON[MM], SYR1, EYR1)
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR1, y2=EYR1)
                 logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-                nmme_da = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+                nmme_da = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                       decode_times=False)
                 XPREC[0:36,:,:,:,:] = np.array(nmme_da.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
 
                 SYR2 = 2018
                 EYR2 = 2021
-                INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                            MON[MM], SYR2, EYR2)
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR2, y2=EYR2)
                 logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                        decode_times=False)
                 XPREC[36:40,:,:,:,:] = np.array(nmme_da2.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
             else:
                 SYR1 = 1982
                 EYR1 = 2016
-                INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                            MON[MM], SYR1, EYR1)
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR1, y2=EYR1)
                 logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-                nmme_da = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+                nmme_da = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                       decode_times=False)
                 XPREC[0:35,:,:,:,:] = np.array(nmme_da.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
 
                 SYR2 = 2017
                 EYR2 = 2021
-                INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                            MON[MM], SYR2, EYR2)
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR2, y2=EYR2)
                 logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+                nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                        decode_times=False)
                 XPREC[35:40,:,:,:,:] = np.array(nmme_da2.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
 
         elif NMME_MODEL == 'GFDL':
             SYR2 = 2021
             EYR2 = 2021
-            INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, nmme_path[0], nmme_path[1],
-                                        MON[MM], SYR2, EYR2)
+            INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, SYR2, y2=EYR2)
             logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-            nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name="prec",
+            nmme_da2 = load_ncdata(INFILE, [logger, SUBTASK], var_name=VAR_NAME,
                                    decode_times=False)
             XPREC[39:40,:,:,:,:] = np.array(nmme_da2.values[:, 0:LEAD_MONS, 0:ENS_NUM, :, :])
 
     LATI = np.array(nmme_da.Y)
     LONI = np.array(nmme_da.X)
 
-    # convert mm/day to kg/m^2/s
-    XPREC = XPREC/86400.
+    if PFORCE == 'nmme':
+        # convert mm/day to kg/m^2/s
+        XPREC = XPREC/86400.
+    if PFORCE == 'ccsr-nmme':
+        # convert mm/mon to kg/m^2/s
+        XPREC = XPREC/calendar.monthrange(CYR, CMN)[1]/86400.
 
     # Create xarray datasets for regridding
     ds_in = xr.Dataset({
@@ -380,15 +409,26 @@ if __name__ == "__main__":
     })
 
     if DATATYPE == 'forecast':
-        ds_in["XPREC"] = xr.DataArray(
-            data=np.array(XPREC[0,0:LEAD_MONS,:,:,:]),
-            dims=["mon","ens", "lat", "lon"],
-            coords={
-                'mon':(["mon"], np.arange(LEAD_MONS)),
-                'ens':(["ens"], np.arange(ENS_NUM)),
-                'lat':(["lat"], LATI),
-                'lon':(["lon"], LONI)}
-        )
+        if PFORCE == 'nmme':
+            ds_in["XPREC"] = xr.DataArray(
+                data=np.array(XPREC[0,0:LEAD_MONS,:,:,:]),
+                dims=["mon","ens", "lat", "lon"],
+                coords={
+                    'mon':(["mon"], np.arange(LEAD_MONS)),
+                    'ens':(["ens"], np.arange(ENS_NUM)),
+                    'lat':(["lat"], LATI),
+                    'lon':(["lon"], LONI)}
+            )
+        if PFORCE == 'ccsr-nmme':
+            ds_in["XPREC"] = xr.DataArray(
+                data=np.array(XPREC[0:LEAD_MONS,:,:,:]),
+                dims=["mon","ens", "lat", "lon"],
+                coords={
+                    'mon':(["mon"], np.arange(LEAD_MONS)),
+                    'ens':(["ens"], np.arange(ENS_NUM)),
+                    'lat':(["lat"], LATI),
+                    'lon':(["lon"], LONI)}
+            )            
     else:  # hindcast
         if RESOL == '25km':
             C_ENS = ENS_NUM
