@@ -130,10 +130,16 @@ class NMMEParams():
                 prec_da = nmme_xr['prcp'].transpose('L', 'M', 'Y', 'X')
 
             # Slice to the ensemble/lead months we actually use
-            prec_da = prec_da.isel(
-                L=slice(0, setup.config['EXP']['lead_months']),
-                M=slice(self.ens_index[0], self.ens_index[1])
-            )
+            if pforce == 'ccsr-nmme' and self.model == 'GNEMO52':
+                prec_da = prec_da.isel(
+                    L=slice(0, setup.config['EXP']['lead_months']),
+                    M=slice(20, 30)
+                )
+            else:
+                prec_da = prec_da.isel(
+                    L=slice(0, setup.config['EXP']['lead_months']),
+                    M=slice(self.ens_index[0], self.ens_index[1])
+                )
             issues = []
 
             # CHECK 1: Layers where ALL spatial points are NaN (completely missing)
@@ -300,11 +306,13 @@ if __name__ == "__main__":
         if PFORCE == 'nmme':
             if NMME_MODEL in ['CCM4', 'GNEMO5', 'CanESM5', 'GNEMO52']:
                 nmme_da = nmme_da.transpose('S', 'L', 'M', 'Y', 'X')
-                XPREC = np.array(nmme_da.values[:,0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
+            XPREC = np.array(nmme_da.values[:,0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
         elif PFORCE == 'ccsr-nmme':
             nmme_da = nmme_da.transpose('L', 'M', 'Y', 'X')
-            XPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
-
+            if NMME_MODEL == 'GNEMO52':
+                XPREC = np.array(nmme_da.values[0:LEAD_MONS,20:30,:,:])
+            else:
+                XPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
     else:
         XPREC = np.empty([40, LEAD_MONS, ENS_NUM, 181, 360])
         nmme_path = nmme_path_dict[NMME_MODEL]
