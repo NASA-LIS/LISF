@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     else:
         YEAR_BEGIN = CYR
-        YEAR_END = CYR+1
+        YEAR_END = CYR
         log_msg = (f'bcsd/bcsd_library/nmme_module.py processing '
                    f'{NMME_MODEL} for {CYR:04d}{CMN:02d} forecast')
 
