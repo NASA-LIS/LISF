@@ -129,6 +129,7 @@ module era5cds_forcingMod
 
      integer            :: nvars
      integer            :: uselml
+     integer            :: tdimsize
 
      real*8             :: ringtime
      

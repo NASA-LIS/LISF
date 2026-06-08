@@ -160,8 +160,8 @@ subroutine timeinterp_era5cds(n,findex)
      
         kk = LIS_get_iteration_index(n, k, index1, mfactor)
 
-!        if ( LIS_domain(n)%grid(index1)%lat .eq. -19.875 .and. &
-!             LIS_domain(n)%grid(index1)%lon .eq. 24.125 ) then
+!        if ( LIS_domain(n)%grid(index1)%lat .eq. -53.875 .and. &
+!             LIS_domain(n)%grid(index1)%lon .eq. -68.875 ) then
 !          write(unit=LIS_logunit,fmt=*)'zterp:',zw1,zw2,gmt1,gmt2, &
 !          LIS_rc%gmt,era5cds_struc(n)%metdata1(kk,3,index1),czb,cze, &
 !          czm,LIS_rc%zterp_correction
@@ -174,7 +174,9 @@ subroutine timeinterp_era5cds(n,findex)
            if (swd(t).gt.LIS_CONST_SOLAR) then
               write(unit=LIS_logunit,fmt=*) &
                    '[WARN] sw radiation too high in ERA5!!'
-              write(unit=LIS_logunit,fmt=*)'[WARN] it is',swd(t)
+              write(unit=LIS_logunit,fmt=*)'[WARN] it is',swd(t), zw1
+              write(unit=LIS_logunit,fmt=*)'[WARN] at ',t, &
+                    LIS_domain(n)%grid(index1)%lat,LIS_domain(n)%grid(index1)%lon
               write(unit=LIS_logunit,fmt=*)'[WARN] era5cdsdata1=',&
                    era5cds_struc(n)%metdata1(kk,3,index1)
               write(unit=LIS_logunit,fmt=*)'[WARN] era5cdsdata2=',&

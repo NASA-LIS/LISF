@@ -17,6 +17,7 @@
 ! 23 dec 2019: Sujay Kumar, initial code 
 ! 15 apr 2025: Hiroko Beaudoing, adopted ERA5 routines for the public CDS
 !                               data format
+! 23 apr 2026: Hiroko Beaudoing, added handling of near real-time data
 !
 ! !INTERFACE:
 subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,&
@@ -47,9 +48,9 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
 
 !
 ! !DESCRIPTION:
-!  For the given time, reads parameters from
-!  ERA5 data, transforms into 9 LIS forcing 
-!  parameters and interpolates to the LIS domain. \newline
+!  Mothly ERA5 data is read in at the beginning of simulation and/or month based
+!  on read_flag flag. For the given time, assigns appropriate forcing fields, 
+!  transforms into 9 LIS forcing parameters and interpolates to the LIS domain.
 !
 !  ERA5 model output variables used to force LIS are provided in 3 files:
 !  1) inst, Instantaneous values, available every hour.
@@ -81,6 +82,9 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
 !  NOTE 2: SW & LW flux accumulations from time1 are interpolated via new zterp.
 !  NOTE 3: accum files starts at 7z on the 1st day of month and ends at 6z 
 !          on the 1st day of next month.
+!  NOTE 4: Current month includes data up to 5 days ago. If the simulation end
+!          time is past avaiable data, forcing fields are assigned to the last
+!          available data with [WARN] message. LSM fields will be invalid.
 
 !  The arguments are: 
 !  \begin{description}
@@ -117,6 +121,12 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
   integer   :: start_time_index
   logical   :: file_exists
   real      :: missingValue
+  integer   :: dimid, dim_len
+  integer   :: cyear, cmonth
+  character(len=8)      :: date
+  character(len=10)     :: time
+  character(len=5)      :: zone
+  integer, dimension(8) :: current
 
   real, allocatable      :: tair(:,:,:)
   real, allocatable      :: qair(:,:,:)
@@ -135,6 +145,7 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
   integer, parameter :: n_last_steps = 7
   integer :: days(12)
   data days /31,28,31,30,31,30,31,31,30,31,30,31/
+  character(len=*), parameter :: dim_name = "valid_time"
   real, parameter :: epsln = 0.622        !Constants' values taken from
   real, parameter :: A = 2.53E8, B=5.42E3 !Roger&Yau, A Short Course
                                           !in Cloud Physics, pp.12-17
@@ -143,6 +154,8 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
 ! __________________________________________________________________________
 
   ferror = 0 ! 1 success
+  tindex = (day - 1)*24 + hour + 1
+  atindex = tindex - n_last_steps
 
   if(read_flag) then
 #if (defined USE_NETCDF4)
@@ -156,6 +169,26 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
 
      mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
      rec_size = days(month)*24 
+     era5cds_struc(n)%tdimsize = rec_size
+     call date_and_time(date, time, zone, current)
+     cyear = current(1)
+     cmonth = current(2)
+     ! present month has incomplete data record
+     if (cmonth == month .and. cyear == year) then
+      call LIS_verify(nf90_open(path=trim(instfile), mode=NF90_NOWRITE, &
+            ncid=ftn), 'nf90_open failed in read_era5cds')
+      ! Get the ID for the dimension named "var_time"
+      call LIS_verify(nf90_inq_dimid(ftn, dim_name, dimid), &
+            'nf90_inq_dimid failed in read_era5cds')
+      ! Get the length (size) of that dimension
+      call LIS_verify(nf90_inquire_dimension(ftn, dimid, len = dim_len), &
+            'nf90_inquire_dimension failed in read_era5cds') 
+      call LIS_verify(nf90_close(ftn), &
+            'failed to close file in read_era5cds inst in lml')
+      rec_size = dim_len
+      write(LIS_logunit,*)'[INFO] in current month, reset rec_size =',rec_size
+      era5cds_struc(n)%tdimsize = rec_size
+     endif
 
      allocate(datalis(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold))
      !=== If using the lowest model level forcing (inst and mlinst):
@@ -467,7 +500,6 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
             enddo
           enddo
         enddo
-        write(LIS_logunit,*) 'HKB rainf and crainf done...'
 
         allocate(swd(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
         call LIS_verify(nf90_inq_varid(ftn,'ssrd',swdId), &
@@ -613,7 +645,6 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
              enddo
            enddo
          enddo
-         write(LIS_logunit,*) 'HKB prev rainf and crainf done...'
 
          call LIS_verify(nf90_inq_varid(ftn,'ssrd',swdId), &
                'nf90_inq_varid failed for ssrd in read_era5cds')
@@ -686,28 +717,31 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
 #endif
   endif !if(read_flag)
 
-  tindex = (day - 1)*24 + hour + 1
-  atindex = tindex - n_last_steps
+  ! make sure current time is within valid data 
+  if (era5cds_struc(n)%tdimsize < tindex) then
+   write(LIS_logunit,*) '[WARN] Current month passed available data, filling with last data'
+   tindex = era5cds_struc(n)%tdimsize
+   atindex = era5cds_struc(n)%tdimsize - n_last_steps
+  endif  !(rec_size < tindex)
 
-  call assign_processed_era5cdsf(n,kk,order,1,era5cds_struc(n)%tair(:,tindex))
-  call assign_processed_era5cdsf(n,kk,order,2,era5cds_struc(n)%qair(:,tindex))
-  call assign_processed_era5cdsf(n,kk,order,5,era5cds_struc(n)%uwind(:,tindex))
-  call assign_processed_era5cdsf(n,kk,order,6,era5cds_struc(n)%vwind(:,tindex))
-  call assign_processed_era5cdsf(n,kk,order,7,era5cds_struc(n)%ps(:,tindex))
-  if ( atindex .le. 0 ) then
-    atindex = atindex + n_last_steps
-    call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%prev_swd(:,atindex))
-    call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%prev_lwd(:,atindex))
-    call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%prev_rainf(:,atindex))
-    call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%prev_crainf(:,atindex))
-  else
-    call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%swd(:,atindex))
-    call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%lwd(:,atindex))
-    call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%rainf(:,atindex))
-    call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%crainf(:,atindex))
-  endif
-  if ( .not. read_flag .and. ferror == 0 ) ferror = 1
-  write(LIS_logunit,*) 'tindex=',tindex,' atindex=',atindex, read_flag, order
+   call assign_processed_era5cdsf(n,kk,order,1,era5cds_struc(n)%tair(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,2,era5cds_struc(n)%qair(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,5,era5cds_struc(n)%uwind(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,6,era5cds_struc(n)%vwind(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,7,era5cds_struc(n)%ps(:,tindex))
+   if ( atindex .le. 0 ) then
+     atindex = atindex + n_last_steps
+     call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%prev_swd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%prev_lwd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%prev_rainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%prev_crainf(:,atindex))
+   else
+     call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%swd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%lwd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%rainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%crainf(:,atindex))
+   endif
+   if ( .not. read_flag .and. ferror == 0 ) ferror = 1
 
 end subroutine read_era5cds
 

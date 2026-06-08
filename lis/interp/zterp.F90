@@ -33,6 +33,9 @@
 !                less than 50% of 37 intervals (arbitary) are day-time.  This
 !                modification is needed to properly interpolate ECMWF data,
 !                where daily peak is too low due to the nature of dataset.
+!        3/4/26  Hiroko Beaudoing; Additional fix for iflag=0 case, when weight1
+!                becomes huge due to extremely small avgangle, resulting in
+!                unrealistically large SWdown flux at the instance. 
 !
 ! !INTERFACE:
 subroutine zterp (iflag,lat,lon,btime,etime, & 
@@ -228,6 +231,11 @@ subroutine zterp (iflag,lat,lon,btime,etime, &
         weight1=0
      else
         weight1=(czmodel/avgangle)
+     endif
+     if ( lis%zterp_correction ) then    ! hkb 3/4/26
+       if (weight1.gt.5.0) then
+          weight1=1.0
+       endif
      endif
   endif
 !--------------------------------------------------------------------
