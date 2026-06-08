@@ -270,6 +270,7 @@ subroutine AGRMET_sfcalc(n)
         agrmet_struc(n)%agr_hgt_sfc_p = agrmet_struc(n)%agr_hgt_sfc_c
         agrmet_struc(n)%agr_rh_sfc_p = agrmet_struc(n)%agr_rh_sfc_c
         agrmet_struc(n)%agr_wspd_p = agrmet_struc(n)%agr_wspd_c
+        agrmet_struc(n)%agr_pres_p = agrmet_struc(n)%agr_pres_c ! EMK Fix for sfc pressure
 
         order = 1
         call AGRMET_fldbld(n,order,julend)

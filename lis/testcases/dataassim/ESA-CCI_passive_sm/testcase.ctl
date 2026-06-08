@@ -7,9 +7,7 @@ ydef 2110 linear 31.905 0.01
 zdef 1 linear 1 1
 * dummy tdef
 tdef 60 linear 00z01feb2015 1dy
-vars 32
-lat=>lat 1 y,x description
-lon=>lon 1 y,x description
+vars 30
 Qle_tavg=>Qle_tavg 1 y,x description
 Qh_tavg=>Qh_tavg 1 y,x description
 Snowf_tavg=>Snowf_tavg 1 y,x description
@@ -18,8 +16,8 @@ Evap_tavg=>Evap_tavg 1 y,x description
 Qs_tavg=>Qs_tavg 1 y,x description
 Qsb_tavg=>Qsb_tavg 1 y,x description
 RadT_tavg=>RadT_tavg 1 y,x description
-RadT_tavg_min=>RadT_tavg_min 1 y,x description
-RadT_tavg_max=>RadT_tavg_max 1 y,x description
+RadT_min=>RadT_min 1 y,x description
+RadT_max=>RadT_max 1 y,x description
 SWE_tavg=>SWE_tavg 1 y,x description
 SnowDepth_tavg=>SnowDepth_tavg 1 y,x description
 SoilMoist_tavg=>SoilMoist_tavg1 0 0,y,x description
@@ -33,8 +31,8 @@ GWS_tavg=>GWS_tavg 1 y,x description
 GPP_tavg=>GPP_tavg 1 y,x description
 Wind_f_tavg=>Wind_f_tavg 1 y,x description
 Tair_f_tavg=>Tair_f_tavg 1 y,x description
-Tair_f_tavg_min=>Tair_f_tavg_min 1 y,x description
-Tair_f_tavg_max=>Tair_f_tavg_max 1 y,x description
+Tair_f_min=>Tair_f_min 1 y,x description
+Tair_f_max=>Tair_f_max 1 y,x description
 Qair_f_tavg=>Qair_f_tavg 1 y,x description
 Psurf_f_tavg=>Psurf_f_tavg 1 y,x description
 LAI_tavg=>LAI_tavg 1 y,x description

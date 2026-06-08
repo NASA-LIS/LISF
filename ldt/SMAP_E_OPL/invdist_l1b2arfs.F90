@@ -10,7 +10,7 @@
 !
 ! MODULE: invdist_l1b2arfs
 !
-! REVISION HISTORY: 
+! REVISION HISTORY:
 !  26 Oct 2021: P.W.LIU; Initial implemetation
 !  28 Jan 2022: P.W.LIU; CHNAGE OUTPUT COORDINATE TO COMPLY LIS OUTPUT
 !  22 Feb 2022: Yonghwan Kwon; modified for LDT
@@ -45,6 +45,8 @@
 
      !ALLOCATE(zerodistflag(size(ref_lat),size(ref_lon)))
      ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
+     zerodistflag = 0
+
      !INITIAL THE OUTPUT VARIABLES
      arfs_tim=0.0
      arfs_tbv_cor=0.0
@@ -215,8 +217,6 @@
         sc_nadir_angle, antenna_scan_angle, nrows_l1btb, ncols_l1btb, &
         ref_lat, ref_lon, arfs_tim, arfs_tbv_cor)
 
-     use LDT_logMod, only: LDT_logunit
-
      INTEGER(4) :: ii, jj, k, r, c, rr, rmin, rmax, cc, cmin, cmax, nrows_l1btb, ncols_l1btb
      INTEGER(4), PARAMETER :: qualitybit = 0
      REAL(8), PARAMETER :: RE_KM = 6371.228, search_radius = 20.0, PI = 3.141592653589793238, d2r = PI/180.0
@@ -236,7 +236,7 @@
 
      ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
      zerodistflag = 0 ! EMK Added initialization
-     
+
      !INITIAL THE OUTPUT VARIABLES
      arfs_tim=0.0
      arfs_tbv_cor=0.0
@@ -248,7 +248,7 @@
         IF (ABS (sc_nadir_angle(ii)) <= 2.0) THEN
            DO jj = 1,nrows_l1btb
 
-              
+
               IF (ABS (antenna_scan_angle(jj,ii)).LE.360.00) THEN
 
                  lat1 = DBLE (lat_l1b(jj,ii)*d2r)
@@ -306,7 +306,7 @@
                                    END IF
                                    !IF ((ABS (tbvl1b_cor(jj,ii) - (-9999.0))).GT.1.0D-7) THEN !DO IF NOT FILLVALUE(-9999)
                                   IF ( .not. tbvl1b_cor(jj,ii) < 0 ) THEN !DO IF NOT FILLVALUE(-9999)
- 
+
                                       arfs_tbv_cor(rr,cc) = arfs_tbv_cor(rr,cc) + tbvl1b_cor(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_cor_tbv(rr,cc) = arfs_wt_cor_tbv(rr,cc) + 1.0 /  SNGL (gcdist*gcdist)
                                       arfs_samplenumv(rr,cc)=arfs_samplenumv(rr,cc)+1.0 !Sample number only calculate for correct tb

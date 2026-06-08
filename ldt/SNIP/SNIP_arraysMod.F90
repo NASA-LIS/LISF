@@ -68,7 +68,7 @@ module SNIP_arraysMod
      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNIP GRID
      real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
      real, allocatable :: navy_icecon(:,:)
-     real, allocatable :: amsr2_snowdepth(:,:)
+     real, allocatable :: pmw_snowdepth(:,:)
   end type SNIP_arrays_t
 
   type(SNIP_arrays_t), public :: SNIP_arrays

@@ -3,3 +3,15 @@
 *.d
 lis/runmodes/nuopc_cpl_mode/VERSION
 lis/runmodes/nuopc_cpl_mode/liblis_nuopc.a
+.ipynb_checkpoints
+*.o
+*.mod
+LIS
+LDT
+configure.lis
+configure.ldt
+LIS_misc.h
+LDT_misc.h
+LIS_NetCDF_inc.h
+LDT_NetCDF_inc.h
+LIS_plugins.h

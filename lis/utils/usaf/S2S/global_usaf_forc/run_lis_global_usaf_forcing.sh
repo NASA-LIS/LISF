@@ -44,7 +44,7 @@
 #------------------------------------------------------------------------------
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/ghilis/S2S/GLOBAL/use-cases/LISV7.7/S2S_Daily_Forc/
+SCRIPTDIR=/discover/nobackup/projects/ghilis/S2S/GLOBAL/use-cases/LISV7.8/S2S_Daily_Forc/
 
 CFGTMPL=./input/lis.config.template
 OUTDIR=./output
@@ -77,7 +77,7 @@ if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
   module use --append ~/privatemodules
   module --ignore-cache load lisf_7.5_intel_2023.2.1_s2s
 else
-  # e.g., Cray environment -- Latest for LISV7.7 S2S
+  # e.g., Cray environment -- Latest for LISV7.8 S2S
   module use --append ~/privatemodules
   module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_s2s
 fi

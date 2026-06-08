@@ -214,21 +214,16 @@ def _migrate_to_monthly_files(cfsv2_in, outdirs, fcst_init, args, rank, logger, 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime(f'{mmm} 1 {fcst_init["year"]}', '%b %d %Y')
     # clip limits
-    ds_out["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out["PRECTOT"].values[:]),
-                                                     var_name = "PRECTOT", precip=True)
-    ds_out["PS"].values[:] = limits.clip_array(np.array(ds_out["PS"].values[:]),
-                                                var_name = "PS")
-    ds_out["T2M"].values[:] = limits.clip_array(np.array(ds_out["T2M"].values[:]),
-                                                 var_name = "T2M")
-    ds_out["LWGAB"].values[:] = limits.clip_array(np.array(ds_out["LWGAB"].values[:]),
-                                                 var_name = "LWGAB")
-    ds_out["SWGDN"].values[:] = limits.clip_array(np.array(ds_out["SWGDN"].values[:]),
-                                                   var_name = "SWGDN")
-    ds_out["QV2M"].values[:] = limits.clip_array(np.array(ds_out["QV2M"].values[:]),
-                                                 var_name = "QV2M")
-    ds_out["WIND10M"].values[:] = limits.clip_array(np.array(ds_out["WIND10M"].values[:]),
-                                                     var_name = "WIND")
-
+    var_configs = {
+        'PRECTOT': {'precip': True},
+        'PS': {},
+        'T2M': {},
+        'LWGAB': {},
+        'SWGDN': {},
+        'QV2M': {},
+        'WIND10M': {'var_name': 'WIND'}
+    }
+    ds_out = limits.clip_forcing_variables(ds_out, var_configs)
     dt1 = dt1 + relativedelta(months=rank)
     file_6h = outdir_6hourly + '/' + \
         final_name_pfx + f'{dt1.year:04d}{dt1.month:02d}.nc'
@@ -253,7 +248,7 @@ def _print_reftime(fcst_init, ens_num):
         f"{fcst_init['hour']} cycle"
     return txt
 
-def _driver(rank):
+def _driver(rank, logger_task=None):
     """Main driver."""
     args = _read_cmd_args()
     fcst_init = {}
@@ -274,9 +269,13 @@ def _driver(rank):
     dt2 = dt1 + relativedelta(months=1)
     task_name = os.environ.get('SCRIPT_NAME')
     subtask = f'{dt1.year:04d}{dt1.month:02d}'
-    logger = TaskLogger(task_name,
-                        os.getcwd(),
-                        f'bcsd/process_cfsv2_forcing.py processing CFSv2 forcings for {subtask}')
+
+    if logger_task is None:
+        logger = TaskLogger(task_name,
+                            os.getcwd(),
+                            f'bcsd/process_cfsv2_forcing.py processing CFSv2 ens{ens_num:01d} {subtask}')
+    else:
+        logger = logger_task
 
     dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
     dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
@@ -351,12 +350,16 @@ if __name__ == "__main__":
     if SIZE==1:
         with open(sys.argv[5], 'r', encoding="utf-8") as _file:
             _config = yaml.safe_load(_file)
+        TASK_NAME = os.environ.get('SCRIPT_NAME')
+        LOGGER = TaskLogger(TASK_NAME,
+                            os.getcwd(),
+                            f'bcsd/bcsd_library/process_geosv3_forcing.py processing CFSv2 ens{sys.argv[2]}')
         loop = [0, _config["EXP"]["lead_months"]]
         if len(sys.argv) == 10:
             start_rank = int(sys.argv[9])
             loop = [start_rank, start_rank + 1]
 
         for _rank in range(loop[0], loop[1]):
-            _driver(_rank)
+            _driver(_rank, logger_task=LOGGER)
     else:
         _driver(RANK)

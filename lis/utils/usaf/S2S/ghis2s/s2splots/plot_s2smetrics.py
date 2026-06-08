@@ -109,7 +109,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
-        anom = get_anom(data_dir, var_name, metric, domain, [logger, subtask])
+        anom = get_anom(data_dir, var_name, metric, domain)
         median_anom = np.median(anom.anom.values, axis=0)
 
         if (var_name in {'AirT'}) and \

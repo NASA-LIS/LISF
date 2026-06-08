@@ -2492,23 +2492,23 @@ contains
        end do ! c
     end do ! r
 
-    ! Adjust the first-guess towards gridded AMSR2
+    ! Adjust the first-guess towards gridded PMW
     do r = 1, nr
        do c = 1, nc
 
           if (skip_grid_points(c,r)) cycle
 
-          if (ieee_is_nan(SNIP_arrays%amsr2_snowdepth(c,r))) cycle
+          if (ieee_is_nan(SNIP_arrays%pmw_snowdepth(c,r))) cycle
 
-          ! Get AMSR2 value
+          ! Get PMW value
           satdep = misanl
-          if (SNIP_arrays%amsr2_snowdepth(c,r) >= 0) then
-             satdep = SNIP_arrays%amsr2_snowdepth(c,r)
+          if (SNIP_arrays%pmw_snowdepth(c,r) >= 0) then
+             satdep = SNIP_arrays%pmw_snowdepth(c,r)
           end if
 
-          ! Handle AMSR2 detection problem with very shallow snow.  If
+          ! Handle PMW detection problem with very shallow snow.  If
           ! below minimum depth, preserve prior analysis if larger than
-          ! AMSR2.
+          ! PMW.
           if (satdep >= 0) then
              if (satdep .le. snip_settings%minsat) then
                 if (satdep > SNIP_arrays%olddep(c,r)) then

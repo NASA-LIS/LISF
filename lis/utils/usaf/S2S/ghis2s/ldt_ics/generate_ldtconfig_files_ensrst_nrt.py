@@ -223,7 +223,7 @@ if __name__ == "__main__":
     # update global params
     _INPUT_NUMFCSTMONS = CONFIG['EXP']['lead_months']
     _LSM_NAME = CONFIG['EXP']['lsm']
-    _ROUTING_NAME = CONFIG['EXP']['routing_name']
+    _ROUTING_NAME = CONFIG['EXP']['routing_model'].get('model')
     _NMME_MODELS = CONFIG['EXP']['NMME_models']
     _LDTCONFIG_LSM_TEMPLATE = f"{_TEMPLATE_DIR}/ldt.config_{_LSM_NAME}_nmme_TEMPLATE"
     _LDT_INPUT_FILE = './input/' + CONFIG['SETUP']['ldtinputfile']

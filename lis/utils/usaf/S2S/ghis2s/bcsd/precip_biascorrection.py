@@ -75,7 +75,7 @@ def main(config_file, fcst_syr, month_abbr, month_num, job_name,
 
     # Path for where observational files are located:
     forcedir = f"{projdir}/bcsd_fcst"
-    obs_clim_indir = f"{forcedir}/USAF-LIS7.3rc8_{resol}/raw/Climatology"
+    obs_clim_indir = f"{forcedir}/{config['BCSD']['source']['obs']}_{resol}/raw/Climatology"
 
     #  Calculate bias correction for different variables separately:
     obs_var = "PRECTOT"

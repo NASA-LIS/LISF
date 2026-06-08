@@ -473,4 +473,8 @@ def merge_files_xarray(
     ds_noahmp.close()
     ds_hymap2.close()
     ds_ldt.close()
-    merged_ds.close()
+    try:
+        merged_ds.close()
+    except RuntimeError as e:
+        logger.error(f"Closing {merge_file} failed !", subtask=subtask)
+        raise

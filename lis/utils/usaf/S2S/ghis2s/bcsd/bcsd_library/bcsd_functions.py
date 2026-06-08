@@ -7,14 +7,20 @@ import sys
 import math
 import numpy as np
 import xarray as xr
+from ghis2s.shared.utils import load_ncdata
 
 class VarLimits:
     '''
     This function adjusts minimum and maximum values of a variable to recorded max and minimum.
     Below limits are 6h based
     '''
+    def __init__ (self, enable_rounding=False, missing_value=-9999.):
+        self.precip_thres = self.clip_array(np.empty(1), 'PRECTOT', min_thres = True)
+        self.enable_rounding = enable_rounding
+        self.missing_value = missing_value
+
     def clip_array (self, data_array, var_name=None, min_val=None, max_val=None,
-                    missing=None, min_thres=None, precip=None):
+                    missing=None, min_thres=None, precip=None, round_decimals=None):
         ''' Below limits are 6h based'''
         min_limit={'PRECTOT': 1.e-7,
                   'PS': 30000.,
@@ -34,6 +40,15 @@ class VarLimits:
                   'WIND': 70.
         }
 
+        # Optimal rounding for each variable (balances precision vs file size)
+        round_precision = {
+            'PS': 1,        # ~10 Pa = 0.1 hPa
+            'T2M': 3,       # ~0.001 K
+            'LWGAB': 2,     # ~0.01 W/m²
+            'SWGDN': 2,     # ~0.01 W/m²
+            'QV2M': 8,      # ~1e-8 kg/kg
+        }
+
         if min_thres is not None:
             return min_limit.get('PRECTOT')
         if min_val is None:
@@ -41,7 +56,7 @@ class VarLimits:
         if max_val is None:
             max_val = max_limit.get(var_name)
         if missing is None:
-            missing = -9999.
+            missing = self.missing_value
 
         if precip is None:
             clipped_array = np.where(data_array == missing, data_array,
@@ -56,10 +71,38 @@ class VarLimits:
             data_array[mask_gt_max] = max_val
             clipped_array = data_array
 
+        # Apply rounding if specified
+        if self.enable_rounding and var_name in round_precision:
+            round_decimals = round_precision[var_name]
+
+        if round_decimals is not None:
+            # Only round non-missing values
+            mask_valid = clipped_array != missing
+            clipped_array = np.where(mask_valid,
+                                    np.round(clipped_array, round_decimals),
+                                    clipped_array)
+
         return clipped_array
 
-    def __init__ (self):
-        self.precip_thres = self.clip_array(np.empty(1), 'PRECTOT', min_thres = True)
+    def clip_forcing_variables(self, ds_out, var_configs):
+        """
+        Efficiently clip forcing variables using xarray operations.
+        """
+        # Clip each variable
+        for var_name, kwargs in var_configs.items():
+            if var_name in ds_out:
+                limit_name = kwargs.get('var_name', var_name)
+                clipped = xr.apply_ufunc(
+                    self.clip_array,
+                    ds_out[var_name],
+                    kwargs={'var_name': limit_name, **kwargs},
+                    dask='parallelized',
+                    output_dtypes=[ds_out[var_name].dtype]
+                )
+                # Compute immediately and replace
+                ds_out[var_name] = clipped
+
+        return ds_out
 
 def calc_stats(data, tiny): #,int n,float *mean,float *sd,float *skew)
     """ calculates statistics """
@@ -156,6 +199,17 @@ def lookup(query, vec1, vec2, dim, par, lu_type, mean, sd_val, skew, tiny):
                     a_val = (vec1[ndx+1]-query)/(vec1[ndx+1]-vec1[ndx])
                 val = a_val*vec2[ndx]+(1-a_val)*vec2[ndx+1]
                 break
+        else:
+            # Loop completed without break - no matching bracket found
+            print(f"WARNING: Interpolation bracket not found!")
+            print(f"  query={query}, vec1[0]={vec1[0]}, vec1[{dim-1}]={vec1[dim-1]}")
+            print(f"  vec1 contains NaN: {np.any(np.isnan(vec1))}")
+            # Fallback to nearest neighbor
+            diffs = np.abs(vec1 - query)
+            closest_idx = np.argmin(diffs)
+            val = vec2[closest_idx]
+            print(f"  Fallback: using vec2[{closest_idx}]={val}")
+
     if par=='PRCP':
         try:
             val = max(val, 0)
@@ -394,3 +448,264 @@ def apply_regridding_with_mask(data, regridder, source_land_mask,
                 result[var_name] = result[var_name].where(target_mask)
 
     return result
+
+def add_fcorr_vars(ds):
+    """
+    Add LHOUR, DOY and LAT to input xarray dataset.
+    """
+    import pandas as pd
+    def get_utc_hour(time_array):
+        """Extract UTC hour from datetime64 array"""
+        hours = np.zeros(len(time_array), dtype=np.float32)
+        for i, t in enumerate(time_array):
+            t_pd = pd.Timestamp(t)
+            hours[i] = t_pd.hour + t_pd.minute / 60.0 + t_pd.second / 3600.0
+        return hours
+
+    def get_day_of_year(time_array):
+        """Extract day of year from datetime64 array"""
+        doy = np.zeros(len(time_array), dtype=np.int16)
+        for i, t in enumerate(time_array):
+            t_pd = pd.Timestamp(t)
+            doy[i] = t_pd.dayofyear
+        return doy
+
+    # Calculate UTC hours for all time steps
+    utc_hours = xr.DataArray(
+        get_utc_hour(ds.time.values),
+        coords={'time': ds.time},
+        dims=['time']
+    )
+
+    # Calculate solar offset from longitude
+    solar_offset = ds.lon / 15.0
+
+    # utc_hours: (time,) + solar_offset: (lon,) -> (time, lon)
+    # Then broadcast to (time, lat, lon)
+    lhour = utc_hours + solar_offset
+
+    # Wrap to 0-24 range
+    lhour = xr.where(lhour < 0, lhour + 24, lhour)
+    lhour = xr.where(lhour >= 24, lhour - 24, lhour)
+    lhour = lhour.expand_dims({'lat': ds.lat})
+    lhour = lhour.transpose('time', 'lat', 'lon')
+
+    lhour.attrs = {
+        'long_name': 'Local Solar Hour',
+        'units': 'hours',
+        'description': 'Local solar hour (0-24) based on longitude, independent of political time zones',
+        'valid_range': [0, 24]
+    }
+    ds['LHOUR'] = lhour
+
+    # Add Day of Year (DOY)
+    doy = xr.DataArray(
+        get_day_of_year(ds.time.values),
+        coords={'time': ds.time},
+        dims=['time']
+    )
+    doy = doy.expand_dims({'lat': ds.lat, 'lon': ds.lon})
+    doy = doy.transpose('time', 'lat', 'lon')
+
+    doy.attrs = {
+        'long_name': 'Day of Year',
+        'units': 'day',
+        'description': 'Day of year (1-366)',
+        'valid_range': [1, 366]
+    }
+    ds['DOY'] = doy
+
+    # Add 2D latitude array for vectorized operations
+    lat_2d = xr.DataArray(
+        np.broadcast_to(ds.lat.values[:, np.newaxis], (len(ds.lat), len(ds.lon))),
+        coords={'lat': ds.lat, 'lon': ds.lon},
+        dims=['lat', 'lon']
+    )
+
+    lat_2d.attrs = {
+        'long_name': 'Latitude (2D)',
+        'units': 'degrees_north',
+        'description': '2D latitude array for vectorized calculations'
+    }
+    ds['LAT_2D'] = lat_2d
+
+    return ds
+
+def apply_fcorr(mask, slope, aspect, elevdiff, lat,
+                force_tmp, force_hum, force_lwd, force_prs,
+                swd, lhour, doy, force_corr=None):
+    '''
+    Apply forcing corrections (lapse rate and aspect).
+    Parameters:
+    -----------
+    mask : float - land mask value [point]
+    slope : float - terrain slope (degrees) [point]
+    aspect : float - terrain aspect (degrees) [point]
+    elevdiff : float - elevation difference (m) [point]
+    lat : float - latitude (degrees) [point]
+    force_tmp : array (time,) - air temperature (K) [n_times]
+    force_hum : array (time,) - specific humidity (kg/kg) [n_times]
+    force_lwd : array (time,) - longwave radiation (W/m2) [n_times]
+    force_prs : array (time,) - surface pressure (Pa) [n_times]
+    swd : array (time,) - shortwave radiation (W/m2)[n_times] 
+    lhour : array (time,) - local solar hour (0-24) [n_times]
+    doy : array (time,) - day of year (1-366) [n_times]
+    force_corr : dict - correction flags {'lapserate': bool, 'aspect': bool}
+    
+    Returns:
+    --------
+    corrected_force : array (n_outvar, time) - corrected forcing variables
+    '''
+    # constants
+    bb = 2016
+    tdry = 287.
+    lis_g = 9.80616
+    lis_tfrz = 273.16
+    lapserate = -0.0065
+    deg2rad = np.pi / 180.0
+
+    def correct_swddirect(aslope, aspect, saz, solzen, swddirect):
+        delaz = abs(aspect - saz) * deg2rad
+        sdircorr = np.sin(solzen) * np.sin(aslope) * np.cos(delaz)
+        sdircorr = np.where(solzen <= 85 * deg2rad, sdircorr / np.cos(solzen), sdircorr / np.cos(85))
+        swddirect = swddirect * (np.cos(aslope) + sdircorr)
+        swddirect = np.where(swddirect < 0, 0, swddirect)
+        return swddirect
+
+    n_times = len(force_tmp)
+    n_outvar = 0
+    var_no = 0
+
+    if force_corr['lapserate']:
+        n_outvar += 4
+    if force_corr['aspect']:
+        n_outvar += 1
+
+    corrected_force = np.ones((n_outvar, n_times), dtype=np.float32)*-9999.
+    if mask > 0:
+        # (1) lapse rate correction
+        if force_corr['lapserate']:
+            # Temperature
+            tcforce = force_tmp + (lapserate*elevdiff)
+
+            # Pressure
+            tbar = (force_tmp + tcforce)/2
+            pcforce = force_prs / (np.exp((lis_g * elevdiff) / (tdry * tbar)))
+
+            # Humidity
+            force_hum = np.where(force_hum == 0, 1e-08, force_hum)
+            ee = (force_hum * force_prs) / 0.622
+            esat = 611.2 * np.exp(\
+                                  (17.67 * (force_tmp - lis_tfrz)) / ((force_tmp - lis_tfrz) + 243.5)
+                                  )
+            qsat = (0.622 * esat) / (force_prs - (0.378 * esat))
+            rh = (force_hum / qsat) * 100.0
+            fesat = 611.2 * np.exp(\
+                                   (17.67 * (tcforce - lis_tfrz))/((tcforce - lis_tfrz) + 243.5)
+                                   )
+            fqsat = (0.622 * fesat) / (pcforce - (0.378 * fesat))
+            hcforce = (rh * fqsat) / 100.0
+
+            # Longwave Radiation
+            fe = (hcforce * pcforce) / 0.622
+            mee = ee / 100.0
+            mfe = fe / 100.0
+
+            # Correct for negative vapor pressure at very low temperatures at high latitudes
+            mee = np.where(mee < 0, 1e-08, mee)
+            mfe = np.where(mfe < 0, 1e-08, mfe)
+            emiss  = 1.08 * (1 - np.exp(-mee**(force_tmp / bb)))
+            femiss = 1.08 * (1 - np.exp(-mfe**(tcforce / bb)))
+            ratio = (femiss * (tcforce**4))/(emiss * (force_tmp**4))
+            lcforce = force_lwd * ratio
+
+            # lapse rate corrected forcings
+            corrected_force[var_no + 0,:] = np.round(tcforce,2)
+            corrected_force[var_no + 1,:] = np.round(hcforce,6)
+            corrected_force[var_no + 2,:] = np.round(lcforce,1)
+            corrected_force[var_no + 3,:] = np.round(pcforce,0)
+            var_no = 4
+
+        # (1) Aspect correction
+        if force_corr['aspect']:
+            lat_r = lat * deg2rad
+            # Generate cosz and decl
+            gamma = 2 * np.pi * (doy - 1) / 365.
+            decl = (
+                0.006918
+                - 0.399912 * np.cos(gamma)
+                + 0.070257 * np.sin(gamma)
+                - 0.006758 * np.cos(2 * gamma)
+                + 0.000907 * np.sin(2 * gamma)
+                - 0.002697 * np.cos(3 * gamma)
+                + 0.00148 * np.sin(3 * gamma)
+            )
+
+            # Solar hour angle from local solar hour
+            # lhour is already the local solar hour (0-24)
+            # Solar noon is at lhour=12, so hour angle is:
+            hour_angle_deg = (lhour - 12.0) * 15.0  # degrees from solar noon
+            omega = hour_angle_deg * deg2rad
+
+            # Cosine of solar zenith angle
+            cosz = np.sin(decl) * np.sin(lat_r) + np.cos(decl) * np.cos(lat_r) * np.cos(omega)
+            cosz = np.where(cosz < 0, 0, cosz)
+            cosz = np.where(cosz > 1, 1, cosz)
+
+            # Cloud fraction estimation
+            sunang = np.where(cosz < 0.01764, 0.01764, cosz)
+            cloud  = (1160.0 * sunang - swd) / (963.0 * sunang)
+            cloud  = np.where(cloud < 0, 0, cloud)
+            cloud  = np.where(cloud > 1, 1, cloud)
+
+            difrat = np.where(abs(sunang - 0.0223) > 0.0001, 0.0604 / (sunang - 0.0223) + 0.0683, 1)
+            difrat = np.where(difrat < 0, 0, difrat)
+            difrat = np.where(difrat > 1, 1, difrat)
+            difrat = difrat + (1.0 - difrat) * cloud
+
+            # Visible/NIR split
+            vnrat = (580.0 - cloud * 464.0) / ((580.0 - cloud * 499.0) + (580.0 - cloud * 464.0))
+            swddirect  = swd * ((1.0 - difrat) * vnrat + (1.0 - difrat)*(1.0 - vnrat))
+            swddiffuse = swd * (difrat * vnrat + difrat * (1.0 - vnrat))
+
+            # Using the simplified approach since we have local solar hour
+            cosphi = cosz
+            phi = np.arccos(cosphi)
+
+            # Avoid division by zero
+            costheta = np.where(np.cos(lat_r) * np.sin(phi) == 0,
+                                np.where(np.sin(lat_r) * cosphi - np.sin(decl) > 0, 1, -1),
+                                (np.sin(lat_r) * cosphi - np.sin(decl)) / (np.cos(lat_r) * np.sin(phi))
+                                )
+
+            # Avoid floating point errors
+            costheta = np.where(np.abs(costheta) > 1,
+                                np.where(costheta > 0, 1, -1),
+                                costheta)
+
+            # Calculate solar azimuth based on hemisphere and time of day
+            # omega is the hour angle: negative before solar noon, positive after
+            saz = np.where(lat_r >= 0,  # Northern hemisphere
+                           np.where(omega < 0,  # Morning (before solar noon)
+                                    180.0 - np.arccos(costheta) / deg2rad,
+                                    180.0 + np.arccos(costheta) / deg2rad),
+                           np.where(omega < 0,  # Southern hemisphere, morning
+                                    np.arccos(costheta) / deg2rad,
+                                    360.0 - np.arccos(costheta) / deg2rad)
+                           )
+
+            slope_rad = slope * deg2rad
+            aslope = np.clip(slope_rad, 0, 1.57)
+            solzen = np.arccos(cosz)
+
+            swddirect = np.where((swd > 0) & (aslope > 0) & (aslope < 90 * deg2rad),
+                                 correct_swddirect(aslope, aspect, saz, solzen, swddirect),
+                                 swddirect)
+
+            corrected_force[var_no,:] = np.round(swddirect,1) + np.round(swddiffuse,1)
+
+    return corrected_force
+
+
+
+

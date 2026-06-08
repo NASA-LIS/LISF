@@ -263,8 +263,9 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
                                 combine='nested',
                                 compat='override',
                                 coords='minimal',
-                                parallel=True,
+                                parallel=False,
                                 data_vars=time_varying_vars,
+                                dask_lazy=False,
                                 decode_cf=False))
 
     # Process accumulation variables (sum over time)
@@ -345,7 +346,20 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     all_vars = list(monthly_ds.coords.keys()) + list(monthly_ds.data_vars.keys())
 
     for var in all_vars:
-        if var in ['time', 'lat', 'lon', 'ensemble', 'soil_layer']:
+        if var == 'time':
+            time_units = monthly_ds['time'].attrs.get(
+                'units',
+                f"minutes since {startdate.strftime('%Y-%m-%d')} 00:00:00"
+            )
+            monthly_ds['time'].attrs['units'] = time_units
+            monthly_ds['time'].attrs['calendar'] = monthly_ds['time'].attrs.get(
+                'calendar', 'standard')
+            if 'time_bnds' in monthly_ds:
+                monthly_ds['time_bnds'].attrs['units'] = time_units
+                monthly_ds['time_bnds'].attrs['calendar'] = 'standard'
+            encoding['time'] = {'_FillValue': None}
+            continue
+        elif var in ['lat', 'lon', 'ensemble', 'soil_layer']:
             # Skip coordinate variables - let xarray handle them automatically
             continue
         elif var == 'time_bnds':
@@ -367,7 +381,14 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
     logger.info(f"Writing: {outfile}", subtask=subtask)
     write_ncfile(monthly_ds, outfile, encoding, [logger, subtask])
 
-    ds_all.close()
+    try:
+        ds_all.close()
+    except RuntimeError as e:
+        # Ignore "NetCDF: Not a valid ID" errors on close, as it means the 
+        # file descriptor was already cleaned up by xarray/Dask.
+        if "Not a valid ID" not in str(e):
+            logger.error("Closing daily files failed", subtask=subtask)
+            raise
     monthly_ds.close()
 
     return outfile

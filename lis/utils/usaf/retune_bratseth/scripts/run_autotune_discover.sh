@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --job-name=autotune
-#SBATCH --time=0:30:00
+#SBATCH --time=1:00:00
 #SBATCH --account s1189
 #SBATCH --output autotune.slurm.out
 #SBATCH --ntasks=5 --ntasks-per-node=1 --constraint="[mil]"
@@ -47,9 +47,9 @@ NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(imerg)
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf76_foc/NRT/lis/noah39_autotune/scripts
-CFGDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf76_foc/NRT/lis/noah39_autotune/cfgs
-BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf76_foc/NRT/lis/noah39_autotune/bin
+SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf78_test_cases/nrt_lis_autotune_noahmp401/scripts
+CFGDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf78_test_cases/nrt_lis_autotune_noahmp401/cfgs
+BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf78_test_cases/nrt_lis_autotune_noahmp401/src
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then

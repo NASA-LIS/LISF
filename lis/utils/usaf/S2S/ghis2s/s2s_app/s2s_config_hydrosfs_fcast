@@ -1,0 +1,37 @@
+---
+
+#######################################################################
+#    System Settings and Architecture Specific Environment Variables
+#######################################################################
+
+SETUP:
+  E2ESDIR: /discover/nobackup/projects/ghilis/smahanam/SERVIR/SERVIR_forcecorr/
+  LISFDIR: /discover/nobackup/projects/usaf_lis/smahanam/S2S/LISF-1/
+  LISFMOD: lisf_7.5_intel_2023.2.1_s2s
+  METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
+  supplementarydir: /discover/nobackup/projects/servir-s2s/smahanam/supplementary_files/
+  ldtinputfile: lis_input.global_5km_hydroscs_mask_topo_merit1km_wclimppt.nc
+  SPCODE:  s1189
+  CONSTRAINT: mil
+  DATATYPE: forecast
+  HYDROSFSDIR: /discover/nobackup/projects/servir-s2s/smahanam/HydroSFS/GEOSv3_FORECAST/
+ 
+#######################################################################
+#                       Experiment Configuration
+#######################################################################
+
+EXP:
+  lead_months: 3 
+
+#######################################################################
+#              Bias Correction and Spatial Downscaling (BCSD)
+#######################################################################
+
+BCSD:
+  fcst_download_dir: /css/servir-s2s/HydroSFS/shared_data/GEOSv3/
+  clim_start_year: 2002
+  clim_end_year: 2023
+  nof_raw_ens: 10
+  source: {metforce: GEOSv3, precip: null, obs: HydroSCS}
+  force_corr: {lapserate: true, aspect: true}  
+

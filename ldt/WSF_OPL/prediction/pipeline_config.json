@@ -1,0 +1,27 @@
+{
+  "_comment": "Pipeline configuration for wsf_opl.py Step 2 — WSF-M (Weather Satellite Follow-on) ML soil moisture prediction.",
+
+  "step2_prediction": {
+    "_comment_script": "Absolute path to predict_sm_stratified.py (StratifiedSoilMoisturePredictor). wsf_opl.py inserts its parent directory into sys.path at runtime. See ldt/WSF_OPL/prediction/predict_sm_stratified.py in the LISF repo.",
+    "predict_script": "/path/to/predict_sm_stratified.py",
+
+    "_comment_model_dir": "Directory containing the 30 per-cluster Random Forest models (rf_cluster_00.pkl through rf_cluster_29.pkl) plus one global fallback RF (rf_global.pkl) used when a per-cluster model is unavailable. Each RF predicts volumetric soil moisture (m3/m3) from 9 WSF-M TB channels: TB_10V, TB_10H, TB_18V, TB_18H, TB_23V, TB_36V, TB_36H, TB_89V, TB_89H. Also expects stratified_config.json (K, feature list, training metadata) in this directory.",
+    "model_dir": "/path/to/cluster_models",
+
+    "_comment_cluster_dir": "Directory containing the pre-computed cluster assignment map (environmental_clusters_k30.nc, 2560x1920) and the GMM model (gmm_k30.pkl). The GMM (Gaussian Mixture Model) computes per-pixel posterior probabilities over the 30 clusters based on encoded environmental features; the top-K cluster predictions are then blended using those probabilities as weights — this is soft blending, which removes sharp boundary artifacts compared to hard (nearest-cluster) assignment. Also contains clustering_model_k30.pkl (KMeans + encoders needed to re-encode env layers at startup).",
+    "cluster_dir": "/path/to/stratified_rf",
+
+    "_comment_env_paths": "List of paths to the environmental parameter files used for cluster assignment in soft blending mode. Three categories of features are required: (1) land cover — IGBP classes encoded as one-hot vectors; (2) Koppen climate group — 30 climate classes aggregated to 10 groups and one-hot encoded; (3) soil texture fractions — clay, sand, and silt percentages (standardized). These features are not used by the RF models themselves — they are only used to compute GMM cluster membership weights.",
+    "env_paths": [
+      "/path/to/landcover_file",
+      "/path/to/koppen_climate_file",
+      "/path/to/soil_texture_file"
+    ],
+
+    "_comment_top_k": "Number of clusters to blend per pixel in soft mode. The top-K clusters by GMM posterior weight are selected; their RF predictions are weighted-averaged using renormalized GMM probabilities. Default is 3. Set to 1 for hard assignment (equivalent to --hard flag in predict_sm_stratified.py).",
+    "top_k": "3",
+
+    "_comment_sm_output": "Directory where hourly SM output files (ARFS_SM_WSFM_<YYYYMMDD>_t<HH>.nc) are written. This path is also referenced as WSF soil moisture data directory in both the LDT WSF CDF config and the LIS WSF DA config.",
+    "sm_output_dir": "/path/to/WSF/hourly_sm"
+  }
+}

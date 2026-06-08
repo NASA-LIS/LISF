@@ -20,6 +20,8 @@ ENV_DEFINITION = {
     "SUBMIT_JOB": (bool, False),
     "E2ESDIR": (str, "/discover/nobackup/projects/ghilis/smahanam/ghi-coupling/"),
     "PYTHONPATH": (str, None),
+    "PF_SLURM": (str, "slurm-ghi"),
+    "PF_LHOST": (str, "localhost-ghi"),
 }
 
 # NOTE 1: Allowed S2S_STEP values are: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS
@@ -95,7 +97,7 @@ class Ghis2sProgram():
                     sys.path.insert(0, path)
 
         try:
-            from ghis2s.s2s_app.s2s_run import S2Srun
+            from ghis2s.main.experiment_setup import S2Srun
             return S2Srun
         except ImportError as err:
             logging.error("Failed to import ghis2s: %s", err)
@@ -215,6 +217,9 @@ class Ghis2sProgram():
 
     def _execute_bcsd_chain(self, s2s, one_step):
         """Execute BCSD and subsequent steps if not one_step."""
+        s2s.nmme_file_checker()
+        s2s.clim_files_checker()
+        s2s.cfsv2_file_checker()
         s2s.bcsd()
         if not one_step:
             s2s.lis_fcst()
@@ -286,6 +291,8 @@ class Ghis2sProgram():
         filedata = filedata.replace('--error ', '--error=')
         filedata = filedata.replace('--exclusive', '--exclusive=')
         filedata = filedata.replace('-N ', '--nodes=')
+        filedata = filedata.replace('PF_SLURM', self.env["PF_SLURM"])
+        filedata = filedata.replace('PF_LHOST', self.env["PF_LHOST"])
 
         with config_file.open('w', encoding="utf-8") as file:
             file.write(filedata)

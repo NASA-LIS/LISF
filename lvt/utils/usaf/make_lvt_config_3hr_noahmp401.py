@@ -20,8 +20,10 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.noahmp401"
 
-_STARTDT = datetime.datetime(2024, 9, 26, 0)
-_ENDDT = datetime.datetime(2024, 9, 26, 12)
+#_STARTDT = datetime.datetime(2025, 1, 20, 12)
+#_ENDDT = datetime.datetime(2025, 1, 21, 0)
+_STARTDT = datetime.datetime(2025, 1, 21, 0)
+_ENDDT = datetime.datetime(2025, 1, 21, 12)
 
 _OUTPUT = "grib2"  # For 557 ops
 #_OUTPUT = "netcdf" # For debugging
@@ -50,6 +52,8 @@ _VAR_ATTRIBUTES = {
         "LWdown_f    1  1  W/m2   -  0  1 LWdown_f    1  1  W/m2   -  0  1 ",
     "LWdown_f_tavg":
         "LWdown_f    1  1  W/m2   -  1  1 LWdown_f    1  1  W/m2   -  1  1 ",
+    "PotEvap_tavg":
+        "PotEvap     1  1  W/m2   -  1  1 PotEvap     1  1  W/m2   -  1  1",
     "Psurf_f_inst":
         "Psurf_f     1  1  Pa     -  0  1 Psurf_f     1  1  Pa     -  0  1",
     "Psurf_f_tavg":
@@ -117,20 +121,20 @@ _VAR_ATTRIBUTES_SPECIAL = {
 # Smooth variables that are perturbed, derived from perturbed variables,
 # or are LSM outputs that are affected by perturbed variables via physics.
 _SMOOTH_VARS = ["AvgSurfT_inst", "AvgSurfT_tavg",
-               "Albedo_tavg", "CanopInt_inst",
-               "Evap_tavg", "LWdown_f_inst",
-               "LWdown_f_tavg",
-               "Qg_tavg",
-               "Qh_tavg", "Qle_tavg",
-               "Qs_acc", "Qsb_acc", "RelSMC_inst",
-               "SmLiqFrac_inst", "SnowDepth_inst",
-               "Snowcover_inst", "SoilMoist_inst",
-               "SoilMoist_tavg", "SoilTemp_inst",
-               "SoilTemp_tavg", "SWdown_f_inst",
-               "SWdown_f_tavg", "SWE_inst",
-               "Tair_f_inst", "Tair_f_max",
-               "Tair_f_tavg", "TotalPrecip_acc",
-               "Tair_f_min", "RHMin_inst"]
+                "Albedo_tavg", "CanopInt_inst",
+                "Evap_tavg", "LWdown_f_inst",
+                "LWdown_f_tavg", "PotEvap_tavg",
+                "Qg_tavg",
+                "Qh_tavg", "Qle_tavg",
+                "Qs_acc", "Qsb_acc", "RelSMC_inst",
+                "SmLiqFrac_inst", "SnowDepth_inst",
+                "Snowcover_inst", "SoilMoist_inst",
+                "SoilMoist_tavg", "SoilTemp_inst",
+                "SoilTemp_tavg", "SWdown_f_inst",
+                "SWdown_f_tavg", "SWE_inst",
+                "Tair_f_inst", "Tair_f_max",
+                "Tair_f_tavg", "TotalPrecip_acc",
+                "Tair_f_min", "RHMin_inst"]
 
 def _main():
     """Main driver"""

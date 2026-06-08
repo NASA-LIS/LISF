@@ -4,8 +4,8 @@
 export CONFIG_FILE="s2s_config_global_fcast"
 export FORECAST_YEAR=2025
 export FORECAST_MONTH=3
-#export USER_EMAIL="kristi.r.arsenault@nasa.gov"
-export USER_EMAIL="sarith.p.mahanama@nasa.gov"
+export USER_EMAIL="kristi.r.arsenault@nasa.gov"
+#export USER_EMAIL="sarith.p.mahanama@nasa.gov"
 
 export E2ESDIR="/discover/nobackup/projects/ghilis/smahanam/Cylc_7.7/"
 export GHIREP="/discover/nobackup/projects/ghilis/S2S/GHI-repos/ghi-apps/bin/"
@@ -22,17 +22,15 @@ export S2S_STEP="BCSD"
 export ONE_STEP=true
 export SUBMIT_JOB=false
 
-USE_CYLC_ENV=0
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
     unset LD_LIBRARY_PATH
     source /etc/profile.d/modules.sh
     module purge
+    USE_CYLC_ENV=0
     module use -a "${LISFDIR}/env/discover/"
     module --ignore-cache load $LISFMOD
 else
-    # non-Discover: LISFMOD is in ${supplementary}/env/
-    module use -a $SUPDIR/env/
-    module load $LISFMOD
+    module load afw-python/3.11-202511
 fi
 
 # Run S2S Python program
@@ -44,15 +42,13 @@ python ghis2s_program.py
 [ "$SUBMIT_JOB" = "true" ] && exit
 
 # Run Cylc
-export USE_CYLC_ENV=1
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
     module purge
+    export USE_CYLC_ENV=1
     module use -a "${LISFDIR}/env/discover/"
     module --ignore-cache load $LISFMOD
 else
-    # non-Discover: LISFMOD is in ${supplementary}/env/
-    module use -a $SUPDIR/env/
-    module load $LISFMOD
+    module load cylc/8.5.0
 fi
 
 if [ $FORECAST_MONTH -lt 10 ]; then
@@ -77,9 +73,13 @@ echo "==========================================================================
 echo
 echo "First load Cylc module"
 echo
-echo "export USE_CYLC_ENV=1"
-echo "module use -a ${LISFDIR}/env/discover/"
-echo "module --ignore-cache load $LISFMOD"
+if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    echo "export USE_CYLC_ENV=1"
+    echo "module use -a ${LISFDIR}/env/discover/"
+    echo "module --ignore-cache load $LISFMOD"
+else
+    echo "module load cylc/8.5.0"
+fi
 echo
 echo "Run ${WORKFLOW_NAME}: cylc play ${WORKFLOW_NAME}"
 echo "Monitor ${WORKFLOW_NAME}: cylc tui ${WORKFLOW_NAME}"

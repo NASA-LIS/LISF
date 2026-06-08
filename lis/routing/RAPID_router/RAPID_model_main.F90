@@ -278,11 +278,12 @@ call VecScale(ZV_Qlat,1/ZS_TauR,ierr)         !Qlat=Qlat/TauR
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !Read/set upstream forcing
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if (BS_opt_for .and. IS_for_bas>0                                              &
-                   .and. mod((JS_M-1)*IS_RpM+JS_RpM,IS_RpF)==1) then
+if (BS_opt_for) then
+   if (IS_for_bas>0 .and. mod((JS_M-1)*IS_RpM+JS_RpM,IS_RpF)==1) then
 
-call rapid_read_Qfor_file
+      call rapid_read_Qfor_file
 
+   end if
 end if
 
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -297,11 +298,12 @@ end if
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !Read/set human induced flows
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if (BS_opt_hum .and. IS_hum_bas>0                                              &
-                   .and. mod((JS_M-1)*IS_RpM+JS_RpM,IS_RpH)==1) then
+if (BS_opt_hum) then
+   if (IS_hum_bas>0 .and. mod((JS_M-1)*IS_RpM+JS_RpM,IS_RpH)==1) then
 
-call rapid_read_Qhum_file
+      call rapid_read_Qhum_file
 
+   end if
 end if
 
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

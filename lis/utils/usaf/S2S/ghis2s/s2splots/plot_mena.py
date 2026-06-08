@@ -65,7 +65,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
 
     # READ ANOMALIES
     logger.info(f"Plotting {var_name} SANOM", subtask=region)
-    anom_crop = get_anom(data_dir, var_name, metric, boundary, [logger, region])
+    anom_crop = get_anom(data_dir, var_name, metric, boundary)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
     plot_arr = median_anom[lead_month, ]
@@ -158,7 +158,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
-        anom_crop = get_anom(data_dir, var_name, metric, domain, [logger, region])
+        anom_crop = get_anom(data_dir, var_name, metric, domain)
         median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
 
         if (var_name in {'AirT', 'Air-T', 'Air_T'}) and \

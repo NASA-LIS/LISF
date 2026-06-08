@@ -1,0 +1,32 @@
+{
+    "_comment": "WSF Pipeline Configuration — edit paths before running",
+
+    "executables": {
+        "ldt":    "./LDT",
+        "lis":    "./LIS",
+        "mpirun": "mpirun"
+    },
+
+    "step1_wsf_opl": {
+        "ldt_running_mode":    "OPL WSF brightness temperature resampling",
+        "ldt_config_template": "./ldt.config.global.noahmp401.7.sm",
+        "v522_sdr_base":       "./wsf_sdr_data/v5.2.2/res_sdr_01",
+        "raw_sdr_base":        "./wsf_sdr_data",
+        "resampled_base":      "./output_resampled"
+    },
+
+    "step2_prediction": {
+        "predict_script": "./ldt/WSF_OPL/prediction/predict_sm_stratified.py",
+        "model_dir":      "./models/cluster_models",
+        "cluster_dir":    "./models",
+        "sm_output_dir":  "./output_wsf_sm",
+        "top_k":          3,
+        "env_paths": {
+            "land_cover": "./static_data/LC/lc_arfs.nc",
+            "climate":    "./static_data/LC/clm_usaf.nc",
+            "clay":       "./static_data/soil/sg_clay_usaf.nc",
+            "sand":       "./static_data/soil/sg_sand_usaf.nc",
+            "silt":       "./static_data/soil/sg_silt_usaf.nc"
+        }
+    }
+}
