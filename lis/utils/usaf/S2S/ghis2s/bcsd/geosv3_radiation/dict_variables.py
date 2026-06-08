@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.8
+#
+# Copyright (c) 2026 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 #pylint: disable=invalid-name
 #pylint: disable=consider-iterating-dictionary
 """ Centralized functions to get model variable names used in the SERVIR-S2S BCSD project

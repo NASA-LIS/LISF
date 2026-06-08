@@ -1,0 +1,36 @@
+Component name: SnowModel and MicroMet version April-2021
+
+Contributing organization/individuals: Cooperative Institute for Research in the Atmosphere (CIRA), Colorado State University (CSU)
+
+POC: Glen E. Liston, Ph.D.
+     Cooperative Institute for Research in the Atmosphere (CIRA)
+     Colorado State University
+     Fort Collins, CO 80523-1375
+
+     Email: glen.liston@colostate.edu
+     Voice: (970)491-8220; FAX: (970)491-8241
+
+
+From proposal:
+  
+Data Management and Open Source Code Plan
+
+“The model source codes, documentation, configuration and analysis tools developed as part of this project will be made available to the community through github (www.github.com), a webbased source code repository. The code necessary to embed SnowModel into NASA-LIS will be distributed as part of NASA-LIS and ongoing SnowModel development will be performed on the same code base that will be used in LIS under a compatible open source license. The LIS source code is available as NASA Open Source software at the LIS Release web page https://lis.gsfc.nasa.gov/releases and github https://github.com/NASA-LIS/LISF. Model parameter and meteorological forcing data sets necessary to configure SnowModel in LIS will be provided with existing LIS input data sets and data readers. This will include the model configuration files and parameter settings for each of the SnowEx domains and the continental scale SEUP domain. Model outputs will be made available in summary form (temporally and/or spatially aggregated), because of the large anticipated data volume, raw data will be archived on NASA’s storage systems so that access can be provided as needed.”
+
+Relevant files:
+
+lis/surfacemodels/land/subLSM/snowmodel/physics/dataassim_user.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/enbal_code.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/micromet_code.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/outputs_user.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/preprocess_code.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/readparam_code.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/snowmodel_inc.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/snowmodel_vars.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/snowpack_code.f90
+lis/surfacemodels/land/subLSM/snowmodel/physics/snowtran_code.f90
+lis/surfacemodels/land/subLSM/snowmodel/micromet_module.F90 (portions thereof: micromet_relhum, micromet_snowfall, micromet_wind)
+lis/core/LIS_microMetCorrection.F90 (portions thereof)
+
+
+For newer versions of SnowModel and MicroMet, please contact Glen Liston.
