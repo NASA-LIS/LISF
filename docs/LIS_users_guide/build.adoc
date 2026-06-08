@@ -24,7 +24,33 @@ Go to the _$WORKING_ directory.  This directory contains two scripts for buildin
 
 ==== Step 3
 
-Set the LIS_ARCH environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
+Set the appropriate LIS environment variables.  These are used to control the compilation of LIS and to specify the locations of the required and optional libraries.
+
+|====
+| Variable        | Description                      | Usage
+
+| `LIS_ARCH`      | Architecture                     | required
+| `LIS_FC`        | Fortran 90 compiler              | required
+| `LIS_CC`        | C compiler                       | required
+| `LIS_MODESMF`   | path to ESMF module files        | required
+| `LIS_LIBESMF`   | path to ESMF library files       | required
+| `LIS_OPENJPEG`  | path to openJPEG library         | required
+| `LIS_ECCODES`   | path to ecCodes library          | required
+| `LIS_NETCDF`    | path to NetCDF library           | required
+| `LIS_HDF4`      | path to HDF4 library             | optional (required to use HDFEOS2)
+| `LIS_HDF5`      | path to HDF5 library             | optional
+| `LIS_HDFEOS`    | path to HDFEOS2 library          | optional
+| `LIS_MINPACK`   | path to MINPACK library          | optional
+| `LIS_CRTM`      | path to CRTM library             | optional
+| `LIS_CRTM_PROF` | path to LIS-CRTM Profile library | optional
+| `LIS_CMEM`      | path to LIS-CMEM library         | optional
+| `LIS_LAPACK`    | path to LAPACK library           | optional
+| `LIS_PETSC`     | path to PETSc library            | optional
+| `LIS_JPEG`      | path to JPEG library             | optional (use system libjpeg by default)
+| `LIS_RPC`       | path to RPC library              | optional (use system RPC library by default)
+|====
+
+Set the `LIS_ARCH` environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
 
 .For a Linux system with the Intel Fortran compiler
 ....
@@ -66,7 +92,16 @@ Set the LIS_ARCH environment variable based on the system you are using.  The fo
 //% export LIS_ARCH=linux_lf95
 //....
 
-It is suggested that you set this environment variable in a modulefile footnote:modulefile[See the "`Creating a Custom Modulefile`" document found at {nasalisfpages}] to load or in an environment script to source before compiling and/or running LIS.
+//{cpp} is C++
+Note that the `LIS_CC` variable must be set to a C compiler, not a {cpp} compiler.  A {cpp} compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.
+
+You may encounter errors either when trying to compile LIS or when trying to run LIS because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your `LD_LIBRARY_PATH` environment variable.  For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):
+
+....
+% export LD_LIBRARY_PATH=$LIS_HDF5/lib:$LIS_LIBESMF:$LIS_NETCDF/lib:${LIS_ECCODES}/lib:$LD_LIBRARY_PATH
+....
+
+It is suggested that you set these environment variables in a modulefile footnote:modulefile[See the "`Creating a Custom Modulefile`" document found at {nasalisfpages}] to load or in an environment script to source before compiling and/or running LIS.
 
 ==== Step 4
 
@@ -76,43 +111,7 @@ Run the _configure_ script first by typing:
 % ./configure
 ....
 
-This script will prompt the user with a series of questions regarding support to compile into LIS, requiring the user to specify the locations of the required and optional libraries via several LIS specific environment variables.  The following environment variables are used by LIS.
-
-|====
-| Variable        | Description                      | Usage
-
-| `LIS_FC`        | Fortran 90 compiler              | required
-| `LIS_CC`        | C compiler                       | required
-| `LIS_MODESMF`   | path to ESMF module files        | required
-| `LIS_LIBESMF`   | path to ESMF library files       | required
-| `LIS_OPENJPEG`  | path to openJPEG library         | required
-| `LIS_ECCODES`   | path to ecCodes library          | required
-| `LIS_NETCDF`    | path to NetCDF library           | required
-| `LIS_HDF4`      | path to HDF4 library             | optional (required to use HDFEOS2)
-| `LIS_HDF5`      | path to HDF5 library             | optional
-| `LIS_HDFEOS`    | path to HDFEOS2 library          | optional
-| `LIS_MINPACK`   | path to MINPACK library          | optional
-| `LIS_CRTM`      | path to CRTM library             | optional
-| `LIS_CRTM_PROF` | path to LIS-CRTM Profile library | optional
-| `LIS_CMEM`      | path to LIS-CMEM library         | optional
-| `LIS_LAPACK`    | path to LAPACK library           | optional
-| `LIS_PETSC`     | path to PETSc library            | optional
-| `LIS_JPEG`      | path to JPEG library             | optional (use system libjpeg by default)
-| `LIS_RPC`       | path to RPC library              | optional (use system RPC library by default)
-|====
-
-//{cpp} is C++
-Note that the `CC` variable must be set to a C compiler, not a {cpp} compiler.  A {cpp} compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.
-
-It is suggested that you set these environment variables in a modulefile footnote:modulefile[] to load or in an environment script to source before compiling and/or running LIS.
-
-You may encounter errors either when trying to compile LIS or when trying to run LIS because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your `$LD_LIBRARY_PATH` environment variable.  For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):
-
-....
-% export LD_LIBRARY_PATH=$LIS_HDF5/lib:$LIS_LIBESMF:$LIS_NETCDF/lib:${LIS_ECCODES}/lib:$LD_LIBRARY_PATH
-....
-
-It is suggested that you set this environment variable in a modulefile footnote:modulefile[] to load or in an environment script to source before compiling and/or running LIS.
+This script will prompt the user with a series of questions regarding support to compile into LIS.
 
 ===== Example
 
@@ -132,7 +131,7 @@ Use NETCDF? (1-yes, 0-no, default=1):
 NETCDF version (3 or 4, default=4):
 NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
 NETCDF use deflate filter? (1-yes, 0-no, default = 1):
-NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9):
+NETCDF use deflate level? (1 to 9-yes, 0-no, default = 1):
 Use HDF4? (1-yes, 0-no, default=1):
 Use HDF5? (1-yes, 0-no, default=1):
 Use HDFEOS? (1-yes, 0-no, default=1):
@@ -141,6 +140,7 @@ Use LIS-CRTM? (1-yes, 0-no, default=0):
 Use LIS-CMEM? (1-yes, 0-no, default=0):
 Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):
 Use PETSc? (1-yes, 0-no, default=0):
+Enable USAF LIS75 SM DA codes? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
 -----------------------------------------------------
