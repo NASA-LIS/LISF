@@ -210,5 +210,13 @@ help:
 # debug, depend, clean, realclean, or help.
 require-deps := $(if $(filter debug depend clean realclean help,$(MAKECMDGOALS)),false,true)
 ifeq "$(require-deps)" "true"
+# Generate all dependencies at once if no dependency files are found.
+ifeq "$(if $(strip $(DEPS)),$(if $(wildcard $(DEPS)),,true),false)" "true"
+$(info No dependency files found. Generating all dependencies at once...)
+$(info $(shell $(DEPGEN) $(DEPGEN_FLAGS) $(FILES) $(VPATH)))
+ifneq ($(.SHELLSTATUS),0)
+$(error Bulk dependency generation failed.)
+endif
+endif
 -include $(DEPS)
 endif

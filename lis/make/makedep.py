@@ -15,6 +15,8 @@ import sys
 import os
 import re
 import glob
+from pathlib import Path
+from typing import NamedTuple
 
 #
 # Note that an issue was encountered processing (with Python3) a Fortran90 source file
@@ -117,6 +119,11 @@ def print_status(*pargs, **kwargs):
     if cli_args.VERBOSE >= cli_args.STATUS:
         print(*pargs, **kwargs)
 
+# Define f90 tuple
+class FileF90(NamedTuple):
+    f90file: Path
+    f90stem: str
+    f90parent: str
 
 def get_cli_exclude_files(stype):
     """
@@ -224,7 +231,7 @@ def add_prerequisite(prereqs, fname, suffix=None):
     return prereqs
 
 
-def find_module_file(desired_mod):
+def find_module_file(desired_mod, current_dir):
     """
     Return the name of the file containing the module specified by desired_mod.
 
@@ -243,25 +250,24 @@ def find_module_file(desired_mod):
     """
     #exclude_fmod_files = {'esmf', 'netcdf', 'grib_api', 'hdf5', 'mpi'}
     exclude_fmod_files = get_cli_exclude_files('fmod')
+    sort_dmod = desired_mod.casefold()
+    sort_cur0 = str(current_dir).casefold()
+    sort_cur1 = str(current_dir.parent).casefold()
     if desired_mod.lower() in exclude_fmod_files:
         return None
-    check_files = [desired_mod+'.F90', desired_mod+'.f90',
-                   desired_mod.lower()+'.F90', desired_mod.lower()+'.f90',
-                   desired_mod.upper()+'.F90', desired_mod.upper()+'.f90']
-    for d in get_cli_search_dirs():
-        for cf in check_files:
-            filename = os.path.join(d, cf)
-            if os.path.isfile(filename):
-                if contains_module_definition(filename, desired_mod):
-                    return cf
-    for d in get_cli_search_dirs():
-        f90s = os.path.join(d, '*.f90')
-        F90s = os.path.join(d, '*.F90')
-        check_files = glob.glob(f90s)
-        check_files += glob.glob(F90s)
-        for cf in check_files:
-            if contains_module_definition(cf, desired_mod):
-                return cf
+    f90_files.sort(
+        key=lambda cf: (
+            0 if sort_dmod == cf.f90stem else # module matches fn
+            1 if sort_cur0 == cf.f90parent else # search current dir
+            2 if sort_cur1 == cf.f90parent else # search up one dir
+            3 if sort_dmod in cf.f90stem else # module in fn
+            4 if sort_dmod in cf.f90parent else # module in path
+            5 # search all other files
+        )
+    )
+    for cf in f90_files:
+        if contains_module_definition(cf.f90file, desired_mod):
+            return cf.f90file
     print_warn('module {} not found.'.format(desired_mod))
     return None
 
@@ -282,7 +288,7 @@ def contains_module_definition(file_name, desired_mod):
             return False
 
 
-def find_use_module_statement(line):
+def find_use_module_statement(line, current_dir=None):
     """
     Determine whether line contains a Fortran USE statement.  If so,
     find the file that contains the definition of the module being USE'd
@@ -293,7 +299,7 @@ def find_use_module_statement(line):
     result = use_statement_pattern.match(line)
     if result:
         use_mod = result.group(1)
-        return find_module_file(use_mod)
+        return find_module_file(use_mod, current_dir=current_dir)
     else:
         return None
 
@@ -379,7 +385,7 @@ def process_fortran90_file(fname, prereqs):
         print(e)
     else:
         for line in f:
-            name = find_use_module_statement(line)
+            name = find_use_module_statement(line, current_dir=Path(fname).parent)
             if name:
                 prereqs = add_prerequisite(prereqs, name, '.o')
             name = find_f_include_statement(line)
@@ -558,6 +564,18 @@ cli_args = process_command_line()
 print_dbg('cli_args: ', cli_args)
 
 files = cli_args.files
+
+# Build list of all F90 files
+f90_files = []
+for d in get_cli_search_dirs():
+    f90_search = set(Path(d).glob('*.f90'))
+    f90_search.update(Path(d).glob('*.F90'))
+    for f in list(f90_search):
+        f90_files.append(
+            FileF90(f90file=f,
+                    f90stem=str(f.stem).casefold(),
+                    f90parent=str(f.parent).casefold())
+        )
 
 for full_filename in files:
     print_status('Generating dependencies for {}'.format(full_filename))
