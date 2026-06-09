@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<title>Land surface Verification Toolkit (LVT): LVT 7.5 Users Guide</title>
+<title>Land surface Verification Toolkit (LVT): LVT 7.8 Users Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -436,10 +436,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book">
 <div id="header">
-<h1>Land surface Verification Toolkit (LVT): LVT 7.5 Users Guide</h1>
+<h1>Land surface Verification Toolkit (LVT): LVT 7.8 Users Guide</h1>
 <div class="details">
-<span id="revnumber">version 4.1,</span>
-<span id="revdate">21 Nov 2025</span>
+<span id="revnumber">version 5.0,</span>
+<span id="revdate">5 May 2026</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
@@ -459,7 +459,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#sec-obtain-src">4. Obtaining the Source Code</a>
 <ul class="sectlevel2">
 <li><a href="#sec-important_note_fs">4.1. Important Note Regarding File Systems</a></li>
-<li><a href="#sec_publicrelease">4.2. Public Release Source Code</a></li>
+<li><a href="#sec_publicrelease">4.2. Release Source Code</a></li>
 <li><a href="#sec-checkoutsrc">4.3. master branch</a></li>
 <li><a href="#_source_files">4.4. Source files</a></li>
 <li><a href="#_documentation">4.5. Documentation</a></li>
@@ -499,121 +499,25 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_final_domain_files_binarynetcdf">B.5. Final domain files (Binary/NETCDF)</a></li>
 </ul>
 </li>
+<li><a href="#sec-whatsnewcont">Appendix C: What&#8217;s New (continued)</a>
+<ul class="sectlevel2">
+<li><a href="#_version_7_5">C.1. Version 7.5</a></li>
+<li><a href="#_version_7_4">C.2. Version 7.4</a></li>
+<li><a href="#_version_7_3">C.3. Version 7.3</a></li>
+<li><a href="#_version_7_2">C.4. Version 7.2</a></li>
+<li><a href="#_version_7_1">C.5. Version 7.1</a></li>
+<li><a href="#_version_7_0">C.6. Version 7.0</a></li>
+<li><a href="#_version_1_2">C.7. Version 1.2</a></li>
+<li><a href="#_version_1_1">C.8. Version 1.1</a></li>
+<li><a href="#_version_1_0">C.9. Version 1.0</a></li>
+</ul>
+</li>
+<li><a href="#sec-revision_history">Appendix D: Revision history</a></li>
 <li><a href="#_references">References</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
-<div class="sectionbody">
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Revision</th>
-<th class="tableblock halign-left valign-top">Summary of Changes</th>
-<th class="tableblock halign-left valign-top">Date</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.1 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 21, 2025</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 12, 2024</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 10, 2024</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.9 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jul 05, 2023</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.8 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 30, 2023</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.4 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2023</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 30, 2022</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.4.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 22, 2022</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.9</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.2 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 06, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.1 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 31, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.7</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.4.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 4, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.6</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 21, 2020</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 557WW 7.3.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 24, 2020</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 557WW 7.3 release candidate 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 28, 2019</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 7.2 public release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 6, 2015</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Update lvt.config documentation</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 12, 2015</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 7.1 AFWA rp2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 11, 2015</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 7.1 public release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">April 24, 2015</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <div class="sect1">
 <h2 id="sec-intro">1. Introduction</h2>
 <div class="sectionbody">
@@ -667,41 +571,15 @@ describes the specification of the model output from LIS.</p>
 <div class="sect2">
 <h3 id="_whats_new">1.1. What&#8217;s New</h3>
 <div class="sect3">
-<h4 id="_version_7_5">1.1.1. Version 7.5</h4>
+<h4 id="_version_7_8">1.1.1. Version 7.8</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Supports additional data streams</p>
+<p>Includes new runmode</p>
 <div class="ulist">
 <ul>
 <li>
-<p>COAMPS forcing data (COAMPSout)</p>
-</li>
-<li>
-<p>GRUN runoff data (GRUNrunoff)</p>
-</li>
-<li>
-<p>GPM IMERG Monthly precipitation data (IMERG_monthly)</p>
-</li>
-<li>
-<p>Operational enhanced SMAP soil moisture retrieval data (SMAP_E_OPL)</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_7_4">1.1.2. Version 7.4</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Includes new runmodes</p>
-<div class="ulist">
-<ul>
-<li>
-<p>LISpost</p>
+<p>SNIPpost</p>
 </li>
 </ul>
 </div>
@@ -711,436 +589,10 @@ describes the specification of the model output from LIS.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>FluxSat GPP</p>
-</li>
-<li>
-<p>MCD15A2H</p>
-</li>
-<li>
-<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
-</li>
-<li>
-<p>UA SMAP</p>
+<p>SMAP L2 NRT soil moisture retrieval product</p>
 </li>
 </ul>
 </div>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_7_3">1.1.3. Version 7.3</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Includes new runmodes</p>
-<div class="ulist">
-<ul>
-<li>
-<p>557post runmode</p>
-</li>
-<li>
-<p>USAFSIpost runmode</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes additional metrics</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Anomaly Rank Correlation metric</p>
-</li>
-<li>
-<p>Clayton Skill Score (CSS) metric</p>
-</li>
-<li>
-<p>Conditional Entropy metric</p>
-</li>
-<li>
-<p>Detection Failure Ratio (DFR) metric</p>
-</li>
-<li>
-<p>Event Frequency (EF) metric</p>
-</li>
-<li>
-<p>Forecast Frequency (FF) metric</p>
-</li>
-<li>
-<p>Heidke Skill Score (HSS) metric</p>
-</li>
-<li>
-<p>Information Entropy metric</p>
-</li>
-<li>
-<p>Joint Entropy metric</p>
-</li>
-<li>
-<p>K-means metric</p>
-</li>
-<li>
-<p>Mutual Information metric</p>
-</li>
-<li>
-<p>Peirce Skill Score (PSS) metric</p>
-</li>
-<li>
-<p>Reliability metric</p>
-</li>
-<li>
-<p>Resiliance metric</p>
-</li>
-<li>
-<p>Relative Entropy metric</p>
-</li>
-<li>
-<p>Standard Precipitation Index (SPI) metric</p>
-</li>
-<li>
-<p>Triple collocation metric</p>
-</li>
-<li>
-<p>Tian False Alarm Bias (TFB) metric</p>
-</li>
-<li>
-<p>Tian Hit Bias (THB) metric</p>
-</li>
-<li>
-<p>Tian Miss Bias (TMB) metric</p>
-</li>
-<li>
-<p>Trends metric</p>
-</li>
-<li>
-<p>Vulnerability metric</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Supports additional data streams</p>
-<div class="ulist">
-<ul>
-<li>
-<p>TRMM 3B42V7 data stream</p>
-</li>
-<li>
-<p>Atmospheric Land Exchange Inverse (ALEXI) model Evaporative Stress Index (ESI) data stream</p>
-</li>
-<li>
-<p>APHRODITE (Asian Precipitaton - Highly-Resolved Observational Data Integration Towards Evaluation) daily gridded precipitation data stream</p>
-</li>
-<li>
-<p>NASA Airborne Snow Observatory (ASO) snow water equivalent (SWE) data stream</p>
-</li>
-<li>
-<p>CHIRPSv2 data stream</p>
-</li>
-<li>
-<p>ECMWF forcing data stream</p>
-</li>
-<li>
-<p>ERA5 data stream</p>
-</li>
-<li>
-<p>FLUXCOM data stream</p>
-</li>
-<li>
-<p>FLUXNET2015_NC data stream</p>
-</li>
-<li>
-<p>GDAS forcing data stream</p>
-</li>
-<li>
-<p>GLASS albedo data stream</p>
-</li>
-<li>
-<p>GLASS LAI data stream</p>
-</li>
-<li>
-<p>High Asia Reanalysis (HAR) precipitation data stream</p>
-</li>
-<li>
-<p>Indian Meteorological Department (IMD) unified gauge-based analysis of daily precipitation data stream</p>
-</li>
-<li>
-<p>IMERG data stream</p>
-</li>
-<li>
-<p>JULES2Ddata data stream</p>
-</li>
-<li>
-<p>Land Parameter Retrieval Model (LPRM) vegetation optical depth data stream</p>
-</li>
-<li>
-<p>MERRA2 asm data stream</p>
-</li>
-<li>
-<p>MOD10A1V6 fractional snow cover data stream</p>
-</li>
-<li>
-<p>MODIS SPoRT LAI data stream</p>
-</li>
-<li>
-<p>MODSCAG fractional snow cover data stream</p>
-</li>
-<li>
-<p>OCO-2 Solar Induced Fluorescence (SIF) data stream</p>
-</li>
-<li>
-<p>OzFlux data stream</p>
-</li>
-<li>
-<p>Soil Moisture Active Passive (SMAP) L3 Tb data stream</p>
-</li>
-<li>
-<p>Soil Moisture Active Passive (SMAP) vegetation optical depth data stream</p>
-</li>
-<li>
-<p>Soil Moisture Active Passive (SMAP) vegetation water content data stream</p>
-</li>
-<li>
-<p>University of Arizona (UA) SWE/Snow Depth data stream</p>
-</li>
-<li>
-<p>UCLA SWE reanalysis data stream</p>
-</li>
-<li>
-<p>jasmin data stream</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_7_2">1.1.4. Version 7.2</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Supports new data streams</p>
-<div class="ulist">
-<ul>
-<li>
-<p>datastreams/CMORPH</p>
-</li>
-<li>
-<p>datastreams/Daymet</p>
-</li>
-<li>
-<p>datastreams/FLUXNETmte</p>
-</li>
-<li>
-<p>datastreams/GCOMW_AMSR2L3snd</p>
-</li>
-<li>
-<p>datastreams/GIMMS_MODIS_NDVI</p>
-</li>
-<li>
-<p>datastreams/GLDAS1</p>
-</li>
-<li>
-<p>datastreams/GOES_LST</p>
-</li>
-<li>
-<p>datastreams/GOME2_SIF</p>
-</li>
-<li>
-<p>datastreams/JULESdata</p>
-</li>
-<li>
-<p>datastreams/LIS6out</p>
-</li>
-<li>
-<p>datastreams/LISDAdiag</p>
-</li>
-<li>
-<p>datastreams/LVTpercentile</p>
-</li>
-<li>
-<p>datastreams/MERRA-Land</p>
-</li>
-<li>
-<p>datastreams/SCANGMAO</p>
-</li>
-<li>
-<p>datastreams/simGRACE</p>
-</li>
-<li>
-<p>datastreams/SMAPsm</p>
-</li>
-<li>
-<p>datastreams/SMAPTB</p>
-</li>
-<li>
-<p>datastreams/SMOS_CATDS_L3sm</p>
-</li>
-<li>
-<p>datastreams/SMOS_NESDIS</p>
-</li>
-<li>
-<p>datastreams/SNODEP</p>
-</li>
-<li>
-<p>datastreams/USCRNsm</p>
-</li>
-<li>
-<p>datastreams/USDM</p>
-</li>
-<li>
-<p>datastreams/USGS_streamflow_gridded</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_7_1">1.1.5. Version 7.1</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Supports Global Change Observation Mission - Water (GCOMW)
-observations</p>
-</li>
-<li>
-<p>Supports Advanced Scatterometer (ASCAT) data</p>
-</li>
-<li>
-<p>Supports Soil Moisture and Ocean Salinit (SMOS) observations</p>
-</li>
-<li>
-<p>Supports Soil Moisture and Ocean Salinit (SMOS) L1 Tb observations</p>
-</li>
-<li>
-<p>Supports MODIS LST data</p>
-</li>
-<li>
-<p>Supports Great Lakes Hydro data</p>
-</li>
-<li>
-<p>Supports time lagged computations</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_7_0">1.1.6. Version 7.0</h4>
-<div class="paragraph">
-<p>Note that LVT has been renumbered to version 7.0.</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Supports NLDAS-2 SAC datasets, including the post-processed SAC soil
-moisture on Noah levels</p>
-</li>
-<li>
-<p>Supports the capability to compute metrics on a basin/region scale
-rather than on a pixel-by-pixel basis.</p>
-</li>
-<li>
-<p>Supports the capability to process USGS ground water well data</p>
-</li>
-<li>
-<p>Supports the capability to process Plate Boundary Observatory data
-(snow depth and soil moisture)</p>
-</li>
-<li>
-<p>Supports the North American Soil Moisture Database (NASMD) data</p>
-</li>
-<li>
-<p>Supports the ALEXI data</p>
-</li>
-<li>
-<p>Supports the metric to compute percentiles for each ensemble member
-separately</p>
-</li>
-<li>
-<p>Supports GRACE observations (these are the &#8220;processed&#8221; GRACE
-observations generated by LDT)</p>
-</li>
-<li>
-<p>Supports the UW ET data</p>
-</li>
-<li>
-<p>Supports the options for restart for SRI, SPI, SSWI and percentile
-calculations</p>
-</li>
-<li>
-<p>Supports metric called SGWI - standardized ground water index — which
-is similar to SSWI, but for TWS variable</p>
-</li>
-<li>
-<p>Support for a number of ratio variables are added:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>SWE/P (snow water equivalent over precip)</p>
-</li>
-<li>
-<p>ET/P (evapotranspiration over precip)</p>
-</li>
-<li>
-<p>Qs/P (surface runoff over precip)</p>
-</li>
-<li>
-<p>Qsb/P (subsurface runoff over precip)</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Supports the river flow variate metric</p>
-</li>
-<li>
-<p>Supports metrics for computing min, max and sum</p>
-</li>
-<li>
-<p>Support to read LIS DA processed observations</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_1_2">1.1.7. Version 1.2</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Updates related to OptUE processing</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_1_1">1.1.8. Version 1.1</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Added the plugin for processing processed LIS DA observations</p>
-</li>
-<li>
-<p>Removed the FEWSNET SOS processing metric</p>
-</li>
-<li>
-<p>Added plugins for NLDAS2, Natural streamflow</p>
-</li>
-<li>
-<p>Updated to provide backwards support for LIS 6.1.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_1_0">1.1.9. Version 1.0</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>This is the initial version developed for evaluating output from LIS
-version 6.0 or higher.</p>
 </li>
 </ol>
 </div>
@@ -1300,9 +752,9 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 </div>
 <div class="sect2">
-<h3 id="sec_publicrelease">4.2. Public Release Source Code</h3>
+<h3 id="sec_publicrelease">4.2. Release Source Code</h3>
 <div class="paragraph">
-<p>The LISF public release 7.5 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+<p>The LISF public release 7.8 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
 </div>
 <div class="paragraph">
 <p>After downloading the LISF tar-file:</p>
@@ -1320,7 +772,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% mv LISF_public_release_7.5.0.tar.gz TOPLEVELDIR</pre>
+<pre>% mv LISF_public_release_7.8.0.tar.gz TOPLEVELDIR</pre>
 </div>
 </div>
 </div>
@@ -1342,7 +794,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% gzip -dc LISF_public_release_7.5.0.tar.gz | tar xf -</pre>
+<pre>% tar xzf LISF_public_release_7.8.0.tar.gz</pre>
 </div>
 </div>
 </div>
@@ -1442,54 +894,7 @@ The directory containing the LVT source code, <em>LISF/lvt</em>, will be referre
 <div class="sect3">
 <h4 id="_step_3_3">Step 3</h4>
 <div class="paragraph">
-<p>Set the LVT_ARCH environment variable based on the system you are using.  The following commands are written using Bash shell syntax.</p>
-</div>
-<div class="literalblock">
-<div class="title">For a Linux system with the Intel Fortran compiler</div>
-<div class="content">
-<pre>% export LVT_ARCH=linux_ifc</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For a Linux system with the GNU Fortran compiler</div>
-<div class="content">
-<pre>% export LVT_ARCH=linux_gfortran</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For a Cray system with the Intel Fortran compiler</div>
-<div class="content">
-<pre>% export LVT_ARCH=cray_ifc</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For a Cray system with the Cray Fortran compiler</div>
-<div class="content">
-<pre>% export LVT_ARCH=cray_cray</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For an IBM system with the GNU Fortran compiler</div>
-<div class="content">
-<pre>% export LVT_ARCH=ibm_gfortran</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>It is suggested that you set this environment variable in a modulefile <sup class="footnote" id="_footnote_modulefile">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LVT.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_step_4_2">Step 4</h4>
-<div class="paragraph">
-<p>Run the <em>configure</em> script first by typing:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% ./configure</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This script will prompt the user with a series of questions regarding support to compile into LVT, requiring the user to specify the locations of the required and optional libraries via several LVT specific environment variables.  The following environment variables are used by LVT.</p>
+<p>Set the appropriate LVT environment variables.  These are used to control the compilation of LVT and to specify the locations of the required and optional libraries.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1505,6 +910,11 @@ The directory containing the LVT source code, <em>LISF/lvt</em>, will be referre
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LVT_ARCH</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Architecture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">required</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LVT_FC</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Fortran 90</p></td>
@@ -1578,10 +988,40 @@ The directory containing the LVT source code, <em>LISF/lvt</em>, will be referre
 </tbody>
 </table>
 <div class="paragraph">
-<p>Note that the <code>CC</code> variable must be set to a C compiler, not a C&#43;&#43; compiler.  A C&#43;&#43; compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.</p>
+<p>Set the <code>LVT_ARCH</code> environment variable based on the system you are using.  The following commands are written using Bash shell syntax.</p>
+</div>
+<div class="literalblock">
+<div class="title">For a Linux system with the Intel Fortran compiler</div>
+<div class="content">
+<pre>% export LVT_ARCH=linux_ifc</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Linux system with the GNU Fortran compiler</div>
+<div class="content">
+<pre>% export LVT_ARCH=linux_gfortran</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Intel Fortran compiler</div>
+<div class="content">
+<pre>% export LVT_ARCH=cray_ifc</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Cray Fortran compiler</div>
+<div class="content">
+<pre>% export LVT_ARCH=cray_cray</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For an IBM system with the GNU Fortran compiler</div>
+<div class="content">
+<pre>% export LVT_ARCH=ibm_gfortran</pre>
+</div>
 </div>
 <div class="paragraph">
-<p>It is suggested that you set these environment variables in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LVT.</p>
+<p>Note that the <code>LVT_CC</code> variable must be set to a C compiler, not a C&#43;&#43; compiler.  A C&#43;&#43; compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.</p>
 </div>
 <div class="paragraph">
 <p>You may encounter errors either when trying to compile LVT or when trying to run LVT because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your <code>$LD_LIBRARY_PATH</code> environment variable.
@@ -1593,7 +1033,21 @@ For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you m
 </div>
 </div>
 <div class="paragraph">
-<p>It is suggested that you set this environment variable in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LVT.</p>
+<p>It is suggested that you set these environment variables in a modulefile <sup class="footnote" id="_footnote_modulefile">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LVT.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_step_4_2">Step 4</h4>
+<div class="paragraph">
+<p>Run the <em>configure</em> script first by typing:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>% ./configure</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This script will prompt the user with a series of questions regarding support to compile into LVT.</p>
 </div>
 <div class="sect4">
 <h5 id="_example">Example</h5>
@@ -1612,7 +1066,7 @@ Use NETCDF? (1-yes, 0-no, default=1):
 NETCDF version (3 or 4, default=4):
 NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
 NETCDF use deflate filter? (1-yes, 0-no, default = 1):
-NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9):
+NETCDF use deflate level? (1 to 9-yes, 0-no, default = 1):
 Use HDF4? (1-yes, 0-no, default=1):
 Use HDF5? (1-yes, 0-no, default=1):
 Use HDFEOS? (1-yes, 0-no, default=1):
@@ -7371,6 +6825,618 @@ rmse_qle_ensSTD rmse_qle_CI
 </div>
 </div>
 <div class="sect1">
+<h2 id="sec-whatsnewcont">Appendix C: What&#8217;s New (continued)</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+There were no public releases for versions 7.6 or 7.7.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_version_7_5">C.1. Version 7.5</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Supports additional data streams</p>
+<div class="ulist">
+<ul>
+<li>
+<p>COAMPS forcing data (COAMPSout)</p>
+</li>
+<li>
+<p>GRUN runoff data (GRUNrunoff)</p>
+</li>
+<li>
+<p>GPM IMERG Monthly precipitation data (IMERG_monthly)</p>
+</li>
+<li>
+<p>Operational enhanced SMAP soil moisture retrieval data (SMAP_E_OPL)</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_7_4">C.2. Version 7.4</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes new runmodes</p>
+<div class="ulist">
+<ul>
+<li>
+<p>LISpost</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data streams</p>
+<div class="ulist">
+<ul>
+<li>
+<p>FluxSat GPP</p>
+</li>
+<li>
+<p>MCD15A2H</p>
+</li>
+<li>
+<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
+</li>
+<li>
+<p>UA SMAP</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_7_3">C.3. Version 7.3</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes new runmodes</p>
+<div class="ulist">
+<ul>
+<li>
+<p>557post runmode</p>
+</li>
+<li>
+<p>USAFSIpost runmode</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes additional metrics</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Anomaly Rank Correlation metric</p>
+</li>
+<li>
+<p>Clayton Skill Score (CSS) metric</p>
+</li>
+<li>
+<p>Conditional Entropy metric</p>
+</li>
+<li>
+<p>Detection Failure Ratio (DFR) metric</p>
+</li>
+<li>
+<p>Event Frequency (EF) metric</p>
+</li>
+<li>
+<p>Forecast Frequency (FF) metric</p>
+</li>
+<li>
+<p>Heidke Skill Score (HSS) metric</p>
+</li>
+<li>
+<p>Information Entropy metric</p>
+</li>
+<li>
+<p>Joint Entropy metric</p>
+</li>
+<li>
+<p>K-means metric</p>
+</li>
+<li>
+<p>Mutual Information metric</p>
+</li>
+<li>
+<p>Peirce Skill Score (PSS) metric</p>
+</li>
+<li>
+<p>Reliability metric</p>
+</li>
+<li>
+<p>Resiliance metric</p>
+</li>
+<li>
+<p>Relative Entropy metric</p>
+</li>
+<li>
+<p>Standard Precipitation Index (SPI) metric</p>
+</li>
+<li>
+<p>Triple collocation metric</p>
+</li>
+<li>
+<p>Tian False Alarm Bias (TFB) metric</p>
+</li>
+<li>
+<p>Tian Hit Bias (THB) metric</p>
+</li>
+<li>
+<p>Tian Miss Bias (TMB) metric</p>
+</li>
+<li>
+<p>Trends metric</p>
+</li>
+<li>
+<p>Vulnerability metric</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data streams</p>
+<div class="ulist">
+<ul>
+<li>
+<p>TRMM 3B42V7 data stream</p>
+</li>
+<li>
+<p>Atmospheric Land Exchange Inverse (ALEXI) model Evaporative Stress Index (ESI) data stream</p>
+</li>
+<li>
+<p>APHRODITE (Asian Precipitaton - Highly-Resolved Observational Data Integration Towards Evaluation) daily gridded precipitation data stream</p>
+</li>
+<li>
+<p>NASA Airborne Snow Observatory (ASO) snow water equivalent (SWE) data stream</p>
+</li>
+<li>
+<p>CHIRPSv2 data stream</p>
+</li>
+<li>
+<p>ECMWF forcing data stream</p>
+</li>
+<li>
+<p>ERA5 data stream</p>
+</li>
+<li>
+<p>FLUXCOM data stream</p>
+</li>
+<li>
+<p>FLUXNET2015_NC data stream</p>
+</li>
+<li>
+<p>GDAS forcing data stream</p>
+</li>
+<li>
+<p>GLASS albedo data stream</p>
+</li>
+<li>
+<p>GLASS LAI data stream</p>
+</li>
+<li>
+<p>High Asia Reanalysis (HAR) precipitation data stream</p>
+</li>
+<li>
+<p>Indian Meteorological Department (IMD) unified gauge-based analysis of daily precipitation data stream</p>
+</li>
+<li>
+<p>IMERG data stream</p>
+</li>
+<li>
+<p>JULES2Ddata data stream</p>
+</li>
+<li>
+<p>Land Parameter Retrieval Model (LPRM) vegetation optical depth data stream</p>
+</li>
+<li>
+<p>MERRA2 asm data stream</p>
+</li>
+<li>
+<p>MOD10A1V6 fractional snow cover data stream</p>
+</li>
+<li>
+<p>MODIS SPoRT LAI data stream</p>
+</li>
+<li>
+<p>MODSCAG fractional snow cover data stream</p>
+</li>
+<li>
+<p>OCO-2 Solar Induced Fluorescence (SIF) data stream</p>
+</li>
+<li>
+<p>OzFlux data stream</p>
+</li>
+<li>
+<p>Soil Moisture Active Passive (SMAP) L3 Tb data stream</p>
+</li>
+<li>
+<p>Soil Moisture Active Passive (SMAP) vegetation optical depth data stream</p>
+</li>
+<li>
+<p>Soil Moisture Active Passive (SMAP) vegetation water content data stream</p>
+</li>
+<li>
+<p>University of Arizona (UA) SWE/Snow Depth data stream</p>
+</li>
+<li>
+<p>UCLA SWE reanalysis data stream</p>
+</li>
+<li>
+<p>jasmin data stream</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_7_2">C.4. Version 7.2</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Supports new data streams</p>
+<div class="ulist">
+<ul>
+<li>
+<p>datastreams/CMORPH</p>
+</li>
+<li>
+<p>datastreams/Daymet</p>
+</li>
+<li>
+<p>datastreams/FLUXNETmte</p>
+</li>
+<li>
+<p>datastreams/GCOMW_AMSR2L3snd</p>
+</li>
+<li>
+<p>datastreams/GIMMS_MODIS_NDVI</p>
+</li>
+<li>
+<p>datastreams/GLDAS1</p>
+</li>
+<li>
+<p>datastreams/GOES_LST</p>
+</li>
+<li>
+<p>datastreams/GOME2_SIF</p>
+</li>
+<li>
+<p>datastreams/JULESdata</p>
+</li>
+<li>
+<p>datastreams/LIS6out</p>
+</li>
+<li>
+<p>datastreams/LISDAdiag</p>
+</li>
+<li>
+<p>datastreams/LVTpercentile</p>
+</li>
+<li>
+<p>datastreams/MERRA-Land</p>
+</li>
+<li>
+<p>datastreams/SCANGMAO</p>
+</li>
+<li>
+<p>datastreams/simGRACE</p>
+</li>
+<li>
+<p>datastreams/SMAPsm</p>
+</li>
+<li>
+<p>datastreams/SMAPTB</p>
+</li>
+<li>
+<p>datastreams/SMOS_CATDS_L3sm</p>
+</li>
+<li>
+<p>datastreams/SMOS_NESDIS</p>
+</li>
+<li>
+<p>datastreams/SNODEP</p>
+</li>
+<li>
+<p>datastreams/USCRNsm</p>
+</li>
+<li>
+<p>datastreams/USDM</p>
+</li>
+<li>
+<p>datastreams/USGS_streamflow_gridded</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_7_1">C.5. Version 7.1</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Supports Global Change Observation Mission - Water (GCOMW)
+observations</p>
+</li>
+<li>
+<p>Supports Advanced Scatterometer (ASCAT) data</p>
+</li>
+<li>
+<p>Supports Soil Moisture and Ocean Salinit (SMOS) observations</p>
+</li>
+<li>
+<p>Supports Soil Moisture and Ocean Salinit (SMOS) L1 Tb observations</p>
+</li>
+<li>
+<p>Supports MODIS LST data</p>
+</li>
+<li>
+<p>Supports Great Lakes Hydro data</p>
+</li>
+<li>
+<p>Supports time lagged computations</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_7_0">C.6. Version 7.0</h3>
+<div class="paragraph">
+<p>Note that LVT has been renumbered to version 7.0.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Supports NLDAS-2 SAC datasets, including the post-processed SAC soil
+moisture on Noah levels</p>
+</li>
+<li>
+<p>Supports the capability to compute metrics on a basin/region scale
+rather than on a pixel-by-pixel basis.</p>
+</li>
+<li>
+<p>Supports the capability to process USGS ground water well data</p>
+</li>
+<li>
+<p>Supports the capability to process Plate Boundary Observatory data
+(snow depth and soil moisture)</p>
+</li>
+<li>
+<p>Supports the North American Soil Moisture Database (NASMD) data</p>
+</li>
+<li>
+<p>Supports the ALEXI data</p>
+</li>
+<li>
+<p>Supports the metric to compute percentiles for each ensemble member
+separately</p>
+</li>
+<li>
+<p>Supports GRACE observations (these are the &#8220;processed&#8221; GRACE
+observations generated by LDT)</p>
+</li>
+<li>
+<p>Supports the UW ET data</p>
+</li>
+<li>
+<p>Supports the options for restart for SRI, SPI, SSWI and percentile
+calculations</p>
+</li>
+<li>
+<p>Supports metric called SGWI - standardized ground water index — which
+is similar to SSWI, but for TWS variable</p>
+</li>
+<li>
+<p>Support for a number of ratio variables are added:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>SWE/P (snow water equivalent over precip)</p>
+</li>
+<li>
+<p>ET/P (evapotranspiration over precip)</p>
+</li>
+<li>
+<p>Qs/P (surface runoff over precip)</p>
+</li>
+<li>
+<p>Qsb/P (subsurface runoff over precip)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports the river flow variate metric</p>
+</li>
+<li>
+<p>Supports metrics for computing min, max and sum</p>
+</li>
+<li>
+<p>Support to read LIS DA processed observations</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_1_2">C.7. Version 1.2</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Updates related to OptUE processing</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_1_1">C.8. Version 1.1</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Added the plugin for processing processed LIS DA observations</p>
+</li>
+<li>
+<p>Removed the FEWSNET SOS processing metric</p>
+</li>
+<li>
+<p>Added plugins for NLDAS2, Natural streamflow</p>
+</li>
+<li>
+<p>Updated to provide backwards support for LIS 6.1.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_1_0">C.9. Version 1.0</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>This is the initial version developed for evaluating output from LIS
+version 6.0 or higher.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="sec-revision_history">Appendix D: Revision history</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Revision</th>
+<th class="tableblock halign-left valign-top">Summary of Changes</th>
+<th class="tableblock halign-left valign-top">Date</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.8.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2026</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.1 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 21, 2025</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 12, 2024</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 10, 2024</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.9 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jul 05, 2023</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.8 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 30, 2023</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.4 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2023</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 30, 2022</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.4.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 22, 2022</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.2 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 06, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.1 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 31, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.4.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 4, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 21, 2020</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 557WW 7.3.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 24, 2020</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 557WW 7.3 release candidate 4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 28, 2019</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 7.2 public release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 6, 2015</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Update lvt.config documentation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 12, 2015</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 7.1 AFWA rp2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 11, 2015</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LVT 7.1 public release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">April 24, 2015</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_references">References</h2>
 <div class="sectionbody">
 <div class="ulist bibliography">
@@ -7391,8 +7457,8 @@ rmse_qle_ensSTD rmse_qle_CI
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.1<br>
-Last updated 2026-05-01 11:46:38 UTC
+Version 5.0<br>
+Last updated 2026-06-09 14:29:27 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

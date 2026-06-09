@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.26">
-<title>Land Information System (LIS): LIS 7.5 Users Guide</title>
+<title>Land Information System (LIS): LIS 7.8 Users Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -436,10 +436,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book">
 <div id="header">
-<h1>Land Information System (LIS): LIS 7.5 Users Guide</h1>
+<h1>Land Information System (LIS): LIS 7.8 Users Guide</h1>
 <div class="details">
-<span id="revnumber">version 6.0,</span>
-<span id="revdate">20 Apr 2026</span>
+<span id="revnumber">version 7.0,</span>
+<span id="revdate">5 Jun 2026</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
@@ -464,7 +464,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#sec_obtain-src">4. Obtaining the Source Code</a>
 <ul class="sectlevel2">
 <li><a href="#sec_important_note_fs">4.1. Important Note Regarding File Systems</a></li>
-<li><a href="#sec_publicrelease">4.2. Public Release Source Code</a></li>
+<li><a href="#sec_publicrelease">4.2. Release Source Code</a></li>
 <li><a href="#sec_checkoutsrc">4.3. master branch</a></li>
 <li><a href="#sec_src_desc">4.4. Source files</a></li>
 <li><a href="#_documentation">4.5. Documentation</a></li>
@@ -481,7 +481,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_command_line_arguments">6.1. Command line arguments</a></li>
 </ul>
 </li>
-<li><a href="#sec_testcases">7. Test-cases</a>
+<li><a href="#sec_testcases">7. Testcases</a>
 <ul class="sectlevel2">
 <li><a href="#_public_tests">7.1. Public tests</a></li>
 <li><a href="#_internal_tests">7.2. Internal tests</a></li>
@@ -536,202 +536,39 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_file_name_extension_convention_and_access_code_samples">B.5. File name extension convention and access code samples</a></li>
 </ul>
 </li>
-<li><a href="#_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix C: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</a></li>
+<li><a href="#sec-lis_source_tree">Appendix C: LIS source tree</a></li>
+<li><a href="#sec-whatsnewcont">Appendix D: What&#8217;s New (continued)</a>
+<ul class="sectlevel2">
+<li><a href="#_version_7_5">D.1. Version 7.5</a></li>
+<li><a href="#_version_7_4">D.2. Version 7.4</a></li>
+<li><a href="#_lis_7_3">D.3. LIS 7.3</a></li>
+<li><a href="#_lis_7_2">D.4. LIS 7.2</a></li>
+<li><a href="#_lis_7_1">D.5. LIS 7.1</a></li>
+<li><a href="#_lis_7_0">D.6. LIS 7.0</a></li>
+<li><a href="#_lis_6_2">D.7. LIS 6.2</a></li>
+<li><a href="#_lis_6_1">D.8. LIS 6.1</a></li>
+<li><a href="#_lis_6_0">D.9. LIS 6.0</a></li>
+<li><a href="#_lis_5_0">D.10. LIS 5.0</a></li>
+<li><a href="#_lis_4_2">D.11. LIS 4.2</a></li>
+<li><a href="#_lis_4_1">D.12. LIS 4.1</a></li>
+<li><a href="#_lis_4_0_2">D.13. LIS 4.0.2</a></li>
+<li><a href="#_lis_4_0">D.14. LIS 4.0</a></li>
+<li><a href="#_lis_3_1">D.15. LIS 3.1</a></li>
+<li><a href="#_lis_3_0">D.16. LIS 3.0</a></li>
+</ul>
+</li>
+<li><a href="#sec-revision_history">Appendix E: Revision history</a></li>
+<li><a href="#_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix F: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</a></li>
 <li><a href="#_references">References</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
-<div class="sectionbody">
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Revision</th>
-<th class="tableblock halign-left valign-top">Summary of Changes</th>
-<th class="tableblock halign-left valign-top">Date</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.8.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Apr 20, 2026</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.7.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 16, 2026</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.1 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 21, 2025</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3.1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.3 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Apr 29, 2025</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 12, 2024</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.6</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.15 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 14, 2024</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 11, 2024</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.9 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jul 05, 2023</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.8 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 30, 2023</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.5 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 20, 2023</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.4 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2023</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 30, 2022</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.4.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 22, 2022</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.19</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.4 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 27, 2022</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.18</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.2 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 06, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.17</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LISF 557WW 7.4.6 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 17, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.16</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.1 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 31, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.15</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LISF 557WW 7.4.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 4, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.14</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 557WW 7.3.3 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 25, 2021</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.13</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 21, 2020</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 557WW 7.3.0 release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 24, 2020</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.11</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 557WW 7.3 release candidate 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 28, 2019</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.2 557WW release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Feb 2, 2018</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.9</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.2 AFWA Beta release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 24, 2017</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Updates regarding public release vs repository</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 7, 2017</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.7</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 7.2r Public Release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2017</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.6</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 7.1 AFWA Release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">August 29, 2016</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 7.1rp7 Public Release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">August 4, 2016</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1 AFWA FY15 Deliverable</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">July 28, 2016</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1rp1 Public Release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">December 15, 2015</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Note unavailability of MERRA2 forcing data</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 29, 2015</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1 Public Release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May 27, 2015</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1 Initial AFWA Release</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">April 13, 2015</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <div class="sect1">
 <h2 id="sec_intro">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This is the Land Information System (LIS) User&#8217;s Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision 7.5.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.</p>
+<p>This is the Land Information System (LIS) User&#8217;s Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision 7.8.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.</p>
 </div>
 <div class="paragraph">
 <p>This document consists of 12 sections, described as follows:</p>
@@ -763,7 +600,7 @@ the steps needed to build the LIS executable.</p>
 the steps needed to prepare and submit a run, also describes the various run-time configurations.</p>
 </li>
 <li>
-<p><strong><a href="#sec_testcases">Test-cases</a></strong>:
+<p><strong><a href="#sec_testcases">Testcases</a></strong>:
 describes the LIS test cases.</p>
 </li>
 <li>
@@ -791,63 +628,25 @@ describes how to request help from and provide feedback to the LISF development 
 <div class="sect2">
 <h3 id="_whats_new">1.1. What&#8217;s New</h3>
 <div class="sect3">
-<h4 id="_version_7_5">1.1.1. Version 7.5</h4>
+<h4 id="_version_7_8">1.1.1. Version 7.8</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Supports additional metforcing datasets</p>
+<p>Includes new router</p>
 <div class="ulist">
 <ul>
 <li>
-<p>GALWEM 17km or 0.25deg deterministic forecast reader (galwem)</p>
-</li>
-<li>
-<p>GALWEM-GE forecast reader (galwem_ge)</p>
-</li>
-<li>
-<p>GEOS-IT (geos_it)</p>
+<p>HyMAP3</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>Supports additional data assimilation observation datasets</p>
+<p>Includes new crop model</p>
 <div class="ulist">
 <ul>
 <li>
-<p>CDFS green vegetation fraction (CDFS_GVF)</p>
-</li>
-<li>
-<p>CDF_Transfer_NASA_SMAPsm</p>
-</li>
-<li>
-<p>Operation Enhanced (9-km) SMAP soil moisture (SMAP_E_OPLsm)</p>
-</li>
-<li>
-<p>VIIRS green vegetation fraction (VIIRS_GVF)</p>
-</li>
-<li>
-<p>Margulis Western US Snow Reanalysis dataset (WUS_UCLAsnow)</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes RAPID router</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_version_7_4">1.1.2. Version 7.4</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Includes new runmodes</p>
-<div class="ulist">
-<ul>
-<li>
-<p>National Unified Operational Prediction Capability (NUOPC) coupled runmode</p>
+<p>AquaCrop v7.2</p>
 </li>
 </ul>
 </div>
@@ -857,255 +656,26 @@ describes how to request help from and provide feedback to the LISF development 
 <div class="ulist">
 <ul>
 <li>
-<p>Crocus 8.1 snow model</p>
+<p>SnowModel version April-2021 — for newer versions, contact Glen Liston: <a href="mailto:glen.liston@colostate.edu">glen.liston@colostate.edu</a></p>
 </li>
 </ul>
 </div>
 </li>
-<li>
-<p>Supports additional metforcing datasets</p>
-<div class="ulist">
-<ul>
-<li>
-<p>metforcing extracted from COAMPS output (COAMPSout)</p>
-</li>
-<li>
-<p>metforcing extracted from WRF output over Alaska domain (WRFAKdom)</p>
-</li>
-<li>
-<p>metforcing extracted from WRF output (WRFoutv2)</p>
-</li>
-<li>
-<p>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP)</p>
-</li>
-<li>
-<p>PLUMBER2 station data</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Supports additional data assimilation observation datasets</p>
-<div class="ulist">
-<ul>
-<li>
-<p>MCD15A2H LAI</p>
-</li>
-<li>
-<p>SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)</p>
-</li>
-<li>
-<p>Snow Data Assimilation System (SNODAS)</p>
-</li>
-<li>
-<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
-</li>
-<li>
-<p>hydroweb water level</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Removes the following metforcing datasets</p>
-<div class="ulist">
-<ul>
-<li>
-<p>AGRMET radiation (latlon)</p>
-</li>
-<li>
-<p>AMMA land surface model intercomparision project phase 2 (ALMIPII)</p>
-</li>
-<li>
-<p>Walnut Gulch meteorological station data (ARMS)</p>
-</li>
-<li>
-<p>Canadian Precipitation analysis (CaPA)</p>
-</li>
-<li>
-<p>CEOP</p>
-</li>
-<li>
-<p>COOP</p>
-</li>
-<li>
-<p>ECMWF reanalysis</p>
-</li>
-<li>
-<p>Single-point FASST product (FASSTsingle)</p>
-</li>
-<li>
-<p>GDAS(3d)</p>
-</li>
-<li>
-<p>GDAS profile data from the PMM land surface working group (GDAS(LSWG))</p>
-</li>
-<li>
-<p>GEOS</p>
-</li>
-<li>
-<p>GMAO Modern Era Retrospective-Analysis for Research and Applications data (MERRA-Land)</p>
-</li>
-<li>
-<p>North American Land Data Assimilation System forcing product (NLDAS1)</p>
-</li>
-<li>
-<p>PILDAS</p>
-</li>
-<li>
-<p>NOAA OHD RDHM 3.5.6 forcing data (RDHM 3.5.6)</p>
-</li>
-<li>
-<p>Rhone AGG</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Disables the following external runoff data sources</p>
-<div class="ulist">
-<ul>
-<li>
-<p>GLDAS1 runoff data</p>
-</li>
-<li>
-<p>GLDAS2 runoff data</p>
-</li>
-<li>
-<p>NLDAS2 runoff data</p>
-</li>
-<li>
-<p>MERRA2 runoff data</p>
-</li>
-<li>
-<p>ERA interim land runoff data</p>
-</li>
-<li>
-<p>GWB MIP runoff data</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Disables the following parameters</p>
-<div class="ulist">
-<ul>
-<li>
-<p>MODIS near-real time LAI</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_7_3">1.1.3. LIS 7.3</h4>
-<div class="olist arabic">
-<ol class="arabic">
 <li>
 <p>Includes new runmodes</p>
 <div class="ulist">
 <ul>
 <li>
-<p>RTMforward runmode</p>
+<p>forecast runmode for NoahMP401 and Openwater</p>
 </li>
 <li>
-<p>AGRMET ops runmode</p>
+<p>RAPID ensemble mode</p>
 </li>
 <li>
-<p>GCE-coupled runmode</p>
+<p>ParFlow coupling for Noah and NoahMP</p>
 </li>
 <li>
-<p>landslide optUE runmode</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes additional surface models</p>
-<div class="ulist">
-<ul>
-<li>
-<p>NoahMP 3.9.1.1 glacier model</p>
-</li>
-<li>
-<p>template glacier model</p>
-</li>
-<li>
-<p>FLake 1.0 lake model</p>
-</li>
-<li>
-<p>AWRA-L 6.0.0 land model</p>
-</li>
-<li>
-<p>Jules 5.0 land model</p>
-</li>
-<li>
-<p>Noah 3.9 land model</p>
-</li>
-<li>
-<p>NoahMP 4.0.1 model</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes HYMAP2 router</p>
-</li>
-<li>
-<p>Includes ESPboot forecasting algorithm</p>
-</li>
-<li>
-<p>Includes GLS landslide application</p>
-</li>
-<li>
-<p>Includes TRIGRS landslide application</p>
-</li>
-<li>
-<p>Includes additional data assimilation algorithms</p>
-<div class="ulist">
-<ul>
-<li>
-<p>extended Kalman filter algorithm</p>
-</li>
-<li>
-<p>ensrf algorithm</p>
-</li>
-<li>
-<p>particle filter algorithm</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes additional optimization and uncertainty alogrithms</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Enumerated Search algorithm</p>
-</li>
-<li>
-<p>Shuffled Complex Evolution - University of Arizona (SCEUA) algorithm</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes Levenberg-Marquadt (LM) parameter estimation objective function</p>
-</li>
-<li>
-<p>Supports additional real-time parameters</p>
-<div class="ulist">
-<ul>
-<li>
-<p>albedo parameters</p>
-</li>
-<li>
-<p>emissivity parameters</p>
-</li>
-<li>
-<p>roughness parameters</p>
+<p>NoahMP groundwater coupling through NUOPC Cap</p>
 </li>
 </ul>
 </div>
@@ -1115,716 +685,32 @@ describes how to request help from and provide feedback to the LISF development 
 <div class="ulist">
 <ul>
 <li>
-<p>AMMA land surface model intercomparision project phase 2 (ALMIPII) metforcing data</p>
+<p>Met Office Global and Regional Ensemble Prediction System - global ensemble (MOGREPS-G) forecasts</p>
 </li>
 <li>
-<p>Australian Water Resource Assessment Landscape (AWRA-L) metforcing data</p>
+<p>GALWEM radiation</p>
 </li>
 <li>
-<p>Canadian Precipitation Analysis (CaPA) data</p>
-</li>
-<li>
-<p>FASSTsingle metforcing data</p>
-</li>
-<li>
-<p>downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)</p>
-</li>
-<li>
-<p>Loobos metforcing data</p>
-</li>
-<li>
-<p>arms metforcing data</p>
-</li>
-<li>
-<p>era5 metforcing data</p>
-</li>
-<li>
-<p>gdas3d metforcing data</p>
-</li>
-<li>
-<p>gefs metforcing data</p>
-</li>
-<li>
-<p>mrms metforcing data</p>
-</li>
-<li>
-<p>pptEnsFcst metforcing data</p>
-</li>
-<li>
-<p>usaf metforcing data</p>
+<p>IMERG V8</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p>Supports additional data assimilation observation datasets</p>
+<p>Supports additional data assmilation observation datasets</p>
 <div class="ulist">
 <ul>
 <li>
-<p>simGRACE_JPL observations</p>
+<p>Snow and Ice Products (SNIP) analysis</p>
 </li>
 <li>
-<p>syntheticSnowTb observations</p>
+<p>SWOT water level observations</p>
 </li>
 <li>
-<p>syntheticlst observations</p>
-</li>
-<li>
-<p>syntheticsf observations</p>
-</li>
-<li>
-<p>syntheticsm observations</p>
-</li>
-<li>
-<p>syntheticsnd observations</p>
-</li>
-<li>
-<p>syntheticswe observations</p>
-</li>
-<li>
-<p>syntheticwl observations</p>
-</li>
-<li>
-<p>AMSRE SWE observations</p>
-</li>
-<li>
-<p>AFWA NASA snow algorithm (ANSA) SWE retrievals</p>
-</li>
-<li>
-<p>ASCAT_TUW observations</p>
-</li>
-<li>
-<p>ASO_SWE observations</p>
-</li>
-<li>
-<p>GLASS Albedo observations</p>
-</li>
-<li>
-<p>GLASS LAI observations</p>
-</li>
-<li>
-<p>IMS_sca observations</p>
-</li>
-<li>
-<p>International Satellite Cloud Climatology Project (ISCCP) skin temperature observations</p>
-</li>
-<li>
-<p>MODIS SPoRT LAI observations</p>
-</li>
-<li>
-<p>NASA SMAP vegetation optical depth retrievals</p>
-</li>
-<li>
-<p>SMAP near-real time (NRT) soil moisture observations</p>
-</li>
-<li>
-<p>SMOPS AMSR2 soil moisture observations</p>
-</li>
-<li>
-<p>SMOPS ASCAT soil moisture observations</p>
-</li>
-<li>
-<p>SMOPS SMAP soil moisture observations</p>
-</li>
-<li>
-<p>SMOPS SMOS soil moisture observations</p>
-</li>
-<li>
-<p>SNODEP observations</p>
-</li>
-<li>
-<p>SYN_LBAND_TB observations</p>
-</li>
-<li>
-<p>USAFSI observations</p>
-</li>
-<li>
-<p>WindSat_Cband_sm observations</p>
-</li>
-<li>
-<p>multisynsmobs observations</p>
+<p>Weather Satellite Follow-on Microwave (WSF-M) soil moisture</p>
 </li>
 </ul>
 </div>
-</li>
-<li>
-<p>Supports additional parameter estimation observation datasets</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Walnut Gulch (WG) PBMR soil moisture observations</p>
-</li>
-<li>
-<p>ARM observations</p>
-</li>
-<li>
-<p>ARSsm observations</p>
-</li>
-<li>
-<p>Ameriflux observations</p>
-</li>
-<li>
-<p>CNRS observations</p>
-</li>
-<li>
-<p>FLUXNET observations</p>
-</li>
-<li>
-<p>Global_LS_data observations</p>
-</li>
-<li>
-<p>ISCCP_Tskin observations</p>
-</li>
-<li>
-<p>ISMNsm observations</p>
-</li>
-<li>
-<p>Macon_LS_data observations</p>
-</li>
-<li>
-<p>SMAP soil moisture observations</p>
-</li>
-<li>
-<p>University of Arizona (UA) swe/snow depth observations</p>
-</li>
-<li>
-<p>USDA ARS soil moisture observations</p>
-</li>
-<li>
-<p>pesynsm1 observations</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_7_2">1.1.4. LIS 7.2</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Includes the NOAA Rapid Update Cycle (RUC) 3.7.1 land surface model</p>
-</li>
-<li>
-<p>Includes the ensemble streamflow prediction (ESP) conventional
-forecasting runmode</p>
-</li>
-<li>
-<p>Includes additional parameter and uncertainty estimation support</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Differential evolution Markov chain (DEMC)</p>
-</li>
-<li>
-<p>Levenberg-Marquardt</p>
-</li>
-<li>
-<p>Random walk Markov chain monte carlo</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes additional radiative transfer model support</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Tau Omega</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Data assimilation is performed on the observation grid</p>
-</li>
-<li>
-<p>Supports HYMAP runoff data</p>
-</li>
-<li>
-<p>Supports ANSA snow depth observations</p>
-</li>
-<li>
-<p>Supports GCOMW AMSR2 L3 soil moisture observations</p>
-</li>
-<li>
-<p>Supports GCOMW AMSR2 L3 snow depth observations</p>
-</li>
-<li>
-<p>Supports NASA SMAP soil moisture observations</p>
-</li>
-<li>
-<p>Supports PILDAS soil moisture observations</p>
-</li>
-<li>
-<p>Supports SMMR snow depth observations</p>
-</li>
-<li>
-<p>Supports SMOS L2 soil moisture observations</p>
-</li>
-<li>
-<p>Supports SMOS NESDIS soil moisture observations</p>
-</li>
-<li>
-<p>Supports SSMI snow depth observations</p>
-</li>
-<li>
-<p>Supports AWAP precipitation data</p>
-</li>
-<li>
-<p>Supports LDT generated met forcing climatology data</p>
-</li>
-<li>
-<p>Supports generic ensemble forecast met forcing data</p>
-</li>
-<li>
-<p>Supports GRIB 2 formatted output</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_7_1">1.1.5. LIS 7.1</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Includes Noah 3.6</p>
-</li>
-<li>
-<p>Includes NoahMP 3.6</p>
-</li>
-<li>
-<p>Includes CABLE 1.4b</p>
-</li>
-<li>
-<p>Includes Flake 1.0 — <mark>internal use only!</mark></p>
-</li>
-<li>
-<p>Includes flood irrigation</p>
-</li>
-<li>
-<p>Includes drip irrigation</p>
-</li>
-<li>
-<p>Supports SMOS L2 soil moisture observations</p>
-</li>
-<li>
-<p>Supports simulated GRACE products</p>
-</li>
-<li>
-<p>Supports GCOMW AMSR2 L3 soil moisture observations</p>
-</li>
-<li>
-<p>Supports VIIRS Daily GVF data</p>
-</li>
-<li>
-<p>Supports TRMM 3B42 V7 real time precipitation</p>
-</li>
-<li>
-<p>Supports Gaussian T1534 GFS met forcing data</p>
-</li>
-<li>
-<p>Supports MERRA-2 met forcing data — these data are not currently
-available to external users; they should become available in July 2015</p>
-</li>
-<li>
-<p>Supports LDT-generated met forcing data</p>
-</li>
-<li>
-<p>Supports downscaling precipitation (PRISM) (NLDAS-2 only)</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_7_0">1.1.6. LIS 7.0</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Requires companion Land Data Toolkit (LDT) input data and parameter
-preprocessor</p>
-</li>
-<li>
-<p>Includes VIC 4.1.2.l</p>
-</li>
-<li>
-<p>Includes RDHM 3.5.6 (SacHTET and Snow17)</p>
-</li>
-<li>
-<p>Includes demand sprinkler irrigation</p>
-</li>
-<li>
-<p>Includes HYMAP routing</p>
-</li>
-<li>
-<p>Includes NLDAS routing</p>
-</li>
-<li>
-<p>Includes radiative transfer model support</p>
-<div class="ulist">
-<ul>
-<li>
-<p>LIS-CRTM2EM — LIS' implementation of JCSDA&#8217;s CRTM2 with
-emissivity support</p>
-<div class="paragraph">
-<p>See <a href="http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/" class="bare">http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/</a></p>
-</div>
-</li>
-<li>
-<p>LIS-CMEM3 — LIS' implementation of ECMWF&#8217;s CMEM 3.0</p>
-<div class="paragraph">
-<p>See <a href="http://old.ecmwf.int/research/data_assimilation/land_surface/cmem/cmem_source.html" class="bare">http://old.ecmwf.int/research/data_assimilation/land_surface/cmem/cmem_source.html</a> for the original code.</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Includes parameter and uncertainty estimation support</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Genetic algorithm (GA)</p>
-</li>
-<li>
-<p>Monte Carlo sampling (MCSIM)</p>
-</li>
-<li>
-<p>Differential evolution Markov chain z (DEMCz)</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Supports ensemble of met forcing sources</p>
-</li>
-<li>
-<p>Supports GEOS 5 forecast met forcing data</p>
-</li>
-<li>
-<p>Supports PALS met forcing data</p>
-</li>
-<li>
-<p>Supports PILDAS met forcing data</p>
-</li>
-<li>
-<p>Supports ECV soil moisture data assimilation</p>
-</li>
-<li>
-<p>Supports GRACE data assimilation</p>
-</li>
-<li>
-<p>Supports PMW snow data assimilation</p>
-</li>
-<li>
-<p>Supports SMOPS soil moisture data assimilation</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>Note that the notion of a base forcing and a supplemental forcing have been replaced with the notion of a meteorological forcing.  Thus the support in <em>baseforcing</em> and in <em>suppforcing</em> have been combined into <em>metforcing</em>.</p>
-</div>
-<div class="paragraph">
-<p>Note that LIS is developing support for surface types other than land.  Thus all the land surface models contained in <em>lsms</em> have been moved into <em>surfacemodels/land</em>.</p>
-</div>
-<div class="paragraph">
-<p>Note that the companion program LDT is now required to process input parameters.  Thus the support for static and climatological parameters have been removed from <em>params</em> and placed into LDT.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_6_2">1.1.7. LIS 6.2</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Includes VIC 4.1.1.</p>
-</li>
-<li>
-<p>Includes CABLE 1.4b — restricted distribution.</p>
-</li>
-<li>
-<p>Includes Catchment F2.5.</p>
-</li>
-<li>
-<p>Includes Noah 3.3.</p>
-</li>
-<li>
-<p>Includes SiB2.</p>
-</li>
-<li>
-<p>Includes WRSI.</p>
-</li>
-<li>
-<p>Support for North American Mesoscale Forecast System (NAM)
-&#8220;242 AWIPS Grid -- Over Alaska&#8221; product.</p>
-</li>
-<li>
-<p>Support for USGS potential evapotranspiration (PET) data (for use
-in WRSI).</p>
-</li>
-<li>
-<p>Support for Climate Prediction Center&#8217;s (CPC) Rainfall Estimates
-version 2 (RFE2) daily precipition (for use in WRSI).</p>
-</li>
-<li>
-<p>Support to apply lapse-rate correction to bottom temperature field
-(for use in Noah).</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_6_1">1.1.8. LIS 6.1</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Includes Noah 3.1.</p>
-</li>
-<li>
-<p>Includes Noah 3.2.</p>
-</li>
-<li>
-<p>Support for SPoRT Daily GVF data.</p>
-</li>
-<li>
-<p>Support for North American Regional Reanalysis (3d) (NARR) data.</p>
-</li>
-<li>
-<p>Support for NCEP&#8217;s modified IGBP MODIS landcover data.</p>
-</li>
-<li>
-<p>Support to specify direction for output variables.</p>
-</li>
-<li>
-<p>Support for assimilation of ANSA snow depth products, MODIS
-snowcover, and LPRM retrievals of AMSRE soil moisture.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_6_0">1.1.9. LIS 6.0</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Modules have been restructured to streamline public and private interfaces</p>
-</li>
-<li>
-<p>Restructured AGRMET processing — parallel support, lat/lon support.</p>
-</li>
-<li>
-<p>This version now uses ESMF 3.1.0rp3.</p>
-</li>
-<li>
-<p>Support for computational halos.</p>
-</li>
-<li>
-<p>Allows mosaicing  of different forcings concurrently
-(e.g. GDAS global + NLDAS over CONUS+SALDAS over south america, etc.)</p>
-</li>
-<li>
-<p>Allows multiple overlays of different supplemental forcings
-(e.g. GDAS overlaid with NLDAS, AGRMET, STAGEIV)</p>
-</li>
-<li>
-<p>Allows concurrent instances of data assimilation</p>
-</li>
-<li>
-<p>Includes a highly configurable I/O interface (Allows unit conversions,
-temporal averaging, model-independent support for binary, Grib1 and NETCDF)</p>
-</li>
-<li>
-<p>Includes support for 3d forcing (that includes the atmospheric profile) and
-a configurable specification of the forcing inputs</p>
-</li>
-<li>
-<p>A dynamic bias estimation component (from NASA GMAO) has been added to the
-data assimilation subsystem.</p>
-</li>
-<li>
-<p>Generic support for parameter estimation/optimization with the implmentation
-of a heuristic approach using Genetic Algorithms.</p>
-</li>
-<li>
-<p>New sources for data assimilation (using NASA and NESDIS retrievals of AMSRE
-soil moisture)</p>
-</li>
-<li>
-<p>Support for real time GVF data from NESDIS and MODIS</p>
-</li>
-<li>
-<p>A suite of upscaling algorithms to complement the existing spatial
-downscaling algorithms.</p>
-</li>
-<li>
-<p>Support for new map projections — UTM</p>
-</li>
-<li>
-<p>Support for forward modeling using radiative transfer models, and support
-for radiance based assimilation</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_5_0">1.1.10. LIS 5.0</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>This version includes the infrastructure for performing data assimilation
-using a number of different algorithms from simple approaches such as
-direct insertion to the more sophisticated ensemble kalman filtering.</p>
-</li>
-<li>
-<p>More streamlined support for different architectures: A configuration
-based specification for the LIS makefile.</p>
-</li>
-<li>
-<p>The data assimilation infrastructure utilizes the Earth System Modeling
-Framework (ESMF) structures. The LIS configuration utility has been
-replaced with the corresponding ESMF utility.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_4_2">1.1.11. LIS 4.2</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Completed implementation of AGRMET processing algorithms</p>
-</li>
-<li>
-<p>Ability to run on polar stereographic, mercator, lambert
-conformal, and lat/lon projections</p>
-</li>
-<li>
-<p>Updated spatial interpolation tools to support the transformations
-to/from the above grid projections</p>
-</li>
-<li>
-<p>Switched to a highly interactive configurations management from
-the fortran namelist-based lis.crd style.</p>
-</li>
-<li>
-<p>Streamlined error and diagnostic logging, in both sequential and
-parallel processing environments.</p>
-</li>
-<li>
-<p>extended grib support; included the UCAR-based read-grib library</p>
-</li>
-<li>
-<p>Support for new supplemental forcing analyses — Huffman, CMORPH</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_4_1">1.1.12. LIS 4.1</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Preliminary AFWA support</p>
-</li>
-<li>
-<p>Ability to run on a defined layout of processors.</p>
-</li>
-<li>
-<p>Updates to plugins, preliminary implementation of alarms.</p>
-</li>
-<li>
-<p>Definition of LIS specfic environment variables.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_4_0_2">1.1.13. LIS 4.0.2</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>GSWP-2 support — LIS can now run GSWP-2 experiments.  Currently
-only CLM and Noah models have full support.</p>
-</li>
-<li>
-<p>Updates to the 1km running mode.</p>
-</li>
-<li>
-<p>Updates to the GDS running mode.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_4_0">1.1.14. LIS 4.0</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>VIC 4.0.5 — LIS' implementation of VIC has been reinstated.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_3_1">1.1.15. LIS 3.1</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>New domain-plugin support — facilitates creating new domains.</p>
-</li>
-<li>
-<p>New domain definition support — facilitates defining running domains.
-Sub-domain selection now works for
-both MPI-based and non MPI-based
-runs.</p>
-</li>
-<li>
-<p>New parameter-plugin support — facilitates adding new input
-parameter data-sets.</p>
-</li>
-<li>
-<p>New LIS version of ipolates — facilitates creating new domains and
-base forcing data-sets.</p>
-</li>
-<li>
-<p>Compile-time MPI support — MPI libraries are no longer required
-to compile LIS.</p>
-</li>
-<li>
-<p>Compile-time netCDF support — netCDF libraries are no longer required
-to compile LIS.</p>
-</li>
-<li>
-<p>New LIS time manager support — ESMF time manager was removed.
-ESMF libraries are not required in
-this version of LIS.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_3_0">1.1.16. LIS 3.0</h4>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Running Modes — Now there is more than one way to run LIS.
-In addition to the standard MPI running mode,
-there are the GDS running mode and the 1 km running
-mode.</p>
-</li>
-<li>
-<p>Sub-domain Selection — Now you are no longer limited to global
-simulations.  You may choose any sub-set
-of the global domain to run over.
-See Section <a href="#sec_lisconfigfile">LIS config File</a>
-for more details.
-(This is currently only available for the
-MPI-based running mode.)</p>
-</li>
-<li>
-<p>Plug-ins — Now it is easy to add new LSM and forcing data-sets into
-the LIS driver.
-See LIS' Developer&#8217;s Guide for more details.</p>
 </li>
 </ol>
 </div>
@@ -1979,9 +865,9 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 </div>
 <div class="sect2">
-<h3 id="sec_publicrelease">4.2. Public Release Source Code</h3>
+<h3 id="sec_publicrelease">4.2. Release Source Code</h3>
 <div class="paragraph">
-<p>The LISF public release 7.5 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+<p>The LISF public release 7.8 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
 </div>
 <div class="paragraph">
 <p>After downloading the LISF tar-file:</p>
@@ -1999,7 +885,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% mv LISF_public_release_7.5.0.tar.gz TOPLEVELDIR</pre>
+<pre>% mv LISF_public_release_7.8.0.tar.gz TOPLEVELDIR</pre>
 </div>
 </div>
 </div>
@@ -2021,7 +907,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% gzip -dc LISF_public_release_7.5.0.tar.gz | tar xf -</pre>
+<pre>% tar xzf LISF_public_release_7.8.0.tar.gz</pre>
 </div>
 </div>
 </div>
@@ -2078,1708 +964,7 @@ The directory containing the LIS source code, <em>LISF/lis</em>, will be referre
 </table>
 </div>
 <div class="paragraph">
-<p>The structure of <em>LISF/lis</em> is as follows:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>LICENSES</em></p>
-<div class="paragraph">
-<p>Directory the NASA Open Source license for LIS along with the licenses of other
-included components</p>
-</div>
-</li>
-<li>
-<p><em>RESTRICTED</em></p>
-</li>
-<li>
-<p><em>apps</em></p>
-<div class="paragraph">
-<p>Directory containing applications built on LIS</p>
-</div>
-</li>
-<li>
-<p><em>arch</em></p>
-<div class="paragraph">
-<p>Directory containing the configurable options for building the LIS executable</p>
-</div>
-</li>
-<li>
-<p><em>configs</em></p>
-<div class="paragraph">
-<p>Directory containing some sample LIS configuration files</p>
-</div>
-</li>
-<li>
-<p><em>core</em></p>
-<div class="paragraph">
-<p>Directory containing core routines in LIS</p>
-</div>
-</li>
-<li>
-<p><em>dataassim</em></p>
-<div class="paragraph">
-<p>Top level directory for data assimilation support, which includes the following subcomponents</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>algorithm</em></p>
-<div class="paragraph">
-<p>Directory containing the following data assimilation algorithm implementations:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>di</em></p>
-<div class="paragraph">
-<p>Direct insertion algorithm for data assimilation</p>
-</div>
-</li>
-<li>
-<p><em>ekf</em></p>
-<div class="paragraph">
-<p>NASA GMAO&#8217;s extended Kalman filter algorithm for data assimilation</p>
-</div>
-</li>
-<li>
-<p><em>enkf</em></p>
-<div class="paragraph">
-<p>NASA GMAO&#8217;s Ensemble Kalman Filter algorithm for data assimilation</p>
-</div>
-</li>
-<li>
-<p><em>enkfgrace</em></p>
-<div class="paragraph">
-<p>GRACE Ensemble Kalman Filter algorithm for data assimilation</p>
-</div>
-</li>
-<li>
-<p><em>ensrf</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>pf</em></p>
-<div class="paragraph">
-<p>Particle filter algorithm for data assimilation</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>biasEstimation</em></p>
-<div class="paragraph">
-<p>Directory containing the following dynamic bias estimation algorithms:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>gmaoBE</em></p>
-<div class="paragraph">
-<p>NASA GMAO&#8217;s dynamic bias estimation algorithm</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>obs</em></p>
-<div class="paragraph">
-<p>Directory containing the following observation handlers for data assimilation:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>AMRE_swe</em></p>
-<div class="paragraph">
-<p>AMSRE snow water equivalent retrievals in HDF4/HDFEOS format</p>
-</div>
-</li>
-<li>
-<p><em>ANSA_SCF</em></p>
-<div class="paragraph">
-<p>Blended snow cover fraction from the AFWA NASA snow algorithm</p>
-</div>
-</li>
-<li>
-<p><em>ANSA_SNWD</em></p>
-<div class="paragraph">
-<p>Snow depth retrievals from the AFWA NASA snow algorithm</p>
-</div>
-</li>
-<li>
-<p><em>ANSA_SWE</em></p>
-<div class="paragraph">
-<p>Snow water equivalent retrievals from the AFWA NASA snow algorithm</p>
-</div>
-</li>
-<li>
-<p><em>ASCAT_TUW</em></p>
-<div class="paragraph">
-<p>ASCAT (TU Wein) soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>ASO_SWE</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>CDFS_GVF</em></p>
-<div class="paragraph">
-<p>CDFS green vegetation fraction</p>
-</div>
-</li>
-<li>
-<p><em>CDF_Transfer_NASA_SMAPsm</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>ESACCI_sm</em></p>
-<div class="paragraph">
-<p>ESACCI Essential Climate Variable product</p>
-</div>
-</li>
-<li>
-<p><em>GCOMW_AMSR2L3SND</em></p>
-<div class="paragraph">
-<p>AMSR2 snow depth retrievals</p>
-</div>
-</li>
-<li>
-<p><em>GCOMW_AMSR2L3sm</em></p>
-<div class="paragraph">
-<p>AMSR2 soil moisture retrievals</p>
-</div>
-</li>
-<li>
-<p><em>GLASS_Albedo</em></p>
-<div class="paragraph">
-<p>GLASS Albedo retrievals</p>
-</div>
-</li>
-<li>
-<p><em>GLASS_LAI</em></p>
-<div class="paragraph">
-<p>GLASS LAI retrievals</p>
-</div>
-</li>
-<li>
-<p><em>GRACE</em></p>
-<div class="paragraph">
-<p>GRACE soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>IMS_sca</em></p>
-<div class="paragraph">
-<p>IMS snow cover area</p>
-</div>
-</li>
-<li>
-<p><em>ISCCP_Tskin</em></p>
-<div class="paragraph">
-<p>ISCCP skin temperature product in binary format</p>
-</div>
-</li>
-<li>
-<p><em>LPRM_AMSREsm</em></p>
-<div class="paragraph">
-<p>Soil moisture retrievals from AMSRE derived using the land parameter retrieval model (LPRM) from University of Amsterdam</p>
-</div>
-</li>
-<li>
-<p><em>MCD15A2H_LAI</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>MODIS_SPORT_LAI</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>MODISsca</em></p>
-<div class="paragraph">
-<p>MODIS snow cover area product in HDF4/HDFEOS format</p>
-</div>
-</li>
-<li>
-<p><em>NASA_AMSREsm</em></p>
-<div class="paragraph">
-<p>NASA AMSRE soil moisture data in binary format</p>
-</div>
-</li>
-<li>
-<p><em>NASA_SMAPsm</em></p>
-<div class="paragraph">
-<p>NASA SMAP soil moisture retrievals</p>
-</div>
-</li>
-<li>
-<p><em>NASA_SMAPvod</em></p>
-<div class="paragraph">
-<p>NASA SMAP vegetation optical depth retrievals</p>
-</div>
-</li>
-<li>
-<p><em>PMW_snow</em></p>
-<div class="paragraph">
-<p>PMW snow</p>
-</div>
-</li>
-<li>
-<p><em>SMAP_E_OPLsm</em></p>
-<div class="paragraph">
-<p>Operation Enhanced (9-km) SMAP soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>SMAP_NRTsm</em></p>
-<div class="paragraph">
-<p>SMAP near-real time soil moisture retrievals</p>
-</div>
-</li>
-<li>
-<p><em>SMMR_SNWD</em></p>
-<div class="paragraph">
-<p>SMMR snow depth</p>
-</div>
-</li>
-<li>
-<p><em>SMOPS_AMSR2sm</em></p>
-<div class="paragraph">
-<p>SMOPS AMSR2 real time soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>SMOPS_ASCATsm</em></p>
-<div class="paragraph">
-<p>SMOPS ASCAT A and B real time soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>SMOPS_SMAPsm</em></p>
-<div class="paragraph">
-<p>SMOPS SMAP real time soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>SMOPS_SMOSsm</em></p>
-<div class="paragraph">
-<p>SMOPS SMOS real time soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>SMOS_L2sm</em></p>
-<div class="paragraph">
-<p>SMOS L2 soil moisture</p>
-</div>
-</li>
-<li>
-<p><em>SMOS_NESDIS</em></p>
-<div class="paragraph">
-<p>SMOS NESDIS soil moisture retrievals</p>
-</div>
-</li>
-<li>
-<p><em>SMOS_NRTNN_L2sm</em></p>
-<div class="paragraph">
-<p>SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)</p>
-</div>
-</li>
-<li>
-<p><em>SNODAS</em></p>
-<div class="paragraph">
-<p>Snow Data Assimilation System (SNODAS)</p>
-</div>
-</li>
-<li>
-<p><em>SNODEP</em></p>
-<div class="paragraph">
-<p>AFWA snowdepth data in Grib1 format</p>
-</div>
-</li>
-<li>
-<p><em>SSMI_SNWD</em></p>
-<div class="paragraph">
-<p>SSMI snow depth</p>
-</div>
-</li>
-<li>
-<p><em>SYN_LBAND_TB</em></p>
-<div class="paragraph">
-<p>Synthetic L-band brightness temperature</p>
-</div>
-</li>
-<li>
-<p><em>THySM</em></p>
-<div class="paragraph">
-<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
-</div>
-</li>
-<li>
-<p><em>USAFSI</em></p>
-<div class="paragraph">
-<p>USAF Snow and Ice Analysis</p>
-</div>
-</li>
-<li>
-<p><em>VIIRS_GVF</em></p>
-<div class="paragraph">
-<p>VIIRS green vegetation fraction</p>
-</div>
-</li>
-<li>
-<p><em>WUS_UCLAsnow</em></p>
-<div class="paragraph">
-<p>Margulis Western US Snow Reanalysis dataset</p>
-</div>
-</li>
-<li>
-<p><em>WindSat_Cband_sm</em></p>
-<div class="paragraph">
-<p>C-band soil moisture retrievals from WindSat</p>
-</div>
-</li>
-<li>
-<p><em>WindSat_sm</em></p>
-<div class="paragraph">
-<p>X-band soil moisture retrievals from WindSat</p>
-</div>
-</li>
-<li>
-<p><em>hydrowebWL</em></p>
-<div class="paragraph">
-<p>hydroweb water level</p>
-</div>
-</li>
-<li>
-<p><em>pildas</em></p>
-<div class="paragraph">
-<p>PILDAS soil moisture observations (such as one generated from a previous LIS LSM run)</p>
-</div>
-</li>
-<li>
-<p><em>simGRACE_JPL</em></p>
-<div class="paragraph">
-<p>Synthetic soil moisture retrievals from GRACE</p>
-</div>
-</li>
-<li>
-<p>This directory also includes the following synthetic data handler examples:</p>
-</li>
-<li>
-<p><em>multisynsmobs</em></p>
-<div class="paragraph">
-<p>Synthetic soil moisture data with multiple observation types</p>
-</div>
-</li>
-<li>
-<p><em>syntheticSnowTb</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>syntheticlst</em></p>
-<div class="paragraph">
-<p>Synthetic land surface temperature data handler</p>
-</div>
-</li>
-<li>
-<p><em>syntheticsf</em></p>
-<div class="paragraph">
-<p>Synthetic streamflow data handler</p>
-</div>
-</li>
-<li>
-<p><em>syntheticsm</em></p>
-<div class="paragraph">
-<p>Synthetic soil moisture data handler (produced from a LIS LSM run)</p>
-</div>
-</li>
-<li>
-<p><em>syntheticsnd</em></p>
-<div class="paragraph">
-<p>Synthetic snow depth data handler</p>
-</div>
-</li>
-<li>
-<p><em>syntheticswe</em></p>
-<div class="paragraph">
-<p>Synthetic snow water equivalent data handler</p>
-</div>
-</li>
-<li>
-<p><em>syntheticwl</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>perturb</em></p>
-<div class="paragraph">
-<p>Directory containing the following perturbation algorithm implementations</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>gmaopert</em></p>
-<div class="paragraph">
-<p>NASA GMAO&#8217;s perturbation algorithm</p>
-</div>
-</li>
-<li>
-<p><em>uniform</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>forecast</em></p>
-<div class="paragraph">
-<p>Top level directory for forecasting support, which includes the following subcomponents</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>algorithm</p>
-<div class="paragraph">
-<p>Directory containing the following forecasting algorithm implementations</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>ESPboot</p>
-<div class="paragraph">
-<p>Boot ensemble streamflow prediction</p>
-</div>
-</li>
-<li>
-<p>ESPconv</p>
-<div class="paragraph">
-<p>Conventional ensemble streamflow prediction</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>interp</em></p>
-<div class="paragraph">
-<p>Generic spatial and temporal interpolation routines</p>
-</div>
-</li>
-<li>
-<p><em>irrigation</em></p>
-<div class="paragraph">
-<p>Directory containing the following irrigation schemes</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>drip</em></p>
-<div class="paragraph">
-<p>Drip irrigation scheme</p>
-</div>
-</li>
-<li>
-<p><em>flood</em></p>
-<div class="paragraph">
-<p>Flood irrigation scheme</p>
-</div>
-</li>
-<li>
-<p><em>sprinkler</em></p>
-<div class="paragraph">
-<p>Demand sprinkler irrigation scheme</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>lib</em></p>
-<div class="paragraph">
-<p>Directory contains the following RTM-related libraries</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>lis-cmem3</p>
-</li>
-<li>
-<p>lis-crtm</p>
-</li>
-<li>
-<p>lis-crtm-profile-utility</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>make</em></p>
-<div class="paragraph">
-<p>Directory containing Makefile and needed header files for building LIS executable</p>
-</div>
-</li>
-<li>
-<p><em>metforcing</em></p>
-<div class="paragraph">
-<p>Top level directory for base meteorological forcing methods, which includes the following implementations</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>3B42RT</em></p>
-<div class="paragraph">
-<p>TRMM 3B42RT precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>3B42RTV7</em></p>
-<div class="paragraph">
-<p>TRMM 3B42RTV7 precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>3B42V6</em></p>
-<div class="paragraph">
-<p>TRMM 3B42V6 precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>3B42V7</em></p>
-<div class="paragraph">
-<p>TRMM 3B42V7 precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>AWAP</em></p>
-<div class="paragraph">
-<p>AWAP precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>AWRAL</em></p>
-<div class="paragraph">
-<p>Australian Water Resource Assessment Landscape (AWRA-L) metforcing data</p>
-</div>
-</li>
-<li>
-<p><em>Bondville</em></p>
-<div class="paragraph">
-<p>Bondville forcing products</p>
-</div>
-</li>
-<li>
-<p><em>COAMPSout</em></p>
-<div class="paragraph">
-<p>Metforcing extracted from COAMPS output (COAMPSout)</p>
-</div>
-</li>
-<li>
-<p><em>HiMAT_GMU</em></p>
-<div class="paragraph">
-<p>Downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)</p>
-</div>
-</li>
-<li>
-<p><em>Loobos</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>PALSmetdata</em></p>
-<div class="paragraph">
-<p>PALS station data</p>
-</div>
-</li>
-<li>
-<p><em>RFE2Daily</em></p>
-<div class="paragraph">
-<p>RFE2 precipitation product from FEWSNET (diurnally non-disaggregated)</p>
-</div>
-</li>
-<li>
-<p><em>RFE2gdas</em></p>
-<div class="paragraph">
-<p>RFE2 precipitation product from FEWSNET bias corrected against GDAS data</p>
-</div>
-</li>
-<li>
-<p><em>WRFAKdom</em></p>
-<div class="paragraph">
-<p>Metforcing extracted from WRF output over Alaska domain (WRFAKdom)</p>
-</div>
-</li>
-<li>
-<p><em>WRFout</em></p>
-<div class="paragraph">
-<p>Metforcing extracted from WRF output (WRFout)</p>
-</div>
-</li>
-<li>
-<p><em>WRFoutv2</em></p>
-<div class="paragraph">
-<p>Metforcing extracted from WRF output (WRFoutv2)</p>
-</div>
-</li>
-<li>
-<p><em>agrradps</em></p>
-<div class="paragraph">
-<p>AGRMET radiation product (polar stereographic prjection)</p>
-</div>
-</li>
-<li>
-<p><em>chirps2</em></p>
-<div class="paragraph">
-<p>UCSB CHIRPS v2.0 satellite-gage merged precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>climatology</em></p>
-<div class="paragraph">
-<p>LDT-generated forcing climatologies</p>
-</div>
-</li>
-<li>
-<p><em>cmap</em></p>
-<div class="paragraph">
-<p>CMAP precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>cmorph</em></p>
-<div class="paragraph">
-<p>CMORPH precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>ecmwf</em></p>
-<div class="paragraph">
-<p>ECMWF meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>era5</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>galwem</em></p>
-<div class="paragraph">
-<p>GALWEM 17km or 0.25deg deterministic forecast reader</p>
-</div>
-</li>
-<li>
-<p><em>galwem_ge</em></p>
-<div class="paragraph">
-<p>GALWEM-GE forecast reader</p>
-</div>
-</li>
-<li>
-<p><em>gdas</em></p>
-<div class="paragraph">
-<p>NCEP GDAS meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>gdasT1534</em></p>
-<div class="paragraph">
-<p>NCEP GDAS GFS T1534 meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>gddp</em></p>
-<div class="paragraph">
-<p>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP)</p>
-</div>
-</li>
-<li>
-<p><em>gefs</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>genEnsFcst</em></p>
-<div class="paragraph">
-<p>User-derived ensemble forecast data</p>
-</div>
-</li>
-<li>
-<p><em>genMetForc</em></p>
-<div class="paragraph">
-<p>LDT-generated meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>geos5fcst</em></p>
-<div class="paragraph">
-<p>NASA GEOS 5 meteorological forecast forcing data</p>
-</div>
-</li>
-<li>
-<p><em>geos_it</em></p>
-<div class="paragraph">
-<p>GEOS-IT</p>
-</div>
-</li>
-<li>
-<p><em>gfs</em></p>
-<div class="paragraph">
-<p>NCEP GFS meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>gldas</em></p>
-<div class="paragraph">
-<p>NASA GMAO GLDAS meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>gswp1</em></p>
-<div class="paragraph">
-<p>Global Soil Wetness Project-1 meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>gswp2</em></p>
-<div class="paragraph">
-<p>Global Soil Wetness Project-2 meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>imerg</em></p>
-<div class="paragraph">
-<p>GPM L3 precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>merra2</em></p>
-<div class="paragraph">
-<p>GMAO Modern Era Retrospective-Analysis for Research and Applications data</p>
-</div>
-</li>
-<li>
-<p><em>mrms</em></p>
-<div class="paragraph">
-<p>National Center for Environmental Prediction (NCEP) Multi-Radar/Multi-Sensor (MRMS) Doppler Radar+gage product.</p>
-</div>
-</li>
-<li>
-<p><em>nam242</em></p>
-<div class="paragraph">
-<p>North American Mesoscale Forecast System (NAM) 242 AWIPS Grid -- Over Alaska product</p>
-</div>
-</li>
-<li>
-<p><em>narr</em></p>
-<div class="paragraph">
-<p>North American Regional Reanalysis (3d) data</p>
-</div>
-</li>
-<li>
-<p><em>nldas2</em></p>
-<div class="paragraph">
-<p>North American Land Data Assimilation System 2 forcing product</p>
-</div>
-</li>
-<li>
-<p><em>pet_usgs</em></p>
-<div class="paragraph">
-<p>Daily potential evapotranspiration data from the USGS FAO-PET method, using GDAS forcing fields as inputs</p>
-</div>
-</li>
-<li>
-<p><em>plumber2</em></p>
-<div class="paragraph">
-<p>PLUMBER2 station data</p>
-</div>
-</li>
-<li>
-<p><em>pptEnsFcst</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>princeton</em></p>
-<div class="paragraph">
-<p>Renalaysis product from Princeton University (<a href="#sheffield_etal_2006">[sheffield_etal_2006]</a>)</p>
-</div>
-</li>
-<li>
-<p><em>scan</em></p>
-<div class="paragraph">
-<p>Soil Climate Analysis Network precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>snotel</em></p>
-<div class="paragraph">
-<p>SNOTEL meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>stg2</em></p>
-<div class="paragraph">
-<p>NCEP Stage IV QPE precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>stg4</em></p>
-<div class="paragraph">
-<p>NCEP Stage II precipitation product</p>
-</div>
-</li>
-<li>
-<p><em>templateMetForc</em></p>
-<div class="paragraph">
-<p>An empty template for meteorological forcing data implementations</p>
-</div>
-</li>
-<li>
-<p><em>usaf</em></p>
-<div class="paragraph">
-<p>Routines for generating meteorological forcing data in the &#8220;AGRMET ops&#8221; running mode and for handling said data when running in the &#8220;retrospective&#8221; runmode</p>
-</div>
-</li>
-<li>
-<p><em>vicforcing</em></p>
-<div class="paragraph">
-<p>VIC 4.1.1 pre-processed meteorological forcing data</p>
-</div>
-</li>
-<li>
-<p><em>vicforcing.4.1.2</em></p>
-<div class="paragraph">
-<p>VIC 4.1.2 pre-processed meteorological forcing data</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>offline</em></p>
-<div class="paragraph">
-<p>Directory containing the main program for the offline mode of operation</p>
-</div>
-</li>
-<li>
-<p><em>optUE</em></p>
-<div class="paragraph">
-<p>Top level directory for optimization support, which includes the following subcomponents</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>algorithm</em></p>
-<div class="paragraph">
-<p>Directory containing the following optimization algorithm implementations</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>DEMC</em></p>
-<div class="paragraph">
-<p>Differential evolution Monte Carlo algorithm</p>
-</div>
-</li>
-<li>
-<p><em>DEMCz</em></p>
-<div class="paragraph">
-<p>Differential evolution Monte Carlo Z algorithm</p>
-</div>
-</li>
-<li>
-<p><em>ES</em></p>
-<div class="paragraph">
-<p>Enumerated search</p>
-</div>
-</li>
-<li>
-<p><em>GA</em></p>
-<div class="paragraph">
-<p>Single objective Genetic Algorithm</p>
-</div>
-</li>
-<li>
-<p><em>LM</em></p>
-<div class="paragraph">
-<p>Levenberg-Marquardt gradient search algorithm</p>
-</div>
-</li>
-<li>
-<p><em>MCSIM</em></p>
-<div class="paragraph">
-<p>Monte Carlo simple propagation scheme</p>
-</div>
-</li>
-<li>
-<p><em>RWMCMC</em></p>
-<div class="paragraph">
-<p>Random walk Markov chain monte carlo algorithm</p>
-</div>
-</li>
-<li>
-<p><em>SCE-UA</em></p>
-<div class="paragraph">
-<p>Shuffled Complex Evolutionary Algorithm</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>type</em></p>
-<div class="ulist">
-<ul>
-<li>
-<p><em>paramestim</em></p>
-<div class="paragraph">
-<p>Directory for parameter estimation support</p>
-</div>
-<div class="paragraph">
-<p>The directory for parameter estimation support <em>paramestim</em> includes the following subcomponents</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>objfunc</em></p>
-<div class="paragraph">
-<p>Directory containing the following objective function evaluation methods</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>LL</em></p>
-<div class="paragraph">
-<p>Maximum likelihood</p>
-</div>
-</li>
-<li>
-<p><em>LM</em></p>
-<div class="paragraph">
-<p>Objective function definition for LM algorithm</p>
-</div>
-</li>
-<li>
-<p><em>LS</em></p>
-<div class="paragraph">
-<p>Least squares based objective function</p>
-</div>
-</li>
-<li>
-<p><em>P</em></p>
-<div class="paragraph">
-<p>Prior function definition</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>obs</em></p>
-<div class="paragraph">
-<p>Directory containing the following observation handlers for parameter estimation</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>AMSRE_SR</em></p>
-</li>
-<li>
-<p><em>ARM</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>ARSsm</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>Ameriflux</em></p>
-<div class="paragraph">
-<p>In-situ observations from Ameriflux</p>
-</div>
-</li>
-<li>
-<p><em>CNRS</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>EmptyObs</em></p>
-</li>
-<li>
-<p><em>FLUXNET</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>Global_LS_data</em></p>
-<div class="paragraph">
-<p>Global landslide observational data</p>
-</div>
-</li>
-<li>
-<p><em>ISCCP_Tskin</em></p>
-<div class="paragraph">
-<p>ISCCP land surface temperature observations</p>
-</div>
-</li>
-<li>
-<p><em>ISMNsm</em></p>
-<div class="paragraph">
-<p><span class="red">specifies what?</span></p>
-</div>
-</li>
-<li>
-<p><em>LPRM_AMSREsm</em></p>
-<div class="paragraph">
-<p>Soil moisture retrievals from AMSRE derived using the land parameter retrieval model (LPRM) from University of Amsterdam</p>
-</div>
-</li>
-<li>
-<p><em>Macon_LS_data</em></p>
-<div class="paragraph">
-<p>Macon County North Carolina landslide observational data</p>
-</div>
-</li>
-<li>
-<p><em>SMAPsm</em></p>
-<div class="paragraph">
-<p>SMAP soil moisture observational data</p>
-</div>
-</li>
-<li>
-<p><em>UAsnow</em></p>
-<div class="paragraph">
-<p>University of Arizona (UA) swe/snow depth observations</p>
-</div>
-</li>
-<li>
-<p><em>USDA_ARSsm</em></p>
-<div class="paragraph">
-<p>USDA Agricultural Research Service soil mositure retrievals</p>
-</div>
-</li>
-<li>
-<p><em>pesynsm1</em></p>
-<div class="paragraph">
-<p>Synthetic soil moisture observations</p>
-</div>
-</li>
-<li>
-<p><em>template</em></p>
-</li>
-<li>
-<p><em>wgPBMRsm</em></p>
-<div class="paragraph">
-<p>PBMR soil moisture data for the Walnut Gulch watershed</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>params</em></p>
-<div class="paragraph">
-<p>Directory containing implementations of the following land surface model parameters</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>albedo</em></p>
-<div class="paragraph">
-<p>Routines for handling albedo data products</p>
-</div>
-</li>
-<li>
-<p><em>emissivity</em></p>
-<div class="paragraph">
-<p>Routines for handling emissivity data products</p>
-</div>
-</li>
-<li>
-<p><em>gfrac</em></p>
-<div class="paragraph">
-<p>Routines for handling green vegetation fraction data products</p>
-</div>
-</li>
-<li>
-<p><em>lai</em></p>
-<div class="paragraph">
-<p>Routines for handling Leaf/Stem area index data products</p>
-</div>
-</li>
-<li>
-<p><em>roughness</em></p>
-<div class="paragraph">
-<p>Routines for handling roughness data products</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>plugins</em></p>
-<div class="paragraph">
-<p>Directory containing modules defining the function table registry of extensible functionalities</p>
-</div>
-</li>
-<li>
-<p><em>routing</em></p>
-<div class="paragraph">
-<p>Directory containing routing models</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>HYMAP_router</em></p>
-</li>
-<li>
-<p><em>HYMAP2_router</em></p>
-</li>
-<li>
-<p><em>NLDAS_router</em></p>
-</li>
-<li>
-<p><em>RAPID_router</em></p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>rtms</em></p>
-<div class="paragraph">
-<p>Directory containing coupling routines to the following radiative transfer models</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>CRTM</em> <sup class="footnote" id="_footnote_disclaimer">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup></p>
-<div class="paragraph">
-<p>Routines to handle coupling to the JCSDA Community Radiative Transfer Model</p>
-</div>
-</li>
-<li>
-<p><em>CRTM2</em> <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup></p>
-<div class="paragraph">
-<p>Routines to handle coupling to the JCSDA Community Radiative Transfer Model, version 2</p>
-</div>
-</li>
-<li>
-<p><em>CRTM2EM</em></p>
-<div class="paragraph">
-<p>Routines to handle coupling to the JCSDA Community Radiative Transfer Model Emissions model</p>
-</div>
-</li>
-<li>
-<p><em>LIS_CMEM3</em></p>
-<div class="paragraph">
-<p>Community Microwave Emission Model from ECMWF</p>
-</div>
-</li>
-<li>
-<p><em>TauOmegaRTM</em></p>
-<div class="paragraph">
-<p>Routines to handle coupling to the Tau Omega Radiative Transfer Model</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>runmodes</em></p>
-<div class="paragraph">
-<p>Directory containing the following running modes in LIS</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>RTMforward</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow when a forward model integration using a radiative transfer model is employed</p>
-</div>
-</li>
-<li>
-<p><em>agrmetmode</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow in the AFWA operational mode</p>
-</div>
-</li>
-<li>
-<p><em>forecast</em></p>
-<div class="paragraph">
-<p>Routines to manage the forecast simulation mode</p>
-</div>
-</li>
-<li>
-<p><em>gce_cpl_mode</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow in the coupled LIS-GCE mode</p>
-</div>
-</li>
-<li>
-<p><em>landslide_optUE</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow in combined use of landslide modeling simulations and optimization</p>
-</div>
-</li>
-<li>
-<p><em>nuopc_cpl_mode</em></p>
-<div class="paragraph">
-<p>National Unified Operational Prediction Capability (NUOPC) coupled runmode</p>
-</div>
-</li>
-<li>
-<p><em>paramEstimation</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow in the parameter estimation mode</p>
-</div>
-</li>
-<li>
-<p><em>retrospective</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow in the retrospective analysis mode</p>
-</div>
-</li>
-<li>
-<p><em>smootherDA</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow in the smoother da analysis mode</p>
-</div>
-</li>
-<li>
-<p><em>wrf_cpl_mode</em></p>
-<div class="paragraph">
-<p>Routines to manage the program flow in the coupled LIS-WRF mode not using ESMF</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>surfacemodels</em></p>
-<div class="paragraph">
-<p>Top level directory for surface model support, which includes the following subcomponents</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>glacier</em></p>
-<div class="paragraph">
-<p>Directory containing implementations of the following glacier surface models</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>noahmp.3.9.1.1</em></p>
-<div class="paragraph">
-<p>NCAR Noah multiphysics land surface model version 3.9.1.1</p>
-</div>
-</li>
-<li>
-<p><em>template</em></p>
-<div class="paragraph">
-<p>An empty template for glacire surface model implementations</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>lake</em></p>
-<div class="paragraph">
-<p>Directory containing implementations of the following lake surface models</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>FLake.1.0</em></p>
-<div class="paragraph">
-<p>FLake, version 1.0.  <mark>For internal use only.</mark></p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>land</em></p>
-<div class="paragraph">
-<p>Directory containing implementations of the following land surface models</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>awral.6.0.0</em></p>
-<div class="paragraph">
-<p>Australian Water Resource Assessment Landscape (AWRA-L) land surface model, version 6.0.0</p>
-</div>
-</li>
-<li>
-<p><em>cable</em></p>
-<div class="paragraph">
-<p>CSIRO Atmosphere Biosphere Land Exchange model, version 1.4b</p>
-</div>
-</li>
-<li>
-<p><em>clm2</em></p>
-<div class="paragraph">
-<p>NCAR community land model, version 2.0</p>
-</div>
-</li>
-<li>
-<p><em>clsm.f2.5</em></p>
-<div class="paragraph">
-<p>NASA GMAO Catchment land surface model version Fortuna 2.5</p>
-</div>
-</li>
-<li>
-<p><em>geowrsi.2</em></p>
-<div class="paragraph">
-<p>GeoWRSI version 2</p>
-</div>
-</li>
-<li>
-<p><em>hyssib</em></p>
-<div class="paragraph">
-<p>NASA HySSIB land surface model</p>
-</div>
-</li>
-<li>
-<p><em>jules.5.0</em></p>
-<div class="paragraph">
-<p>Support for UK Met Office&#8217;s JULES 5.0 land surface model</p>
-</div>
-</li>
-<li>
-<p><em>jules.5.1</em></p>
-<div class="paragraph">
-<p>Support for UK Met Office&#8217;s JULES 5.1 land surface model</p>
-</div>
-</li>
-<li>
-<p><em>jules.5.2</em></p>
-<div class="paragraph">
-<p>Support for UK Met Office&#8217;s JULES 5.2 land surface model</p>
-</div>
-</li>
-<li>
-<p><em>jules.5.3</em></p>
-<div class="paragraph">
-<p>Support for UK Met Office&#8217;s JULES 5.3 land surface model</p>
-</div>
-</li>
-<li>
-<p><em>jules.5.4</em></p>
-<div class="paragraph">
-<p>Support for UK Met Office&#8217;s JULES 5.4 land surface model</p>
-</div>
-</li>
-<li>
-<p><em>jules.5.x</em></p>
-<div class="paragraph">
-<p>Support for UK Met Office&#8217;s JULES 5.5 (and higher) land surface model</p>
-</div>
-</li>
-<li>
-<p><em>mosaic</em></p>
-<div class="paragraph">
-<p>NASA Mosaic land surface model</p>
-</div>
-</li>
-<li>
-<p><em>noah.2.7.1</em></p>
-<div class="paragraph">
-<p>NCEP Noah land surface model version 2.7.1</p>
-</div>
-</li>
-<li>
-<p><em>noah.3.2</em></p>
-<div class="paragraph">
-<p>NCAR Noah land surface model version 3.2</p>
-</div>
-</li>
-<li>
-<p><em>noah.3.3</em></p>
-<div class="paragraph">
-<p>NCAR Noah land surface model version 3.3</p>
-</div>
-</li>
-<li>
-<p><em>noah.3.6</em></p>
-<div class="paragraph">
-<p>NCAR Noah land surface model version 3.6</p>
-</div>
-</li>
-<li>
-<p><em>noah.3.9</em></p>
-<div class="paragraph">
-<p>NCAR Noah land surface model version 3.9</p>
-</div>
-</li>
-<li>
-<p><em>noahmp.3.6</em></p>
-<div class="paragraph">
-<p>NCAR Noah multiphysics land surface model version 3.6</p>
-</div>
-</li>
-<li>
-<p><em>noahmp.4.0.1</em></p>
-<div class="paragraph">
-<p>NCAR Noah multiphysics land surface model version 4.0.1</p>
-</div>
-</li>
-<li>
-<p><em>rdhm.3.5.6</em></p>
-<div class="paragraph">
-<p>NOAA OHD Research Distributed Hydrologic Model version 3.5.6</p>
-</div>
-</li>
-<li>
-<p><em>ruc.3.7</em></p>
-<div class="paragraph">
-<p>NOAA Rapid Update Cycle model version 3.7.1</p>
-</div>
-</li>
-<li>
-<p><em>summa.1.0</em> <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup></p>
-<div class="paragraph">
-<p>First attempt to incorporate the Structure for Unifying Multiple Modeling Alternatives (SUMMA) into LIS.  <mark>For internal use only.</mark></p>
-</div>
-</li>
-<li>
-<p><em>template</em></p>
-<div class="paragraph">
-<p>An empty template for land surface model implementations</p>
-</div>
-</li>
-<li>
-<p><em>vic.4.1.1</em></p>
-<div class="paragraph">
-<p>Variable Infiltration Capacity model from University of Washington, version 4.1.1</p>
-</div>
-</li>
-<li>
-<p><em>vic.4.1.2.l</em></p>
-<div class="paragraph">
-<p>Variable Infiltration Capacity model from University of Washington, version 4.1.2.l</p>
-</div>
-</li>
-<li>
-<p><em>subLSM</em></p>
-<div class="paragraph">
-<p>Directory containing implementations of sub land surface modeling processes.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>crocus.8.1</em></p>
-<div class="paragraph">
-<p>Crocus 8.1 snow model</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>openwater</em></p>
-<div class="paragraph">
-<p>Directory containing implementations of the following open water surface models</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>template</em></p>
-<div class="paragraph">
-<p>An empty template for open water surface model implementations</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><em>testcases</em></p>
-<div class="paragraph">
-<p>testcases for verifying various functionalities</p>
-</div>
-</li>
-<li>
-<p><em>utils</em></p>
-<div class="paragraph">
-<p>Miscellaneous helpful utilities</p>
-</div>
-</li>
-</ul>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Each of the LSM directories under <em>surfacemodels/land</em> contain specific plugin interfaces related to</p>
-</div>
-<div class="paragraph">
-<p>(1) coupling to WRF and GCE models,
-(2) Data assimilation instances,
-(3) Irrigation instances,
-(4) Parameter estimation instances,
-(5) Routing instances, and
-(6) Radiative transfer instances.</p>
-</div>
-<div class="paragraph">
-<p>These routines defined for Noah land surface model version 3.3 are shown below. Note that similar routines are implemented in other LSMs.</p>
-</div>
-<div class="paragraph">
-<p>(1) Coupling interfaces:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>cpl_wrf_noesmf</em></p>
-<div class="paragraph">
-<p>Routines for coupling Noah with WRF without ESMF</p>
-</div>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>(2) Data assimilation interfaces:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>da_snodep</em></p>
-<div class="paragraph">
-<p>Noah routines related to the assimilation of AFWA SNODEP observations</p>
-</div>
-</li>
-<li>
-<p><em>da_snow</em></p>
-<div class="paragraph">
-<p>Noah routines related to the assimilation of snow water equivalent observations</p>
-</div>
-</li>
-</ul>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>da_soilm</em></p>
-<div class="paragraph">
-<p>Noah routines related to the assimilation of soil moisture observations</p>
-</div>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>(3) Irrigation interfaces:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>irrigation</em></p>
-<div class="paragraph">
-<p>Noah routines related to interacting with the irrigation scheme</p>
-</div>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>(4) Parameter estimation interfaces:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>pe</em></p>
-<div class="paragraph">
-<p>Noah routines related to the estimation of soil properties through parameter estimation</p>
-</div>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>(5) Routing interfaces:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>routing</em></p>
-<div class="paragraph">
-<p>Noah routines related to interacting with the routing schemes</p>
-</div>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>(6) Radiative transfer model interfaces:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>sfc_cmem3</em></p>
-</li>
-<li>
-<p><em>sfc_crtm</em></p>
-</li>
-<li>
-<p><em>sfc_tauomega</em></p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-</table>
+<p>The structure of <em>LISF/lis</em> is documented in Appendix <a href="#sec-lis_source_tree">LIS source tree</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -3825,54 +1010,7 @@ included components</p>
 <div class="sect3">
 <h4 id="_step_3_3">Step 3</h4>
 <div class="paragraph">
-<p>Set the LIS_ARCH environment variable based on the system you are using.  The following commands are written using Bash shell syntax.</p>
-</div>
-<div class="literalblock">
-<div class="title">For a Linux system with the Intel Fortran compiler</div>
-<div class="content">
-<pre>% export LIS_ARCH=linux_ifc</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For a Linux system with the GNU Fortran compiler</div>
-<div class="content">
-<pre>% export LIS_ARCH=linux_gfortran</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For a Cray system with the Intel Fortran compiler</div>
-<div class="content">
-<pre>% export LIS_ARCH=cray_ifc</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For a Cray system with the Cray Fortran compiler</div>
-<div class="content">
-<pre>% export LIS_ARCH=cray_cray</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="title">For an IBM system with the GNU Fortran compiler</div>
-<div class="content">
-<pre>% export LIS_ARCH=ibm_gfortran</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>It is suggested that you set this environment variable in a modulefile <sup class="footnote" id="_footnote_modulefile">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> to load or in an environment script to source before compiling and/or running LIS.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_step_4_2">Step 4</h4>
-<div class="paragraph">
-<p>Run the <em>configure</em> script first by typing:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% ./configure</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This script will prompt the user with a series of questions regarding support to compile into LIS, requiring the user to specify the locations of the required and optional libraries via several LIS specific environment variables.  The following environment variables are used by LIS.</p>
+<p>Set the appropriate LIS environment variables.  These are used to control the compilation of LIS and to specify the locations of the required and optional libraries.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -3888,6 +1026,11 @@ included components</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_ARCH</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Architecture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">required</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_FC</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Fortran 90 compiler</p></td>
@@ -3981,13 +1124,43 @@ included components</p>
 </tbody>
 </table>
 <div class="paragraph">
-<p>Note that the <code>CC</code> variable must be set to a C compiler, not a C&#43;&#43; compiler.  A C&#43;&#43; compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.</p>
+<p>Set the <code>LIS_ARCH</code> environment variable based on the system you are using.  The following commands are written using Bash shell syntax.</p>
+</div>
+<div class="literalblock">
+<div class="title">For a Linux system with the Intel Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=linux_ifc</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Linux system with the GNU Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=linux_gfortran</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Intel Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=cray_ifc</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Cray Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=cray_cray</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For an IBM system with the GNU Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=ibm_gfortran</pre>
+</div>
 </div>
 <div class="paragraph">
-<p>It is suggested that you set these environment variables in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> to load or in an environment script to source before compiling and/or running LIS.</p>
+<p>Note that the <code>LIS_CC</code> variable must be set to a C compiler, not a C&#43;&#43; compiler.  A C&#43;&#43; compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.</p>
 </div>
 <div class="paragraph">
-<p>You may encounter errors either when trying to compile LIS or when trying to run LIS because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your <code>$LD_LIBRARY_PATH</code> environment variable.  For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):</p>
+<p>You may encounter errors either when trying to compile LIS or when trying to run LIS because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your <code>LD_LIBRARY_PATH</code> environment variable.  For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):</p>
 </div>
 <div class="literalblock">
 <div class="content">
@@ -3995,7 +1168,21 @@ included components</p>
 </div>
 </div>
 <div class="paragraph">
-<p>It is suggested that you set this environment variable in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> to load or in an environment script to source before compiling and/or running LIS.</p>
+<p>It is suggested that you set these environment variables in a modulefile <sup class="footnote" id="_footnote_modulefile">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LIS.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_step_4_2">Step 4</h4>
+<div class="paragraph">
+<p>Run the <em>configure</em> script first by typing:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>% ./configure</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This script will prompt the user with a series of questions regarding support to compile into LIS.</p>
 </div>
 <div class="sect4">
 <h5 id="_example">Example</h5>
@@ -4016,7 +1203,7 @@ Use NETCDF? (1-yes, 0-no, default=1):
 NETCDF version (3 or 4, default=4):
 NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
 NETCDF use deflate filter? (1-yes, 0-no, default = 1):
-NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9):
+NETCDF use deflate level? (1 to 9-yes, 0-no, default = 1):
 Use HDF4? (1-yes, 0-no, default=1):
 Use HDF5? (1-yes, 0-no, default=1):
 Use HDFEOS? (1-yes, 0-no, default=1):
@@ -4025,6 +1212,7 @@ Use LIS-CRTM? (1-yes, 0-no, default=0):
 Use LIS-CMEM? (1-yes, 0-no, default=0):
 Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):
 Use PETSc? (1-yes, 0-no, default=0):
+Enable USAF LIS75 SM DA codes? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
 -----------------------------------------------------
@@ -4477,6 +1665,10 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">GALWEM-GE forecast</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MOGREPS-G forecast</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
@@ -4602,15 +1794,19 @@ Not all the optional components listed below are available in the public release
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS router</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HYMAP router</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HYMAP2 router</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HYMAP3 router</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS router</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
@@ -4833,6 +2029,18 @@ Not all the optional components listed below are available in the public release
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">DA CDF TRANSFER NASA SMAPSM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS SWOT WL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS SNIP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS WSF sm</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 </tbody>
@@ -5159,6 +2367,10 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">template open water</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AquaCrop v7.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
@@ -5299,10 +2511,10 @@ Not all the optional components listed below are available in the public release
 </div>
 </div>
 <div class="sect1">
-<h2 id="sec_testcases">7. Test-cases</h2>
+<h2 id="sec_testcases">7. Testcases</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section describes how to obtain and how to use the test cases provided by the LISF development team.</p>
+<p>This section describes how to obtain and how to use the testcases provided by the LISF development team.</p>
 </div>
 <div class="paragraph">
 <p>There are two categories of testcases: public tests and internal tests.</p>
@@ -5310,58 +2522,58 @@ Not all the optional components listed below are available in the public release
 <div class="sect2">
 <h3 id="_public_tests">7.1. Public tests</h3>
 <div class="paragraph">
-<p>The new LIS framework (LISF) set of public testcases include a full end-to-end suite of LDT, LIS, and LVT cases that build off each other with several different steps, which are outlined in the table below. The suite of testcases include generating model parameter and assimilation-based input files using LDT, running the Noah land surface model (LSM) for a sample "open-loop" (or baseline) experiment and a data assimilation (DA) experiment using LIS, and then comparing output from the sample experiments using LVT.</p>
+<p>The new LIS framework (LISF) set of public testcases includes a full end-to-end suite of LDT, LIS, and LVT cases that build off each other with several different steps. The suite of testcases includes generating model parameter and assimilation-based input files using LDT, running the Noah land surface model (LSM) for a sample "open-loop" (or baseline) experiment and a data assimilation (DA) experiment using LIS, and then comparing output from the sample experiments using LVT.</p>
 </div>
 <div class="paragraph">
-<p>The new public test cases are available from our main LIS webpage:</p>
+<p>The new public testcases are available from our main LIS webpage:</p>
 </div>
 <div class="paragraph">
 <p><a href="https://lis.gsfc.nasa.gov/lis-testcases" class="bare">https://lis.gsfc.nasa.gov/lis-testcases</a></p>
 </div>
 <div class="paragraph">
-<p>All required input and data files are bundled with each of the cases from the above website. Also, documentation is provided that accompanies each of the cases for additional details and information. Below the table of test cases on the webpage, users will find information about which version, compiler and libraries used to generate and test the different test cases provided.</p>
+<p>All required input and data files are bundled with each of the cases from the above website. Also, documentation is provided that accompanies each of the cases for additional details and information.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_internal_tests">7.2. Internal tests</h3>
 <div class="paragraph">
-<p>The main purpose of these test cases is for the LISF development team to internally test various components of the LIS source code.  These test cases are comprised of three parts: a <em>testcases</em> sub-directory included in the LIS source code, input data, and output data.</p>
+<p>The main purpose of these testcases is for the LISF development team to internally test various components of the LIS source code.  These testcases are comprised of three parts: a <em>testcases</em> sub-directory included in the LIS source code, input data, and output data.</p>
 </div>
 <div class="paragraph">
-<p>For these test cases, we do not provide any of the input or output datasets, but users are welcome to use the config files in these subdirectory cases as a guide to setting up their own individual experiments and for their own testing purposes.</p>
+<p>For these testcases, we do not provide any of the input or output datasets, but users are welcome to use the config files in these subdirectories as a guide to setting up their own individual experiments and for their own testing purposes.</p>
 </div>
 <div class="sect3">
 <h4 id="sssec_testcases">7.2.1. The <em>testcases</em> Sub-directory</h4>
 <div class="paragraph">
-<p>The layout of the <em>testcases</em> sub-directory matches the layout of the top-level <em>lis</em> directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in <em>lis/metforcing/gdas</em>.  The test-case for GDAS is in <em>lis/testcases/metforcing/gdas</em>.</p>
+<p>The layout of the <em>testcases</em> sub-directory matches the layout of the top-level <em>lis</em> directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in <em>lis/metforcing/gdas</em>.  The testcase for GDAS is in <em>lis/testcases/metforcing/gdas</em>.</p>
 </div>
 <div class="paragraph">
-<p>These test-case sub-directories contain several files.  For example, the <em>src/testcases/metforcing/gdas</em> test-case contains these main files:</p>
+<p>These testcase sub-directories contain several files.  For example, the <em>src/testcases/metforcing/gdas</em> testcase contains these main files:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
 <p><em>README</em></p>
 <div class="paragraph">
-<p>contains instructions on how to run the test-case.</p>
+<p>contains instructions on how to run the testcase.</p>
 </div>
 </li>
 <li>
 <p><em>ldt.config</em></p>
 <div class="paragraph">
-<p>is the configuration file for LDT to process input parameters for the test-case.</p>
+<p>is the configuration file for LDT to process input parameters for the testcase.</p>
 </div>
 </li>
 <li>
 <p><em>lis.config</em></p>
 <div class="paragraph">
-<p>is a configuration file to set the test-case.</p>
+<p>is the configuration file for LIS to run the testcase.</p>
 </div>
 </li>
 <li>
 <p><em>MODEL_OUTPUT_LIST.TBL</em></p>
 <div class="paragraph">
-<p>is a configuration file to set the output for the test-case.</p>
+<p>is the configuration file to set the output for the testcase.</p>
 </div>
 </li>
 <li>
@@ -5488,10 +2700,6 @@ Not all the optional components listed below are available in the public release
 <div class="paragraph">
 <p>This section describes the options in the <em>lis.config</em> file.</p>
 </div>
-<div class="paragraph">
-<p>Not all options described here are available in the public
-version of LIS.</p>
-</div>
 <div class="sect2">
 <h3 id="ssec_driveropts">9.1. Overall driver options</h3>
 <div class="paragraph">
@@ -5531,10 +2739,6 @@ Acceptable values are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Coupled GCE mode</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GFS coupling&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Coupled GFS mode</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;parameter estimation&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Parameter estimation mode</p></td>
 </tr>
@@ -5552,59 +2756,6 @@ Acceptable values are:</p>
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
 <pre>Running mode: retrospective</pre>
-</div>
-</div>
-<div class="paragraph">
-<p><code>Map projection of the LIS domain:</code> specifies the
-map projection of the LIS domain used for the run.
-Acceptable values are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">latlon</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Lat/Lon projection with SW to NE data ordering</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">mercator</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Mercator projection with SW to NE data ordering</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">lambert</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Lambert conformal projection with SW to NE data ordering</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">gaussian</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Gaussian domain</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">polar</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Polar stereographic projection with SW to NE data ordering</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">UTM</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">UTM domain</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">hrap</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Hydrologic Rainfall Analysis Project (HRAP) grid</p></td>
-</tr>
-</tbody>
-</table>
-<div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
-<div class="content">
-<pre>Map projection of the LIS domain: latlon</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5777,10 +2928,6 @@ Acceptable values are:</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AquaCrop.7.2</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AquaCrop version 7.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FASST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FASST</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;CLSM F2.5&#8221;</p></td>
@@ -6172,20 +3319,12 @@ Acceptable values for the sources are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SCAN</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;D2PCPOKL&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">D2PCPOKL</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;AGRMET radiation&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AGRMET radiation</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;Bondville&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bondville site data</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;TRIGRS test&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">test data for TRIGRS model</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;SNOTEL&#8221;</p></td>
@@ -10999,14 +8138,6 @@ Acceptable values are:</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CRTM</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CRTM</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CRTM2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CRTM2</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CRTM2EM</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CRTM2EM</p></td>
 </tr>
@@ -11045,112 +8176,7 @@ RTM history output frequency: 3hr</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="ssec_crtm">9.6.1. CRTM</h4>
-<div class="paragraph">
-<p>This section specifies the specifications to enable a CRTM instance.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of sensors:</code> specifies the number of sensors
-to be used.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of layers:</code> specifies the number of atmospheric
-layers.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of absorbers:</code> specifies the number of absorbers.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of clouds:</code> specifies the number of cloud types.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of aerosols:</code> specifies the number of aerosol types.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM sensor id:</code> specifies the name of sensors to be simulated.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM coefficient data path:</code> specifies the location of the files
-containing the CRTM coefficient data.  These data are part of the
-Subversion checkout that was performed to obtain the CRTM library
-from JCSDA.  The <code>CRTM coefficient data path:</code> variable should
-either explicitly specify the whole path to or symbolically link to
-<em>trunk/fix/TauCoeff/ODPS/Big_Endian/</em> found within the
-aforementioned checkout.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM zenith angle:</code> <span class="red">specifies what?</span></p>
-</div>
-<div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
-<div class="content">
-<pre>CRTM number of sensors:        1
-CRTM number of layers:         64
-CRTM number of absorbers:      2
-CRTM number of clouds:         0
-CRTM number of aerosols:       0
-CRTM sensor id:                amsua_n18
-CRTM coefficient data path:    ./Coefficient_Data/
-CRTM zenith angle:</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="ssec_crtm2">9.6.2. CRTM2</h4>
-<div class="paragraph">
-<p>This section specifies the specifications to enable a CRTM2 instance.
-For more information regarding CRTM2, please read the CRTM2 User&#8217;s
-Guide, <em>REL-2.1.3.CRTM_User_Guide.pdf</em>, found at
-<a href="ftp://ftp.emc.ncep.noaa.gov/jcsda/CRTM/REL-2.1.3/" class="bare">ftp://ftp.emc.ncep.noaa.gov/jcsda/CRTM/REL-2.1.3/</a></p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of sensors:</code> specifies the number of sensors
-to be used.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of layers:</code> specifies the number of atmospheric
-layers.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of absorbers:</code> specifies the number of absorbers.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of clouds:</code> specifies the number of cloud types.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM number of aerosols:</code> specifies the number of aerosol types.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM sensor id:</code> specifies the name of sensors to be simulated.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM coefficient data path:</code> specifies the location of the files
-containing the CRTM coefficient data.  These data are part of the
-Subversion checkout that was performed to obtain the CRTM library
-from JCSDA.  The <code>CRTM coefficient data path:</code> variable should
-either explicitly specify the whole path to or symbolically link to
-<em>trunk/fix/TauCoeff/ODPS/Big_Endian/</em> found within the
-aforementioned checkout.</p>
-</div>
-<div class="paragraph">
-<p><code>CRTM zenith angle:</code> <span class="red">specifies what?</span></p>
-</div>
-<div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
-<div class="content">
-<pre>CRTM number of sensors:        1
-CRTM number of layers:         64
-CRTM number of absorbers:      2
-CRTM number of clouds:         0
-CRTM number of aerosols:       0
-CRTM sensor id:                amsua_n18
-CRTM coefficient data path:    ./Coefficient_Data/
-CRTM zenith angle:</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="ssec_crtm2em">9.6.3. CRTM2EM</h4>
+<h4 id="ssec_crtm2em">9.6.1. CRTM2EM</h4>
 <div class="paragraph">
 <p>This section specifies the specifications to enable a CRTM2EM instance.</p>
 </div>
@@ -11249,7 +8275,7 @@ RTM input soil moisture correction dst sigma file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="ssec_cmem3">9.6.4. CMEM3</h4>
+<h4 id="ssec_cmem3">9.6.2. CMEM3</h4>
 <div class="paragraph">
 <p>This section specifies the specifications to enable a CMEM3 instance.
 For more information regarding CMEM3, please see
@@ -11456,10 +8482,6 @@ Acceptable values are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">synthetic soil moisture data</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;Synthetic sm2&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">synthetic soil moisture data</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;Ameriflux obs&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">flux data from the Ameriflux data network</p></td>
 </tr>
@@ -11481,17 +8503,8 @@ Acceptable values are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CNRS</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;CNRS MPDI&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CNRS MPDI</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;AMSRE SR&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AMSR-E (Colorado State Univ.)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;AMSRE SR MPDI&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">AMSR-E Microwave Polarization Difference
-                            Index (Colorado State Univ.)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;AMSR-E(LPRM) pe soil moisture&#8221;</p></td>
@@ -21356,23 +18369,7 @@ RDHM356 initial TA_PREV:         0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_lsm_summa.1.0">9.11.20. SUMMA 1.0</h4>
-<div class="paragraph">
-<p><code>SUMMA.1.0 model timestep:</code> specifies the timestep for the run.</p>
-</div>
-<div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
-of how to specify a time interval.</p>
-</div>
-<div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
-<div class="content">
-<pre>SUMMA.1.0 model timestep:</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_awra_l_6_0_0">9.11.21. AWRA-L 6.0.0</h4>
+<h4 id="_awra_l_6_0_0">9.11.20. AWRA-L 6.0.0</h4>
 <div class="paragraph">
 <p><code>AWRAL600 model timestep:</code> specifies the model timestep for the AWRA-L 6.0.0 LSM.</p>
 </div>
@@ -25386,7 +22383,2993 @@ Program stopping..</pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix C: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</h2>
+<h2 id="sec-lis_source_tree">Appendix C: LIS source tree</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><em>LICENSES</em></p>
+<div class="paragraph">
+<p>Directory the NASA Open Source license for LIS along with the licenses of other
+included components</p>
+</div>
+</li>
+<li>
+<p><em>RESTRICTED</em></p>
+</li>
+<li>
+<p><em>apps</em></p>
+<div class="paragraph">
+<p>Directory containing applications built on LIS</p>
+</div>
+</li>
+<li>
+<p><em>arch</em></p>
+<div class="paragraph">
+<p>Directory containing the configurable options for building the LIS executable</p>
+</div>
+</li>
+<li>
+<p><em>configs</em></p>
+<div class="paragraph">
+<p>Directory containing some sample LIS configuration files</p>
+</div>
+</li>
+<li>
+<p><em>core</em></p>
+<div class="paragraph">
+<p>Directory containing core routines in LIS</p>
+</div>
+</li>
+<li>
+<p><em>dataassim</em></p>
+<div class="paragraph">
+<p>Top level directory for data assimilation support, which includes the following subcomponents</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>algorithm</em></p>
+<div class="paragraph">
+<p>Directory containing the following data assimilation algorithm implementations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>di</em></p>
+<div class="paragraph">
+<p>Direct insertion algorithm for data assimilation</p>
+</div>
+</li>
+<li>
+<p><em>ekf</em></p>
+<div class="paragraph">
+<p>NASA GMAO&#8217;s extended Kalman filter algorithm for data assimilation</p>
+</div>
+</li>
+<li>
+<p><em>enkf</em></p>
+<div class="paragraph">
+<p>NASA GMAO&#8217;s Ensemble Kalman Filter algorithm for data assimilation</p>
+</div>
+</li>
+<li>
+<p><em>enkfgrace</em></p>
+<div class="paragraph">
+<p>GRACE Ensemble Kalman Filter algorithm for data assimilation</p>
+</div>
+</li>
+<li>
+<p><em>ensrf</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>pf</em></p>
+<div class="paragraph">
+<p>Particle filter algorithm for data assimilation</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>biasEstimation</em></p>
+<div class="paragraph">
+<p>Directory containing the following dynamic bias estimation algorithms:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>gmaoBE</em></p>
+<div class="paragraph">
+<p>NASA GMAO&#8217;s dynamic bias estimation algorithm</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>obs</em></p>
+<div class="paragraph">
+<p>Directory containing the following observation handlers for data assimilation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>AMRE_swe</em></p>
+<div class="paragraph">
+<p>AMSRE snow water equivalent retrievals in HDF4/HDFEOS format</p>
+</div>
+</li>
+<li>
+<p><em>ANSA_SCF</em></p>
+<div class="paragraph">
+<p>Blended snow cover fraction from the AFWA NASA snow algorithm</p>
+</div>
+</li>
+<li>
+<p><em>ANSA_SNWD</em></p>
+<div class="paragraph">
+<p>Snow depth retrievals from the AFWA NASA snow algorithm</p>
+</div>
+</li>
+<li>
+<p><em>ANSA_SWE</em></p>
+<div class="paragraph">
+<p>Snow water equivalent retrievals from the AFWA NASA snow algorithm</p>
+</div>
+</li>
+<li>
+<p><em>ASCAT_TUW</em></p>
+<div class="paragraph">
+<p>ASCAT (TU Wein) soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>ASO_SWE</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>CDFS_GVF</em></p>
+<div class="paragraph">
+<p>CDFS green vegetation fraction</p>
+</div>
+</li>
+<li>
+<p><em>CDF_Transfer_NASA_SMAPsm</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>ESACCI_sm</em></p>
+<div class="paragraph">
+<p>ESACCI Essential Climate Variable product</p>
+</div>
+</li>
+<li>
+<p><em>GCOMW_AMSR2L3SND</em></p>
+<div class="paragraph">
+<p>AMSR2 snow depth retrievals</p>
+</div>
+</li>
+<li>
+<p><em>GCOMW_AMSR2L3sm</em></p>
+<div class="paragraph">
+<p>AMSR2 soil moisture retrievals</p>
+</div>
+</li>
+<li>
+<p><em>GLASS_Albedo</em></p>
+<div class="paragraph">
+<p>GLASS Albedo retrievals</p>
+</div>
+</li>
+<li>
+<p><em>GLASS_LAI</em></p>
+<div class="paragraph">
+<p>GLASS LAI retrievals</p>
+</div>
+</li>
+<li>
+<p><em>GRACE</em></p>
+<div class="paragraph">
+<p>GRACE soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>IMS_sca</em></p>
+<div class="paragraph">
+<p>IMS snow cover area</p>
+</div>
+</li>
+<li>
+<p><em>ISCCP_Tskin</em></p>
+<div class="paragraph">
+<p>ISCCP skin temperature product in binary format</p>
+</div>
+</li>
+<li>
+<p><em>LPRM_AMSREsm</em></p>
+<div class="paragraph">
+<p>Soil moisture retrievals from AMSRE derived using the land parameter retrieval model (LPRM) from University of Amsterdam</p>
+</div>
+</li>
+<li>
+<p><em>MCD15A2H_LAI</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>MODIS_SPORT_LAI</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>MODISsca</em></p>
+<div class="paragraph">
+<p>MODIS snow cover area product in HDF4/HDFEOS format</p>
+</div>
+</li>
+<li>
+<p><em>NASA_AMSREsm</em></p>
+<div class="paragraph">
+<p>NASA AMSRE soil moisture data in binary format</p>
+</div>
+</li>
+<li>
+<p><em>NASA_SMAPsm</em></p>
+<div class="paragraph">
+<p>NASA SMAP soil moisture retrievals</p>
+</div>
+</li>
+<li>
+<p><em>NASA_SMAPvod</em></p>
+<div class="paragraph">
+<p>NASA SMAP vegetation optical depth retrievals</p>
+</div>
+</li>
+<li>
+<p><em>PMW_snow</em></p>
+<div class="paragraph">
+<p>PMW snow</p>
+</div>
+</li>
+<li>
+<p><em>SMAP_E_OPLsm</em></p>
+<div class="paragraph">
+<p>Operation Enhanced (9-km) SMAP soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>SMAP_NRTsm</em></p>
+<div class="paragraph">
+<p>SMAP near-real time soil moisture retrievals</p>
+</div>
+</li>
+<li>
+<p><em>SMMR_SNWD</em></p>
+<div class="paragraph">
+<p>SMMR snow depth</p>
+</div>
+</li>
+<li>
+<p><em>SMOPS_AMSR2sm</em></p>
+<div class="paragraph">
+<p>SMOPS AMSR2 real time soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>SMOPS_ASCATsm</em></p>
+<div class="paragraph">
+<p>SMOPS ASCAT A and B real time soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>SMOPS_SMAPsm</em></p>
+<div class="paragraph">
+<p>SMOPS SMAP real time soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>SMOPS_SMOSsm</em></p>
+<div class="paragraph">
+<p>SMOPS SMOS real time soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>SMOS_L2sm</em></p>
+<div class="paragraph">
+<p>SMOS L2 soil moisture</p>
+</div>
+</li>
+<li>
+<p><em>SMOS_NESDIS</em></p>
+<div class="paragraph">
+<p>SMOS NESDIS soil moisture retrievals</p>
+</div>
+</li>
+<li>
+<p><em>SMOS_NRTNN_L2sm</em></p>
+<div class="paragraph">
+<p>SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)</p>
+</div>
+</li>
+<li>
+<p><em>SNIP</em></p>
+<div class="paragraph">
+<p>Snow and Ice Products (SNIP) analysis</p>
+</div>
+</li>
+<li>
+<p><em>SNODAS</em></p>
+<div class="paragraph">
+<p>Snow Data Assimilation System (SNODAS)</p>
+</div>
+</li>
+<li>
+<p><em>SNODEP</em></p>
+<div class="paragraph">
+<p>AFWA snowdepth data in Grib1 format</p>
+</div>
+</li>
+<li>
+<p><em>SSMI_SNWD</em></p>
+<div class="paragraph">
+<p>SSMI snow depth</p>
+</div>
+</li>
+<li>
+<p><em>SWOT_WL</em></p>
+<div class="paragraph">
+<p>Surface Water and Ocean Topography (SWOT) water level observations</p>
+</div>
+</li>
+<li>
+<p><em>SYN_LBAND_TB</em></p>
+<div class="paragraph">
+<p>Synthetic L-band brightness temperature</p>
+</div>
+</li>
+<li>
+<p><em>THySM</em></p>
+<div class="paragraph">
+<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
+</div>
+</li>
+<li>
+<p><em>USAFSI</em></p>
+<div class="paragraph">
+<p>USAF Snow and Ice Analysis</p>
+</div>
+</li>
+<li>
+<p><em>VIIRS_GVF</em></p>
+<div class="paragraph">
+<p>VIIRS green vegetation fraction</p>
+</div>
+</li>
+<li>
+<p><em>WUS_UCLAsnow</em></p>
+<div class="paragraph">
+<p>Margulis Western US Snow Reanalysis dataset</p>
+</div>
+</li>
+<li>
+<p><em>WindSat_Cband_sm</em></p>
+<div class="paragraph">
+<p>C-band soil moisture retrievals from WindSat</p>
+</div>
+</li>
+<li>
+<p><em>WindSat_sm</em></p>
+<div class="paragraph">
+<p>X-band soil moisture retrievals from WindSat</p>
+</div>
+</li>
+<li>
+<p><em>hydrowebWL</em></p>
+<div class="paragraph">
+<p>hydroweb water level</p>
+</div>
+</li>
+<li>
+<p><em>pildas</em></p>
+<div class="paragraph">
+<p>PILDAS soil moisture observations (such as one generated from a previous LIS LSM run)</p>
+</div>
+</li>
+<li>
+<p><em>simGRACE_JPL</em></p>
+<div class="paragraph">
+<p>Synthetic soil moisture retrievals from GRACE</p>
+</div>
+</li>
+<li>
+<p>This directory also includes the following synthetic data handler examples:</p>
+</li>
+<li>
+<p><em>multisynsmobs</em></p>
+<div class="paragraph">
+<p>Synthetic soil moisture data with multiple observation types</p>
+</div>
+</li>
+<li>
+<p><em>syntheticSnowTb</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>syntheticlst</em></p>
+<div class="paragraph">
+<p>Synthetic land surface temperature data handler</p>
+</div>
+</li>
+<li>
+<p><em>syntheticsf</em></p>
+<div class="paragraph">
+<p>Synthetic streamflow data handler</p>
+</div>
+</li>
+<li>
+<p><em>syntheticsm</em></p>
+<div class="paragraph">
+<p>Synthetic soil moisture data handler (produced from a LIS LSM run)</p>
+</div>
+</li>
+<li>
+<p><em>syntheticsnd</em></p>
+<div class="paragraph">
+<p>Synthetic snow depth data handler</p>
+</div>
+</li>
+<li>
+<p><em>syntheticswe</em></p>
+<div class="paragraph">
+<p>Synthetic snow water equivalent data handler</p>
+</div>
+</li>
+<li>
+<p><em>syntheticwl</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>perturb</em></p>
+<div class="paragraph">
+<p>Directory containing the following perturbation algorithm implementations</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>gmaopert</em></p>
+<div class="paragraph">
+<p>NASA GMAO&#8217;s perturbation algorithm</p>
+</div>
+</li>
+<li>
+<p><em>uniform</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>forecast</em></p>
+<div class="paragraph">
+<p>Top level directory for forecasting support, which includes the following subcomponents</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>algorithm</p>
+<div class="paragraph">
+<p>Directory containing the following forecasting algorithm implementations</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ESPboot</p>
+<div class="paragraph">
+<p>Boot ensemble streamflow prediction</p>
+</div>
+</li>
+<li>
+<p>ESPconv</p>
+<div class="paragraph">
+<p>Conventional ensemble streamflow prediction</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>interp</em></p>
+<div class="paragraph">
+<p>Generic spatial and temporal interpolation routines</p>
+</div>
+</li>
+<li>
+<p><em>irrigation</em></p>
+<div class="paragraph">
+<p>Directory containing the following irrigation schemes</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>drip</em></p>
+<div class="paragraph">
+<p>Drip irrigation scheme</p>
+</div>
+</li>
+<li>
+<p><em>flood</em></p>
+<div class="paragraph">
+<p>Flood irrigation scheme</p>
+</div>
+</li>
+<li>
+<p><em>sprinkler</em></p>
+<div class="paragraph">
+<p>Demand sprinkler irrigation scheme</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>lib</em></p>
+<div class="paragraph">
+<p>Directory contains the following RTM-related libraries</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>lis-cmem3</p>
+</li>
+<li>
+<p>lis-crtm</p>
+</li>
+<li>
+<p>lis-crtm-profile-utility</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>make</em></p>
+<div class="paragraph">
+<p>Directory containing Makefile and needed header files for building LIS executable</p>
+</div>
+</li>
+<li>
+<p><em>metforcing</em></p>
+<div class="paragraph">
+<p>Top level directory for base meteorological forcing methods, which includes the following implementations</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>3B42RT</em></p>
+<div class="paragraph">
+<p>TRMM 3B42RT precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>3B42RTV7</em></p>
+<div class="paragraph">
+<p>TRMM 3B42RTV7 precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>3B42V6</em></p>
+<div class="paragraph">
+<p>TRMM 3B42V6 precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>3B42V7</em></p>
+<div class="paragraph">
+<p>TRMM 3B42V7 precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>AWAP</em></p>
+<div class="paragraph">
+<p>AWAP precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>AWRAL</em></p>
+<div class="paragraph">
+<p>Australian Water Resource Assessment Landscape (AWRA-L) metforcing data</p>
+</div>
+</li>
+<li>
+<p><em>Bondville</em></p>
+<div class="paragraph">
+<p>Bondville forcing products</p>
+</div>
+</li>
+<li>
+<p><em>COAMPSout</em></p>
+<div class="paragraph">
+<p>Metforcing extracted from COAMPS output (COAMPSout)</p>
+</div>
+</li>
+<li>
+<p><em>HiMAT_GMU</em></p>
+<div class="paragraph">
+<p>Downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)</p>
+</div>
+</li>
+<li>
+<p><em>Loobos</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>PALSmetdata</em></p>
+<div class="paragraph">
+<p>PALS station data</p>
+</div>
+</li>
+<li>
+<p><em>RFE2Daily</em></p>
+<div class="paragraph">
+<p>RFE2 precipitation product from FEWSNET (diurnally non-disaggregated)</p>
+</div>
+</li>
+<li>
+<p><em>RFE2gdas</em></p>
+<div class="paragraph">
+<p>RFE2 precipitation product from FEWSNET bias corrected against GDAS data</p>
+</div>
+</li>
+<li>
+<p><em>WRFAKdom</em></p>
+<div class="paragraph">
+<p>Metforcing extracted from WRF output over Alaska domain (WRFAKdom)</p>
+</div>
+</li>
+<li>
+<p><em>WRFout</em></p>
+<div class="paragraph">
+<p>Metforcing extracted from WRF output (WRFout)</p>
+</div>
+</li>
+<li>
+<p><em>WRFoutv2</em></p>
+<div class="paragraph">
+<p>Metforcing extracted from WRF output (WRFoutv2)</p>
+</div>
+</li>
+<li>
+<p><em>agrradps</em></p>
+<div class="paragraph">
+<p>AGRMET radiation product (polar stereographic prjection)</p>
+</div>
+</li>
+<li>
+<p><em>chirps2</em></p>
+<div class="paragraph">
+<p>UCSB CHIRPS v2.0 satellite-gage merged precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>climatology</em></p>
+<div class="paragraph">
+<p>LDT-generated forcing climatologies</p>
+</div>
+</li>
+<li>
+<p><em>cmap</em></p>
+<div class="paragraph">
+<p>CMAP precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>cmorph</em></p>
+<div class="paragraph">
+<p>CMORPH precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>ecmwf</em></p>
+<div class="paragraph">
+<p>ECMWF meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>era5</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>galwem</em></p>
+<div class="paragraph">
+<p>GALWEM 17km or 0.25deg deterministic forecast reader</p>
+</div>
+</li>
+<li>
+<p><em>galwem_ge</em></p>
+<div class="paragraph">
+<p>GALWEM-GE forecast reader</p>
+</div>
+</li>
+<li>
+<p><em>gdas</em></p>
+<div class="paragraph">
+<p>NCEP GDAS meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>gdasT1534</em></p>
+<div class="paragraph">
+<p>NCEP GDAS GFS T1534 meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>gddp</em></p>
+<div class="paragraph">
+<p>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP)</p>
+</div>
+</li>
+<li>
+<p><em>gefs</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>genEnsFcst</em></p>
+<div class="paragraph">
+<p>User-derived ensemble forecast data</p>
+</div>
+</li>
+<li>
+<p><em>genMetForc</em></p>
+<div class="paragraph">
+<p>LDT-generated meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>geos5fcst</em></p>
+<div class="paragraph">
+<p>NASA GEOS 5 meteorological forecast forcing data</p>
+</div>
+</li>
+<li>
+<p><em>geos_it</em></p>
+<div class="paragraph">
+<p>GEOS-IT</p>
+</div>
+</li>
+<li>
+<p><em>gfs</em></p>
+<div class="paragraph">
+<p>NCEP GFS meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>gldas</em></p>
+<div class="paragraph">
+<p>NASA GMAO GLDAS meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>gswp1</em></p>
+<div class="paragraph">
+<p>Global Soil Wetness Project-1 meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>gswp2</em></p>
+<div class="paragraph">
+<p>Global Soil Wetness Project-2 meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>imerg</em></p>
+<div class="paragraph">
+<p>GPM L3 precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>merra2</em></p>
+<div class="paragraph">
+<p>GMAO Modern Era Retrospective-Analysis for Research and Applications data</p>
+</div>
+</li>
+<li>
+<p><em>mogreps_g</em></p>
+<div class="paragraph">
+<p>Met Office Global and Regional Ensemble Prediction System - global ensemble (MOGREPS-G) forecasts</p>
+</div>
+</li>
+<li>
+<p><em>mrms</em></p>
+<div class="paragraph">
+<p>National Center for Environmental Prediction (NCEP) Multi-Radar/Multi-Sensor (MRMS) Doppler Radar+gage product.</p>
+</div>
+</li>
+<li>
+<p><em>nam242</em></p>
+<div class="paragraph">
+<p>North American Mesoscale Forecast System (NAM) 242 AWIPS Grid -- Over Alaska product</p>
+</div>
+</li>
+<li>
+<p><em>narr</em></p>
+<div class="paragraph">
+<p>North American Regional Reanalysis (3d) data</p>
+</div>
+</li>
+<li>
+<p><em>nldas2</em></p>
+<div class="paragraph">
+<p>North American Land Data Assimilation System 2 forcing product</p>
+</div>
+</li>
+<li>
+<p><em>pet_usgs</em></p>
+<div class="paragraph">
+<p>Daily potential evapotranspiration data from the USGS FAO-PET method, using GDAS forcing fields as inputs</p>
+</div>
+</li>
+<li>
+<p><em>plumber2</em></p>
+<div class="paragraph">
+<p>PLUMBER2 station data</p>
+</div>
+</li>
+<li>
+<p><em>pptEnsFcst</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>princeton</em></p>
+<div class="paragraph">
+<p>Renalaysis product from Princeton University (<a href="#sheffield_etal_2006">[sheffield_etal_2006]</a>)</p>
+</div>
+</li>
+<li>
+<p><em>scan</em></p>
+<div class="paragraph">
+<p>Soil Climate Analysis Network precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>snotel</em></p>
+<div class="paragraph">
+<p>SNOTEL meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>stg2</em></p>
+<div class="paragraph">
+<p>NCEP Stage IV QPE precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>stg4</em></p>
+<div class="paragraph">
+<p>NCEP Stage II precipitation product</p>
+</div>
+</li>
+<li>
+<p><em>templateMetForc</em></p>
+<div class="paragraph">
+<p>An empty template for meteorological forcing data implementations</p>
+</div>
+</li>
+<li>
+<p><em>usaf</em></p>
+<div class="paragraph">
+<p>Routines for generating meteorological forcing data in the &#8220;AGRMET ops&#8221; running mode and for handling said data when running in the &#8220;retrospective&#8221; runmode</p>
+</div>
+</li>
+<li>
+<p><em>vicforcing</em></p>
+<div class="paragraph">
+<p>VIC 4.1.1 pre-processed meteorological forcing data</p>
+</div>
+</li>
+<li>
+<p><em>vicforcing.4.1.2</em></p>
+<div class="paragraph">
+<p>VIC 4.1.2 pre-processed meteorological forcing data</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>offline</em></p>
+<div class="paragraph">
+<p>Directory containing the main program for the offline mode of operation</p>
+</div>
+</li>
+<li>
+<p><em>optUE</em></p>
+<div class="paragraph">
+<p>Top level directory for optimization support, which includes the following subcomponents</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>algorithm</em></p>
+<div class="paragraph">
+<p>Directory containing the following optimization algorithm implementations</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>DEMC</em></p>
+<div class="paragraph">
+<p>Differential evolution Monte Carlo algorithm</p>
+</div>
+</li>
+<li>
+<p><em>DEMCz</em></p>
+<div class="paragraph">
+<p>Differential evolution Monte Carlo Z algorithm</p>
+</div>
+</li>
+<li>
+<p><em>ES</em></p>
+<div class="paragraph">
+<p>Enumerated search</p>
+</div>
+</li>
+<li>
+<p><em>GA</em></p>
+<div class="paragraph">
+<p>Single objective Genetic Algorithm</p>
+</div>
+</li>
+<li>
+<p><em>LM</em></p>
+<div class="paragraph">
+<p>Levenberg-Marquardt gradient search algorithm</p>
+</div>
+</li>
+<li>
+<p><em>MCSIM</em></p>
+<div class="paragraph">
+<p>Monte Carlo simple propagation scheme</p>
+</div>
+</li>
+<li>
+<p><em>RWMCMC</em></p>
+<div class="paragraph">
+<p>Random walk Markov chain monte carlo algorithm</p>
+</div>
+</li>
+<li>
+<p><em>SCE-UA</em></p>
+<div class="paragraph">
+<p>Shuffled Complex Evolutionary Algorithm</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>type</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><em>paramestim</em></p>
+<div class="paragraph">
+<p>Directory for parameter estimation support</p>
+</div>
+<div class="paragraph">
+<p>The directory for parameter estimation support <em>paramestim</em> includes the following subcomponents</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>objfunc</em></p>
+<div class="paragraph">
+<p>Directory containing the following objective function evaluation methods</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>LL</em></p>
+<div class="paragraph">
+<p>Maximum likelihood</p>
+</div>
+</li>
+<li>
+<p><em>LM</em></p>
+<div class="paragraph">
+<p>Objective function definition for LM algorithm</p>
+</div>
+</li>
+<li>
+<p><em>LS</em></p>
+<div class="paragraph">
+<p>Least squares based objective function</p>
+</div>
+</li>
+<li>
+<p><em>P</em></p>
+<div class="paragraph">
+<p>Prior function definition</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>obs</em></p>
+<div class="paragraph">
+<p>Directory containing the following observation handlers for parameter estimation</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>AMSRE_SR</em></p>
+</li>
+<li>
+<p><em>ARM</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>ARSsm</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>Ameriflux</em></p>
+<div class="paragraph">
+<p>In-situ observations from Ameriflux</p>
+</div>
+</li>
+<li>
+<p><em>CNRS</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>EmptyObs</em></p>
+</li>
+<li>
+<p><em>FLUXNET</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>Global_LS_data</em></p>
+<div class="paragraph">
+<p>Global landslide observational data</p>
+</div>
+</li>
+<li>
+<p><em>ISCCP_Tskin</em></p>
+<div class="paragraph">
+<p>ISCCP land surface temperature observations</p>
+</div>
+</li>
+<li>
+<p><em>ISMNsm</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
+<p><em>LPRM_AMSREsm</em></p>
+<div class="paragraph">
+<p>Soil moisture retrievals from AMSRE derived using the land parameter retrieval model (LPRM) from University of Amsterdam</p>
+</div>
+</li>
+<li>
+<p><em>Macon_LS_data</em></p>
+<div class="paragraph">
+<p>Macon County North Carolina landslide observational data</p>
+</div>
+</li>
+<li>
+<p><em>SMAPsm</em></p>
+<div class="paragraph">
+<p>SMAP soil moisture observational data</p>
+</div>
+</li>
+<li>
+<p><em>UAsnow</em></p>
+<div class="paragraph">
+<p>University of Arizona (UA) swe/snow depth observations</p>
+</div>
+</li>
+<li>
+<p><em>USDA_ARSsm</em></p>
+<div class="paragraph">
+<p>USDA Agricultural Research Service soil mositure retrievals</p>
+</div>
+</li>
+<li>
+<p><em>pesynsm1</em></p>
+<div class="paragraph">
+<p>Synthetic soil moisture observations</p>
+</div>
+</li>
+<li>
+<p><em>template</em></p>
+</li>
+<li>
+<p><em>wgPBMRsm</em></p>
+<div class="paragraph">
+<p>PBMR soil moisture data for the Walnut Gulch watershed</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>params</em></p>
+<div class="paragraph">
+<p>Directory containing implementations of the following land surface model parameters</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>albedo</em></p>
+<div class="paragraph">
+<p>Routines for handling albedo data products</p>
+</div>
+</li>
+<li>
+<p><em>emissivity</em></p>
+<div class="paragraph">
+<p>Routines for handling emissivity data products</p>
+</div>
+</li>
+<li>
+<p><em>gfrac</em></p>
+<div class="paragraph">
+<p>Routines for handling green vegetation fraction data products</p>
+</div>
+</li>
+<li>
+<p><em>lai</em></p>
+<div class="paragraph">
+<p>Routines for handling Leaf/Stem area index data products</p>
+</div>
+</li>
+<li>
+<p><em>roughness</em></p>
+<div class="paragraph">
+<p>Routines for handling roughness data products</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>plugins</em></p>
+<div class="paragraph">
+<p>Directory containing modules defining the function table registry of extensible functionalities</p>
+</div>
+</li>
+<li>
+<p><em>routing</em></p>
+<div class="paragraph">
+<p>Directory containing routing models</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>HYMAP_router</em></p>
+</li>
+<li>
+<p><em>HYMAP2_router</em></p>
+</li>
+<li>
+<p><em>HYMAP3_router</em></p>
+</li>
+<li>
+<p><em>NLDAS_router</em></p>
+</li>
+<li>
+<p><em>RAPID_router</em></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>rtms</em></p>
+<div class="paragraph">
+<p>Directory containing coupling routines to the following radiative transfer models</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>CRTM</em></p>
+<div class="paragraph">
+<p>Routines to handle coupling to the JCSDA Community Radiative Transfer Model</p>
+</div>
+</li>
+<li>
+<p><em>CRTM2</em></p>
+<div class="paragraph">
+<p>Routines to handle coupling to the JCSDA Community Radiative Transfer Model, version 2</p>
+</div>
+</li>
+<li>
+<p><em>CRTM2EM</em></p>
+<div class="paragraph">
+<p>Routines to handle coupling to the JCSDA Community Radiative Transfer Model Emissions model</p>
+</div>
+</li>
+<li>
+<p><em>LIS_CMEM3</em></p>
+<div class="paragraph">
+<p>Community Microwave Emission Model from ECMWF</p>
+</div>
+</li>
+<li>
+<p><em>TauOmegaRTM</em></p>
+<div class="paragraph">
+<p>Routines to handle coupling to the Tau Omega Radiative Transfer Model</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>runmodes</em></p>
+<div class="paragraph">
+<p>Directory containing the following running modes in LIS</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>RTMforward</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow when a forward model integration using a radiative transfer model is employed</p>
+</div>
+</li>
+<li>
+<p><em>agrmetmode</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow in the AFWA operational mode</p>
+</div>
+</li>
+<li>
+<p><em>forecast</em></p>
+<div class="paragraph">
+<p>Routines to manage the forecast simulation mode</p>
+</div>
+</li>
+<li>
+<p><em>gce_cpl_mode</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow in the coupled LIS-GCE mode</p>
+</div>
+</li>
+<li>
+<p><em>landslide_optUE</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow in combined use of landslide modeling simulations and optimization</p>
+</div>
+</li>
+<li>
+<p><em>nuopc_cpl_mode</em></p>
+<div class="paragraph">
+<p>National Unified Operational Prediction Capability (NUOPC) coupled runmode</p>
+</div>
+</li>
+<li>
+<p><em>paramEstimation</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow in the parameter estimation mode</p>
+</div>
+</li>
+<li>
+<p><em>retrospective</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow in the retrospective analysis mode</p>
+</div>
+</li>
+<li>
+<p><em>smootherDA</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow in the smoother da analysis mode</p>
+</div>
+</li>
+<li>
+<p><em>wrf_cpl_mode</em></p>
+<div class="paragraph">
+<p>Routines to manage the program flow in the coupled LIS-WRF mode not using ESMF</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>surfacemodels</em></p>
+<div class="paragraph">
+<p>Top level directory for surface model support, which includes the following subcomponents</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>glacier</em></p>
+<div class="paragraph">
+<p>Directory containing implementations of the following glacier surface models</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>noahmp.3.9.1.1</em></p>
+<div class="paragraph">
+<p>NCAR Noah multiphysics land surface model version 3.9.1.1</p>
+</div>
+</li>
+<li>
+<p><em>template</em></p>
+<div class="paragraph">
+<p>An empty template for glacire surface model implementations</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>lake</em></p>
+<div class="paragraph">
+<p>Directory containing implementations of the following lake surface models</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>FLake.1.0</em></p>
+<div class="paragraph">
+<p>FLake, version 1.0.  <mark>For internal use only.</mark></p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>land</em></p>
+<div class="paragraph">
+<p>Directory containing implementations of the following land surface models</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>ac.7.2</em></p>
+<div class="paragraph">
+<p>KU Leuven AquaCrop, version 7.2</p>
+</div>
+</li>
+<li>
+<p><em>awral.6.0.0</em></p>
+<div class="paragraph">
+<p>Australian Water Resource Assessment Landscape (AWRA-L) land surface model, version 6.0.0</p>
+</div>
+</li>
+<li>
+<p><em>cable</em></p>
+<div class="paragraph">
+<p>CSIRO Atmosphere Biosphere Land Exchange model, version 1.4b</p>
+</div>
+</li>
+<li>
+<p><em>clm2</em></p>
+<div class="paragraph">
+<p>NCAR community land model, version 2.0</p>
+</div>
+</li>
+<li>
+<p><em>clsm.f2.5</em></p>
+<div class="paragraph">
+<p>NASA GMAO Catchment land surface model version Fortuna 2.5</p>
+</div>
+</li>
+<li>
+<p><em>geowrsi.2</em></p>
+<div class="paragraph">
+<p>GeoWRSI version 2</p>
+</div>
+</li>
+<li>
+<p><em>hyssib</em></p>
+<div class="paragraph">
+<p>NASA HySSIB land surface model</p>
+</div>
+</li>
+<li>
+<p><em>jules.5.0</em></p>
+<div class="paragraph">
+<p>Support for UK Met Office&#8217;s JULES 5.0 land surface model</p>
+</div>
+</li>
+<li>
+<p><em>jules.5.1</em></p>
+<div class="paragraph">
+<p>Support for UK Met Office&#8217;s JULES 5.1 land surface model</p>
+</div>
+</li>
+<li>
+<p><em>jules.5.2</em></p>
+<div class="paragraph">
+<p>Support for UK Met Office&#8217;s JULES 5.2 land surface model</p>
+</div>
+</li>
+<li>
+<p><em>jules.5.3</em></p>
+<div class="paragraph">
+<p>Support for UK Met Office&#8217;s JULES 5.3 land surface model</p>
+</div>
+</li>
+<li>
+<p><em>jules.5.4</em></p>
+<div class="paragraph">
+<p>Support for UK Met Office&#8217;s JULES 5.4 land surface model</p>
+</div>
+</li>
+<li>
+<p><em>jules.5.x</em></p>
+<div class="paragraph">
+<p>Support for UK Met Office&#8217;s JULES 5.5 (and higher) land surface model</p>
+</div>
+</li>
+<li>
+<p><em>mosaic</em></p>
+<div class="paragraph">
+<p>NASA Mosaic land surface model</p>
+</div>
+</li>
+<li>
+<p><em>noah.2.7.1</em></p>
+<div class="paragraph">
+<p>NCEP Noah land surface model version 2.7.1</p>
+</div>
+</li>
+<li>
+<p><em>noah.3.2</em></p>
+<div class="paragraph">
+<p>NCAR Noah land surface model version 3.2</p>
+</div>
+</li>
+<li>
+<p><em>noah.3.3</em></p>
+<div class="paragraph">
+<p>NCAR Noah land surface model version 3.3</p>
+</div>
+</li>
+<li>
+<p><em>noah.3.6</em></p>
+<div class="paragraph">
+<p>NCAR Noah land surface model version 3.6</p>
+</div>
+</li>
+<li>
+<p><em>noah.3.9</em></p>
+<div class="paragraph">
+<p>NCAR Noah land surface model version 3.9</p>
+</div>
+</li>
+<li>
+<p><em>noahmp.3.6</em></p>
+<div class="paragraph">
+<p>NCAR Noah multiphysics land surface model version 3.6</p>
+</div>
+</li>
+<li>
+<p><em>noahmp.4.0.1</em></p>
+<div class="paragraph">
+<p>NCAR Noah multiphysics land surface model version 4.0.1</p>
+</div>
+</li>
+<li>
+<p><em>rdhm.3.5.6</em></p>
+<div class="paragraph">
+<p>NOAA OHD Research Distributed Hydrologic Model version 3.5.6</p>
+</div>
+</li>
+<li>
+<p><em>ruc.3.7</em></p>
+<div class="paragraph">
+<p>NOAA Rapid Update Cycle model version 3.7.1</p>
+</div>
+</li>
+<li>
+<p><em>summa.1.0</em></p>
+<div class="paragraph">
+<p>First attempt to incorporate the Structure for Unifying Multiple Modeling Alternatives (SUMMA) into LIS.  <mark>For internal use only.</mark></p>
+</div>
+</li>
+<li>
+<p><em>template</em></p>
+<div class="paragraph">
+<p>An empty template for land surface model implementations</p>
+</div>
+</li>
+<li>
+<p><em>vic.4.1.1</em></p>
+<div class="paragraph">
+<p>Variable Infiltration Capacity model from University of Washington, version 4.1.1</p>
+</div>
+</li>
+<li>
+<p><em>vic.4.1.2.l</em></p>
+<div class="paragraph">
+<p>Variable Infiltration Capacity model from University of Washington, version 4.1.2.l</p>
+</div>
+</li>
+<li>
+<p><em>subLSM</em></p>
+<div class="paragraph">
+<p>Directory containing implementations of sub land surface modeling processes.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>crocus.8.1</em></p>
+<div class="paragraph">
+<p>Crocus 8.1 snow model</p>
+</div>
+</li>
+<li>
+<p><em>snowmodel</em></p>
+<div class="paragraph">
+<p>CSU/Glen Liston snowmodel, April 2021</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>openwater</em></p>
+<div class="paragraph">
+<p>Directory containing implementations of the following open water surface models</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>template</em></p>
+<div class="paragraph">
+<p>An empty template for open water surface model implementations</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>testcases</em></p>
+<div class="paragraph">
+<p>testcases for verifying various functionalities</p>
+</div>
+</li>
+<li>
+<p><em>utils</em></p>
+<div class="paragraph">
+<p>Miscellaneous helpful utilities</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Each of the LSM directories under <em>surfacemodels/land</em> contain specific plugin interfaces related to</p>
+</div>
+<div class="paragraph">
+<p>(1) coupling to WRF and GCE models,
+(2) Data assimilation instances,
+(3) Irrigation instances,
+(4) Parameter estimation instances,
+(5) Routing instances, and
+(6) Radiative transfer instances.</p>
+</div>
+<div class="paragraph">
+<p>These routines defined for Noah land surface model version 3.3 are shown below. Note that similar routines are implemented in other LSMs.</p>
+</div>
+<div class="paragraph">
+<p>(1) Coupling interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>cpl_wrf_noesmf</em></p>
+<div class="paragraph">
+<p>Routines for coupling Noah with WRF without ESMF</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(2) Data assimilation interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>da_snodep</em></p>
+<div class="paragraph">
+<p>Noah routines related to the assimilation of AFWA SNODEP observations</p>
+</div>
+</li>
+<li>
+<p><em>da_snow</em></p>
+<div class="paragraph">
+<p>Noah routines related to the assimilation of snow water equivalent observations</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>da_soilm</em></p>
+<div class="paragraph">
+<p>Noah routines related to the assimilation of soil moisture observations</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(3) Irrigation interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>irrigation</em></p>
+<div class="paragraph">
+<p>Noah routines related to interacting with the irrigation scheme</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(4) Parameter estimation interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>pe</em></p>
+<div class="paragraph">
+<p>Noah routines related to the estimation of soil properties through parameter estimation</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(5) Routing interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>routing</em></p>
+<div class="paragraph">
+<p>Noah routines related to interacting with the routing schemes</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(6) Radiative transfer model interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>sfc_cmem3</em></p>
+</li>
+<li>
+<p><em>sfc_crtm</em></p>
+</li>
+<li>
+<p><em>sfc_tauomega</em></p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="sec-whatsnewcont">Appendix D: What&#8217;s New (continued)</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+There were no public releases for versions 7.6 or 7.7.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_version_7_5">D.1. Version 7.5</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Supports additional metforcing datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>GALWEM 17km or 0.25deg deterministic forecast reader (galwem)</p>
+</li>
+<li>
+<p>GALWEM-GE forecast reader (galwem_ge)</p>
+</li>
+<li>
+<p>GEOS-IT (geos_it)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data assimilation observation datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>CDFS green vegetation fraction (CDFS_GVF)</p>
+</li>
+<li>
+<p>CDF_Transfer_NASA_SMAPsm</p>
+</li>
+<li>
+<p>Operation Enhanced (9-km) SMAP soil moisture (SMAP_E_OPLsm)</p>
+</li>
+<li>
+<p>VIIRS green vegetation fraction (VIIRS_GVF)</p>
+</li>
+<li>
+<p>Margulis Western US Snow Reanalysis dataset (WUS_UCLAsnow)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes RAPID router</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_version_7_4">D.2. Version 7.4</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes new runmodes</p>
+<div class="ulist">
+<ul>
+<li>
+<p>National Unified Operational Prediction Capability (NUOPC) coupled runmode</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes additional surface models</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Crocus 8.1 snow model</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional metforcing datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>metforcing extracted from COAMPS output (COAMPSout)</p>
+</li>
+<li>
+<p>metforcing extracted from WRF output over Alaska domain (WRFAKdom)</p>
+</li>
+<li>
+<p>metforcing extracted from WRF output (WRFoutv2)</p>
+</li>
+<li>
+<p>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP)</p>
+</li>
+<li>
+<p>PLUMBER2 station data</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data assimilation observation datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>MCD15A2H LAI</p>
+</li>
+<li>
+<p>SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)</p>
+</li>
+<li>
+<p>Snow Data Assimilation System (SNODAS)</p>
+</li>
+<li>
+<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
+</li>
+<li>
+<p>hydroweb water level</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Removes the following metforcing datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>AGRMET radiation (latlon)</p>
+</li>
+<li>
+<p>AMMA land surface model intercomparision project phase 2 (ALMIPII)</p>
+</li>
+<li>
+<p>Walnut Gulch meteorological station data (ARMS)</p>
+</li>
+<li>
+<p>Canadian Precipitation analysis (CaPA)</p>
+</li>
+<li>
+<p>CEOP</p>
+</li>
+<li>
+<p>COOP</p>
+</li>
+<li>
+<p>ECMWF reanalysis</p>
+</li>
+<li>
+<p>Single-point FASST product (FASSTsingle)</p>
+</li>
+<li>
+<p>GDAS(3d)</p>
+</li>
+<li>
+<p>GDAS profile data from the PMM land surface working group (GDAS(LSWG))</p>
+</li>
+<li>
+<p>GEOS</p>
+</li>
+<li>
+<p>GMAO Modern Era Retrospective-Analysis for Research and Applications data (MERRA-Land)</p>
+</li>
+<li>
+<p>North American Land Data Assimilation System forcing product (NLDAS1)</p>
+</li>
+<li>
+<p>PILDAS</p>
+</li>
+<li>
+<p>NOAA OHD RDHM 3.5.6 forcing data (RDHM 3.5.6)</p>
+</li>
+<li>
+<p>Rhone AGG</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Disables the following external runoff data sources</p>
+<div class="ulist">
+<ul>
+<li>
+<p>GLDAS1 runoff data</p>
+</li>
+<li>
+<p>GLDAS2 runoff data</p>
+</li>
+<li>
+<p>NLDAS2 runoff data</p>
+</li>
+<li>
+<p>MERRA2 runoff data</p>
+</li>
+<li>
+<p>ERA interim land runoff data</p>
+</li>
+<li>
+<p>GWB MIP runoff data</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Disables the following parameters</p>
+<div class="ulist">
+<ul>
+<li>
+<p>MODIS near-real time LAI</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_7_3">D.3. LIS 7.3</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes new runmodes</p>
+<div class="ulist">
+<ul>
+<li>
+<p>RTMforward runmode</p>
+</li>
+<li>
+<p>AGRMET ops runmode</p>
+</li>
+<li>
+<p>GCE-coupled runmode</p>
+</li>
+<li>
+<p>landslide optUE runmode</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes additional surface models</p>
+<div class="ulist">
+<ul>
+<li>
+<p>NoahMP 3.9.1.1 glacier model</p>
+</li>
+<li>
+<p>template glacier model</p>
+</li>
+<li>
+<p>FLake 1.0 lake model</p>
+</li>
+<li>
+<p>AWRA-L 6.0.0 land model</p>
+</li>
+<li>
+<p>Jules 5.0 land model</p>
+</li>
+<li>
+<p>Noah 3.9 land model</p>
+</li>
+<li>
+<p>NoahMP 4.0.1 model</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes HYMAP2 router</p>
+</li>
+<li>
+<p>Includes ESPboot forecasting algorithm</p>
+</li>
+<li>
+<p>Includes GLS landslide application</p>
+</li>
+<li>
+<p>Includes TRIGRS landslide application</p>
+</li>
+<li>
+<p>Includes additional data assimilation algorithms</p>
+<div class="ulist">
+<ul>
+<li>
+<p>extended Kalman filter algorithm</p>
+</li>
+<li>
+<p>ensrf algorithm</p>
+</li>
+<li>
+<p>particle filter algorithm</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes additional optimization and uncertainty alogrithms</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Enumerated Search algorithm</p>
+</li>
+<li>
+<p>Shuffled Complex Evolution - University of Arizona (SCEUA) algorithm</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes Levenberg-Marquadt (LM) parameter estimation objective function</p>
+</li>
+<li>
+<p>Supports additional real-time parameters</p>
+<div class="ulist">
+<ul>
+<li>
+<p>albedo parameters</p>
+</li>
+<li>
+<p>emissivity parameters</p>
+</li>
+<li>
+<p>roughness parameters</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional metforcing datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>AMMA land surface model intercomparision project phase 2 (ALMIPII) metforcing data</p>
+</li>
+<li>
+<p>Australian Water Resource Assessment Landscape (AWRA-L) metforcing data</p>
+</li>
+<li>
+<p>Canadian Precipitation Analysis (CaPA) data</p>
+</li>
+<li>
+<p>FASSTsingle metforcing data</p>
+</li>
+<li>
+<p>downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)</p>
+</li>
+<li>
+<p>Loobos metforcing data</p>
+</li>
+<li>
+<p>arms metforcing data</p>
+</li>
+<li>
+<p>era5 metforcing data</p>
+</li>
+<li>
+<p>gdas3d metforcing data</p>
+</li>
+<li>
+<p>gefs metforcing data</p>
+</li>
+<li>
+<p>mrms metforcing data</p>
+</li>
+<li>
+<p>pptEnsFcst metforcing data</p>
+</li>
+<li>
+<p>usaf metforcing data</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data assimilation observation datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>simGRACE_JPL observations</p>
+</li>
+<li>
+<p>syntheticSnowTb observations</p>
+</li>
+<li>
+<p>syntheticlst observations</p>
+</li>
+<li>
+<p>syntheticsf observations</p>
+</li>
+<li>
+<p>syntheticsm observations</p>
+</li>
+<li>
+<p>syntheticsnd observations</p>
+</li>
+<li>
+<p>syntheticswe observations</p>
+</li>
+<li>
+<p>syntheticwl observations</p>
+</li>
+<li>
+<p>AMSRE SWE observations</p>
+</li>
+<li>
+<p>AFWA NASA snow algorithm (ANSA) SWE retrievals</p>
+</li>
+<li>
+<p>ASCAT_TUW observations</p>
+</li>
+<li>
+<p>ASO_SWE observations</p>
+</li>
+<li>
+<p>GLASS Albedo observations</p>
+</li>
+<li>
+<p>GLASS LAI observations</p>
+</li>
+<li>
+<p>IMS_sca observations</p>
+</li>
+<li>
+<p>International Satellite Cloud Climatology Project (ISCCP) skin temperature observations</p>
+</li>
+<li>
+<p>MODIS SPoRT LAI observations</p>
+</li>
+<li>
+<p>NASA SMAP vegetation optical depth retrievals</p>
+</li>
+<li>
+<p>SMAP near-real time (NRT) soil moisture observations</p>
+</li>
+<li>
+<p>SMOPS AMSR2 soil moisture observations</p>
+</li>
+<li>
+<p>SMOPS ASCAT soil moisture observations</p>
+</li>
+<li>
+<p>SMOPS SMAP soil moisture observations</p>
+</li>
+<li>
+<p>SMOPS SMOS soil moisture observations</p>
+</li>
+<li>
+<p>SNODEP observations</p>
+</li>
+<li>
+<p>SYN_LBAND_TB observations</p>
+</li>
+<li>
+<p>USAFSI observations</p>
+</li>
+<li>
+<p>WindSat_Cband_sm observations</p>
+</li>
+<li>
+<p>multisynsmobs observations</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional parameter estimation observation datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Walnut Gulch (WG) PBMR soil moisture observations</p>
+</li>
+<li>
+<p>ARM observations</p>
+</li>
+<li>
+<p>ARSsm observations</p>
+</li>
+<li>
+<p>Ameriflux observations</p>
+</li>
+<li>
+<p>CNRS observations</p>
+</li>
+<li>
+<p>FLUXNET observations</p>
+</li>
+<li>
+<p>Global_LS_data observations</p>
+</li>
+<li>
+<p>ISCCP_Tskin observations</p>
+</li>
+<li>
+<p>ISMNsm observations</p>
+</li>
+<li>
+<p>Macon_LS_data observations</p>
+</li>
+<li>
+<p>SMAP soil moisture observations</p>
+</li>
+<li>
+<p>University of Arizona (UA) swe/snow depth observations</p>
+</li>
+<li>
+<p>USDA ARS soil moisture observations</p>
+</li>
+<li>
+<p>pesynsm1 observations</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_7_2">D.4. LIS 7.2</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes the NOAA Rapid Update Cycle (RUC) 3.7.1 land surface model</p>
+</li>
+<li>
+<p>Includes the ensemble streamflow prediction (ESP) conventional
+forecasting runmode</p>
+</li>
+<li>
+<p>Includes additional parameter and uncertainty estimation support</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Differential evolution Markov chain (DEMC)</p>
+</li>
+<li>
+<p>Levenberg-Marquardt</p>
+</li>
+<li>
+<p>Random walk Markov chain monte carlo</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes additional radiative transfer model support</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Tau Omega</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Data assimilation is performed on the observation grid</p>
+</li>
+<li>
+<p>Supports HYMAP runoff data</p>
+</li>
+<li>
+<p>Supports ANSA snow depth observations</p>
+</li>
+<li>
+<p>Supports GCOMW AMSR2 L3 soil moisture observations</p>
+</li>
+<li>
+<p>Supports GCOMW AMSR2 L3 snow depth observations</p>
+</li>
+<li>
+<p>Supports NASA SMAP soil moisture observations</p>
+</li>
+<li>
+<p>Supports PILDAS soil moisture observations</p>
+</li>
+<li>
+<p>Supports SMMR snow depth observations</p>
+</li>
+<li>
+<p>Supports SMOS L2 soil moisture observations</p>
+</li>
+<li>
+<p>Supports SMOS NESDIS soil moisture observations</p>
+</li>
+<li>
+<p>Supports SSMI snow depth observations</p>
+</li>
+<li>
+<p>Supports AWAP precipitation data</p>
+</li>
+<li>
+<p>Supports LDT generated met forcing climatology data</p>
+</li>
+<li>
+<p>Supports generic ensemble forecast met forcing data</p>
+</li>
+<li>
+<p>Supports GRIB 2 formatted output</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_7_1">D.5. LIS 7.1</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes Noah 3.6</p>
+</li>
+<li>
+<p>Includes NoahMP 3.6</p>
+</li>
+<li>
+<p>Includes CABLE 1.4b</p>
+</li>
+<li>
+<p>Includes Flake 1.0 — <mark>internal use only!</mark> (available only in development branch)</p>
+</li>
+<li>
+<p>Includes flood irrigation</p>
+</li>
+<li>
+<p>Includes drip irrigation</p>
+</li>
+<li>
+<p>Supports SMOS L2 soil moisture observations (available only in development branch)</p>
+</li>
+<li>
+<p>Supports simulated GRACE products (available only in development branch)</p>
+</li>
+<li>
+<p>Supports GCOMW AMSR2 L3 soil moisture observations (available only in development branch)</p>
+</li>
+<li>
+<p>Supports VIIRS Daily GVF data</p>
+</li>
+<li>
+<p>Supports TRMM 3B42 V7 real time precipitation</p>
+</li>
+<li>
+<p>Supports Gaussian T1534 GFS met forcing data</p>
+</li>
+<li>
+<p>Supports MERRA-2 met forcing data — these data are not currently
+available to external users; they should become available in July 2015</p>
+</li>
+<li>
+<p>Supports LDT-generated met forcing data (available only in development branch)</p>
+</li>
+<li>
+<p>Supports downscaling precipitation (PRISM) (NLDAS-2 only)</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_7_0">D.6. LIS 7.0</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Requires companion Land Data Toolkit (LDT) input data and parameter
+preprocessor</p>
+</li>
+<li>
+<p>Includes VIC 4.1.2.l</p>
+</li>
+<li>
+<p>Includes RDHM 3.5.6 (SacHTET and Snow17)</p>
+</li>
+<li>
+<p>Includes demand sprinkler irrigation</p>
+</li>
+<li>
+<p>Includes HYMAP routing</p>
+</li>
+<li>
+<p>Includes NLDAS routing</p>
+</li>
+<li>
+<p>Includes radiative transfer model support</p>
+<div class="ulist">
+<ul>
+<li>
+<p>LIS-CRTM2EM — LIS' implementation of JCSDA&#8217;s CRTM2 with
+emissivity support</p>
+<div class="paragraph">
+<p>See <a href="http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/" class="bare">http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/</a></p>
+</div>
+</li>
+<li>
+<p>LIS-CMEM3 — LIS' implementation of ECMWF&#8217;s CMEM 3.0</p>
+<div class="paragraph">
+<p>See <a href="http://old.ecmwf.int/research/data_assimilation/land_surface/cmem/cmem_source.html" class="bare">http://old.ecmwf.int/research/data_assimilation/land_surface/cmem/cmem_source.html</a> for the original code.</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes parameter and uncertainty estimation support</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Genetic algorithm (GA)</p>
+</li>
+<li>
+<p>Monte Carlo sampling (MCSIM)</p>
+</li>
+<li>
+<p>Differential evolution Markov chain z (DEMCz)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports ensemble of met forcing sources</p>
+</li>
+<li>
+<p>Supports GEOS 5 forecast met forcing data</p>
+</li>
+<li>
+<p>Supports PALS met forcing data</p>
+</li>
+<li>
+<p>Supports PILDAS met forcing data</p>
+</li>
+<li>
+<p>Supports ECV soil moisture data assimilation</p>
+</li>
+<li>
+<p>Supports GRACE data assimilation</p>
+</li>
+<li>
+<p>Supports PMW snow data assimilation</p>
+</li>
+<li>
+<p>Supports SMOPS soil moisture data assimilation</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Note that the notion of a base forcing and a supplemental forcing have been replaced with the notion of a meteorological forcing.  Thus the support in <em>baseforcing</em> and in <em>suppforcing</em> have been combined into <em>metforcing</em>.</p>
+</div>
+<div class="paragraph">
+<p>Note that LIS is developing support for surface types other than land.  Thus all the land surface models contained in <em>lsms</em> have been moved into <em>surfacemodels/land</em>.</p>
+</div>
+<div class="paragraph">
+<p>Note that the companion program LDT is now required to process input parameters.  Thus the support for static and climatological parameters have been removed from <em>params</em> and placed into LDT.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_6_2">D.7. LIS 6.2</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes VIC 4.1.1.</p>
+</li>
+<li>
+<p>Includes CABLE 1.4b — restricted distribution.</p>
+</li>
+<li>
+<p>Includes Catchment F2.5.</p>
+</li>
+<li>
+<p>Includes Noah 3.3.</p>
+</li>
+<li>
+<p>Includes SiB2.</p>
+</li>
+<li>
+<p>Includes WRSI.</p>
+</li>
+<li>
+<p>Support for North American Mesoscale Forecast System (NAM)
+&#8220;242 AWIPS Grid -- Over Alaska&#8221; product.</p>
+</li>
+<li>
+<p>Support for USGS potential evapotranspiration (PET) data (for use
+in WRSI).</p>
+</li>
+<li>
+<p>Support for Climate Prediction Center&#8217;s (CPC) Rainfall Estimates
+version 2 (RFE2) daily precipition (for use in WRSI).</p>
+</li>
+<li>
+<p>Support to apply lapse-rate correction to bottom temperature field
+(for use in Noah).</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_6_1">D.8. LIS 6.1</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes Noah 3.1.</p>
+</li>
+<li>
+<p>Includes Noah 3.2.</p>
+</li>
+<li>
+<p>Support for SPoRT Daily GVF data.</p>
+</li>
+<li>
+<p>Support for North American Regional Reanalysis (3d) (NARR) data.</p>
+</li>
+<li>
+<p>Support for NCEP&#8217;s modified IGBP MODIS landcover data.</p>
+</li>
+<li>
+<p>Support to specify direction for output variables.</p>
+</li>
+<li>
+<p>Support for assimilation of ANSA snow depth products, MODIS
+snowcover, and LPRM retrievals of AMSRE soil moisture.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_6_0">D.9. LIS 6.0</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Modules have been restructured to streamline public and private interfaces</p>
+</li>
+<li>
+<p>Restructured AGRMET processing — parallel support, lat/lon support.</p>
+</li>
+<li>
+<p>This version now uses ESMF 3.1.0rp3.</p>
+</li>
+<li>
+<p>Support for computational halos.</p>
+</li>
+<li>
+<p>Allows mosaicing  of different forcings concurrently
+(e.g. GDAS global + NLDAS over CONUS+SALDAS over south america, etc.)</p>
+</li>
+<li>
+<p>Allows multiple overlays of different supplemental forcings
+(e.g. GDAS overlaid with NLDAS, AGRMET, STAGEIV)</p>
+</li>
+<li>
+<p>Allows concurrent instances of data assimilation</p>
+</li>
+<li>
+<p>Includes a highly configurable I/O interface (Allows unit conversions,
+temporal averaging, model-independent support for binary, Grib1 and NETCDF)</p>
+</li>
+<li>
+<p>Includes support for 3d forcing (that includes the atmospheric profile) and
+a configurable specification of the forcing inputs</p>
+</li>
+<li>
+<p>A dynamic bias estimation component (from NASA GMAO) has been added to the
+data assimilation subsystem.</p>
+</li>
+<li>
+<p>Generic support for parameter estimation/optimization with the implmentation
+of a heuristic approach using Genetic Algorithms.</p>
+</li>
+<li>
+<p>New sources for data assimilation (using NASA and NESDIS retrievals of AMSRE
+soil moisture)</p>
+</li>
+<li>
+<p>Support for real time GVF data from NESDIS and MODIS</p>
+</li>
+<li>
+<p>A suite of upscaling algorithms to complement the existing spatial
+downscaling algorithms.</p>
+</li>
+<li>
+<p>Support for new map projections — UTM</p>
+</li>
+<li>
+<p>Support for forward modeling using radiative transfer models, and support
+for radiance based assimilation</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_5_0">D.10. LIS 5.0</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>This version includes the infrastructure for performing data assimilation
+using a number of different algorithms from simple approaches such as
+direct insertion to the more sophisticated ensemble kalman filtering.</p>
+</li>
+<li>
+<p>More streamlined support for different architectures: A configuration
+based specification for the LIS makefile.</p>
+</li>
+<li>
+<p>The data assimilation infrastructure utilizes the Earth System Modeling
+Framework (ESMF) structures. The LIS configuration utility has been
+replaced with the corresponding ESMF utility.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_4_2">D.11. LIS 4.2</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Completed implementation of AGRMET processing algorithms</p>
+</li>
+<li>
+<p>Ability to run on polar stereographic, mercator, lambert
+conformal, and lat/lon projections</p>
+</li>
+<li>
+<p>Updated spatial interpolation tools to support the transformations
+to/from the above grid projections</p>
+</li>
+<li>
+<p>Switched to a highly interactive configurations management from
+the fortran namelist-based lis.crd style.</p>
+</li>
+<li>
+<p>Streamlined error and diagnostic logging, in both sequential and
+parallel processing environments.</p>
+</li>
+<li>
+<p>extended grib support; included the UCAR-based read-grib library</p>
+</li>
+<li>
+<p>Support for new supplemental forcing analyses — Huffman, CMORPH</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_4_1">D.12. LIS 4.1</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Preliminary AFWA support</p>
+</li>
+<li>
+<p>Ability to run on a defined layout of processors.</p>
+</li>
+<li>
+<p>Updates to plugins, preliminary implementation of alarms.</p>
+</li>
+<li>
+<p>Definition of LIS specfic environment variables.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_4_0_2">D.13. LIS 4.0.2</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>GSWP-2 support — LIS can now run GSWP-2 experiments.  Currently
+only CLM and Noah models have full support.</p>
+</li>
+<li>
+<p>Updates to the 1km running mode.</p>
+</li>
+<li>
+<p>Updates to the GDS running mode.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_4_0">D.14. LIS 4.0</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>VIC 4.0.5 — LIS' implementation of VIC has been reinstated.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_3_1">D.15. LIS 3.1</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>New domain-plugin support — facilitates creating new domains.</p>
+</li>
+<li>
+<p>New domain definition support — facilitates defining running domains.
+Sub-domain selection now works for
+both MPI-based and non MPI-based
+runs.</p>
+</li>
+<li>
+<p>New parameter-plugin support — facilitates adding new input
+parameter data-sets.</p>
+</li>
+<li>
+<p>New LIS version of ipolates — facilitates creating new domains and
+base forcing data-sets.</p>
+</li>
+<li>
+<p>Compile-time MPI support — MPI libraries are no longer required
+to compile LIS.</p>
+</li>
+<li>
+<p>Compile-time netCDF support — netCDF libraries are no longer required
+to compile LIS.</p>
+</li>
+<li>
+<p>New LIS time manager support — ESMF time manager was removed.
+ESMF libraries are not required in
+this version of LIS.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lis_3_0">D.16. LIS 3.0</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Running Modes — Now there is more than one way to run LIS.
+In addition to the standard MPI running mode,
+there are the GDS running mode and the 1 km running
+mode.</p>
+</li>
+<li>
+<p>Sub-domain Selection — Now you are no longer limited to global
+simulations.  You may choose any sub-set
+of the global domain to run over.
+See Section <a href="#sec_lisconfigfile">LIS config File</a>
+for more details.
+(This is currently only available for the
+MPI-based running mode.)</p>
+</li>
+<li>
+<p>Plug-ins — Now it is easy to add new LSM and forcing data-sets into
+the LIS driver.
+See LIS' Developer&#8217;s Guide for more details.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="sec-revision_history">Appendix E: Revision history</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Revision</th>
+<th class="tableblock halign-left valign-top">Summary of Changes</th>
+<th class="tableblock halign-left valign-top">Date</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.8.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 5, 2026</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.8.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apr 20, 2026</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.7.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 16, 2026</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.1 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 21, 2025</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.3 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apr 29, 2025</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.6.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 12, 2024</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.15 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 14, 2024</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 11, 2024</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.9 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jul 05, 2023</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.8 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 30, 2023</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.5 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 20, 2023</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.4 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2023</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 30, 2022</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.4.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jun 22, 2022</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.19</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.4 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 27, 2022</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.18</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.2 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 06, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.17</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LISF 557WW 7.4.6 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 17, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.1 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 31, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.15</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LISF 557WW 7.4.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mar 4, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.14</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 557WW 7.3.3 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 25, 2021</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.13</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.3.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dec 21, 2020</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.12</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 557WW 7.3.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 24, 2020</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 557WW 7.3 release candidate 4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 28, 2019</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.2 557WW release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Feb 2, 2018</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.2 AFWA Beta release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nov 24, 2017</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Updates regarding public release vs repository</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 7, 2017</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 7.2r Public Release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2017</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 7.1 AFWA Release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">August 29, 2016</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Updates for LIS 7.1rp7 Public Release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">August 4, 2016</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1 AFWA FY15 Deliverable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">July 28, 2016</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1rp1 Public Release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">December 15, 2015</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Note unavailability of MERRA2 forcing data</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 29, 2015</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1 Public Release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 27, 2015</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS 7.1 Initial AFWA Release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">April 13, 2015</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix F: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Copyright (c) 2015, Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230.</p>
@@ -25470,16 +25453,13 @@ Program stopping..</pre>
 <div id="footnotes">
 <hr>
 <div class="footnote" id="_footnotedef_1">
-<a href="#_footnoteref_1">1</a>. Not available in the LISF_public_release_7.5.0.tar.gz public release of LISF 7.5.
-</div>
-<div class="footnote" id="_footnotedef_2">
-<a href="#_footnoteref_2">2</a>. See the &#8220;Creating a Custom Modulefile&#8221; document found at <a href="https://nasa-lis.github.io/LISF/" class="bare">https://nasa-lis.github.io/LISF/</a>
+<a href="#_footnoteref_1">1</a>. See the &#8220;Creating a Custom Modulefile&#8221; document found at <a href="https://nasa-lis.github.io/LISF/" class="bare">https://nasa-lis.github.io/LISF/</a>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 6.0<br>
-Last updated 2026-05-01 11:46:38 UTC
+Version 7.0<br>
+Last updated 2026-06-09 14:29:27 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
