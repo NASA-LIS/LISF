@@ -1,6 +1,4 @@
 = Land Information System (LIS): LIS {lisfrevision} Users Guide
-:revnumber: 6.0
-:revdate: 20 Apr 2026
 :doctype: book
 :sectnums:
 :toc:
@@ -8,24 +6,33 @@
 :mathematical-format: svg
 :imagesoutdir: images
 :stem: latexmath
-:devonly:
-:lisfrevision: 7.5
 :lisfurl: https://lis.gsfc.nasa.gov
 :listesturl: https://lis.gsfc.nasa.gov/lis-testcases
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
 :nasalisfpages: https://nasa-lis.github.io/LISF/
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
-:listarball: LISF_public_release_7.5.0.tar.gz
-:lispublicna: Not available in the {listarball} public release of LISF 7.5.
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
+:publicrelease:
+ifdef::publicrelease[]
+:revnumber: 7.0
+:revdate: 5 Jun 2026
+:lisfrevision: 7.8
+:listarball: LISF_public_release_7.8.0.tar.gz
+endif::[]
+ifndef::publicrelease[]
+:revnumber: 6.0
+:revdate: 20 Apr 2026
+:lisfrevision: 7.8
+:listarball: LISF_557WW_release_7.8.0.tar.gz
+endif::[]
+//:lispublicna: Not available in the {listarball} public release of LISF 7.5.
 
+// Set :publicrelease: when compiling the public release version of the Users Guide.
+// Set :publicrelease!: when compiling the 557WW release version of the Users Guide.
 
-// Set :devonly: when compiling the developers' version of the Users Guide.
-// Set :devonly!: when compiling the public version of the Users Guide.
-//
 // The ifdef::devonly[] command allows one to include text for the developers'
 // version of the Users Guide.
 // Usage:
@@ -34,11 +41,7 @@
 // line two
 // endif::devonly[]
 
-
 // asciidoctor-pdf -r asciidoctor-mathematical LIS_users_guide.adoc
-
-
-include::revision_table.adoc[]
 
 include::intro.adoc[]
 include::backgrd.adoc[]
@@ -64,6 +67,12 @@ include::faq.adoc[]
 //include::gribout.adoc[] // no longer relevant due to move to GRIB_API library
 [appendix]
 include::fconvention.adoc[]
+[appendix]
+include::lis_source_tree.adoc[]
+[appendix]
+include::whatsnew.adoc[]
+[appendix]
+include::revision_table.adoc[]
 [appendix]
 include::licenses/CSIRO_BSD_MIT_License_v2.0_CABLE.adoc[]
 [bibliography]
