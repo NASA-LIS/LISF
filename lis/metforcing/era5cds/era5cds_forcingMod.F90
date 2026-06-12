@@ -132,11 +132,11 @@ module era5cds_forcingMod
      integer            :: tdimsize
 
      real*8             :: ringtime
-     
+
      integer            :: nIter, st_iterid,en_iterid
 
-     real, allocatable :: metdata1(:,:,:) 
-     real, allocatable :: metdata2(:,:,:) 
+     real, allocatable :: metdata1(:,:,:)
+     real, allocatable :: metdata2(:,:,:)
 
   end type era5cds_type_dec
 
@@ -164,8 +164,8 @@ contains
     use LIS_spatialDownscalingMod, only : LIS_init_pcpclimo_native
     use LIS_forecastMod
     use LIS_gridmappingMod, only : LIS_RunDomainPts
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)      
-  use netcdf
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
 #endif
 
     implicit none
@@ -260,76 +260,77 @@ contains
        da1 = 01
        hr1 = 07
        mn1 = 0; ss1 = 0
-       call LIS_date2time( era5cds_struc(n)%validstart,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1 )
+       call LIS_date2time( era5cds_struc(n)%validstart,updoy,upgmt, &
+            yr1,mo1,da1,hr1,mn1,ss1 )
 
        era5cds_struc(n)%mi = era5cds_struc(n)%ncold*era5cds_struc(n)%nrold
 
        ! Check resolution and set up weights for Interpolation
        if ( LIS_isatAfinerResolution(n,gridDesci(n,9)) )  then
 
-         era5cds_struc(n)%met_interp = LIS_rc%met_interp(findex)
+          era5cds_struc(n)%met_interp = LIS_rc%met_interp(findex)
 
-         write(LIS_logunit,*) 'MSG: The ERA5CDS forcing resolution is ' // &
-                              ' coaser than the running domain.'
-         write(LIS_logunit,*) '     Interpolating with the ' // &
-                               trim(era5cds_struc(n)%met_interp) // ' method.'
-       ! Setting up weights for Interpolation
-         if(trim(LIS_rc%met_interp(findex)).eq."bilinear") then
-          allocate(era5cds_struc(n)%n111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%n121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%n211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%n221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          call bilinear_interp_input(n, gridDesci(n,:),&
-               era5cds_struc(n)%n111,era5cds_struc(n)%n121,&
-               era5cds_struc(n)%n211,era5cds_struc(n)%n221,&
-               era5cds_struc(n)%w111,era5cds_struc(n)%w121,&
-               era5cds_struc(n)%w211,era5cds_struc(n)%w221)
+          write(LIS_logunit,*) '[INFO] The ERA5CDS forcing resolution is ' // &
+               ' coarser than the running domain.'
+          write(LIS_logunit,*) '     Interpolating with the ' // &
+               trim(era5cds_struc(n)%met_interp) // ' method.'
+          ! Setting up weights for Interpolation
+          if(trim(LIS_rc%met_interp(findex)).eq."bilinear") then
+             allocate(era5cds_struc(n)%n111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%n121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%n211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%n221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             call bilinear_interp_input(n, gridDesci(n,:),&
+                  era5cds_struc(n)%n111,era5cds_struc(n)%n121,&
+                  era5cds_struc(n)%n211,era5cds_struc(n)%n221,&
+                  era5cds_struc(n)%w111,era5cds_struc(n)%w121,&
+                  era5cds_struc(n)%w211,era5cds_struc(n)%w221)
 
-         elseif(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
-          allocate(era5cds_struc(n)%n111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%n121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%n211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%n221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          allocate(era5cds_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          call bilinear_interp_input(n, gridDesci(n,:),&
-               era5cds_struc(n)%n111,era5cds_struc(n)%n121,&
-               era5cds_struc(n)%n211,era5cds_struc(n)%n221,&
-               era5cds_struc(n)%w111,era5cds_struc(n)%w121,&
-               era5cds_struc(n)%w211,era5cds_struc(n)%w221)
+          elseif(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
+             allocate(era5cds_struc(n)%n111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%n121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%n211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%n221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             allocate(era5cds_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             call bilinear_interp_input(n, gridDesci(n,:),&
+                  era5cds_struc(n)%n111,era5cds_struc(n)%n121,&
+                  era5cds_struc(n)%n211,era5cds_struc(n)%n221,&
+                  era5cds_struc(n)%w111,era5cds_struc(n)%w121,&
+                  era5cds_struc(n)%w211,era5cds_struc(n)%w221)
 
-          allocate(era5cds_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(era5cds_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(era5cds_struc(n)%n212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(era5cds_struc(n)%n222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(era5cds_struc(n)%w112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(era5cds_struc(n)%w122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(era5cds_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(era5cds_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          call conserv_interp_input(n, gridDesci(n,:),&
-               era5cds_struc(n)%n112,era5cds_struc(n)%n122,&
-               era5cds_struc(n)%n212,era5cds_struc(n)%n222,&
-               era5cds_struc(n)%w112,era5cds_struc(n)%w122,&
-               era5cds_struc(n)%w212,era5cds_struc(n)%w222)
+             allocate(era5cds_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             allocate(era5cds_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             allocate(era5cds_struc(n)%n212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             allocate(era5cds_struc(n)%n222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             allocate(era5cds_struc(n)%w112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             allocate(era5cds_struc(n)%w122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             allocate(era5cds_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             allocate(era5cds_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+             call conserv_interp_input(n, gridDesci(n,:),&
+                  era5cds_struc(n)%n112,era5cds_struc(n)%n122,&
+                  era5cds_struc(n)%n212,era5cds_struc(n)%n222,&
+                  era5cds_struc(n)%w112,era5cds_struc(n)%w122,&
+                  era5cds_struc(n)%w212,era5cds_struc(n)%w222)
 
-         elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then
-          allocate(era5cds_struc(n)%n113(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          call neighbor_interp_input(n, gridDesci(n,:),&
-               era5cds_struc(n)%n113)
+          elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then
+             allocate(era5cds_struc(n)%n113(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+             call neighbor_interp_input(n, gridDesci(n,:),&
+                  era5cds_struc(n)%n113)
 
-         endif
-       ! Running domain at 0.25 degree, no need for interpolation
+          endif
+          ! Running domain at 0.25 degree, no need for interpolation
        else if (gridDesci(n,9)  == LIS_rc%gridDesc(n,9) .and. &
-                gridDesci(n,10) == LIS_rc%gridDesc(n,10).and. &
-                LIS_rc%gridDesc(n,1) == 0 ) then
+            gridDesci(n,10) == LIS_rc%gridDesc(n,10).and. &
+            LIS_rc%gridDesc(n,1) == 0 ) then
           write(LIS_logunit,*) '[INFO] ERA5CDS and LIS resolutions match ' // &
-                               'no spatial trainsorm of input forcing (only subset may occur). '
+               'no spatial trainsorm of input forcing (only subset may occur). '
           era5cds_struc(n)%met_interp = "none"
           call LIS_RunDomainPts( n, LIS_rc%met_proj(findex), gridDesci(n,:), &
                glpnc, glpnr, era5cds_struc(n)%subset_nc,                     &
@@ -338,25 +339,25 @@ contains
 
        else
           era5cds_struc(n)%met_interp = LIS_rc%met_upscale(findex)
-          write(LIS_logunit,*) 'MSG: The ERA5CDS forcing resolution is finer ' // &
+          write(LIS_logunit,*) '[INFO] The ERA5CDS forcing resolution is finer ' // &
                                'than the running domain.'
           write(LIS_logunit,*) '     Upscaling with the ' // &
                                trim(era5cds_struc(n)%met_interp) // ' method.'
 
           select case( era5cds_struc(n)%met_interp )
-           case( "average" )
-            allocate(era5cds_struc(n)%n111(era5cds_struc(n)%mi))
+          case( "average" )
+             allocate(era5cds_struc(n)%n111(era5cds_struc(n)%mi))
 
-            call upscaleByAveraging_input(gridDesci,                   &
-                                          LIS_rc%gridDesc(n,:),        &
-                                          era5cds_struc(n)%mi,           &
-                                          LIS_rc%lnc(n)*LIS_rc%lnr(n), &
-                                          era5cds_struc(n)%n111)
-           case default
-            write(LIS_logunit,*) '[ERR] Interpolation option '// &
-                 trim(LIS_rc%met_interp(findex))//&
-                 ' for ERA5CDS forcing is not supported'
-            call LIS_endrun()
+             call upscaleByAveraging_input(gridDesci, &
+                  LIS_rc%gridDesc(n,:),               &
+                  era5cds_struc(n)%mi,                &
+                  LIS_rc%lnc(n)*LIS_rc%lnr(n),        &
+                  era5cds_struc(n)%n111)
+          case default
+             write(LIS_logunit,*) '[ERR] Interpolation option '// &
+                  trim(LIS_rc%met_interp(findex))//&
+                  ' for ERA5CDS forcing is not supported'
+             call LIS_endrun()
           end select
        endif
 
@@ -368,40 +369,42 @@ contains
        era5cds_struc(n)%nvars = 9
 
        ! Forecast mode:
-       if(LIS_rc%forecastMode.eq.1) then 
-          
+       if(LIS_rc%forecastMode.eq.1) then
+
           if(mod(LIS_rc%nensem(n),&
-               LIS_forecast_struc(1)%niterations).ne.0) then 
-             write(LIS_logunit,*) '[ERR] The number of ensembles must be a multiple'
+               LIS_forecast_struc(1)%niterations).ne.0) then
+             write(LIS_logunit,*) &
+                  '[ERR] The number of ensembles must be a multiple'
              write(LIS_logunit,*) '[ERR] of the number of iterations '
              write(LIS_logunit,*) '[ERR] nensem = ',LIS_rc%nensem(n)
-             write(LIS_logunit,*) '[ERR] niter = ',LIS_forecast_struc(1)%niterations
+             write(LIS_logunit,*) '[ERR] niter = ', &
+                  LIS_forecast_struc(1)%niterations
              call LIS_endrun()
           endif
 
           era5cds_struc(n)%st_iterid = LIS_forecast_struc(1)%st_iterId
           era5cds_struc(n)%en_iterId = LIS_forecast_struc(1)%niterations
           era5cds_struc(n)%nIter = LIS_forecast_struc(1)%niterations
-          
+
           allocate(era5cds_struc(n)%metdata1(LIS_forecast_struc(1)%niterations,&
                LIS_rc%met_nf(findex),&
                LIS_rc%ngrid(n)))
           allocate(era5cds_struc(n)%metdata2(LIS_forecast_struc(1)%niterations,&
                LIS_rc%met_nf(findex),&
                LIS_rc%ngrid(n)))
-          
-       ! Regular retrospective or non-forecast mode:
+
+          ! Regular retrospective or non-forecast mode:
        else
 
           era5cds_struc(n)%st_iterid = 1
           era5cds_struc(n)%en_iterId = 1
           era5cds_struc(n)%nIter = 1
-          
+
           allocate(era5cds_struc(n)%metdata1(1,LIS_rc%met_nf(findex),&
                LIS_rc%ngrid(n)))
           allocate(era5cds_struc(n)%metdata2(1,LIS_rc%met_nf(findex),&
                LIS_rc%ngrid(n)))
-          
+
        endif
 
        era5cds_struc(n)%metdata1 = 0
@@ -416,7 +419,7 @@ contains
                era5cds_struc(n)%ncold,&
                era5cds_struc(n)%nrold)
        endif
-       
+
        if ( LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
             LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" ) then
 
@@ -424,8 +427,7 @@ contains
        endif
 
     enddo   ! End nest loop
-    
-    
+
   end subroutine init_era5cds
 end module era5cds_forcingMod
 

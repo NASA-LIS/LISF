@@ -13,11 +13,11 @@
 ! \label{readcrd_era5cds}
 !
 ! !REVISION HISTORY:
-! 23 Dec 2019: Sujay Kumar, initial code 
-! 04 Mar 2025: Hiroko Beudoing, adopted ERA5 routines for the public CDS 
+! 23 Dec 2019: Sujay Kumar, initial code
+! 04 Mar 2025: Hiroko Beudoing, adopted ERA5 routines for the public CDS
 !                               data format
 !
-! !INTERFACE:    
+! !INTERFACE:
 subroutine readcrd_era5cds()
 ! !USES:
   use ESMF
@@ -28,8 +28,8 @@ subroutine readcrd_era5cds()
 ! !DESCRIPTION:
 !
 !  This routine reads the options specific to ERA5 forcing
-!  from the LIS configuration file. 
-!  
+!  from the LIS configuration file.
+!
 !EOP
   implicit none
 
@@ -51,7 +51,8 @@ subroutine readcrd_era5cds()
           'ERA5CDS surface altitude file: not defined')
   enddo
 
-  call ESMF_ConfigFindLabel(LIS_config,"ERA5CDS use lowest model level forcing:",rc=rc)
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "ERA5CDS use lowest model level forcing:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,era5cds_struc(n)%uselml,rc=rc)
      call LIS_verify(rc,&

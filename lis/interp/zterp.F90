@@ -236,7 +236,7 @@ subroutine zterp (iflag,lat,lon,btime,etime, &
      else
         weight1=(czmodel/avgangle)
      endif
-     if ( lis%zterp_correction ) then    ! hkb 3/4/26
+     if ( lis%zterp_correction ) then
        if (weight1.gt.5.0) then
           weight1=1.0
        endif

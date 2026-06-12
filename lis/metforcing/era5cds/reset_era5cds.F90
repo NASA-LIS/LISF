@@ -10,12 +10,12 @@
 !BOP
 ! !MODULE: reset_era5cds
 ! \label{reset_era5cds}
-! 
-! !REVISION HISTORY: 
-! 23 dec 2019: Sujay Kumar, initial code 
+!
+! !REVISION HISTORY:
+! 23 dec 2019: Sujay Kumar, initial code
 ! 16 apr 2025: Hiroko Beudoing, adopted ERA5 routines for the public CDS
 !                               data format
-! 
+!
 ! !INTERFACE:
 subroutine reset_era5cds
 ! !USES:
@@ -24,15 +24,15 @@ subroutine reset_era5cds
   use era5cds_forcingMod
 !
 ! !DESCRIPTION:
-!  Routine to cleanup allocated structures for era5cds forcing. 
+!  Routine to cleanup allocated structures for era5cds forcing.
 !
-!EOP  
+!EOP
   implicit none
-  integer :: n 
+  integer :: n
 
   do n=1,LIS_rc%nnest
-     era5cds_struc(n)%startFlag = .true. 
-     era5cds_struc(n)%dayFlag = .true. 
+     era5cds_struc(n)%startFlag = .true.
+     era5cds_struc(n)%dayFlag = .true.
      era5cds_struc(n)%era5cdstime1 = 3000.0
      era5cds_struc(n)%era5cdstime2 = 0.0
      era5cds_struc(n)%ringtime = 0.0

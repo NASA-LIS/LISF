@@ -12,7 +12,7 @@
 ! \label{timeinterp_era5cds}
 !
 ! !REVISION HISTORY:
-! 23 dec 2019: Sujay Kumar, initial code 
+! 23 dec 2019: Sujay Kumar, initial code
 ! 16 Apr 2025: Hiroko Beudoing, adopted ERA5 routines for the public CDS
 !                               data format
 !
@@ -33,7 +33,6 @@ subroutine timeinterp_era5cds(n,findex)
   use LIS_ran2_gasdev
   use LIS_histDataMod
 
-
   implicit none
 
 ! !ARGUMENTS:
@@ -41,13 +40,13 @@ subroutine timeinterp_era5cds(n,findex)
   integer, intent(in):: findex
 !
 ! !DESCRIPTION:
-!  Temporally interpolates the forcing data to the current model 
-!  timestep. Precipitation 
+!  Temporally interpolates the forcing data to the current model
+!  timestep. Precipitation
 !  is not temporally interpolated, and the 1 hourly value is used.
-!  All other variables, including Downward shortwave radiation are 
-!  linearly interpolated between the 1 hourly blocks. 
-! 
-!  The routines invoked are: 
+!  All other variables, including Downward shortwave radiation are
+!  linearly interpolated between the 1 hourly blocks.
+!
+!  The routines invoked are:
 !  \begin{description}
 !   \item[LIS\_time2date](\ref{LIS_time2date}) \newline
 !    converts the time to a date format
@@ -71,50 +70,59 @@ subroutine timeinterp_era5cds(n,findex)
   real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:)
 
   external :: zterp
-  
+
   btime=era5cds_struc(n)%era5cdstime1
   call LIS_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)
   btime=era5cds_struc(n)%era5cdstime2
   call LIS_time2date(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn)
 
-!=== Interpolate Data in time      
-  wt1=(era5cds_struc(n)%era5cdstime2-LIS_rc%time)/ & 
+!=== Interpolate Data in time
+  wt1=(era5cds_struc(n)%era5cdstime2-LIS_rc%time)/ &
        (era5cds_struc(n)%era5cdstime2-era5cds_struc(n)%era5cdstime1)
   wt2=1.0-wt1
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Tair%varname(1),tmpField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Tair%varname(1), &
+       tmpField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable Tair in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Qair%varname(1),q2Field,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Qair%varname(1), &
+       q2Field,&
        rc=status)
   call LIS_verify(status, 'Error: Enable Qair in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_SWdown%varname(1),swdField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_SWdown%varname(1),&
+       swdField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable SWdown in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_LWdown%varname(1),lwdField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_LWdown%varname(1),&
+       lwdField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable LWdown in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Wind_E%varname(1),uField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Wind_E%varname(1),&
+       uField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable Wind_E in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Wind_N%varname(1),vField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Wind_N%varname(1),&
+       vField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable Wind_N in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Psurf%varname(1),psurfField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Psurf%varname(1), &
+       psurfField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable Psurf in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Rainf%varname(1),pcpField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Rainf%varname(1), &
+       pcpField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable Rainf in the forcing variables list')
 
-  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_CRainf%varname(1),cpcpField,&
+  call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_CRainf%varname(1),&
+       cpcpField,&
        rc=status)
   call LIS_verify(status, 'Error: Enable CRainf in the forcing variables list')
 
@@ -123,7 +131,7 @@ subroutine timeinterp_era5cds(n,findex)
 
   call ESMF_FieldGet(q2Field,localDE=0,farrayPtr=q2,rc=status)
   call LIS_verify(status)
-  
+
   call ESMF_FieldGet(swdField,localDE=0,farrayPtr=swd,rc=status)
   call LIS_verify(status)
 
@@ -155,18 +163,11 @@ subroutine timeinterp_era5cds(n,findex)
         call zterp(0,LIS_domain(n)%grid(index1)%lat,&
              LIS_domain(n)%grid(index1)%lon,&
              gmt1,gmt2,LIS_rc%gmt,zdoy,zw1,zw2,czb,cze,czm,LIS_rc)
-     
+
         kk = LIS_get_iteration_index(n, k, index1, mfactor)
 
-!        if ( LIS_domain(n)%grid(index1)%lat .eq. -53.875 .and. &
-!             LIS_domain(n)%grid(index1)%lon .eq. -68.875 ) then
-!          write(unit=LIS_logunit,fmt=*)'zterp:',zw1,zw2,gmt1,gmt2, &
-!          LIS_rc%gmt,era5cds_struc(n)%metdata1(kk,3,index1),czb,cze, &
-!          czm,LIS_rc%zterp_correction
-!        endif
-
         if (era5cds_struc(n)%metdata1(kk,3,index1).ne.LIS_rc%udef.and.&
-             era5cds_struc(n)%metdata2(kk,3,index1).ne.LIS_rc%udef) then 
+             era5cds_struc(n)%metdata2(kk,3,index1).ne.LIS_rc%udef) then
            swd(t) = zw1 * era5cds_struc(n)%metdata1(kk,3,index1)
 
            if (swd(t).gt.LIS_CONST_SOLAR) then
@@ -174,38 +175,39 @@ subroutine timeinterp_era5cds(n,findex)
                    '[WARN] sw radiation too high in ERA5!!'
               write(unit=LIS_logunit,fmt=*)'[WARN] it is',swd(t), zw1
               write(unit=LIS_logunit,fmt=*)'[WARN] at ',t, &
-                    LIS_domain(n)%grid(index1)%lat,LIS_domain(n)%grid(index1)%lon
+                   LIS_domain(n)%grid(index1)%lat, &
+                   LIS_domain(n)%grid(index1)%lon
               write(unit=LIS_logunit,fmt=*)'[WARN] era5cdsdata1=',&
                    era5cds_struc(n)%metdata1(kk,3,index1)
               write(unit=LIS_logunit,fmt=*)'[WARN] era5cdsdata2=',&
                    era5cds_struc(n)%metdata2(kk,3,index1)
               swd(t) = LIS_CONST_SOLAR
-              write(unit=LIS_logunit,fmt=*)'[WARN] forcing set to ',swd(t) 
+              write(unit=LIS_logunit,fmt=*)'[WARN] forcing set to ',swd(t)
            endif
         endif
 
         if ((swd(t).ne.LIS_rc%udef).and.(swd(t).lt.0)) then
            ! tiny negative swd appear in the high latitudes sometimes
            ! WARN in stead of ERR and endrun  -- 2/2/2026 HKB
-           swd(t) = 0.0 
+           swd(t) = 0.0
            write(LIS_logunit,*) &
-                '[WARN] timeinterp_era5cds -- Stopping because ', & 
+                '[WARN] timeinterp_era5cds -- Stopping because ', &
                 'forcing not udef but lt0,'
-           write(LIS_logunit,*)'[ERR] timeinterp_era5cds -- ', & 
-                t,swd(t),era5cds_struc(n)%metdata2(kk,3,index1), & 
+           write(LIS_logunit,*)'[ERR] timeinterp_era5cds -- ', &
+                t,swd(t),era5cds_struc(n)%metdata2(kk,3,index1), &
                 ' (',LIS_localPet,')'
            !call LIS_endrun
         endif
-        
+
         if (swd(t).gt.LIS_CONST_SOLAR) then
            swd(t)=era5cds_struc(n)%metdata2(kk,3,index1)
         endif
      enddo
   enddo
- 
+
 !-----------------------------------------------------------------------
 ! precip variable - constant rate over the hour
-!-----------------------------------------------------------------------  
+!-----------------------------------------------------------------------
   do k=1,LIS_rc%ntiles(n)/mfactor
      do m=1,mfactor
         t = m + (k-1)*mfactor
@@ -225,7 +227,7 @@ subroutine timeinterp_era5cds(n,findex)
 
 !-----------------------------------------------------------------------
 ! LW down
-!-----------------------------------------------------------------------  
+!-----------------------------------------------------------------------
   do k=1,LIS_rc%ntiles(n)/mfactor
      do m=1,mfactor
         t = m + (k-1)*mfactor
@@ -236,7 +238,7 @@ subroutine timeinterp_era5cds(n,findex)
      enddo
   enddo
 !-----------------------------------------------------------------------
-! Linearly interpolate everything else 
+! Linearly interpolate everything else
 !-----------------------------------------------------------------------
 
   do k=1,LIS_rc%ntiles(n)/mfactor
@@ -260,4 +262,4 @@ subroutine timeinterp_era5cds(n,findex)
   enddo
 
 end subroutine timeinterp_era5cds
-  
+

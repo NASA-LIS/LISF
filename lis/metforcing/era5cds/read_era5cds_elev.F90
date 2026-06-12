@@ -31,22 +31,22 @@ subroutine read_era5cds_elev(n,findex)
 #endif
 
   implicit none
-! !ARGUMENTS: 
-  integer, intent(in) :: n 
+! !ARGUMENTS:
+  integer, intent(in) :: n
   integer, intent(in) :: findex
 ! !DESCRIPTION:
 !
 !  Opens, reads, and interpolates ERA5CDS model elevation to the LIS
-!  grid. The data will be used to perform any topographical 
+!  grid. The data will be used to perform any topographical
 !  adjustments to the forcing.
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !  \item[n]
 !   index of the nest
 !  \end{description}
-! 
-!  The routines invoked are: 
+!
+!  The routines invoked are:
 !   \begin{description}
 !    \item[ij\_to\_latlon](\ref{ij_to_latlon}) \newline
 !     computes the lat lon values in LIS grid projection
@@ -57,11 +57,11 @@ subroutine read_era5cds_elev(n,findex)
    integer :: c,r
    real    :: elev(LIS_rc%gnc(n),LIS_rc%gnr(n))
    real    :: elev_subset(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  
+
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
    inquire(file=LIS_rc%paramfile(n), exist=file_exists)
-   if(file_exists) then 
+   if(file_exists) then
 
       write(LIS_logunit,*) " Reading ERA5CDS elevation data ... "
 
@@ -71,17 +71,17 @@ subroutine read_era5cds_elev(n,findex)
       call LIS_verify(nf90_inq_varid(nid,"ELEV_ERA5CDS",elevId),&
            'nf90_inq_varid failed in read_era5cds_elev')
       call LIS_verify(nf90_get_var(nid,elevId,elev),&
-           'nf90_get_var failed in read_era5cds_elev')      
+           'nf90_get_var failed in read_era5cds_elev')
       call LIS_verify(nf90_close(nid))
 
-      elev_subset(:,:) = elev(LIS_ews_halo_ind(n,LIS_localPet+1):&         
+      elev_subset(:,:) = elev(LIS_ews_halo_ind(n,LIS_localPet+1): &
           LIS_ewe_halo_ind(n,LIS_localPet+1), &
           LIS_nss_halo_ind(n,LIS_localPet+1): &
           LIS_nse_halo_ind(n,LIS_localPet+1))
 
       do r=1,LIS_rc%lnr(n)
          do c=1,LIS_rc%lnc(n)
-            if(LIS_domain(n)%gindex(c,r).ne.-1) then 
+            if(LIS_domain(n)%gindex(c,r).ne.-1) then
                LIS_forc(n,findex)%modelelev(LIS_domain(n)%gindex(c,r)) =&
                     elev_subset(c,r)
             endif
@@ -89,9 +89,9 @@ subroutine read_era5cds_elev(n,findex)
       enddo
    endif
 
-   write(LIS_logunit,*) & 
-        "Finish reading ERA5CDS elevation data"
+   write(LIS_logunit,*) &
+        "[INFO] Finish reading ERA5CDS elevation data"
 #endif
 
 end subroutine read_era5cds_elev
- 
+
