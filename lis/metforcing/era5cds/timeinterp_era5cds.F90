@@ -59,13 +59,10 @@ subroutine timeinterp_era5cds(n,findex)
   real    :: zw1, zw2
   real    :: czm, cze, czb
   real    :: wt1, wt2
-  real    :: gmt1, gmt2, tempbts
+  real    :: gmt1, gmt2
   integer :: t,index1
   integer :: bdoy,byr,bmo,bda,bhr,bmn
   real*8  :: btime
-  real    :: tempgmt1,tempgmt2
-  integer :: tempbdoy,tempbyr,tempbmo,tempbda,tempbhr,tempbmn
-  integer :: tempbss
   integer            :: status
   integer            :: mfactor,m
   type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
@@ -73,7 +70,8 @@ subroutine timeinterp_era5cds(n,findex)
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:)
   real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:)
 
-
+  external :: zterp
+  
   btime=era5cds_struc(n)%era5cdstime1
   call LIS_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)
   btime=era5cds_struc(n)%era5cdstime2

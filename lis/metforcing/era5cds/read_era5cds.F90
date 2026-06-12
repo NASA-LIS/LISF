@@ -23,7 +23,7 @@
 subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,&
      instfile, avgfile, lmlfile, prevavgfile, ferror)
 ! !USES:
-  use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_coreMod,       only : LIS_rc
   use LIS_logMod
   use LIS_FORC_AttributesMod
   use LIS_metforcingMod, only : LIS_forc
@@ -115,7 +115,7 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
   integer   :: ftn
   integer   :: tmpId, qId, uwindId, vwindId, lwdId, psId, rainfId, crainfId
   integer   :: swdId, timeId
-  integer   :: c,r,t,k,l,i,j,ll
+  integer   :: c,r,k,l,i,j,ll
   integer   :: tindex,atindex
   integer   :: mo,rec_size, prev_rec_size
   integer   :: start_time_index
@@ -151,6 +151,11 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag, findex,
                                           !in Cloud Physics, pp.12-17
                                           ! A in kPa, B in K.
   real            :: p_kPa
+
+  external :: era5grid_2_lisgrid
+  external :: interp_era5cds_var
+  external :: assign_processed_era5cdsf
+  
 ! __________________________________________________________________________
 
   ferror = 0 ! 1 success
@@ -780,15 +785,19 @@ subroutine interp_era5cds_var(n,findex, month, input_var, missingValue, &
 ! 
 !EOP
 
-  integer   :: t,c,r,k,iret
-  integer   :: doy
-  integer   :: ftn
+  integer   :: c,r,k,iret
   real      :: f(era5cds_struc(n)%ncold*era5cds_struc(n)%nrold)
   logical*1 :: lb(era5cds_struc(n)%mi)
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   integer   :: input_nc, input_nr
   integer   :: count1,nrec
+
+  external :: conserv_interp
+  external :: bilinear_interp
+  external :: neighbor_interp
+  external :: upscaleByAveraging
+  
 ! _____________________________________________________________
 
   input_size = era5cds_struc(n)%mi

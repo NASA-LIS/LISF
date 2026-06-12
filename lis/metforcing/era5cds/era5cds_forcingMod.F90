@@ -192,9 +192,14 @@ contains
     integer :: updoy, yr1,mo1,da1,hr1,mn1,ss1
     real :: upgmt
     integer :: n
-    integer :: ftn
     integer      :: glpnc, glpnr
 
+    external :: readcrd_era5cds
+    external :: bilinear_interp_input
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
+    external :: upscaleByAveraging_input
+    external :: read_era5cds_elev
 
     allocate(era5cds_struc(LIS_rc%nnest))
 

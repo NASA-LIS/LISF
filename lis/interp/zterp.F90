@@ -134,6 +134,10 @@ subroutine zterp (iflag,lat,lon,btime,etime, &
   integer zoneetime,zonebtime,zonembtime
   integer zone,juliane,julianmb,juliantemp,i
   integer acnt ! counter for cavgdata > 0 (daytime)
+
+  external :: LIS_localtime
+  external :: coszenith
+
 !--------------------------------------------------------------------  
 ! This section contains hardwired data that will be supplied by main program.
 ! These values were chosen arbitrarily and exist simply to check the
@@ -428,7 +432,7 @@ subroutine coszenith (lon,latd,lhour,zone,julian,czenith,dec,omega)
   czenith=sin(dec)*sin(llat)+cos(dec)*cos(llat)*cos(omega)
   czenith=amax1(0.,czenith)
   if ( czenith > 1.0 ) then
-     write(LIS_logunit,fmt='(a,e16.10,a)') 'czenith > 1 (',czenith,&
+     write(LIS_logunit,fmt='(a,e17.10,a)') 'czenith > 1 (',czenith,&
                                            '). Resetting to 1.'
      czenith = 1.0
   endif

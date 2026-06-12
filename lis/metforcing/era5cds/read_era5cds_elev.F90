@@ -52,7 +52,6 @@ subroutine read_era5cds_elev(n,findex)
 !     computes the lat lon values in LIS grid projection
 !   \end{description}
 !EOP
-   integer :: i, err
    logical :: file_exists
    integer :: nid,elevId
    integer :: c,r
