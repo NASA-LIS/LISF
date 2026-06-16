@@ -213,10 +213,17 @@ ifeq "$(require-deps)" "true"
 # Generate all dependencies at once if no dependency files are found.
 ifeq "$(if $(strip $(DEPS)),$(if $(wildcard $(DEPS)),,true),false)" "true"
 $(info No dependency files found. Generating all dependencies at once...)
-$(info $(shell $(DEPGEN) $(DEPGEN_FLAGS) $(FILES) $(VPATH)))
-ifneq ($(.SHELLSTATUS),0)
-$(error Bulk dependency generation failed.)
-endif
+CONDITIONAL_DEPEND = run
 endif
 -include $(DEPS)
+endif
+
+# PHONY target to generate all dependency files at once if no dependency files
+# are found, avoiding shell function to preserve carriage returns.
+.PHONY: conditional_depend
+conditional_depend:
+ifeq ($(CONDITIONAL_DEPEND),run)
+	make depend
+else
+	@echo
 endif
