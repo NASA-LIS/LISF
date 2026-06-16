@@ -415,7 +415,6 @@ which is available from the NLDAS-3 S3 bucket.
 For additional information on accessing NLDAS-3 data products, see:
 https://github.com/NASAWaterInsight/NLDAS-3
 
-```bash
 python compute_dynamic_lapse_rates.py \
   --infile_Z ./merra2.elevation_and_landmask.nc \
   --infile_landmask ./merra2.elevation_and_landmask.nc \
@@ -428,15 +427,14 @@ python compute_dynamic_lapse_rates.py \
   --output_mode daily \
   --fname_in_pfx_T MERRA2.tavg1_2d_slv_Nx. \
   --fname_in_sfx_T .nc4 \
-  --fname_out_pfx MERRA2.lapse_rate.daily. \
-  --fname_out_sfx .nc \
+  --fname_out_pfx MERRA2.lapse_rate.hourly. \
+  --fname_out_sfx .nldas3.nc \
   --landmask_trueval 1 \
   --min_land_neighbors 5 \
   --LR_forced_val -0.0065 \
   --save_units_as_per_km 1 \
   --clip_to_reference_bbox \
   --reference_grid_file ./lis_input.nldas3.noahmp401.1km.land_and_inland_water.m2interp.nc
-```
 
 3) NLDAS-3 near-real-time, GEOS-ITbias
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -451,7 +449,6 @@ already been clipped to the NLDAS-3 modeling domain, the command does not
 include the ``--clip_to_reference_bbox`` or ``--reference_grid_file``
 options.
 
-```bash
 python compute_dynamic_lapse_rates.py \
   --infile_Z ./geosit.elevation_and_landmask.nc \
   --infile_landmask ./geosit.elevation_and_landmask.nc \
@@ -476,7 +473,6 @@ python compute_dynamic_lapse_rates.py \
   --min_land_neighbors 5 \
   --LR_forced_val -0.0065 \
   --save_units_as_per_km 1
-```
 
 4) Overwrite or preview outputs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -239,9 +239,7 @@ Example commands for retrospective and NRT processing are included in the script
 
 ### MERRA-2 Retrospective Dynamic Lapse Rates
 
-For the retrospective workflow, each MERRA-2 input file contains multiple hourly
-time steps. One lapse-rate output file is written per day, while preserving all
-hourly time steps present in the source file.
+For retrospective MERRA-2 production, one lapse-rate output file is generated per day. Each output file preserves all hourly timesteps from the corresponding MERRA-2 input file. In the NLDAS-3 retrospective workflow, the output filename prefix includes `hourly` to indicate that the files contain hourly lapse-rate fields, even though the output granularity is daily.
 
 The example below includes options for clipping the MERRA-2 domain to the
 NLDAS-3 modeling domain using ``--clip_to_reference_bbox``. The clipping
@@ -265,8 +263,8 @@ python compute_dynamic_lapse_rates.py \
   --output_mode daily \
   --fname_in_pfx_T MERRA2.tavg1_2d_slv_Nx. \
   --fname_in_sfx_T .nc4 \
-  --fname_out_pfx MERRA2.lapse_rate.daily. \
-  --fname_out_sfx .nc \
+  --fname_out_pfx MERRA2.lapse_rate.hourly. \
+  --fname_out_sfx .nldas3.nc \
   --landmask_trueval 1 \
   --min_land_neighbors 5 \
   --LR_forced_val -0.0065 \
