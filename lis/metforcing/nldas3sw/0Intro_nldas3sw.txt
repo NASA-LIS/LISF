@@ -1,0 +1,17 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{NLDAS3SW}
+!These routines read in the CERES hourly SWdown 4-km binary data
+!for interpolation and slope-aspect corrections down to the 1-km
+!NLDAS-3 grid.
+!
+!EOP

@@ -397,6 +397,7 @@ endif::devonly[]
 |"`GALWEM forecast`"           | GALWEM 17km or 0.25deg deterministic forecast reader
 |"`GALWEM-GE forecast`"        | GALWEM-GE forecast reader
 |"`Global EIS`"                | Global Earth Information System (EIS) 5km forcing
+|"`NLDAS-3 SWdown`"            | CERES SWdown data for NLDAS-3
 |====
 
 .Example _lis.config_ entry
@@ -6726,6 +6727,17 @@ of the Global EIS forcing files.
 .Example _lis.config_ entry
 ....
 Global EIS forcing directory: ./geis
+....
+
+[[sssec_nldas3sw,NLDAS-3 SWdown]]
+==== CERES SWdown for NLDAS-3
+
+`CERES SWdown forcing directory:` specifies the location
+of the CERES SWdown 4-km binary hourly data.
+
+.Example _lis.config_ entry
+....
+CERES SWdown forcing directory:  ./CERES
 ....
 
 [[ssec_lsm,Land surface models]]
