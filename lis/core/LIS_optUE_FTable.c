@@ -89,7 +89,7 @@ struct optuegetnpnode* optuegetnp_table = NULL;
 struct optuerstnode
 { 
   char *name;
-  void (*func)();
+  void (*func)(void*);
 
   struct optuerstnode* next;
 } ;
@@ -780,7 +780,7 @@ void FTN(registeroptuereadrestart)(char *j, void (*func)(void*),int len)
 // \label{optuereadrestart}
 // 
 // !INTERFACE:
-void FTN(optuereadrestart)(char *j,int len)
+void FTN(optuereadrestart)(char *j,void *rstflag,int len)
 //  
 // !DESCRIPTION: 
 // Invokes the routine from the registry to retrieve 
@@ -808,7 +808,7 @@ void FTN(optuereadrestart)(char *j,int len)
       printf("****************Error****************************\n"); 
     }
   }
-  current->func(); 
+  current->func(rstflag);
 }
 
 //BOP
