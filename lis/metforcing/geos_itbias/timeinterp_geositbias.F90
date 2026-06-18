@@ -14,6 +14,8 @@
 ! !REVISION HISTORY:
 ! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
 ! 09 Jan 2026: Eric Kemp, reformatting.
+! 17 Jun 2026: Kristen Whitney, updated metadata storage references
+!              and corrected GEOS-ITbias forcing indexing.
 !
 ! !INTERFACE:
 subroutine timeinterp_geositbias(n,findex)
@@ -136,10 +138,10 @@ subroutine timeinterp_geositbias(n,findex)
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
-        tair(t) = geositbias_struc(n)%metdata1(kk,1,index1)
-        qair(t) = geositbias_struc(n)%metdata1(kk,2,index1)
-        lwgab(t) = geositbias_struc(n)%metdata1(kk,4,index1)
-        ps(t) = geositbias_struc(n)%metdata1(kk,7,index1)
+        tair(t) = geositbias_struc(n)%metdata(kk,1,index1)
+        qair(t) = geositbias_struc(n)%metdata(kk,2,index1)
+        ps(t) = geositbias_struc(n)%metdata(kk,3,index1)
+        lwgab(t) = geositbias_struc(n)%metdata(kk,4,index1)
      enddo
   enddo
 end subroutine timeinterp_geositbias

@@ -19,12 +19,24 @@ module geositbias_forcingMod
 ! !DESCRIPTION:
 !  This module contains variables and data structures that are used
 !  for the implementation of the GEOS-ITbias forcing data.
-!  The data is global 0.625-degree lon. by 0.5-degree lat, in latlon
-!  projection, and at 1 hourly intervals. The derived data type
-!  {\tt geositbias\_struc}
-!  includes the variables that specify the runtime options, and the
-!  weights and neighbor information to be used for spatial interpolation.
-!  They are described below:
+!  GEOS-ITbias consists of bias-adjusted GEOS-IT surface forcing
+!  fields that are generated upstream of LIS. LIS does not perform
+!  the GEOS-IT to GEOS-ITbias adjustment; it reads the prepared
+!  GEOS-ITbias files and applies the requested LIS spatial
+!  interpolation and downscaling procedures.
+!
+!  The GEOS-ITbias files used by this reader contain four hourly
+!  surface forcing fields: 2-m air temperature, 2-m specific humidity,
+!  surface pressure, and downward longwave radiation. The fields are
+!  bias-adjusted using climatological reference datasets generated
+!  outside of LIS.
+!
+!  The data are on a 0.625-degree longitude by 0.5-degree latitude
+!  grid, in latlon projection, and at 1 hourly intervals. The derived
+!  data type {\tt geositbias\_struc} includes the variables that
+!  specify the runtime options, and the weights and neighbor
+!  information to be used for spatial interpolation. They are
+!  described below:
 !  \begin{description}
 !  \item[ncold]
 !    Number of columns (along the east west dimension) for the input data
@@ -109,8 +121,7 @@ module geositbias_forcingMod
      real*8             :: ringtime
      integer            :: nIter,st_iterid,en_iterid
 
-     real, allocatable :: metdata1(:,:,:)
-     real, allocatable :: metdata2(:,:,:)
+     real, allocatable :: metdata(:,:,:)
 
      integer                 :: use2mwind
      character(len=LIS_CONST_PATH_LEN) :: scaleffile
@@ -136,6 +147,8 @@ contains
 ! !REVISION HISTORY:
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
 ! 20 Apr 2023: David Mocko,  initial code (based on merra2)
+! 17 Jun 2026: Kristen Whitney, clarified GEOS-ITbias dataset
+!              description and simplified metadata storage.
 !
 ! !INTERFACE:
   subroutine init_geositbias(findex)
@@ -286,13 +299,10 @@ contains
        geositbias_struc(n)%en_iterId = 1
        geositbias_struc(n)%nIter = 1
 
-       allocate(geositbias_struc(n)%metdata1(1,LIS_rc%met_nf(findex),    &
-            LIS_rc%ngrid(n)))
-       allocate(geositbias_struc(n)%metdata2(1,LIS_rc%met_nf(findex),    &
+       allocate(geositbias_struc(n)%metdata(1,LIS_rc%met_nf(findex),    &
             LIS_rc%ngrid(n)))
 
-       geositbias_struc(n)%metdata1 = 0
-       geositbias_struc(n)%metdata2 = 0
+       geositbias_struc(n)%metdata = 0
 
        geositbias_struc(n)%geositbiasforc1 = LIS_rc%udef
        geositbias_struc(n)%geositbiasforc2 = LIS_rc%udef

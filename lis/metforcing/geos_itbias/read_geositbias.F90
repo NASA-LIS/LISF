@@ -17,6 +17,8 @@
 ! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
 ! 07 Jan 2026: Kristen Whitney, initial code for using dynamic lapse rate
 ! 09 Jan 2026: Eric Kemp, reformatted.
+! 17 Jun 2026: Kristen Whitney, corrected GEOS-ITbias forcing
+!              variable documentation and indexing.
 !
 ! !INTERFACE:
 subroutine read_geositbias(n,order,month,findex,                     &
@@ -49,23 +51,13 @@ subroutine read_geositbias(n,order,month,findex,                     &
 
 ! !DESCRIPTION:
 !  For the given time, reads parameters from GEOS-ITbias data, transforms
-!  into 9 LIS forcing parameters and interpolates to the LIS domain. \newline
+!  into 4 LIS forcing parameters and interpolates to the LIS domain. \newline
 !
 ! GEOS-ITbias FORCING VARIABLES: \newline
 !  1. tair    Temperature of air at 2-m, 10-m, or LML [$K$] \newline
 !  2. qair    Specific humidity of air at 2-m, 10-m, or LML [$kg/kg$] \newline
-!  3. swgdn   Downward shortwave radiation at the ground [$W/m^2$] \newline
-!  4. lwgab   Downward longwave radiation at the ground [$W/m^2$] \newline
-!  5. uwind   Zonal wind at 2-m, 10-m, or LML [$m/s$] \newline
-!  6. vwind   Meridional wind at 2-m, 10-m, or LML [$m/s$] \newline
-!  7. ps      Instantaneous Surface Pressure [$Pa$] \newline
-!  8. pretot  Total precipitation [$mm/s$] \newline
-!  9. precon  Convective precipitation [$mm/s$] \newline
-! 10. presno  Precipitation falling as snow [$mm/s$] \newline
-! 11. swland  Net shortwave radiation at the ground [$W/m^2$] \newline
-! 12. pardr   Surface downward PAR beam flux [$W/m^2$] \newline
-! 13. pardf   Surface downward PAR diffuse flux [$W/m^2$] \newline
-! 14. hlml    Height of center of lowest model layer (LML) [$m$] \newline
+!  3. ps      Instantaneous Surface Pressure [$Pa$] \newline
+!  4. lwgab   Downward longwave radiation at the ground [$W/m^2$] \newline 
 !
 !  The arguments are:
 !  \begin{description}
@@ -126,7 +118,7 @@ subroutine read_geositbias(n,order,month,findex,                     &
   nc_index = geositbias_struc(n)%ncold
   mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
 
-! Read single layer file (*slv) fields:
+! Read required fields from GEOS-ITbias input file:
   inquire(file=geosname,exist=file_exists)
   if(file_exists) then
      write(LIS_logunit,*)                                           &
@@ -162,9 +154,9 @@ subroutine read_geositbias(n,order,month,findex,                     &
           geositbiasforc)
      call interp_geositbias_var(n,findex,month,qair,  2,.false.,    &
           geositbiasforc)
-     call interp_geositbias_var(n,findex,month,ps,    7,.false.,    &
+     call interp_geositbias_var(n,findex,month,ps,    3,.false.,    &
           geositbiasforc)
-     call interp_geositbias_var(n,findex,month,lwgab,4,.false.,     &
+     call interp_geositbias_var(n,findex,month,lwgab, 4,.false.,     &
           geositbiasforc)
 
     ! Obtain lapse rates

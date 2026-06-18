@@ -15,6 +15,8 @@
 ! !REVISION HISTORY:
 ! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
 ! 07 Jan 2026: Kristen Whitney, initial code for using dynamic lapse rate
+! 17 Jun 2026: Kristen Whitney, simplified metadata handling
+!              and updated dynamic lapse-rate filename construction.
 !
 ! !INTERFACE:
 subroutine get_geositbias(n,findex)
@@ -86,7 +88,7 @@ subroutine get_geositbias(n,findex)
   integer           :: gid
   integer           :: movetime ! Flag to move bookend2 files to bookend1
   character(len=LIS_CONST_PATH_LEN) :: lapseratefname
-  character*20                      :: fdate
+  character(len=13) :: fdate
 
   external :: geositbiasfiles
   external :: read_geositbias
@@ -188,9 +190,9 @@ subroutine get_geositbias(n,findex)
         ! Get lapse rate filename
         write(fdate, fmt='(i4.4,"-",i2.2,"-",i2.2,"-",i2.2)') &
              yr1,mo1,da1,hr1
-        lapseratefname = trim(geositbias_struc(n)%dynlapseratedir)//   &
-             trim(geositbias_struc(n)%dynlapseratepfx)//               &
-             trim(fdate)//trim(geositbias_struc(n)%dynlapseratesfx)
+        lapseratefname = trim(geositbias_struc(n)%dynlapseratedir)// &
+             trim(geositbias_struc(n)%dynlapseratepfx)// &
+             fdate//trim(geositbias_struc(n)%dynlapseratesfx) 
         call read_geositbias(n,order,mo1,findex,                       &
              geosname, lapseratefname,                                 &
              geositbias_struc(n)%geositbiasforc1(kk,:,:),ferror)
@@ -202,10 +204,8 @@ subroutine get_geositbias(n,findex)
   do r = 1,LIS_rc%lnr(n)
      do c = 1,LIS_rc%lnc(n)
         if (LIS_domain(n)%gindex(c,r).ne.-1) then
-           geositbias_struc(n)%metdata1(:,:,LIS_domain(n)%gindex(c,r)) = &
+           geositbias_struc(n)%metdata(:,:,LIS_domain(n)%gindex(c,r)) = &
                 geositbias_struc(n)%geositbiasforc1(:,:,(c+(r-1)*LIS_rc%lnc(n)))
-           geositbias_struc(n)%metdata2(:,:,LIS_domain(n)%gindex(c,r)) = &
-                geositbias_struc(n)%geositbiasforc2(:,:,(c+(r-1)*LIS_rc%lnc(n)))
         endif
      enddo
   enddo
