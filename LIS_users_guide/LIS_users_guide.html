@@ -1121,6 +1121,11 @@ The directory containing the LIS source code, <em>LISF/lis</em>, will be referre
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to RPC library</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system RPC library by default)</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_PIO</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to PIO library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (only for NASA Land Coupler (NLC) and NASA Water Insight projects)</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -1213,6 +1218,7 @@ Use LIS-CMEM? (1-yes, 0-no, default=0):
 Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):
 Use PETSc? (1-yes, 0-no, default=0):
 Enable USAF LIS75 SM DA codes? (1-yes, 0-no, default=0):
+Use PIO? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
 -----------------------------------------------------
@@ -1303,6 +1309,9 @@ select the type of LAPACK library that you have installed.  This is used with <c
 <div class="paragraph">
 <p>For example, on a Cray system using the Cray compilers, select 0 because the linker will find Cray&#8217;s LAPACK libraries.</p>
 </div>
+</li>
+<li>
+<p>for <code>Use PIO? (1-yes, 0-no, default=0):</code>, if you wish to enable PIO support, then you must either set the <code>LIS_PIO</code> environment variable or the <code>LIS_PIO_IN_ESMF</code> environment variable.  If you are using the PIO library, then set <code>LIS_PIO</code> to the path of the PIO library.  If you are using PIO included in ESMF, then set <code>LIS_PIO_IN_ESMF=1</code>.</p>
 </li>
 </ul>
 </div>
@@ -25494,7 +25503,7 @@ See LIS' Developer&#8217;s Guide for more details.</p>
 <div id="footer">
 <div id="footer-text">
 Version 7.0<br>
-Last updated 2026-06-18 18:05:48 UTC
+Last updated 2026-06-18 19:32:26 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
