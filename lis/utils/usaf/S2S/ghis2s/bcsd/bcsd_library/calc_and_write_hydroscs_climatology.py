@@ -87,6 +87,27 @@ def write_monthly_files(segment):
         subtask = main_task + f' month: {mon+1:02d}'
         infile = infile_template.format(INDIR, year, mon+1, year, mon+1)
         outfile = outfile_template.format(OUTDIR, year, mon+1)
+        if os.path.exists(outfile):
+            try:
+                is_valid_data = True
+                with xr.open_dataset(outfile) as ds:
+                    if len(ds.data_vars) == 0:
+                        is_valid_data = False
+                    else:
+                        # Loop through all variables to check for all-NaNs
+                        for var in ds.data_vars:
+                            if ds[var].isnull().all().item():
+                                print(f"Warning: Variable '{var}' in {outfile} is entirely NaN.")
+                                is_valid_data = False
+                                break
+                if is_valid_data:
+                    print(f"Valid and fully populated file already exists, skipping: {outfile}")
+                    continue  
+                else:
+                    print(f"File exists but is incomplete (all NaNs). Reprocessing: {outfile}")
+            except Exception as e:
+                print(f"Found incomplete/corrupted file, reprocessing: {outfile}")
+
         logger_.info(f"Reading Observed Data {infile}",  subtask=subtask)
         file_list = sorted(glob(infile))
         datasets = []
@@ -133,23 +154,33 @@ mask = np.array(ldt_xr['LANDMASK'].values)
 OBS_DATA_COARSE = np.empty((((CLIM_EYR-CLIM_SYR)+1)*12, len(LATS), len(LONS)))
 
 MON_COUNTER = 0
+rename_dict = {
+    'Tair_2m': 'Tair',
+    'Qair_2m': 'Qair',   
+    'WindN_10m': 'Wind_N',
+    'WindE_10m': 'Wind_E'
+}
+
 for YEAR in range(CLIM_SYR, CLIM_EYR+1):
     for MON in range(0, 12):
         INFILE = INFILE_TEMPLATE.format(INDIR, YEAR, MON+1)
         logger.info(f"Reading Observed Data {INFILE}",  subtask=SUBTASK)
         ds = xr.open_dataset(INFILE, engine='netcdf4', chunks={'lat': "auto", 'lon': "auto"})
+        ds = ds.rename(rename_dict)
+        ds_subset = ds.sel(lat=slice(-60.0, 90.0)) 
         if VAR_NAME == 'Wind':
             OBS_DATA_COARSE[MON_COUNTER, ] = \
-                magnitude(ds['Wind_E'].load(), ds['Wind_N'].load()).values
+                magnitude(ds_subset['Wind_E'].load(), ds_subset['Wind_N'].load()).values
         else:
             OBS_DATA_COARSE[MON_COUNTER, ] = \
-                ds[VAR_NAME].values
+                ds_subset[VAR_NAME].values
 #       Impose mask on precip values:
         if VAR_NAME == 'Rainf':
             OBS_DATA_COARSE[MON_COUNTER,mask == 0] = -9999.
         MON_COUNTER+=1
         ds.close()
-        del ds
+        ds_subset.close()
+        del ds, ds_subset
         gc.collect()
 
 ## Looping through each month and creating time series of quantiles and observed climatology
