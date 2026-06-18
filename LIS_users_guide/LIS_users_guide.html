@@ -20146,6 +20146,38 @@ threshold used in the 2-way coupling mode.</p>
 </tr>
 </tbody>
 </table>
+<div class="paragraph">
+<p><code>HYMAP3 use localization update in DA:</code> specifies whether to enable the localization scheme for DA.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use localization</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use localization for DA</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 localization update window size:</code> specifies localization update window size.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 localization weight map:</code> specifies the file location of the localization weight map</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
@@ -20169,7 +20201,10 @@ HYMAP3 routing model restart interval: "1mo"
 HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_197901030000.d01.nc
 HYMAP3 enable 2-way coupling: 0
 HYMAP3 2-way coupling flooded fraction threshold: 0.1
-HYMAP3 runoff bias correction: 1</pre>
+HYMAP3 runoff bias correction: 1
+HYMAP3 use localization update in DA: 0
+HYMAP3 localization update window size: 10
+HYMAP3 localization weight map: ./input/localization_map/distance_map_full_ohio_010.nc</pre>
 </div>
 </div>
 </div>
@@ -25459,7 +25494,7 @@ See LIS' Developer&#8217;s Guide for more details.</p>
 <div id="footer">
 <div id="footer-text">
 Version 7.0<br>
-Last updated 2026-06-09 14:29:27 UTC
+Last updated 2026-06-18 18:05:48 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
