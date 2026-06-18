@@ -863,6 +863,38 @@ if($use_usaf_lis75_smda eq ""){
    $use_usaf_lis75_smda=0;
 }
 
+print "Use PIO? (1-yes, 0-no, default=0): ";
+$use_pio=<stdin>;
+$use_pio=~s/ *#.*$//;
+chomp($use_pio);
+if($use_pio eq ""){
+   $use_pio=0;
+}
+
+if($use_pio == 1) {
+   if(defined($ENV{LIS_PIO})){
+      $sys_pio_path = $ENV{LIS_PIO};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_pio=$sys_pio_path.$inc;
+      $lib_pio=$sys_pio_path.$lib;
+   }
+   elsif(defined($ENV{LIS_PIO_IN_ESMF}) && $ENV{LIS_PIO_IN_ESMF} eq "1"){
+      $inc_pio=$sys_esmfmod_path;
+      $lib_pio=$sys_esmflib_path;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the PIO path using\n";
+      print "the LIS_PIO variable or set the\n";
+      print "LIS_PIO_IN_ESMF variable if PIO is\n";
+      print "embedded in ESMF.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
+
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
 }
@@ -1073,6 +1105,14 @@ elsif($use_lapack == 3){
    $lib_paths= $lib_paths." -L\$(LIB_LAPACK)";
 }
 
+if($use_pio == 1) {
+   $fflags77 = $fflags77." -I\$(INC_PIO)";
+   $fflags = $fflags." -I\$(INC_PIO)";
+   $ldflags = $ldflags." -L\$(LIB_PIO) -lpioc";
+   $lib_flags= $lib_flags." -lpioc";
+   $lib_paths= $lib_paths." -L\$(LIB_PIO)";
+}
+
 if($use_esmf_trace == 1){
    $fflags77 = $fflags77." -DESMF_TRACE";
    $fflags = $fflags." -DESMF_TRACE";
@@ -1166,6 +1206,8 @@ printf conf_file "%s%s\n","LIB_CMEM        = $lib_cmem";
 printf conf_file "%s%s\n","LIB_LAPACK      = $lib_lapack";
 printf conf_file "%s%s\n","INC_PETSC       = $inc_petsc";
 printf conf_file "%s%s\n","LIB_PETSC       = $lib_petsc";
+printf conf_file "%s%s\n","INC_PIO         = $inc_pio";
+printf conf_file "%s%s\n","LIB_PIO         = $lib_pio";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";
