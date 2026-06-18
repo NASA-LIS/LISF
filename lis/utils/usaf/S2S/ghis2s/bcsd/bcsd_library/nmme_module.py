@@ -26,6 +26,15 @@ nmme_path_dict = {
     'CESM1': ['COLA-RSMAS-CESM1', 'COLA-RSMAS-CESM1'],
     'GFDL': ['GFDL-SPEAR', 'GFDL-SPEAR'],
 }
+noah_nmme_path = {
+    'CFSv2': 'CFSv2',
+    'GEOSv2':'NASA_GEOS5v2',
+    'CanESM5': 'CanESM5',
+    'GNEMO52': 'GEM5.2_NEMO',
+    'CCSM4': 'NCAR_CCSM4',
+    'CESM1': 'NCAR_CESM1',
+    'GFDL': 'GFDL_SPEAR',
+}
 MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
        'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -113,6 +122,13 @@ class NMMEParams():
                                             nmme_path_[0], 'hindcast',
                                             nmme_path_[0], 'hindcast',
                                             cyr, month+1)
+        elif pforce == 'noah-nmme':
+            # NOAH-NMME
+            nmme_path_ = noah_nmme_path[self.model]
+            infile_temp = '{}/{}/{}.prate.{:04d}{:02d}.fcst.nc'
+            infile = infile_temp.format(conf['BCSD']['nmme_download_dir'],
+                                            nmme_path_, nmme_path_, cyr, month+1)
+
         return infile
 
     def check_file(self, setup):
@@ -132,6 +148,10 @@ class NMMEParams():
                     prec_da = nmme_xr['prec']
             elif pforce == 'ccsr-nmme':
                 prec_da = nmme_xr['prcp'].transpose('L', 'M', 'Y', 'X')
+            elif pforce == 'noah-nmme':
+                nmme_xr = nmme_xr.rename({'lat': 'Y','lon': 'X','target': 'L',
+                                          'ensmem': 'M'})
+                prec_da = nmme_xr['fcst'].transpose('L', 'M', 'Y', 'X')
 
             # Slice to the ensemble/lead months we actually use
             if pforce == 'ccsr-nmme' and self.model == 'CanESM5':
@@ -238,6 +258,8 @@ if __name__ == "__main__":
     VAR_NAME = 'prec'
     if PFORCE == 'ccsr-nmme':
         VAR_NAME = 'prcp'
+    if PFORCE == 'noah-nmme':
+        VAR_NAME = 'fcst'
 
     # Set up variables based on DATATYPE
     if DATATYPE == 'hindcast':
@@ -246,7 +268,7 @@ if __name__ == "__main__":
             YEAR0 = 1982
             YEAR_BEGIN = YEAR0
             YEAR_END = YEAR0 + CLIM_YEARS
-        elif PFORCE == 'ccsr-nmme':
+        elif PFORCE in [ 'ccsr-nmme', 'noah-nmme']:
             YEAR_BEGIN = config['BCSD']['clim_start_year']
             YEAR_END = config['BCSD']['clim_end_year']
             CLIM_YEARS = YEAR_END - YEAR_BEGIN + 1
@@ -331,6 +353,15 @@ if __name__ == "__main__":
                 jy = CYR + LDYR[MM, l]
                 l1 = LEADS1[MM, l]
                 XPREC[l,:] = XPREC[l,:]/calendar.monthrange(jy, l1)[1]/86400.
+
+        elif PFORCE == 'noah-nmme':
+            nmme_da = nmme_da.rename({'lat': 'Y','lon': 'X','target': 'L',
+                                         'ensmem': 'M'})
+            nmme_da = nmme_da.transpose('L', 'M', 'Y', 'X')
+            # NOAH-NMME lats are north to south
+            nmme_da = nmme_da.isel(Y=slice(None, None, -1))
+            XPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
+
     else:
         XPREC = np.empty([CLIM_YEARS, LEAD_MONS, ENS_NUM, 181, 360])
         nmme_path = nmme_path_dict[NMME_MODEL]
@@ -443,6 +474,21 @@ if __name__ == "__main__":
                     jy = YR + LDYR[MM, l]
                     l1 = LEADS1[MM, l]
                     XPREC[y,l,:] = YPREC[l,:]/calendar.monthrange(jy, l1)[1]/86400.
+        elif PFORCE == 'noah-nmme':
+            YR = YEAR_BEGIN - 1
+            for y in range(YEAR_END - YEAR_BEGIN + 1):
+                YR = YR + 1
+                INFILE = NMMEParams(NMME_MODEL).nmme_filename(config, MM, YR)
+                logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
+                nmme_da = load_ncdata(INFILE.strip(), [logger, SUBTASK], var_name=VAR_NAME,
+                                      decode_times=False)
+                nmme_da = nmme_da.rename({'lat': 'Y','lon': 'X','target': 'L',
+                                         'ensmem': 'M'})
+                nmme_da = nmme_da.transpose('L', 'M', 'Y', 'X')
+                # NOAH-NMME lats are north to south
+                nmme_da = nmme_da.isel(Y=slice(None, None, -1))
+                YPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
+                XPREC[y,:] = YPREC[:]
 
     LATI = np.array(nmme_da.Y)
     LONI = np.array(nmme_da.X)
