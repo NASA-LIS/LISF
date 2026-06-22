@@ -275,10 +275,8 @@ contains
 !  \end{description}
 !EOP    
     implicit none 
-    
-    logical         :: rstflag
 
-    call optuereadrestart(trim(LIS_rc%optuealg)//char(0), rstflag)
+    call optuereadrestart(trim(LIS_rc%optuealg)//char(0))
 
   end subroutine LIS_optUEAlg_readrestart
 
