@@ -51,10 +51,19 @@ subroutine readcrd_era5cds()
           'ERA5CDS forcing terrain height file: not defined')
   enddo
 
+  call ESMF_ConfigFindLabel(LDT_config,"ERA5CDS use lowest model level forcing:",rc=rc)
+  do n=1,LDT_rc%nnest
+     call ESMF_ConfigGetAttribute(LDT_config,era5cds_struc(n)%uselml,rc=rc)
+     call LDT_verify(rc,&
+          'ERA5CDS use lowest model level forcing: not defined')
+  enddo
+
   do n=1,LDT_rc%nnest
      write(LDT_logunit,*) '[INFO] Using ERA5CDS forcing'
      write(LDT_logunit,*) '[INFO] ERA5CDS forcing directory: ',&
           trim(era5cds_struc(n)%era5cdsDIR)
+     write(LDT_logunit,*) '[INFO] ERA5CDS use lowest model level forcing: ',&
+          era5cds_struc(n)%uselml
 
      era5cds_struc(n)%era5cdstime1 = 3000.0
      era5cds_struc(n)%era5cdstime2 = 0.0

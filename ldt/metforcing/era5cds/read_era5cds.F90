@@ -17,10 +17,12 @@
 ! 23 dec 2019: Sujay Kumar, initial code 
 ! 15 apr 2025: Hiroko Beaudoing, adopted ERA5 routines for the public CDS
 !                               data format
+! 19 jun 2026: Hiroko Beaudoing, updated to read in monthly data.
+!                                Upscaling and Downscaling are not supported.
 !
 ! !INTERFACE:
-subroutine read_era5cds(n, kk,order, year, month, day, hour, findex,          &
-     instfile, avgfile, ferror)
+subroutine read_era5cds(n, kk,order, year, month, day, hour, read_flag, findex,&
+     instfile, avgfile, lmlfile, prevavgfile, ferror)
 ! !USES:
   use LDT_coreMod,       only : LDT_rc, LDT_domain, LDT_masterproc
   use LDT_logMod
@@ -40,44 +42,55 @@ subroutine read_era5cds(n, kk,order, year, month, day, hour, findex,          &
   integer, intent(in)          :: month
   integer, intent(in)          :: day
   integer, intent(in)          :: hour
+  logical, intent(in)          :: read_flag
   integer, intent(in)          :: findex
-  character(len=*), intent(in) :: instfile, avgfile
+  character(len=*), intent(in) :: instfile, avgfile, lmlfile, prevavgfile
   integer, intent(out)         :: ferror          
 
 !
 ! !DESCRIPTION:
-!  For the given time, reads parameters from
-!  ERA5 data, transforms into 9 LDT forcing 
-!  parameters and interpolates to the LDT domain. \newline
+!  Mothly ERA5 data is read in at the beginning of simulation and/or month based
+!  on read_flag flag. For the given time, assigns appropriate forcing fields,
+!  transforms into 9 LIS forcing parameters and interpolates to the LIS domain.
 !
-!  ERA5 model output variables used to force LIS are provided in 2 files:
-!  1) inst, Instantaneous values, available every hour
+!  ERA5 model output variables used to force LIS are provided in 3 files:
+!  1) inst, Instantaneous values, available every hour.
 !  2) accum, Time integrated values (accumulations) over the past hour.
 !
 !  ERA5 FORCING VARIABLES:
-!  1. T         inst,  Atmospheric temperature (K) (2m)
-!  2. D         inst,  Dewpoint temperature (K) (2m)
+!  1. T2M       inst,  Atmospheric temperature (K) (2m)
+!  2. D2M       inst,  Dewpoint temperature (K) (2m)
 !  3. SSRD      accum, surface solar radiation downwards [J m**-2]
 !  4. STRD      accum, surface thermal radiation downwards [J m**-2]
-!  5. U         inst, zonal wind [m/s] (10m)
-!  6. V         inst, meridional wind [m/s] (10m)
+!  5. U10M      inst, zonal wind [m/s] (10m)
+!  6. V10M      inst, meridional wind [m/s] (10m)
 !  7. SP        inst, surface pressure [Pa]
 !  8. LSP       accum, large scale precipitation [m]
 !  9. CP        accum, convective precipitation [m]
+!  ERA5 LOWEST MODEL LEVEL VARIABLES:
+!  1. T         inst,  air temperature (K)
+!  2. Q         inst,  specific_humidity (kg kg**-1)
+!  5. U         inst, zonal wind [m/s]
+!  6. V         inst, meridional wind [m/s]
 !
 !  also inst file includes:
 !  Z: Geopotential (m**2 s**-2)
 !
 !  NOTE 1: be aware that ECMWF outputs large-scale and convective precipitation
-!  separately.  For total precipitation, need to sum the two fields,
-!  LSP+CP=TP.
-!  NOTE 2: only time2 SW & LW flux accumulations used in interpolation
+!          separately.  For total precipitation, need to sum the two fields,
+!          LSP+CP=TP.
+!  NOTE 2: SW & LW flux accumulations from time1 are interpolated via new zterp.
+!  NOTE 3: accum files starts at 7z on the 1st day of month and ends at 6z
+!          on the 1st day of next month.
+!  NOTE 4: Current month includes data up to 5 days ago. If the simulation end
+!          time is past avaiable data, forcing fields are assigned to the last
+!          available data with [WARN] message. LSM fields will be invalid.
 !
 !  The arguments are: 
 !  \begin{description}
 !  \item[order]
-!    flag indicating which data to be read (order=1, read the previous 
-!    1 hourly instance, order=2, read the next 1 hourly instance)
+!    flag indicating which data to be read (order=1, initial read, 
+!    order=2, assign the next 1 hourly instance )
 !  \item[n]
 !    index of the nest
 !  \item[name]
@@ -85,307 +98,661 @@ subroutine read_era5cds(n, kk,order, year, month, day, hour, findex,          &
 !  \item[tscount]
 !    time step count
 !  \item[ferror]
-!    return error code (0 indicates success)
+!    return error code (1 indicates success)
 !  \end{description}
 ! 
 !  The routines invoked are: 
 !  \begin{description}
-!  \item[bilinear\_interp](\ref{bilinear_interp}) \newline
-!    spatially interpolate the forcing data using bilinear interpolation
-!  \item[conserv\_interp](\ref{conserv_interp}) \newline
-!    spatially interpolate the forcing data using conservative interpolation
+!  \item[era5grid\_2\_lisgrid](\ref{era5grid_2_lisgrid}) \newline
+!    reverse south-north direction and shift 180 deg east-west
+!  \item[interp\_era5cds\_var](\ref{interp_era5cds_var}) \newline
+!    spatially interpolate the forcing data using interpolation of choice
+!  \item[assign\_processed\_era5cdsf](\ref{assign_processed_era5cdsf}) \newline
+!    assigns interpolated forcing data to the module data structure
 !  \end{description}
 !EOP
   
-
+!---------------------------------------------------------------------------
   integer   :: ftn
+  integer   :: tmpId, qId, uwindId, vwindId, lwdId, psId, rainfId, crainfId
+  integer   :: swdId, timeId
+  integer   :: c,r,t,k,l,i,j,ll
+  integer   :: tindex,atindex
+  integer   :: mo,rec_size, prev_rec_size
+  integer   :: start_time_index
   logical   :: file_exists
-  integer   :: c,r,t,iv
-  integer   :: fret,ferror1,ferror2
-  integer   :: timestep
-  real      :: glbdata_i(9,LDT_rc%ngrid(n))
-  real      :: glbdata_a(9,LDT_rc%ngrid(n))
+  real      :: missingValue
+  integer   :: dimid, dim_len
+  integer   :: cyear, cmonth
+  character(len=8)      :: date
+  character(len=10)     :: time
+  character(len=5)      :: zone
+  integer, dimension(8) :: current
+
+  real, allocatable      :: tair(:,:,:)
+  real, allocatable      :: qair(:,:,:)
+  real, allocatable      :: swd(:,:,:)
+  real, allocatable      :: lwd(:,:,:)
+  real, allocatable      :: uwind(:,:,:)
+  real, allocatable      :: vwind(:,:,:)
+  real, allocatable      :: ps(:,:,:)
+  real, allocatable      :: rainf(:,:,:)
+  real, allocatable      :: crainf(:,:,:)
+  real, allocatable      :: data4d(:,:,:,:)
+  real, allocatable      :: var1(:,:,:)
+
+  real, allocatable, dimension(:,:)  :: datalis
+
+  integer, parameter :: n_last_steps = 7
+  integer :: days(12)
+  data days /31,28,31,30,31,30,31,31,30,31,30,31/
+  character(len=*), parameter :: dim_name = "valid_time"
+  real, parameter :: epsln = 0.622        !Constants' values taken from
+  real, parameter :: A = 2.53E8, B=5.42E3 !Roger&Yau, A Short Course
+                                          !in Cloud Physics, pp.12-17
+                                          ! A in kPa, B in K.
+  real            :: p_kPa
 ! __________________________________________________________________________
 
-  glbdata_i = LDT_rc%udef
-  glbdata_a = LDT_rc%udef
+  ferror = 0 ! 1 success
+  tindex = (day - 1)*24 + hour + 1
+  atindex = tindex - n_last_steps
 
-  ferror1 = 1
-  ferror2 = 1    ! 1 success
-  fret = 0       ! 0 success
+  if(read_flag) then
+#if (defined USE_NETCDF4)
 
-  timestep = hour + 1
-  if ( timestep .ge. 24 ) timestep = 1
+     if((mod(year,4) .eq. 0 .and. mod(year, 100).ne.0) &!leap year
+          .or.(mod(year,400) .eq.0)) then
+        days(2) = 29
+     else
+        days(2) = 28
+     endif
 
-  call retrieve_inst_era5cdsvars(n, findex, timestep, instfile, glbdata_i, fret)
-  if (fret.ne.0) then
-     ferror1 = 0
-  endif
+     mo = LDT_rc%lnc(n)*LDT_rc%lnr(n)
+     rec_size = days(month)*24
+     era5cds_struc(n)%tdimsize = rec_size
+     call date_and_time(date, time, zone, current)
+     cyear = current(1)
+     cmonth = current(2)
+     ! present month has incomplete data record
+     if (cmonth == month .and. cyear == year) then
+      call LDT_verify(nf90_open(path=trim(instfile), mode=NF90_NOWRITE, &
+            ncid=ftn), 'nf90_open failed in read_era5cds')
+      ! Get the ID for the dimension named "var_time"
+      call LDT_verify(nf90_inq_dimid(ftn, dim_name, dimid), &
+            'nf90_inq_dimid failed in read_era5cds')
+      ! Get the length (size) of that dimension
+      call LDT_verify(nf90_inquire_dimension(ftn, dimid, len = dim_len), &
+            'nf90_inquire_dimension failed in read_era5cds')
+      call LDT_verify(nf90_close(ftn), &
+            'failed to close file in read_era5cds inst in lml')
+      rec_size = dim_len
+      write(LDT_logunit,*)'[INFO] in current month, reset rec_size =',rec_size
+      era5cds_struc(n)%tdimsize = rec_size
+     endif
 
-  if ( order.eq.2 ) then
-  call retrieve_accum_era5cdsvars(n, findex, avgfile, glbdata_a, &
-                                timestep, fret)
-   if (fret.ne.0) then
-      ferror2 = 0
-   endif
+     allocate(datalis(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold))
+     !=== If using the lowest model level forcing (inst and mlinst):
+     !=== "t","q","u","v", and "sp " ====
+     if(era5cds_struc(n)%uselml.eq.1) then
+       inquire(file=lmlfile,exist=file_exists)
+       if(file_exists) then
+          era5cds_struc(n)%ps     = LDT_rc%udef
+          era5cds_struc(n)%tair   = LDT_rc%udef
+          era5cds_struc(n)%qair   = LDT_rc%udef
+          era5cds_struc(n)%uwind  = LDT_rc%udef
+          era5cds_struc(n)%vwind  = LDT_rc%udef
+          write(LDT_logunit,*)'[INFO] Reading ERA5 file (bookend,', order,' -',trim(instfile), ')'
 
-  endif  ! order==2
+          call LDT_verify(nf90_open(path=trim(instfile), mode=NF90_NOWRITE, &
+               ncid=ftn), 'nf90_open failed in read_era5cds')
 
-  if ( ferror1 == 1 .and. ferror2 == 1) then
-   ferror = 1     ! success
-  else
-   ferror = 0     ! problem, roll back one day
-  endif
-  if ( ferror == 1 ) then  ! only proceed if retrieve calls were successful
-   do iv=1,9
-     do t=1,LDT_rc%ngrid(n)
-        ! these are time avgd fields
-        if ( iv.eq.3 .or. iv.eq.4 .or. iv.eq.8 .or. iv.eq.9 ) then
-           if(order.eq.1) then
-              era5cds_struc(n)%metdata1(iv,t) = glbdata_a(iv,t)
-           else
-              era5cds_struc(n)%metdata2(iv,t) = glbdata_a(iv,t)
-           endif
-        ! these are instantaneous
+          allocate(ps(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+
+          call LDT_verify(nf90_inq_varid(ftn,'sp',psId), &
+               'nf90_inq_varid failed for psurf in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,psId, ps),&
+               'nf90_get_var failed for ps in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,psId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for sp FillValue')
+          call LDT_verify(nf90_close(ftn), &
+               'failed to close file in read_era5cds inst in lml')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,ps(:,:,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%ps(:,l))
+          enddo
+          deallocate(ps)
+
+          write(LDT_logunit,*)'[INFO] Reading ERA5 file (bookend,', order,' -',trim(lmlfile), ')'
+          call LDT_verify(nf90_open(path=trim(lmlfile), mode=NF90_NOWRITE, &
+               ncid=ftn), 'nf90_open failed in read_era5cds')
+
+          ! model level data are in 4-dimentional
+          allocate(data4d(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,1,rec_size))
+          call LDT_verify(nf90_inq_varid(ftn,'t',tmpId), &
+               'nf90_inq_varid failed for t in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,tmpId, data4d),&
+               'nf90_get_var failed for t in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,tmpId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for t FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,data4d(:,:,1,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%tair(:,l))
+          enddo
+
+          call LDT_verify(nf90_inq_varid(ftn,'q',qId), &
+               'nf90_inq_varid failed for q in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,qId, data4d),&
+               'nf90_get_var failed for q in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,qId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for q FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,data4d(:,:,1,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%qair(:,l))
+          enddo
+
+          call LDT_verify(nf90_inq_varid(ftn,'u',uwindId), &
+               'nf90_inq_varid failed for u in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,uwindId, data4d),&
+               'nf90_get_var failed for u in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,uwindId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for u FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,data4d(:,:,1,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%uwind(:,l))
+          enddo
+
+          call LDT_verify(nf90_inq_varid(ftn,'v',vwindId), &
+               'nf90_inq_varid failed for v in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,vwindId, data4d),&
+               'nf90_get_var failed for v in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,vwindId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for v FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,data4d(:,:,1,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%vwind(:,l))
+          enddo
+          deallocate(data4d)
+
+          call LDT_verify(nf90_close(ftn), &
+               'failed to close file in read_era5cds lml')
+          ferror = 1
+       else
+         write(LDT_logunit,*) '[ERR] ',trim(lmlfile)//' does not exist'
+         call LDT_endrun()
+       endif
+
+     else  !=== If using 2m and 10m forcing (inst):
+           !=== "t2m","d2m","u10","v10","sp " ====
+
+       inquire(file=instfile,exist=file_exists)
+       if(file_exists) then
+          era5cds_struc(n)%ps     = LDT_rc%udef
+          era5cds_struc(n)%tair   = LDT_rc%udef
+          era5cds_struc(n)%qair   = LDT_rc%udef
+          era5cds_struc(n)%uwind  = LDT_rc%udef
+          era5cds_struc(n)%vwind  = LDT_rc%udef
+
+          write(LDT_logunit,*)'[INFO] Reading ERA5 2m10m (bookend,', order,' -',trim(instfile), ')'
+
+          call LDT_verify(nf90_open(path=trim(instfile), mode=NF90_NOWRITE, &
+               ncid=ftn), 'nf90_open failed in read_era5cds')
+
+          allocate(ps(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+
+          call LDT_verify(nf90_inq_varid(ftn,'sp',psId), &
+               'nf90_inq_varid failed for psurf in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,psId, ps),&
+               'nf90_get_var failed for ps in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,psId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for sp FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,ps(:,:,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%ps(:,l))
+          enddo
+          deallocate(ps)
+          allocate(qair(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+          call LDT_verify(nf90_inq_varid(ftn,'d2m',qId), &
+               'nf90_inq_varid failed for d2m in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,qId, qair),&
+               'nf90_get_var failed for d2m in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,qId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for d2m FillValue')
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,qair(:,:,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%qair(:,l))
+          enddo
+          deallocate(qair)
+          !-----------------------------------------------------------------
+          ! Calculate specific humidity from Dew point Temp. & Sfc Pressure.
+          ! Approximate: q~epsilon*e/p, p~p_sfc, e=e_s(Td), e_s=A*exp(-B/T)
+          !-----------------------------------------------------------------
+          do l=1,rec_size
+            do r=1,LDT_rc%lnr(n)
+              do c=1,LDT_rc%lnc(n)
+                 k=c+(r-1)*LDT_rc%lnc(n)
+                 if(era5cds_struc(n)%ps(k,l).ne.LDT_rc%udef.and.&
+                     era5cds_struc(n)%qair(k,l).ne.LDT_rc%udef) then
+                    p_kPa = era5cds_struc(n)%ps(k,l) / 1000.0
+                    era5cds_struc(n)%qair(k,l) = epsln*(A * EXP(-B/era5cds_struc(n)%qair(k,l))) / p_kPa
+                 endif
+              enddo
+            enddo
+          enddo
+
+          allocate(tair(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+          call LDT_verify(nf90_inq_varid(ftn,'t2m',tmpId), &
+               'nf90_inq_varid failed for t2m in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,tmpId, tair),&
+               'nf90_get_var failed for t2m in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,tmpId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for t2m FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,tair(:,:,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%tair(:,l))
+          enddo
+          deallocate(tair)
+
+          allocate(uwind(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+          call LDT_verify(nf90_inq_varid(ftn,'u10',uwindId), &
+               'nf90_inq_varid failed for u10 in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,uwindId, uwind),&
+               'nf90_get_var failed for u10 in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,uwindId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for u10 FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,uwind(:,:,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%uwind(:,l))
+          enddo
+          deallocate(uwind)
+
+          allocate(vwind(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+          call LDT_verify(nf90_inq_varid(ftn,'v10',vwindId), &
+               'nf90_inq_varid failed for v10 in read_era5cds')
+          call LDT_verify(nf90_get_var(ftn,vwindId, vwind),&
+               'nf90_get_var failed for v10 in read_era5cds')
+          call LDT_verify(nf90_get_att(ftn,vwindId, "_FillValue", missingValue), &
+               'nf90_get_att failed in read_era5cds for v10 FillValue')
+
+          do l=1,rec_size
+            call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                   era5cds_struc(n)%nrold,vwind(:,:,l),datalis)
+            call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                   era5cds_struc(n)%vwind(:,l))
+          enddo
+          deallocate(vwind)
+
+          call LDT_verify(nf90_close(ftn), &
+               'failed to close file in read_era5cds inst')
+          ferror = 1
         else
-           if(order.eq.1) then
-              era5cds_struc(n)%metdata1(iv,t) = glbdata_i(iv,t)
-           else
-              era5cds_struc(n)%metdata2(iv,t) = glbdata_i(iv,t)
-           endif
+          write(LDT_logunit,*) '[ERR] ',trim(instfile)//' does not exist'
+          call LDT_endrun()
         endif
-     enddo
-   enddo
-  endif    ! ferror == 1
+
+     endif  !=== era5cds_struc(n)%uselml
+
+     !=== Read precipitation and radiation fields in accum file
+     !=== "ssrd","strd","lsp","cp" ====
+     inquire(file=avgfile,exist=file_exists)
+     if(file_exists) then
+        era5cds_struc(n)%rainf  = LDT_rc%udef
+        era5cds_struc(n)%crainf  = LDT_rc%udef
+        era5cds_struc(n)%swd    = LDT_rc%udef
+        era5cds_struc(n)%lwd    = LDT_rc%udef
+
+        write(LDT_logunit,*)'[INFO] Reading ERA5 file (bookend,', order,' -',trim(avgfile), ')'
+        call LDT_verify(nf90_open(path=trim(avgfile), mode=NF90_NOWRITE, &
+             ncid=ftn), 'nf90_open failed in read_era5cds')
+
+        allocate(rainf(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+        call LDT_verify(nf90_inq_varid(ftn,'lsp',rainfId), &
+             'nf90_inq_varid failed for lsp in read_era5cds')
+        call LDT_verify(nf90_get_var(ftn,rainfId, rainf),&
+             'nf90_get_var failed for lsp in read_era5cds')
+        call LDT_verify(nf90_get_att(ftn,rainfId, "_FillValue", missingValue), &
+             'nf90_get_att failed in read_era5cds for lsp FillValue')
+
+        ! large scale rainfall: lsp [m] -> mm/s
+        do l=1,rec_size
+          do j=1,era5cds_struc(n)%nrold
+            do i=1,era5cds_struc(n)%ncold
+               if(rainf(i,j,l).ne.missingValue) then
+                  rainf(i,j,l) = rainf(i,j,l)*1000.0/(1.0*60*60)
+               endif
+            enddo
+          enddo
+        enddo
+
+        do l=1,rec_size
+          call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                 era5cds_struc(n)%nrold,rainf(:,:,l),datalis)
+          call interp_era5cds_var(n,findex,month,datalis,missingValue,.true.,&
+                 era5cds_struc(n)%rainf(:,l))
+        enddo
+        deallocate(rainf)
+
+        allocate(crainf(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+        call LDT_verify(nf90_inq_varid(ftn,'cp',crainfId), &
+             'nf90_inq_varid failed for cp in read_era5cds')
+        call LDT_verify(nf90_get_var(ftn,crainfId, crainf),&
+             'nf90_get_var failed for cp in read_era5cds')
+        call LDT_verify(nf90_get_att(ftn,crainfId, "_FillValue", missingValue), &
+             'nf90_get_att failed in read_era5cds for cp FillValue')
+
+        ! convective rainfall: cp [m] -> mm/s
+        do l=1,rec_size
+          do j=1,era5cds_struc(n)%nrold
+            do i=1,era5cds_struc(n)%ncold
+               if(crainf(i,j,l).ne.missingValue) then
+                  crainf(i,j,l) = crainf(i,j,l)*1000.0/(1.0*60*60)
+               endif
+            enddo
+          enddo
+        enddo
+
+
+        do l=1,rec_size
+          call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                 era5cds_struc(n)%nrold,crainf(:,:,l),datalis)
+          call interp_era5cds_var(n,findex,month,datalis,missingValue,.true.,&
+                 era5cds_struc(n)%crainf(:,l))
+        enddo
+        deallocate(crainf)
+
+        !-----------------------------------------------------------------
+        ! rain = lsp + cp [mm/s]
+        !-----------------------------------------------------------------
+        do l=1,rec_size
+          do r=1,LDT_rc%lnr(n)
+            do c=1,LDT_rc%lnc(n)
+               k=c+(r-1)*LDT_rc%lnc(n)
+               if(era5cds_struc(n)%rainf(k,l).ne.LDT_rc%udef.and.&
+                   era5cds_struc(n)%crainf(k,l).ne.LDT_rc%udef) then
+                  era5cds_struc(n)%rainf(k,l) = era5cds_struc(n)%rainf(k,l) + &
+                                                era5cds_struc(n)%crainf(k,l)
+               endif
+            enddo
+          enddo
+        enddo
+
+        allocate(swd(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+        call LDT_verify(nf90_inq_varid(ftn,'ssrd',swdId), &
+             'nf90_inq_varid failed for ssrd in read_era5cds')
+        call LDT_verify(nf90_get_var(ftn,swdId, swd),&
+             'nf90_get_var failed for swd in read_era5cds')
+        call LDT_verify(nf90_get_att(ftn,swdId, "_FillValue", missingValue), &
+             'nf90_get_att failed in read_era5cds for swd FillValue')
+
+        ! swd - convert accumulated field to rate
+        do l=1,rec_size
+          do j=1,era5cds_struc(n)%nrold
+            do i=1,era5cds_struc(n)%ncold
+               if(swd(i,j,l).ne.missingValue) then
+                  swd(i,j,l) = swd(i,j,l)/(1.0*60*60)
+               endif
+            enddo
+          enddo
+        enddo
+        do l=1,rec_size
+          call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                 era5cds_struc(n)%nrold,swd(:,:,l),datalis)
+          call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                 era5cds_struc(n)%swd(:,l))
+        enddo
+        deallocate(swd)
+
+        allocate(lwd(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
+        call LDT_verify(nf90_inq_varid(ftn,'strd',lwdId), &
+             'nf90_inq_varid failed for strd in read_era5cds')
+        call LDT_verify(nf90_get_var(ftn,lwdId, lwd),&
+             'nf90_get_var failed for lwd in read_era5cds')
+        call LDT_verify(nf90_get_att(ftn,lwdId, "_FillValue", missingValue), &
+             'nf90_get_att failed in read_era5cds for lwd FillValue')
+
+        ! lwd - convert accumulated field to rate
+        do l=1,rec_size
+          do j=1,era5cds_struc(n)%nrold
+            do i=1,era5cds_struc(n)%ncold
+               if(lwd(i,j,l).ne.missingValue) then
+                  lwd(i,j,l) = lwd(i,j,l)/(1.0*60*60)
+               endif
+            enddo
+          enddo
+        enddo
+        do l=1,rec_size
+          call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                 era5cds_struc(n)%nrold,lwd(:,:,l),datalis)
+          call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                 era5cds_struc(n)%lwd(:,l))
+        enddo
+        deallocate(lwd)
+
+        call LDT_verify(nf90_close(ftn), &
+             'failed to close avg file in read_era5cds')
+        ferror = 1
+     else
+        write(LDT_logunit,*) '[ERR] ',trim(avgfile)//' does not exist'
+        call LDT_endrun()
+
+     endif
+     !=== Read previous precipitation and radiation fields in accum file
+     !=== populate prev* arrays
+      inquire(file=prevavgfile,exist=file_exists)
+      if(file_exists) then
+         ! backward fill: read in last 7 time steps of prevavgfile
+         write(LDT_logunit,*)'[INFO] Reading prev ERA5 file (bookend,', order,' -',trim(prevavgfile), ')'
+         call LDT_verify(nf90_open(path=trim(prevavgfile), mode=NF90_NOWRITE, &
+                ncid=ftn), 'nf90_open failed in read_era5cds')
+
+         call LDT_verify(nf90_inq_dimid(ftn,'valid_time',timeId), &
+              'nf90_inq_dimid failed for timeId in read_era5cds')
+         call LDT_verify(nf90_inquire_dimension(ftn,timeId,len=prev_rec_size), &
+              'nf90_inquire_dimension failed for timeId in read_era5cds')
+         start_time_index = prev_rec_size - n_last_steps + 1
+
+         allocate(var1(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,n_last_steps))
+         call LDT_verify(nf90_inq_varid(ftn,'lsp',rainfId), &
+              'nf90_inq_varid failed for lsp in read_era5cds')
+         call LDT_verify(nf90_get_var(ftn,rainfId, var1, &
+              start=(/1,1,start_time_index/), &
+              count=(/era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,n_last_steps/)),&
+              'nf90_get_var failed for lsp in read_era5cds')
+         call LDT_verify(nf90_get_att(ftn,rainfId, "_FillValue", missingValue), &
+              'nf90_get_att failed in read_era5cds for lsp FillValue')
+
+         ! lsp [m] -> mm/s
+         do l=1,n_last_steps
+           do j=1,era5cds_struc(n)%nrold
+             do i=1,era5cds_struc(n)%ncold
+                if(var1(i,j,l).ne.missingValue) then
+                   var1(i,j,l) = var1(i,j,l)*1000.0/(1.0*60*60)
+                endif
+             enddo
+           enddo
+         enddo
+
+         do l=1,n_last_steps
+           call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                  era5cds_struc(n)%nrold,var1(:,:,l),datalis)
+           call interp_era5cds_var(n,findex,month,datalis,missingValue,.true.,&
+                  era5cds_struc(n)%prev_rainf(:,l))
+         enddo
+
+         call LDT_verify(nf90_inq_varid(ftn,'cp',crainfId), &
+              'nf90_inq_varid failed for cp in read_era5cds')
+         call LDT_verify(nf90_get_var(ftn,crainfId, var1, &
+              start=(/1,1,start_time_index/), &
+              count=(/era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,n_last_steps/)),&
+              'nf90_get_var failed for cp in read_era5cds')
+
+         ! cp [m] -> mm/s
+         do l=1,n_last_steps
+           do j=1,era5cds_struc(n)%nrold
+             do i=1,era5cds_struc(n)%ncold
+                if(var1(i,j,l).ne.missingValue) then
+                   var1(i,j,l) = var1(i,j,l)*1000.0/(1.0*60*60)
+                endif
+             enddo
+           enddo
+         enddo
+
+         do l=1,n_last_steps
+           call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                  era5cds_struc(n)%nrold,var1(:,:,l),datalis)
+           call interp_era5cds_var(n,findex,month,datalis,missingValue,.true.,&
+                  era5cds_struc(n)%prev_crainf(:,l))
+         enddo
+
+         !-----------------------------------------------------------------
+         ! rain = lsp + cp [mm/s]
+         !-----------------------------------------------------------------
+         do l=1,n_last_steps
+           do r=1,LDT_rc%lnr(n)
+             do c=1,LDT_rc%lnc(n)
+                k=c+(r-1)*LDT_rc%lnc(n)
+                if(era5cds_struc(n)%prev_rainf(k,l).ne.LDT_rc%udef.and.&
+                   era5cds_struc(n)%prev_crainf(k,l).ne.LDT_rc%udef) then
+                   era5cds_struc(n)%prev_rainf(k,l) =  &
+                                      era5cds_struc(n)%prev_rainf(k,l) + &
+                                      era5cds_struc(n)%prev_crainf(k,l)
+                endif
+             enddo
+           enddo
+         enddo
+
+         call LDT_verify(nf90_inq_varid(ftn,'ssrd',swdId), &
+               'nf90_inq_varid failed for ssrd in read_era5cds')
+         call LDT_verify(nf90_get_var(ftn,swdId, var1, &
+              start=(/1,1,start_time_index/), &
+              count=(/era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,n_last_steps/)),&
+               'nf90_get_var failed for swd in read_era5cds')
+         call LDT_verify(nf90_get_att(ftn,swdId, "_FillValue", missingValue), &
+             'nf90_get_att failed in read_era5cds for swd FillValue')
+
+         ! swd - convert accumulated field to rate
+         do l=1,n_last_steps
+           do j=1,era5cds_struc(n)%nrold
+             do i=1,era5cds_struc(n)%ncold
+                if(var1(i,j,l).ne.missingValue) then
+                   var1(i,j,l) = var1(i,j,l)/(1.0*60*60)
+                endif
+             enddo
+           enddo
+         enddo
+         do l=1,n_last_steps
+           call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                  era5cds_struc(n)%nrold,var1(:,:,l),datalis)
+           call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                  era5cds_struc(n)%prev_swd(:,l))
+         enddo
+
+         call LDT_verify(nf90_inq_varid(ftn,'strd',lwdId), &
+              'nf90_inq_varid failed for strd in read_era5cds')
+         call LDT_verify(nf90_get_var(ftn,lwdId, var1, &
+              start=(/1,1,start_time_index/), &
+              count=(/era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,n_last_steps/)),&
+              'nf90_get_var failed for lwd in read_era5cds')
+         call LDT_verify(nf90_get_att(ftn,lwdId, "_FillValue", missingValue), &
+              'nf90_get_att failed in read_era5cds for lwd FillValue')
+
+         ! lwd - convert accumulated field to rate
+         do l=1,n_last_steps
+           do j=1,era5cds_struc(n)%nrold
+             do i=1,era5cds_struc(n)%ncold
+                if(var1(i,j,l).ne.missingValue) then
+                   var1(i,j,l) = var1(i,j,l)/(1.0*60*60)
+                endif
+             enddo
+           enddo
+         enddo
+         do l=1,n_last_steps
+           call era5grid_2_lisgrid(era5cds_struc(n)%ncold, &
+                  era5cds_struc(n)%nrold,var1(:,:,l),datalis)
+           call interp_era5cds_var(n,findex,month,datalis,missingValue,.false.,&
+                  era5cds_struc(n)%prev_lwd(:,l))
+         enddo
+         deallocate(var1)
+
+         call LDT_verify(nf90_close(ftn), &
+              'failed to close avg file in read_era5cds')
+      else  ! prevavgfile exists
+         ! at start of ERA5 in Jan 1940, no data for 0-6z
+         write(LDT_logunit,*) '[INFO] ',trim(prevavgfile)//' not available!'
+         do l = 1, n_last_steps
+            ll = rec_size - n_last_steps + l
+            era5cds_struc(n)%prev_rainf(:,l)  = LDT_rc%udef
+            era5cds_struc(n)%prev_crainf(:,l) = LDT_rc%udef
+            era5cds_struc(n)%prev_swd(:,l)    = LDT_rc%udef
+            era5cds_struc(n)%prev_lwd(:,l)    = LDT_rc%udef
+         enddo
+      endif
+
+     deallocate(datalis)
+#endif
+  endif !if(read_flag)
+
+  ! make sure current time is within valid data
+  if (era5cds_struc(n)%tdimsize < tindex) then
+   write(LDT_logunit,*) '[WARN] Current month passed available data, filling with last data'
+   tindex = era5cds_struc(n)%tdimsize
+   atindex = era5cds_struc(n)%tdimsize - n_last_steps
+  endif  !(rec_size < tindex)
+
+   call assign_processed_era5cdsf(n,kk,order,1,era5cds_struc(n)%tair(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,2,era5cds_struc(n)%qair(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,5,era5cds_struc(n)%uwind(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,6,era5cds_struc(n)%vwind(:,tindex))
+   call assign_processed_era5cdsf(n,kk,order,7,era5cds_struc(n)%ps(:,tindex))
+   if ( atindex .le. 0 ) then
+     atindex = atindex + n_last_steps
+     call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%prev_swd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%prev_lwd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%prev_rainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%prev_crainf(:,atindex))
+   else
+     call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%swd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%lwd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%rainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%crainf(:,atindex))
+   endif
+   if ( .not. read_flag .and. ferror == 0 ) ferror = 1
 
 end subroutine read_era5cds
 
-!BOP
-! !ROUTINE: retrieve_inst_era5cdsvars
-! \label{retrieve_inst_era5cdsvars}
-!
-! !INTERFACE:
-subroutine retrieve_inst_era5cdsvars(n, findex, timestep, month, instfile, glbdata, fret)
-  use LDT_coreMod,      only : LDT_rc, LDT_domain
-  use LDT_logMod,       only : LDT_logunit, LDT_verify
-  use era5cds_forcingMod, only : era5cds_struc
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-  use netcdf
-#endif
-  implicit none
-! !ARGUMENTS:
-  integer,   intent(in)        :: n
-  integer,   intent(in)        :: findex
-  integer,   intent(in)        :: timestep
-  integer,   intent(in)        :: month
-  character(len=*), intent(in) :: instfile
-  real                         :: glbdata(9,LDT_rc%ngrid(n))
-  integer, intent(inout)       :: fret
-!
-! !DESCRIPTION:
-! This routine opens the corresponding ERA5CDS data file to extract
-! the specified variable, which represents an instantaneous value.
-! Should be used for near-surface temperature, specific humidity,
-! winds, and surface pressure.
-!
-!EOP
-  integer,parameter  :: N_INST_VARS=5
-  integer            :: iret
-  integer            :: c,r,iv,v,i,j
-  integer            :: varid
-  real               :: missingValue
-  real               :: e,es,td,ta
-  logical            :: file_exists
-  character(len=3)   :: varname(N_INST_VARS)
-  real,  allocatable     :: f(:)
-  logical*1, allocatable :: lb(:)
-  logical            :: pcp_flag
-  integer            :: rel_index(N_INST_VARS)
-  real, allocatable, dimension(:,:)  :: datain
-  real, dimension(LDT_rc%lnc(n)*LDT_rc%lnr(n))  :: varfield
-  !=== set variable name
-  varname = (/ "t2m","d2m","u10","v10","sp " /)
-  rel_index = (/ 1, 2, 5, 6, 7 /) ! index of variable w.r.t. the
-                                  ! full list of 9 forcing variables
-  inquire(file=instfile,exist=file_exists)
-  if ( file_exists ) then
-    allocate(datain(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold))
-    allocate(f(era5cds_struc(n)%ncold*era5cds_struc(n)%nrold))
-    allocate(lb(era5cds_struc(n)%ncold*era5cds_struc(n)%nrold))
-
-    call LDT_verify(nf90_open(path=trim(instfile), mode=NF90_NOWRITE, &
-             ncid=iret), 'nf90_open failed in read_era5cds')
-    ! Forcing variable loop:
-    do v = 1, N_INST_VARS
-       iv = rel_index(v)
-       call LDT_verify(nf90_inq_varid(iret, trim(varname(v)),varId), &
-             'nf90_inq_varid failed in retrieve_inst')
-       call LDT_verify(nf90_get_var(iret,varId, datain, &
-             start=(/1,1,timestep/), &
-             count=(/era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,1/)),&
-             'nf90_get_var failed in retrieve_inst')
-       call LDT_verify(nf90_get_att(iret,varId, "_FillValue", missingValue), &
-             'nf90_get_att failed in retrieve_inst for FillValue')
-
-     !=== Transferring current data to 1-D array for interpolation
-     c=0
-     do j=1,era5cds_struc(n)%nrold
-       do i=1,era5cds_struc(n)%ncold
-          c = c + 1
-          f(c) = datain(i,j)
-          if ( f(c) .ne. missingValue ) then
-             lb(c) = .true.
-          endif
-       enddo
-     enddo
-     pcp_flag = .false.
-     call interp_era5cds_var(n,findex,month,f, &
-                             lb,pcp_flag,varfield)
-
-     if ( iv .eq. 2 ) then   ! convert from dew point to qair
-       do c=1,LDT_rc%ngrid(n)
-         td = varfield(c) - 273.15   ! in celsius
-         ta = glbdata(1,c) - 273.15   ! in celsius
-         e = 6.11* 10**(7.5*td / (237.3+td)) ! actual vapor pressure
-         es = 6.11*10**(7.5*ta / (237.3+ta)) ! saturation vapor pressure
-         glbdata(iv,c) = e / es
-       end do
-     else
-       glbdata(iv,:) = varfield
-     end if
-
-    end do   ! v
-
-    call LDT_verify(nf90_close(iret), 'failed to close file in retrieve_inst')
-    deallocate(f)
-    deallocate(lb)
-    deallocate(datain)
-    fret = 0
- else
-    fret = -1
- endif
-
-end subroutine retrieve_inst_era5cdsvars
-!BOP
-! !ROUTINE: retrieve_accum_ecmwfvars
-! \label{retrieve_accum_ecmwfvars}
-!
-! !INTERFACE:
-subroutine retrieve_accum_era5cdsvars(n, findex, month, avgfile, glbdata1, &
-                                    timestep, fret)
-  use LDT_coreMod,      only : LDT_rc, LDT_domain
-  use LDT_logMod,       only : LDT_logunit, LDT_verify
-  use era5cds_forcingMod, only : era5cds_struc
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-  use netcdf
-#endif
-  implicit none
-! !ARGUMENTS:
-  integer,   intent(in)        :: n
-  integer,   intent(in)        :: findex
-  integer,   intent(in)        :: month
-  character(len=*), intent(in) :: avgfile
-  real, intent(inout)          :: glbdata1(9,LDT_rc%ngrid(n))
-  integer                      :: timestep
-  integer, intent(inout)       :: fret
-!
-! !DESCRIPTION:
-! This routine opens the corresponding ERA5CDS data file to extract
-! the specified variable, which represents an accumulated value.
-! Should be used for shortwave, longwave, lsp, and cp.
-!
-!EOP
-  integer,parameter  :: N_ACCUM_VARS=4
-  integer            :: nera5cds
-  integer            :: iret,gbret
-  integer            :: c,r,iv,ftn,i,j,v
-  integer            :: varid
-  real               :: missingValue
-  logical            :: file_exists
-  character(len=4)   :: varname(N_ACCUM_VARS)
-  real,  allocatable     :: f(:)
-  logical*1, allocatable :: lb(:)
-  real, allocatable, dimension(:,:)  :: datain
-  logical            :: pcp_flag
-  integer            :: rel_index(N_ACCUM_VARS)
-  real,dimension(LDT_rc%lnc(n)*LDT_rc%lnr(n)) :: varfield
-
-  !=== set GRIB shortName
-  varname = (/ "ssrd","strd","lsp ","cp  " /)
-  rel_index = (/ 3, 4, 8, 9 /) ! index of variable w.r.t. the
-                               ! full list of 9 forcing variables
-
-  nera5cds = era5cds_struc(n)%ncold*era5cds_struc(n)%nrold
-
-  inquire(file=avgfile,exist=file_exists)
-  if ( file_exists ) then
-    allocate(datain(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold))
-    allocate(f(nera5cds))
-    allocate(lb(nera5cds))
-
-    call LDT_verify(nf90_open(path=trim(avgfile), mode=NF90_NOWRITE, &
-             ncid=iret), 'nf90_open failed in retrieve_avg_era5')
-    ! Forcing variable loop:
-    do v = 1, N_ACCUM_VARS
-       iv = rel_index(v)
-       call LDT_verify(nf90_inq_varid(iret, trim(varname(v)),varId), &
-             'nf90_inq_varid failed in retrieve_avg')
-       call LDT_verify(nf90_get_var(iret,varId, datain, &
-             start=(/1,1,timestep/), &
-             count=(/era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,1/)),&
-             'nf90_get_var failed in retrieve_avg')
-       call LDT_verify(nf90_get_att(iret,varId, "_FillValue", missingValue), &
-             'nf90_get_att failed in retrieve_avg for FillValue')
-
-       !=== Transferring current data to 1-D array for interpolation
-       c=0
-       do j=1,era5cds_struc(n)%nrold
-         do i=1,era5cds_struc(n)%ncold
-            c = c + 1
-            f(c) = datain(i,j)
-            if ( f(c) .ne. missingValue ) then
-               lb(c) = .true.
-            endif
-         enddo
-       enddo
-       pcp_flag = .false.
-       if(iv.eq.8.or.iv.eq.9) pcp_flag = .true.
-
-       call interp_era5cds_var(n,findex,month,f, &
-                             lb,pcp_flag,varfield)
-
-       if ( iv == 3 .or. iv == 4) then ! swd/lwd - convert accumulated field to rate
-          do c=1,LDT_rc%ngrid(n)
-             glbdata1(iv,c) = varfield(c) / (1.0*60*60)
-          enddo
-       elseif ( iv == 8 .or. iv == 9 ) then ! lsp or cp [m] -> mm/s
-          do c=1,LDT_rc%ngrid(n)
-             glbdata1(iv,c) = (varfield(c) * 1000.0)/(1.0*60*60)
-          enddo
-       end if
-    end do   ! v
-
-    do c=1,LDT_rc%ngrid(n)
-       glbdata1(8,c) = glbdata1(8,c) + glbdata1(9,c)
-    enddo
-
-    call LDT_verify(nf90_close(iret), 'failed to close file in retrieve_avg_era5')
-    deallocate(f)
-    deallocate(lb)
-    deallocate(datain)
-    fret = 0
-  else
-    fret = -1
-  end if
-
-end subroutine retrieve_accum_era5cdsvars
 !BOP
 ! 
 ! !ROUTINE: interp_era5cds_var
 ! \label{interp_era5cds_var}
 ! 
 ! !INTERFACE: 
-subroutine interp_era5cds_var(n,findex, month, input_var, &
+subroutine interp_era5cds_var(n,findex, month, input_var, missingValue, &
      pcp_flag, output_var)
 
 ! !USES: 
@@ -401,13 +768,14 @@ subroutine interp_era5cds_var(n,findex, month, input_var, &
   integer, intent(in)    :: n
   integer, intent(in)    :: findex
   integer, intent(in)    :: month
-  real,    intent(in)    :: input_var(era5cds_struc(n)%npts)
-  real,    intent(out)   :: output_var(LDT_rc%lnc(n)*LDT_rc%lnr(n))
+  real,    intent(in)    :: input_var(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold)
+  real,    intent(in)    :: missingValue 
   logical, intent(in)    :: pcp_flag
+  real,    intent(out)   :: output_var(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 
 !
 ! !DESCRIPTION: 
-!  This subroutine spatially interpolates a ERA5 field
+!  This subroutine spatially interpolates a ERA5CDS field
 !  to the LDT running domain
 ! 
 !EOP
@@ -415,26 +783,36 @@ subroutine interp_era5cds_var(n,findex, month, input_var, &
   integer   :: t,c,r,k,iret
   integer   :: doy
   integer   :: ftn
-  integer   :: pcp1Id, pcp2Id, pcp3Id, pcp4Id,pcp5Id, pcp6Id
   real      :: f (era5cds_struc(n)%ncold*era5cds_struc(n)%nrold)
-  logical*1 :: lb(era5cds_struc(n)%ncold*era5cds_struc(n)%nrold)
+  logical*1 :: lb(era5cds_struc(n)%mi)
   logical*1 :: lo(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   integer   :: input_size
+  integer   :: input_nc, input_nr
+  integer   :: count1,nrec
 ! _____________________________________________________________
 
-  input_size = era5cds_struc(n)%ncold*era5cds_struc(n)%nrold
+  input_size = era5cds_struc(n)%mi
   output_var = LDT_rc%udef
   lo = .true.
+  input_nc = era5cds_struc(n)%ncold
+  input_nr = era5cds_struc(n)%nrold
 
-!-----------------------------------------------------------------------    
-! Apply downscaling
-!-----------------------------------------------------------------------    
+  lb = .false.
+  do r=1,era5cds_struc(n)%nrold
+     do c=1,era5cds_struc(n)%ncold
+        k= c+(r-1)*era5cds_struc(n)%ncold
+        f(k) = input_var(c,r)
+        if(f(k) .ne. missingValue) then
+           lb(k) = .true.
+        endif
+     enddo
+  enddo
 
   if(pcp_flag.and.&
        trim(LDT_rc%met_gridtransform(findex)).eq."budget-bilinear") then 
      
      call conserv_interp(LDT_rc%gridDesc(n,:),lb,f,lo,&
-          output_var(:), &
+          output_var, &
           era5cds_struc(n)%mi,LDT_rc%lnc(n)*LDT_rc%lnr(n),& 
           LDT_domain(n)%lat, LDT_domain(n)%lon,&
           era5cds_struc(n)%w112,era5cds_struc(n)%w122,&
@@ -447,7 +825,7 @@ subroutine interp_era5cds_var(n,findex, month, input_var, &
        trim(LDT_rc%met_gridtransform(findex)).eq."budget-bilinear") then 
 
      call bilinear_interp(LDT_rc%gridDesc(n,:),lb,f,lo,&
-          output_var(:), &
+          output_var, &
           era5cds_struc(n)%mi,LDT_rc%lnc(n)*LDT_rc%lnr(n), & 
           LDT_domain(n)%lat, LDT_domain(n)%lon,&
           era5cds_struc(n)%w111,era5cds_struc(n)%w121,&
@@ -458,7 +836,7 @@ subroutine interp_era5cds_var(n,findex, month, input_var, &
      
   elseif(trim(LDT_rc%met_gridtransform(findex)).eq."neighbor") then 
      call neighbor_interp(LDT_rc%gridDesc(n,:),lb,f,lo,&
-          output_var(:),era5cds_struc(n)%mi,&
+          output_var,era5cds_struc(n)%mi,&
           LDT_rc%lnc(n)*LDT_rc%lnr(n),&
           LDT_domain(n)%lat, LDT_domain(n)%lon,&
           era5cds_struc(n)%n113,LDT_rc%udef,iret)
@@ -471,3 +849,130 @@ subroutine interp_era5cds_var(n,findex, month, input_var, &
   
 
 end subroutine interp_era5cds_var
+!BOP
+!
+! !ROUTINE: era5grid_2_lisgrid
+!
+! !DESCRIPTION:
+! Changes grid_data from ECMWF data convention to GLDAS convention
+!
+! ERA5: North-to-South around Greenwich Meridian
+! Global grid. Data are written as flat binary from "upper left to
+! lower right" starting at 0.25-degree grid point center coordinates:
+! 0.125E,89.875N and going to 0.125W,89.875S.
+!
+! LIS: South-to-North around Date Line
+! Full global grid.  Starts at the southernmost latitude and date line,
+! going east and then north.
+!
+! !REVISION HISTORY:
+!  10 Apr 2002: Urszula Jambor;  Code adapted from
+!               ecmwfgrid_2_grid2catgrid, by R. Reichle
+!  21 Apr 2025: Hiroko Beaudoing; modified berggrid_2_gldasgrid.F90
+!                                 to work for odd ny.
+!
+! !INTERFACE:
+subroutine era5grid_2_lisgrid( nx, ny, grid_data, out_data )
+!EOP
+  implicit none
+
+  integer, intent(in) :: nx, ny
+  real, intent(in), dimension(nx,ny) :: grid_data
+  real, intent(out), dimension(nx*ny):: out_data
+  real, dimension(nx,ny):: lis_data
+
+  integer :: i, j, m, n, c
+  real :: tmp, tmp_data1(nx)
+
+  ! ------------------------------------------------------------------
+  ! some checks
+
+  if ((nx /= 1440) .or. (ny /= 720)) then
+     write (*,*) 'era5grid_2_gldasgrid(): This routine has only been'
+     write (*,*) 'checked for nx=1440 and ny=720. STOPPING'
+     stop
+  end if
+  if ((mod(nx,2) /= 0)) then
+     write (*,*) 'era5grid_2_gldasgrid(): This routine can only work'
+     write (*,*) 'for even nx. STOPPING.'
+     stop
+  end if
+
+  !-------------------------------------------------------------------
+
+  do j=1,ny
+
+     ! swap latitude bands (North-to-South becomes South-to-North)
+     n = ny-j+1
+     tmp_data1      = grid_data(:,j)
+
+     do i=1,nx/2
+
+        ! shift longitudes (wrapping around Greenwhich Meridian becomes
+        !  wrapping around Date Line)
+        m = i + nx/2
+        tmp          = tmp_data1(i)
+        tmp_data1(i) = tmp_data1(m)
+        tmp_data1(m) = tmp
+
+     end do
+
+     lis_data(:,n) = tmp_data1
+
+  end do
+
+  ! return output in 1D
+  c=0
+  do j=1,ny
+     do i=1,nx
+        c=c+1
+        out_data(c) = lis_data(i,j)
+     end do
+  end do
+
+end subroutine era5grid_2_lisgrid
+
+!BOP
+!
+! !ROUTINE: assign_processed_era5cdsf
+! \label{assign_processed_era5cdsf}
+!
+! !INTERFACE:
+subroutine assign_processed_era5cdsf(n,kk,order,var_index,era5forc)
+! !USES:
+  use LDT_coreMod
+  use era5cds_forcingMod, only : era5cds_struc
+!
+! !DESCRIPTION:
+!  This routine assigns the interpolated ERA5 forcing data
+!  to the module data structures to be used later for
+!  time interpolation
+!
+!EOP
+  implicit none
+
+  integer :: n
+  integer :: kk
+  integer :: order
+  integer :: var_index
+  real    :: era5forc(LDT_rc%lnc(n)*LDT_rc%lnr(n))
+
+
+  integer :: c,r
+
+  do r=1,LDT_rc%lnr(n)
+     do c=1,LDT_rc%lnc(n)
+        if(LDT_domain(n)%gindex(c,r).ne.-1) then
+           if(order.eq.1) then
+              era5cds_struc(n)%metdata1(var_index,&
+                   LDT_domain(n)%gindex(c,r)) = &
+                   era5forc(c+(r-1)*LDT_rc%lnc(n))
+           elseif(order.eq.2) then
+              era5cds_struc(n)%metdata2(var_index,&
+                   LDT_domain(n)%gindex(c,r)) = &
+                   era5forc(c+(r-1)*LDT_rc%lnc(n))
+           endif
+        endif
+     enddo
+  enddo
+end subroutine assign_processed_era5cdsf

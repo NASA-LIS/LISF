@@ -40,13 +40,14 @@ subroutine timeinterp_era5cds(n,findex)
   integer, intent(in):: findex
 !
 ! !DESCRIPTION:
-!  Temporally interpolates the forcing data to the current model
-!  timestep. Precipitation
-!  is not temporally interpolated, and the 1 hourly value is used.
-!  All other variables, including Downward shortwave radiation are
-!  linearly interpolated between the 1 hourly blocks.
-!
-!  The routines invoked are:
+!  Temporally interpolates the forcing data to the current model 
+!  timestep. Downward shortwave radiation is interpolated using a
+!  zenith-angled based approach. Precipitation and downward longwave
+!  are not temporally interpolated, and the 1 hourly value is used.
+!  All other variables, including Downward shortwave radiation are 
+!  linearly interpolated between the 1 hourly blocks. 
+! 
+!  The routines invoked are: 
 !  \begin{description}
 !   \item[LIS\_time2date](\ref{LIS_time2date}) \newline
 !    converts the time to a date format
@@ -155,6 +156,9 @@ subroutine timeinterp_era5cds(n,findex)
 
   mfactor = LIS_rc%nensem(n)/era5cds_struc(n)%nIter
 
+!-----------------------------------------------------------------------
+! SW down
+!-----------------------------------------------------------------------  
   do k=1,LIS_rc%ntiles(n)/mfactor
      do m=1,mfactor
         t = m + (k-1)*mfactor
@@ -166,8 +170,8 @@ subroutine timeinterp_era5cds(n,findex)
 
         kk = LIS_get_iteration_index(n, k, index1, mfactor)
 
-        if (era5cds_struc(n)%metdata1(kk,3,index1).ne.LIS_rc%udef.and.&
-             era5cds_struc(n)%metdata2(kk,3,index1).ne.LIS_rc%udef) then
+        if (era5cds_struc(n)%metdata1(kk,3,index1).ne.LIS_rc%udef) then 
+
            swd(t) = zw1 * era5cds_struc(n)%metdata1(kk,3,index1)
 
            if (swd(t).gt.LIS_CONST_SOLAR) then
@@ -191,17 +195,13 @@ subroutine timeinterp_era5cds(n,findex)
            ! WARN in stead of ERR and endrun  -- 2/2/2026 HKB
            swd(t) = 0.0
            write(LIS_logunit,*) &
-                '[WARN] timeinterp_era5cds -- Stopping because ', &
-                'forcing not udef but lt0,'
-           write(LIS_logunit,*)'[ERR] timeinterp_era5cds -- ', &
-                t,swd(t),era5cds_struc(n)%metdata2(kk,3,index1), &
+                '[WARN] timeinterp_era5cds -- forcing not udef but lt0,'
+           write(LIS_logunit,*)'[WARN] timeinterp_era5cds -- ', & 
+                t,swd(t),era5cds_struc(n)%metdata2(kk,3,index1), & 
                 ' (',LIS_localPet,')'
            !call LIS_endrun
         endif
-
-        if (swd(t).gt.LIS_CONST_SOLAR) then
-           swd(t)=era5cds_struc(n)%metdata2(kk,3,index1)
-        endif
+        
      enddo
   enddo
 

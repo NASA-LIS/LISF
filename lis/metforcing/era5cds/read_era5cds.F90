@@ -10,9 +10,9 @@
 #include "LIS_misc.h"
 !BOP
 !
-! !ROUTINE: read_era5
-! \label{read_era5}
-!
+! !ROUTINE: read_era5cds
+! \label{read_era5cds}
+! 
 ! !REVISION HISTORY:
 ! 23 dec 2019: Sujay Kumar, initial code
 ! 15 apr 2025: Hiroko Beaudoing, adopted ERA5 routines for the public CDS
@@ -22,7 +22,7 @@
 ! !INTERFACE:
 subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag,  &
      findex,&
-     instfile, avgfile, lmlfile, prevavgfile, ferror)
+     instfile, accfile, lmlfile, prevaccfile, ferror)
 ! !USES:
   use LIS_coreMod,       only : LIS_rc
   use LIS_logMod
@@ -44,7 +44,7 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag,  &
   integer, intent(in)          :: hour
   logical, intent(in)          :: read_flag
   integer, intent(in)          :: findex
-  character(len=*), intent(in) :: instfile, avgfile, lmlfile, prevavgfile
+  character(len=*), intent(in) :: instfile, accfile, lmlfile, prevaccfile
   integer, intent(out)         :: ferror
 
 !
@@ -451,7 +451,7 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag,  &
 
      !=== Read precipitation and radiation fields in accum file
      !=== "ssrd","strd","lsp","cp" ====
-     inquire(file=avgfile,exist=file_exists)
+     inquire(file=accfile,exist=file_exists)
      if(file_exists) then
         era5cds_struc(n)%rainf  = LIS_rc%udef
         era5cds_struc(n)%crainf  = LIS_rc%udef
@@ -459,8 +459,8 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag,  &
         era5cds_struc(n)%lwd    = LIS_rc%udef
 
         write(LIS_logunit,*)'[INFO] Reading ERA5 file (bookend,', &
-             order,' -',trim(avgfile), ')'
-        call LIS_verify(nf90_open(path=trim(avgfile), mode=NF90_NOWRITE, &
+             order,' -',trim(accfile), ')'
+        call LIS_verify(nf90_open(path=trim(accfile), mode=NF90_NOWRITE, &
              ncid=ftn), 'nf90_open failed in read_era5cds')
 
         allocate(rainf(era5cds_struc(n)%ncold,era5cds_struc(n)%nrold,rec_size))
@@ -597,18 +597,18 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag,  &
              'failed to close avg file in read_era5cds')
         ferror = 1
      else
-        write(LIS_logunit,*) '[ERR] ',trim(avgfile)//' does not exist'
+        write(LIS_logunit,*) '[ERR] ',trim(accfile)//' does not exist'
         call LIS_endrun()
 
      endif
      !=== Read previous precipitation and radiation fields in accum file
      !=== populate prev* arrays
-     inquire(file=prevavgfile,exist=file_exists)
+     inquire(file=prevaccfile,exist=file_exists)
      if(file_exists) then
-        ! backward fill: read in last 7 time steps of prevavgfile
+        ! backward fill: read in last 7 time steps of prevaccfile
         write(LIS_logunit,*)'[INFO] Reading prev ERA5 file (bookend,', &
-             order,' -',trim(prevavgfile), ')'
-        call LIS_verify(nf90_open(path=trim(prevavgfile), mode=NF90_NOWRITE, &
+             order,' -',trim(prevaccfile), ')'
+        call LIS_verify(nf90_open(path=trim(prevaccfile), mode=NF90_NOWRITE, &
              ncid=ftn), 'nf90_open failed in read_era5cds')
 
         call LIS_verify(nf90_inq_dimid(ftn,'valid_time',timeId), &
@@ -749,9 +749,9 @@ subroutine read_era5cds(n, kk, order, year, month, day, hour, read_flag,  &
 
         call LIS_verify(nf90_close(ftn), &
              'failed to close avg file in read_era5cds')
-     else  ! prevavgfile exists
+     else  ! prevaccfile exists
         ! at start of ERA5 in Jan 1940, no data for 0-6z
-        write(LIS_logunit,*) '[INFO] ',trim(prevavgfile)//' not available!'
+        write(LIS_logunit,*) '[INFO] ',trim(prevaccfile)//' not available!'
         do l = 1, n_last_steps
            ll = rec_size - n_last_steps + l
            era5cds_struc(n)%prev_rainf(:,l)  = LIS_rc%udef

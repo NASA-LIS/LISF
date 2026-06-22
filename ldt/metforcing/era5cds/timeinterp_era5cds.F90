@@ -39,8 +39,8 @@ subroutine timeinterp_era5cds(n,findex)
 ! !DESCRIPTION:
 !  Temporally interpolates the forcing data to the current model 
 !  timestep. Downward shortwave radiation is interpolated using a
-!  zenith-angled based approach. Precipitation 
-!  is not temporally interpolated, and the previous 1 hourly value
+!  zenith-angled based approach. Precipitation and downward longwave
+!  are not temporally interpolated, and the previous 1 hourly value
 !  is used. All other variables are linearly interpolated between 
 !  the 1 hourly blocks. 
 ! 
@@ -54,46 +54,13 @@ subroutine timeinterp_era5cds(n,findex)
 !EOP
   integer :: t,zdoy,k,kk
   integer :: index1
-  integer :: bdoy,byr,bmo
-  integer :: bda,bhr,bmn
-  integer :: bss
-  real*8  :: btime
   real    :: wt1,wt2,czb,cze,czm,gmt1,gmt2
-  real    :: zw1,zw2,bts
+  real    :: zw1,zw2
   integer            :: status
-  integer            :: mfactor,m
   type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
-  type(ESMF_Field)   :: psurfField,pcpField,snowfField,cpcpField
+  type(ESMF_Field)   :: psurfField,pcpField,cpcpField
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:)
   real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:)
-  real,pointer       :: snowf(:)
-
-  btime=era5cds_struc(n)%era5cdstime1
-  byr = LDT_rc%yr
-  bmo = LDT_rc%mo
-  bda = LDT_rc%da
-  bhr = LDT_rc%hr
-  bmn = 30
-  bss = 0
-  if (LDT_rc%mn.lt.30) then
-     bts = -(60*60)
-  else
-     bts = 0
-  endif
-  call LDT_tick(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn,bss,bts)
-  btime=era5cds_struc(n)%era5cdstime2
-  byr=LDT_rc%yr    !next hour
-  bmo=LDT_rc%mo
-  bda=LDT_rc%da
-  bhr=LDT_rc%hr
-  bmn=30
-  bss=0
-  if (LDT_rc%mn.lt.30) then
-     bts=0
-  else
-     bts=60*60
-  endif
-  call LDT_tick(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn,bss,bts)
 
 !-----------------------------------------------------------------------
 !  Interpolate Data in Time
@@ -135,12 +102,10 @@ subroutine timeinterp_era5cds(n,findex)
        rc=status)
   call LDT_verify(status, 'Error: Enable Rainf in the forcing variables list')
 
-  call ESMF_StateGet(LDT_FORC_Base_State(n,findex),&
-       LDT_FORC_CRainf%varname(1),cpcpField,&
+  call ESMF_StateGet(LDT_FORC_Base_State(n,findex),LDT_FORC_CRainf%varname(1),cpcpField,&
        rc=status)
-  call LDT_verify(status, &
-       'Error: Enable CRainf in the forcing variables list')
-
+  call LDT_verify(status, 'Error: Enable CRainf in the forcing variables list')
+       
   call ESMF_FieldGet(tmpField,localDE=0,farrayPtr=tmp,rc=status)
   call LDT_verify(status)
 
@@ -168,6 +133,9 @@ subroutine timeinterp_era5cds(n,findex)
   call ESMF_FieldGet(cpcpField,localDE=0,farrayPtr=cpcp,rc=status)
   call LDT_verify(status)
 
+!-----------------------------------------------------------------------
+! SW down
+!-----------------------------------------------------------------------  
   do t=1,LDT_rc%ntiles(n)
      index1 = LDT_domain(n)%tile(t)%index
      zdoy=LDT_rc%doy
@@ -176,25 +144,33 @@ subroutine timeinterp_era5cds(n,findex)
           gmt1,gmt2,LDT_rc%gmt,zdoy,zw1,zw2,czb,cze,czm,LDT_rc)
      
 ! past hour average
-     swd(t) = era5cds_struc(n)%metdata2(3,index1)*zw1
+     if (era5cds_struc(n)%metdata1(3,index1).ne.LDT_rc%udef) then
 
-     if ((swd(t).ne.LDT_rc%udef).and.(swd(t).lt.0)) then
-        if (swd(t).gt.-0.00001) then 
-           swd(t) = 0.0 
-        else
-           write(LDT_logunit,*) &
-                '[ERR] timeinterp_era5cds -- Stopping because ', & 
-                'forcing not udef but lt0,'
-           write(LDT_logunit,*)'[ERR] timeinterp_era5cds -- ', & 
-                t,swd(t),era5cds_struc(n)%metdata2(3,index1), & 
-                ' (',LDT_localPet,')'
-           call LDT_endrun
+        swd(t) = zw1 * era5cds_struc(n)%metdata1(3,index1)
+
+        if (swd(t).gt.LDT_CONST_SOLAR) then
+           write(unit=LDT_logunit,fmt=*)'[WARN] sw radiation too high in ERA5!!'
+           write(unit=LDT_logunit,fmt=*)'[WARN] it is',swd(t), zw1
+           write(unit=LDT_logunit,fmt=*)'[WARN] at ',t,LDT_domain(n)%grid(index1)%lat,LDT_domain(n)%grid(index1)%lon
+           write(unit=LDT_logunit,fmt=*)'[WARN] era5cdsdata1=',era5cds_struc(n)%metdata1(3,index1)
+           write(unit=LDT_logunit,fmt=*)'[WARN] era5cdsdata2=',era5cds_struc(n)%metdata2(3,index1)
+           swd(t) = LDT_CONST_SOLAR
+           write(unit=LDT_logunit,fmt=*)'[WARN] forcing set to ',swd(t)
         endif
      endif
-     
-     if (swd(t).gt.LDT_CONST_SOLAR) then
-        swd(t)=era5cds_struc(n)%metdata2(3,index1)
+
+     if ((swd(t).ne.LDT_rc%udef).and.(swd(t).lt.0)) then
+        ! tiny negative swd appear in the high latitudes sometimes
+        ! WARN in stead of ERR and endrun  -- 2/2/2026 HKB
+        swd(t) = 0.0 
+        write(LDT_logunit,*) &
+             '[WARN] timeinterp_era5cds -- forcing not udef but lt0'
+        write(LDT_logunit,*)'[WARN] timeinterp_era5cds -- ', & 
+             t,swd(t),era5cds_struc(n)%metdata2(3,index1), & 
+             ' (',LDT_localPet,')'
+        !call LDT_endrun
      endif
+     
   enddo
  
 !-----------------------------------------------------------------------
@@ -202,8 +178,8 @@ subroutine timeinterp_era5cds(n,findex)
 !-----------------------------------------------------------------------  
   do t=1,LDT_rc%ntiles(n)
      index1 = LDT_domain(n)%tile(t)%index
-     pcp(t) = era5cds_struc(n)%metdata2(8,index1)
-     cpcp(t) = era5cds_struc(n)%metdata2(9,index1)
+     pcp(t) = era5cds_struc(n)%metdata1(8,index1)
+     cpcp(t) = era5cds_struc(n)%metdata1(9,index1)
      
      if ( pcp(t) < 0 ) then
         pcp(t) = 0
@@ -211,6 +187,14 @@ subroutine timeinterp_era5cds(n,findex)
      if ( cpcp(t) < 0 ) then
         cpcp(t) = 0
      endif
+  enddo
+
+!-----------------------------------------------------------------------
+! LW down
+!-----------------------------------------------------------------------  
+  do t=1,LDT_rc%ntiles(n)
+     index1 = LDT_domain(n)%tile(t)%index
+     lwd(t) = era5cds_struc(n)%metdata1(4,index1)
   enddo
 
 !-----------------------------------------------------------------------
@@ -224,16 +208,12 @@ subroutine timeinterp_era5cds(n,findex)
           era5cds_struc(n)%metdata2(1,index1)*wt2
      q2(t)  = era5cds_struc(n)%metdata1(2,index1)*wt1 + &
           era5cds_struc(n)%metdata2(2,index1)*wt2
-     lwd(t)  = era5cds_struc(n)%metdata1(4,index1)*wt1 + &
-          era5cds_struc(n)%metdata2(4,index1)*wt2
-     
      uwind(t) = era5cds_struc(n)%metdata1(5,index1)*wt1+&
           era5cds_struc(n)%metdata2(5,index1)*wt2
      vwind(t) = era5cds_struc(n)%metdata1(6,index1)*wt1+&
           era5cds_struc(n)%metdata2(6,index1)*wt2
      psurf(t) = era5cds_struc(n)%metdata1(7,index1)*wt1 + &
           era5cds_struc(n)%metdata2(7,index1)*wt2
-     
   enddo
 
 end subroutine timeinterp_era5cds

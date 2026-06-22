@@ -70,8 +70,8 @@ subroutine get_era5cds(n, findex)
   integer           :: order
   integer           :: ferror
   character(len=LIS_CONST_PATH_LEN) :: instfilename, lmlfilename
-  character(len=LIS_CONST_PATH_LEN) :: avgfilename, prevavgfilename
-  integer           :: c, kk,f
+  character(len=LIS_CONST_PATH_LEN) :: accfilename, prevaccfilename
+  integer           :: c, r,kk,f,try
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
   real*8            :: time1, time2, timenow
@@ -183,12 +183,29 @@ subroutine get_era5cds(n, findex)
 
   if( retrieve_file ) then
      !- Obtaining ERA5 File:
-     do kk= era5cds_struc(n)%st_iterid, era5cds_struc(n)%en_iterid
-        if (LIS_get_nstep(LIS_rc,n) == 1) then
-           order = 1
-        else
-           order = 2
-           era5cds_struc(n)%findtime2 = 0
+        do kk= era5cds_struc(n)%st_iterid, era5cds_struc(n)%en_iterid
+           if (LIS_get_nstep(LIS_rc,n) == 1) then
+            order = 1
+           else
+            order = 2
+            era5cds_struc(n)%findtime2 = 0
+           endif
+           call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
+                yr1, mo1, da1, hr1, instfilename, accfilename, lmlfilename, &
+                prevaccfilename)
+           write(LIS_logunit,*) '[INFO] opening Bookend1 ',LIS_get_nstep(LIS_rc,n),hr1
+           call read_era5cds(n, kk, order, yr1, mo1, da1, hr1, retrieve_file,&
+                findex, instfilename, accfilename, lmlfilename, &
+                prevaccfilename, ferror)
+        enddo
+
+        if(ferror.ge.1) then !successfully retrieved forcing data
+          era5cds_struc(n)%era5cdstime1=time1
+          retrieve_file = .false.
+          if(era5cds_struc(n)%findtime2==0) era5cds_struc(n)%era5cdstime2=time2
+        else  !ferror still=0
+           write(LIS_logunit,*)'[ERR] ERA5CDS data missing file 1'
+           call LISrun()
         endif
         call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
              yr1, mo1, da1, hr1, instfilename, avgfilename, lmlfilename, &
@@ -211,17 +228,16 @@ subroutine get_era5cds(n, findex)
 
   if(era5cds_struc(n)%findtime2.eq.1) then
      ! just need to assign metdata2
-     do kk= era5cds_struc(n)%st_iterid, era5cds_struc(n)%en_iterid
-        order = 2
-        call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
-             yr2, mo2, da2, hr2, instfilename, avgfilename, lmlfilename, &
-             prevavgfilename)
-        write(LIS_logunit,*) '[INFO] using Bookend2 ', &
-             LIS_get_nstep(LIS_rc,n),hr2
-        call read_era5cds(n, kk, order, yr2, mo2, da2, hr2, retrieve_file, &
-             findex, instfilename, avgfilename, lmlfilename, &
-             prevavgfilename, ferror)
-     end do
+        do kk= era5cds_struc(n)%st_iterid, era5cds_struc(n)%en_iterid
+           order = 2
+           call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
+                yr2, mo2, da2, hr2, instfilename, accfilename, lmlfilename, &
+                prevaccfilename)
+           write(LIS_logunit,*) '[INFO] using Bookend2 ',LIS_get_nstep(LIS_rc,n),hr2
+           call read_era5cds(n, kk, order, yr2, mo2, da2, hr2, retrieve_file, &
+               findex, instfilename, accfilename, lmlfilename, &
+               prevaccfilename, ferror)
+        end do
 
      if(ferror.ge.1) then !successfully retrieved forcing data
         era5cds_struc(n)%era5cdstime2=time2
@@ -240,7 +256,7 @@ end subroutine get_era5cds
 !
 ! !INTERFACE:
 subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
-  instfilename, avgfilename, lmlfilename, prevavgfilename)
+  instfilename, accfilename, lmlfilename, prevaccfilename)
 
 ! !USES:
   use LIS_coreMod
@@ -255,8 +271,8 @@ subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
   integer                       :: findex
   character(len=*), intent(in)  :: era5cdsdir
   integer, intent(in)           :: yr,mo,da,hr
-  character(len=*), intent(out) :: instfilename, avgfilename, lmlfilename
-  character(len=*), intent(out) :: prevavgfilename
+  character(len=*), intent(out) :: instfilename, accfilename, lmlfilename
+  character(len=*), intent(out) :: prevaccfilename
 
 ! !DESCRIPTION:
 !   This subroutine puts together ERA5 file names for
@@ -274,11 +290,11 @@ subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
 !   day of month
 !  \item[instfilename]
 !   name of the timestamped ERA5 instantaneous file
-!  \item[avgfilename]
+!  \item[accfilename]
 !   name of the timestamped ERA5 accumulation file
 !  \item[lmlfilename]
 !   name of the timestamped ERA5 lowest model level file
-!  \item[prevavgfilename]
+!  \item[prevaccfilename]
 !   name of the previous month timestamped ERA5 accumulation file
 !  \end{description}
 !
@@ -302,14 +318,11 @@ subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
      write(unit=cmonth,fmt='(i2.2)') mo
      write(unit=cdate,fmt='(i2.2)') da
      write(unit=chour,fmt='(i2.2)') hr
-
-     instfilename = trim(era5cdsdir)//'/'//cyear// &
-          '/era5_forcing_'//cyear//cmonth//'_instant.nc'
-     lmlfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'// &
-          cyear//cmonth//'_ml_instant.nc'
-     avgfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'// &
-          cyear//cmonth//'_accum.nc'
-     ! accum file starts from 7z on the 1st of current month and ends on 6z on
+     
+     instfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'//cyear//cmonth//'_instant.nc'
+     lmlfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'//cyear//cmonth//'_ml_instant.nc'
+     accfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'//cyear//cmonth//'_accum.nc'
+     ! accum file starts from 7z on the 1st of current month and ends on 6z on 
      ! the 1st of next month, and need previous months
      !== roll back for last day of last month
      iyr=yr;  imo=mo;  ida=da
@@ -320,10 +333,9 @@ subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
      write(cimo, '(i2.2)') imo
      write(cida, '(i2.2)') ida
      if ( imo /= mo ) then
-        prevavgfilename = trim(era5cdsdir)//'/'//ciyr//'/era5_forcing_'// &
-             ciyr//cimo//'_accum.nc'
+      prevaccfilename = trim(era5cdsdir)//'/'//ciyr//'/era5_forcing_'//ciyr//cimo//'_accum.nc'
      else
-        prevavgfilename = "none"
+      prevaccfilename = "none"
      endif
 
   else !forecast mode
@@ -334,14 +346,11 @@ subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
      write(unit=cyear, fmt='(i4.4)') yr
      write(unit=cmonth,fmt='(i2.2)') mo
      write(unit=cdate,fmt='(i2.2)') da
-
-     instfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'// &
-          cyear//cmonth//'_instant.nc'
-     avgfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'// &
-          cyear//cmonth//'_accum.nc'
-     lmlfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'// &
-          cyear//cmonth//'_ml_instant.nc'
-     ! accum file starts from 7z on the 1st of current month and ends on 6z on
+     
+     instfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'//cyear//cmonth//'_instant.nc'
+     accfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'//cyear//cmonth//'_accum.nc'
+     lmlfilename = trim(era5cdsdir)//'/'//cyear//'/era5_forcing_'//cyear//cmonth//'_ml_instant.nc'
+     ! accum file starts from 7z on the 1st of current month and ends on 6z on 
      ! the 1st of next month, and need previous months
      !== roll back for last day of last month
      iyr=yr;  imo=mo;  ida=da
@@ -352,10 +361,9 @@ subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
      write(cimo, '(i2.2)') imo
      write(cida, '(i2.2)') ida
      if ( imo /= mo ) then
-        prevavgfilename = trim(era5cdsdir)//'/'//ciyr//'/era5_forcing_'// &
-             ciyr//cimo//'_accum.nc'
+      prevaccfilename = trim(era5cdsdir)//'/'//ciyr//'/era5_forcing_'//ciyr//cimo//'_accum.nc'
      else
-        prevavgfilename = "none"
+      prevaccfilename = "none"
      endif
 
   endif
