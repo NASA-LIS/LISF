@@ -738,7 +738,7 @@ void FTN(getoptuealgnparam)(char *j, void *nparam,int len)
 //  
 // 
 // !INTERFACE:
-void FTN(registeroptuereadrestart)(char *j, void (*func)(void*),int len)
+void FTN(registeroptuereadrestart)(char *j, void (*func)(),int len)
 //
 // !DESCRIPTION: 
 //  Creates an entry in the registry for the routine that
