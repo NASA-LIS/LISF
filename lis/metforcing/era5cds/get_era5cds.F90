@@ -71,7 +71,7 @@ subroutine get_era5cds(n, findex)
   integer           :: ferror
   character(len=LIS_CONST_PATH_LEN) :: instfilename, lmlfilename
   character(len=LIS_CONST_PATH_LEN) :: accfilename, prevaccfilename
-  integer           :: c, r,kk,f,try
+  integer           :: c,kk,f
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
   real*8            :: time1, time2, timenow
@@ -208,13 +208,12 @@ subroutine get_era5cds(n, findex)
            call LISrun()
         endif
         call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
-             yr1, mo1, da1, hr1, instfilename, avgfilename, lmlfilename, &
-             prevavgfilename)
+             yr1, mo1, da1, hr1, instfilename, accfilename, lmlfilename, &
+             prevaccfilename)
         write(LIS_logunit,*) '[INFO] opening Bookend1 ',LIS_get_nstep(LIS_rc,n),hr1
         call read_era5cds(n, kk, order, yr1, mo1, da1, hr1, retrieve_file,&
-             findex, instfilename, avgfilename, lmlfilename, &
-             prevavgfilename, ferror)
-     enddo
+             findex, instfilename, accfilename, lmlfilename, &
+             prevaccfilename, ferror)
 
      if(ferror.ge.1) then !successfully retrieved forcing data
         era5cds_struc(n)%era5cdstime1=time1
