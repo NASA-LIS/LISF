@@ -182,6 +182,7 @@ endif::devonly[]
 |"`TRMM 3B42V6`" |TRMM-based 3B42 V6 rainfall
 |"`TRMM 3B42V7`" |TRMM-based 3B42 V7 rainfall
 |"`ERA5`" |ERA5 reanalysis
+|"`ERA5CDS`" |ERA5 reanalysis from Climate Data Store
 |===
 
 .Example _ldt.config_ entry
@@ -3292,6 +3293,27 @@ ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
 ERA5 forcing terrain height file: ../ERA5/era5_elev.nc
 ....
 
+==== ERA5CDS Reanalysis Forcing based parameter inputs
+
+`ERA5CDS forcing directory:` specifies the location of the puglic ERA5 Reanalysis forcing data files.
+
+`ERA5CDS forcing terrain height file:` specifies the ERA5CDS reanalysis elevation file.
+
+`ERA5CDS use lowest model level forcing:` specifies the ERA5CDS reanalysis level of instantaneous fields. 
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`0`" |Use 2m temperature, 2m dew point temperature, and 10m u/v wind
+|"`1`" |Use model lowest level temperature, specific humidity, and u/v wind
+|===
+
+.Example _ldt.config_ entry
+....
+ERA5CDS forcing directory:              ./ERA5/single_hourly
+ERA5CDS forcing terrain height file:    ../ERA5/era5_elev.nc
+ERA5CDS use lowest model level forcing: 1
+....
 
 ==== MERRA-2 Forcing based parameter inputs
 
