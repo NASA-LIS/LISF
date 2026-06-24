@@ -81,7 +81,12 @@ if [ "$skip_lis" != "YES" ]; then
     then
         echo "[INFO] Compiling LIS source code"
         echo ""
-        if [ "$all_deps_first" = "YES" ]; then
+        depfilecount=`find . -type f -name "*.d" | wc -l`
+        if [ "$depfilecount" -eq 0 ] && [ "$all_deps_first" != "YES" ] ; then
+            echo "[WARN] No dependency files found"
+            echo "[WARN] Will force generation of all dependencies up front"
+        fi
+        if [ "$all_deps_first" = "YES" ] || [ "$depfilecount" -eq 0 ]; then
             echo "[INFO] Generating all dependencies up front"
             make realclean && make depend
         fi
