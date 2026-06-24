@@ -269,6 +269,7 @@ subroutine retrieve_GLDAS1data(igrib, nc, nr, nvars, index, gldas_var)
   integer              :: c,r,ios
   real                 :: var(nvars,nc*nr)
 
+#if ( defined USE_GRIBAPI)
   call grib_get(igrib,"values",var(index,:),ios)
   call LIS_verify(ios,                                            &
        'grib_get failed for values in readGLDAS1data')
@@ -280,6 +281,7 @@ subroutine retrieve_GLDAS1data(igrib, nc, nr, nvars, index, gldas_var)
         endif
      enddo
   enddo
+#endif
 
 end subroutine retrieve_GLDAS1data
 
