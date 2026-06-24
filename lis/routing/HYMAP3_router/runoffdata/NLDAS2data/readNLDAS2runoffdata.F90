@@ -261,6 +261,7 @@ subroutine retrieve_NLDAS2data(igrib, nc, nr, nvars, index, nldas_var)
   integer              :: c,r,ios
   real                 :: var(nvars,nc*nr)
 
+#if ( defined USE_GRIBAPI)
   call grib_get(igrib,"values",var(index,:),ios)
   call LIS_verify(ios,                                            &
        'grib_get failed for values in readNLDAS2data')
@@ -272,6 +273,7 @@ subroutine retrieve_NLDAS2data(igrib, nc, nr, nvars, index, nldas_var)
         endif
      enddo
   enddo
+#endif
 
 end subroutine retrieve_NLDAS2data
 
