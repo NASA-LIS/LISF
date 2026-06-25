@@ -1,3 +1,41 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.8
+!
+! Copyright (c) 2026 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !ROUTINE: Pcp_assimilation
+!
+! !REVISION HISTORY:
+!  12 Jun 2026  Fadji Maina; Initial specification
+!
+! !COMPILATION:
+!  This program can be compiled on NASA Discover using the Intel MPI Fortran
+!  compiler and the LISF NetCDF/HDF5 libraries as follows:
+!
+!  mpif90 -g -check all -traceback -names lowercase -convert big_endian 
+!    -assume byterecl 
+!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include 
+!    code_bratseth_nldas3.f90 -o code_bratseth_nldas3
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib 
+!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl 
+!    -Wl,--no-relax -shared-intel
+!
+! !DESCRIPTION:
+!  This program assimilates IMERG and CAPA precipitation estimates into a
+!  MERRA-2/LIS precipitation background using an MPI-parallel BRASH analysis.
+!  The BRASH algorithm is based on the Bratseth analysis approach and follows
+!  the precipitation merging framework described by Kemp et al. (2022). The
+!  output is a daily NetCDF precipitation analysis on the NLDAS-3 grid.
+!
+!EOP
+
 Program Pcp_assimilation
 use mpi
 use netcdf

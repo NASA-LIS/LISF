@@ -1,3 +1,40 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.8
+!
+! Copyright (c) 2026 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !ROUTINE: temporal_disaggregation_1km
+!
+! !REVISION HISTORY:
+!  12 Jun 2026  Fadji Maina; Initial specification
+!
+! !COMPILATION:
+!  This program can be compiled on NASA Discover using the Intel Fortran
+!  compiler and the LISF NetCDF/HDF5 libraries as follows:
+!
+!  ifort -g -check all -traceback -names lowercase -convert big_endian 
+!    -assume byterecl 
+!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include 
+!    temporal_disaggregation_1km.f90 -o temporal_disaggregation_1km 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib 
+!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl 
+!    -Wl,--no-relax -shared-intel
+!
+! !DESCRIPTION:
+!  This program temporally disaggregates daily 1-km NLDAS-3 precipitation
+!  fields into hourly precipitation using hourly MERRA-2 and IMERG fractions.
+!  The output is a daily NetCDF file containing 24 hourly precipitation fields
+!  on the 1-km NLDAS-3 grid.
+!
+!EOP
+
 Program temporal_disaggregation_1km
 use netcdf
   implicit none

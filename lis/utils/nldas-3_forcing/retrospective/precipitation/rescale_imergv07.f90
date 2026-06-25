@@ -1,3 +1,39 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.8
+!
+! Copyright (c) 2026 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !ROUTINE: rescale_imergv07
+!
+! !REVISION HISTORY:
+!  12 Jun 2026  Fadji Maina; Initial specification
+!
+! !COMPILATION:
+!  This program can be compiled on NASA Discover using the Intel Fortran
+!  compiler and the LISF NetCDF/HDF5 libraries as follows:
+!
+!  ifort -g -check all -traceback -names lowercase -convert big_endian 
+!    -assume byterecl 
+!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include 
+!    rescale_imergv07.f90 -o rescale_imergv07 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib 
+!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl 
+!    -Wl,--no-relax -shared-intel
+!
+! !DESCRIPTION:
+!  This program rescales daily IMERG V07 precipitation fields using monthly
+!  scale factors from GPCP. The output is a daily NetCDF precipitation file on the
+!  NLDAS-3 grid.
+!
+!EOP
+
 Program rescale_imergv07
 use netcdf
   implicit none

@@ -1,3 +1,50 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.8
+!
+! Copyright (c) 2026 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+!
+! !ROUTINE: cloud_frequencies
+!
+! !REVISION HISTORY:
+!  12 Jun 2026  Fadji Maina; Initial specification
+!
+! !COMPILATION:
+!  This program can be compiled on NASA Discover using the Intel Fortran
+!  compiler and the LISF NetCDF/HDF5 libraries as follows:
+!
+!  ifort -g -check all -traceback -names lowercase -convert big_endian 
+!    -assume byterecl 
+!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include 
+!    cloud_frequencies.f90 -o cloud_frequencies 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib 
+!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl 
+!    -Wl,--no-relax -shared-intel
+!
+! !DESCRIPTION:
+!  This program computes monthly cloud frequency at 1-km resolution from
+!  daily MODIS MOD09GA surface reflectance QA files. The MODIS state_1km_1
+!  quality-assurance variable is read for each daily file, and the internal
+!  cloud algorithm flag is extracted from bit 10. Land/water QA bits are used
+!  to mask ocean pixels and coastline pixels located within a specified search
+!  radius of ocean water. Daily cloud flags are accumulated over each month and
+!  converted to monthly cloud frequency using only valid land pixels. Monthly
+!  values are written to NetCDF files together with the number of valid days,
+!  coastline/ocean mask information, and latitude/longitude coordinates.
+!
+!  The output cloud frequency ranges from 0 to 1, where 0 indicates that no
+!  valid daily observations were cloudy during the month and 1 indicates that
+!  all valid daily observations were cloudy. Grid cells with insufficient valid
+!  observations are assigned the specified fill value.
+!
+!EOP
+
 program cloud_frequencies
     use netcdf
     implicit none
