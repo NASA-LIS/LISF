@@ -85,7 +85,7 @@ Acceptable values are:
 |polar    | Polar stereographic projection with SW to NE data ordering
 |UTM      | UTM domain
 |hrap     | Hydrologic Rainfall Analysis Project (HRAP) grid
-|           coordinate system
+            coordinate system
 |====
 
 .Example _lis.config_ entry
@@ -570,7 +570,7 @@ Acceptable values are:
 |"`2d gridspace`" | Write output in a 2-D grid domain
 |"`1d gridspace`" | Write output in a 1-D grid domain
 |"`2d ensemble gridspace`" | Write individual ensemble member output
-|                            in a 2-D grid domain
+                             in a 2-D grid domain
 |====
 
 When writing output using the "`2d gridspace`" setting with ensembles enabled,
