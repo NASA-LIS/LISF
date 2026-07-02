@@ -1,0 +1,90 @@
+GEOS-ITbias Dynamic Lapse-Rate Forcing Test Case
+
+This test case performs a 1-km simulation over central California using
+the TEMPLATE LSM option from 2023-12-31 01:00 UTC through 2023-12-31
+06:00 UTC to test the processing of GEOS-ITbias forcing data and
+dynamic lapse-rate downscaling within the NASA Land Information System
+(LIS).
+
+The test case uses:
+
+(a) GEOS-ITbias forcing data containing near-surface air temperature,
+    near-surface specific humidity, surface pressure, and downward
+    longwave radiation.
+
+(b) Dynamic lapse-rate downscaling within LIS.
+
+(c) The TEMPLATE LSM option, which serves as a placeholder land surface
+    model and outputs the processed forcing fields.
+
+(d) A 1-km domain over central California.
+
+(e) Dynamic lapse-rate fields generated from GEOS-ITbias air-temperature
+    inputs using the methodology of Whitney et al. (2025).
+
+GEOS-ITbias forcings are generated upstream of LIS by bias-adjusting
+native GEOS-IT fields using climatological reference datasets. For the
+NLDAS-3 near-real-time forcing workflow, the temperature, humidity,
+and pressure fields are adjusted using MERRA-2 monthly climatologies
+spanning 2001–2024. The resulting GEOS-ITbias forcing fields are
+provided as input to LIS through the input/GEOSITBIAS directory.
+
+The dynamic lapse-rate fields used by this test case are provided
+through the input/dynlapserates_geositbias directory. These lapse rates
+are generated from GEOS-ITbias air-temperature fields using the
+methodology described by Whitney et al. (2025) and are used by LIS to
+perform elevation-based downscaling of air temperature.
+
+This directory contains:
+
+* this README file.
+* the ldt.config file used to generate the LIS parameter file.
+* the lis.config file used for this test case.
+* the MODEL_OUTPUT_LIST.TBL file used to specify output variables.
+* a sample GrADS control file that can be used to visualize the LIS
+  parameter file (input.ctl).
+* a sample GrADS control file that can be used to visualize the model
+  output (output.ctl).
+* a sample GrADS control file that can be used to visualize the target
+  output (testcase.ctl).
+
+To run this test case:
+
+* Generate the LIS executable.
+* Run the LIS executable using the supplied lis.config file and the
+  testcase input data.
+* Compare the generated output against the supplied target output.
+* View the output using the provided GrADS control files.
+
+Notes
+
+Additional information regarding the dynamic lapse-rate generation
+workflow used for NLDAS-3 forcing production can be found in:
+
+  lis/utils/nldas-3_forcing/dynamic_lapse_rates
+
+The dynamic lapse-rate methodology follows the framework of Rouf et al.
+(2020) with modifications described by Whitney et al. (2025). The
+associated workflow documentation and implementation are maintained in
+the dynamic_lapse_rates directory.
+
+References
+
+Whitney, K. M., Kumar, S. V., Mocko, D., Pflug, J., Bolten, J. D.,
+Maina, F. Z., Wrzesien, M. L., and Hain, C. R., 2025:
+Quantifying the Impacts of Dynamic Lapse Regimes on Snow Simulations.
+Journal of Hydrometeorology, 26(10), 1525–1560.
+https://doi.org/10.1175/JHM-D-25-0021.1
+
+Rouf, T., Mei, Y., Maggioni, V., Houser, P., and Noonan, M., 2020:
+A Physically Based Atmospheric Variables Downscaling Technique.
+Journal of Hydrometeorology, 21(1), 93–108.
+https://doi.org/10.1175/JHM-D-19-0109.1
+
+Maina, F., Kumar, S. V., Hain, C., Mocko, D., Locke, K., Wade, R.,
+Getirana, A., Case, J., Whitney, K. M., Ahmad, S., Lahmers, T.,
+Bolten, J., Pflug, J., Junod, R., Dodson, M., Wrzesien, M., Mishra, V.,
+Nie, W., and Hashemi, M. G. Z.:
+Retrospective and Near–Real-Time Surface Meteorology in the North
+American Land Data Assimilation System Phase 3 (NLDAS-3).
+Journal of Hydrometeorology, in review.

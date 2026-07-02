@@ -16,6 +16,7 @@ module merra2_forcingMod
 ! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
 ! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
 ! 18 Dec 2024: Kristen Whitney, code for using double-sided dynamic lapse rate cutoff
+! 07 Jan 2026: Kristen Whitney, added use of dynamic lapse rate input filename prefix and suffix variables
 !
 ! !DESCRIPTION:
 !  This module contains variables and data structures that are used
@@ -134,6 +135,8 @@ module merra2_forcingMod
      integer, allocatable    :: rseed(:,:)
      integer                 :: usedynlapserate
      character(len=LIS_CONST_PATH_LEN) :: dynlapseratedir
+     character(len=LIS_CONST_PATH_LEN) :: dynlapseratepfx
+     character(len=LIS_CONST_PATH_LEN) :: dynlapseratesfx
      integer                 :: applydynlapseratecutoff
      real                    :: dynlapseratemincutoff
      real                    :: dynlapseratemaxcutoff
@@ -183,9 +186,13 @@ contains
 !  \end{description}
 !EOP
     real :: gridDesci(LIS_rc%nnest,50)
-    integer :: updoy, yr1,mo1,da1,hr1,mn1,ss1
-    real :: upgmt
     integer :: n
+
+    external :: readcrd_merra2
+    external :: bilinear_interp_input
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
+    external :: read_merra2_elev
 
     allocate(merra2_struc(LIS_rc%nnest))
 

@@ -12,11 +12,12 @@
 !
 ! !ROUTINE: read_merra2
 ! \label{read_merra2}
-! 
+!
 ! !REVISION HISTORY:
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
 ! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
 ! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
+! 07 Jan 2026: Kristen Whitney, Update dynamic lapse rate code to accept lapse rate inputs over a smaller domain than the forcings
 !
 ! !INTERFACE:
 subroutine read_merra2(n, order, month, findex,  &
@@ -24,18 +25,18 @@ subroutine read_merra2(n, order, month, findex,  &
      lapseratefname,                             &
      merraforc, ferror)
 ! !USES:
-  use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_coreMod,       only : LIS_rc
   use LIS_logMod
   use LIS_FORC_AttributesMod
   use LIS_metforcingMod, only : LIS_forc
   use merra2_forcingMod, only : merra2_struc
   use LIS_constantsMod, only : LIS_CONST_LAPSE_RATE
-#if (defined USE_NETCDF3 || defined USE_NETCDF4) 
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)          :: n
   integer, intent(in)          :: order
   integer, intent(in)          :: month
@@ -47,12 +48,12 @@ subroutine read_merra2(n, order, month, findex,  &
   character(len=*), intent(in) :: lapseratefname
   real, intent(inout)          :: merraforc(merra2_struc(n)%nvars, 24, &
        LIS_rc%lnc(n)*LIS_rc%lnr(n))
-  integer, intent(out)         :: ferror          
+  integer, intent(out)         :: ferror
 
 !
 ! !DESCRIPTION:
 !  For the given time, reads parameters from
-!  MERRA2 data, transforms into 9 LIS forcing 
+!  MERRA2 data, transforms into 9 LIS forcing
 !  parameters and interpolates to the LIS domain. \newline
 !
 ! merra2 FORCING VARIABLES (unless noted, fields are 1-hr upstream averaged): \newline
@@ -67,10 +68,10 @@ subroutine read_merra2(n, order, month, findex,  &
 !  9. precon  Convective precipitation [$mm/s$] \newline
 ! 10. albedo  Surface albedo (0-1) \newline
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !  \item[order]
-!    flag indicating which data to be read (order=1, read the previous 
+!    flag indicating which data to be read (order=1, read the previous
 !    1 hourly instance, order=2, read the next 1 hourly instance)
 !  \item[n]
 !    index of the nest
@@ -81,8 +82,8 @@ subroutine read_merra2(n, order, month, findex,  &
 !  \item[ferror]
 !    return error code (0 indicates success)
 !  \end{description}
-! 
-!  The routines invoked are: 
+!
+!  The routines invoked are:
 !  \begin{description}
 !  \item[bilinear\_interp](\ref{bilinear_interp}) \newline
 !    spatially interpolate the forcing data using bilinear interpolation
@@ -90,18 +91,16 @@ subroutine read_merra2(n, order, month, findex,  &
 !    spatially interpolate the forcing data using conservative interpolation
 !  \end{description}
 !EOP
-  
+
   integer   :: ftn_slv, ftn_flx, ftn_lfo,ftn_rad
   integer   :: tmpId, qId, uId, vId, psId
-  integer   :: prectotId, precconId, swgdnId, lwgabId, emisId
+  integer   :: prectotId, precconId, swgdnId, lwgabId
   integer   :: precsnoId, hlmlID
   integer   :: swlandId, pardrId, pardfId
   integer   :: nr_index, nc_index
   logical   :: file_exists, file_exists1
-  integer   :: c,r,t,k,iret
   integer   :: mo
   logical   :: read_lnd
-
   real      :: tair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: qair(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: uwind(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
@@ -110,8 +109,6 @@ subroutine read_merra2(n, order, month, findex,  &
   real      :: prectot(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: precsno(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: preccon(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
-  real      :: prectot_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
-  real      :: preccon_flx(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: swgdn(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: lwgab(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: swland(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
@@ -124,22 +121,31 @@ subroutine read_merra2(n, order, month, findex,  &
   integer                           :: lapserateid
   real, allocatable                 :: lapse_rate_in(:,:,:)
 
+  integer :: nc_sub, nr_sub
+  real, allocatable :: lapse_rate_sub(:,:,:)
+  real, allocatable :: lat_sub(:), lon_sub(:)
+  real, allocatable :: lat_full(:), lon_full(:)
+  integer :: i0, j0
+  integer :: latid, lonid
+
+  external :: interp_merra2_var
+  external :: interp_lapserate_merra2
 !_______________________________________________________________________
 
-#if (defined USE_NETCDF3) 
+#if (defined USE_NETCDF3)
   write(LIS_logunit,*) "[ERR] MERRA2 reader requires NetCDF4"
   call LIS_endrun()
 #endif
 
-#if (defined USE_NETCDF4) 
-  ferror = 0 
+#if (defined USE_NETCDF4)
+  ferror = 0
   nr_index = merra2_struc(n)%nrold
   nc_index = merra2_struc(n)%ncold
   mo = LIS_rc%lnc(n)*LIS_rc%lnr(n)
 
 ! Read single layer file (*slv) fields:
-  inquire(file=slvname,exist=file_exists) 
-  if(file_exists) then 
+  inquire(file=slvname,exist=file_exists)
+  if(file_exists) then
      write(LIS_logunit,*)'[INFO] Reading MERRA-2 file (bookend,', order,' ... ',trim(slvname)
      call LIS_verify(nf90_open(path=trim(slvname), mode=NF90_NOWRITE, &
           ncid=ftn_slv), 'nf90_open failed for slvfile in read_merra2')
@@ -147,12 +153,12 @@ subroutine read_merra2(n, order, month, findex,  &
           'nf90_inq_varid failed for ps in read_merra2')
 
      call LIS_verify(nf90_get_var(ftn_slv,psId, ps), &
-          'nf90_get_var failed for ps in read_merra2') 
-     
-   ! If using the MERRA2 lowest model level forcing (*flx): 
-     if(merra2_struc(n)%uselml.eq.1) then 
+          'nf90_get_var failed for ps in read_merra2')
+
+   ! If using the MERRA2 lowest model level forcing (*flx):
+     if(merra2_struc(n)%uselml.eq.1) then
         inquire(file=flxname,exist=file_exists1)
-        if(.not.file_exists1) then 
+        if(.not.file_exists1) then
            write(LIS_logunit,*) '[ERR] ',trim(flxname)//' does not exist'
            call LIS_endrun()
         endif
@@ -204,7 +210,7 @@ subroutine read_merra2(n, order, month, findex,  &
             call LIS_verify(nf90_get_var(ftn_slv,vId, vwind), &
                  'nf90_get_var failed for v2m in read_merra2')
         else
-            call LIS_verify(nf90_inq_varid(ftn_slv,'U10M',uId), & 
+            call LIS_verify(nf90_inq_varid(ftn_slv,'U10M',uId), &
                  'nf90_inq_varid failed for u10m in read_merra2')
             call LIS_verify(nf90_inq_varid(ftn_slv,'V10M',vId), &
                  'nf90_inq_varid failed for v10m in read_merra2')
@@ -213,7 +219,7 @@ subroutine read_merra2(n, order, month, findex,  &
             call LIS_verify(nf90_get_var(ftn_slv,vId, vwind), &
                  'nf90_get_var failed for v10m in read_merra2')
         endif
-           
+
      endif
 
      call LIS_verify(nf90_close(ftn_slv), &
@@ -225,6 +231,7 @@ subroutine read_merra2(n, order, month, findex,  &
      call interp_merra2_var(n,findex,month,vwind, 6, .false., merraforc)
      call interp_merra2_var(n,findex,month,ps,    7, .false., merraforc)
 
+     ! Obtain lapse rates
      if ((merra2_struc(n)%usedynlapserate.eq.1).and.                   &
         ((LIS_rc%met_ecor(findex).eq."lapse-rate").or.                 &
          (LIS_rc%met_ecor(findex).eq."lapse-rate and slope-aspect").or.&
@@ -233,22 +240,74 @@ subroutine read_merra2(n, order, month, findex,  &
         if (file_exists) then
            write(LIS_logunit,*) 'Reading ',trim(lapseratefname)
 
-           allocate(lapse_rate_in(merra2_struc(n)%ncold,merra2_struc(n)%nrold,24))
-
+           ! open file and get ID for lapse rate
            call LIS_verify(nf90_open(path=trim(lapseratefname),        &
-                    mode=NF90_NOWRITE,ncid=ftn_drate),                 &
-                    'nf90_open failed for '//trim(lapseratefname))
-           call LIS_verify(nf90_inq_varid(ftn_drate,                   &
-                    'lapse_rate',lapserateid),                         &
-                    'nf90_inq_varid failed for lapse_rate')
-           call LIS_verify(nf90_get_var(ftn_drate,                     &
-                    lapserateid,lapse_rate_in),                        &
-                    'nf90_get_var failed for lapse_rate')
-           call LIS_verify(nf90_close(ftn_drate),'nf90_close failed')
+              mode=NF90_NOWRITE,ncid=ftn_drate),                 &
+              'nf90_open failed for '//trim(lapseratefname))
+           call LIS_verify(nf90_inq_varid(ftn_drate,'lapse_rate',lapserateid), &
+              'nf90_inq_varid failed for lapse_rate')
 
-           call interp_lapserate_var(n,order,lapse_rate_in)
+           ! Get subdomain dimensions directly from dimids 2=lat, 3=lon
+           call LIS_verify(nf90_inquire_dimension(ftn_drate,2,len=nr_sub), 'inq lat dim failed (sub)')
+           call LIS_verify(nf90_inquire_dimension(ftn_drate,3,len=nc_sub), 'inq lon dim failed (sub)')
+
+           ! allocate full-size lapse rate
+           allocate(lapse_rate_in(merra2_struc(n)%ncold,merra2_struc(n)%nrold,24))
+           lapse_rate_in = 1.e+15
+
+           ! Case 1: full global lapse-rate file
+           if (nc_sub == merra2_struc(n)%ncold .and. nr_sub == merra2_struc(n)%nrold) then
+              call LIS_verify(nf90_get_var(ftn_drate,lapserateid,lapse_rate_in), 'get lapse_rate failed')
+
+           ! Case 2: subdomain lapse-rate file
+           else if (nc_sub <= merra2_struc(n)%ncold .and. nr_sub <= merra2_struc(n)%nrold) then
+              allocate(lapse_rate_sub(nc_sub,nr_sub,24))
+              allocate(lat_sub(nr_sub), lon_sub(nc_sub))
+              allocate(lat_full(merra2_struc(n)%nrold), lon_full(merra2_struc(n)%ncold))
+
+              ! Read subdomain values
+              call LIS_verify(nf90_get_var(ftn_drate,lapserateid,lapse_rate_sub), 'get lapse_rate_sub failed')
+              call LIS_verify(nf90_inq_varid(ftn_drate,'lat',latid),'inq lat varid failed')
+              call LIS_verify(nf90_inq_varid(ftn_drate,'lon',lonid),'inq lon varid failed')
+              call LIS_verify(nf90_get_var(ftn_drate,latid,lat_sub),'get lat_sub failed')
+              call LIS_verify(nf90_get_var(ftn_drate,lonid,lon_sub),'get lon_sub failed')
+
+              ! Read full-domain coordinates from slv file
+              call LIS_verify(nf90_open(path=trim(slvname), mode=NF90_NOWRITE, ncid=ftn_slv), &
+                              'nf90_open failed for slvfile in read_merra2')
+              call LIS_verify(nf90_inq_varid(ftn_slv,'lat',latid),'inq lat varid failed (full)')
+              call LIS_verify(nf90_inq_varid(ftn_slv,'lon',lonid),'inq lon varid failed (full)')
+              call LIS_verify(nf90_get_var(ftn_slv,latid,lat_full),'get lat_full failed')
+              call LIS_verify(nf90_get_var(ftn_slv,lonid,lon_full),'get lon_full failed')
+              call LIS_verify(nf90_close(ftn_slv),'failed to close slvfile in read_merra2')
+
+              ! Find paste offsets
+              call find_index(lon_full, lon_sub(1), i0)
+              call find_index(lat_full, lat_sub(1), j0)
+
+              ! Time consistency check
+              if (size(lapse_rate_sub,3) /= size(lapse_rate_in,3)) then
+                 write(LIS_logunit,*) '[ERR] Time dimension mismatch between sub and full lapse_rate'
+                 call LIS_endrun()
+              end if
+
+              ! Paste subdomain into full-domain buffer
+              lapse_rate_in(i0:i0+nc_sub-1, j0:j0+nr_sub-1, :) = lapse_rate_sub(:,:,:)
+
+              ! Cleanup
+              deallocate(lapse_rate_sub, lat_sub, lon_sub, lat_full, lon_full)
+
+           !  Case 3: unexpected
+           else
+              write(LIS_logunit,*) '[ERR] Unexpected lapse-rate dims: ', nc_sub, ' x ', nr_sub
+              call LIS_endrun()
+           end if
+
+           call LIS_verify(nf90_close(ftn_drate),'close lapse-rate file failed')
+           call interp_lapserate_merra2(n,order,lapse_rate_in)
 
            deallocate(lapse_rate_in)
+
         else
            write(LIS_logunit,*) '[WARN] Could not find ',trim(lapseratefname)
            write(LIS_logunit,*) '[WARN] Using static lapse rate.'
@@ -256,23 +315,23 @@ subroutine read_merra2(n, order, month, findex,  &
            merra2_struc(n)%lapserate2 = LIS_CONST_LAPSE_RATE
         endif
      endif
-     
+
   else
      write(LIS_logunit,*) '[ERR] ',trim(slvname)//' does not exist'
      call LIS_endrun()
   endif
 
 ! Read in the flux file fields (*flx):
-  inquire(file=flxname,exist=file_exists) 
-  if(file_exists) then 
+  inquire(file=flxname,exist=file_exists)
+  if(file_exists) then
 
      write(LIS_logunit,*) '[INFO] Reading MERRA-2 file (bookend,',order,' ... '
      write(LIS_logunit,*) trim(flxname),' (for corrected precipitation fields)'
      call LIS_verify(nf90_open(path=trim(flxname), mode=NF90_NOWRITE, &
           ncid=ftn_flx),'nf90_open failed for flxfile in read_merra2')
-     
+
    ! Read in the *corrected* total precipitation field:
-     if(merra2_struc(n)%usecorr.eq.1) then 
+     if(merra2_struc(n)%usecorr.eq.1) then
         call LIS_verify(nf90_inq_varid(ftn_flx,'PRECTOTCORR',prectotId), &
              'nf90_inq_varid failed for prectotcorr (flx) in read_merra2')
 
@@ -305,7 +364,7 @@ subroutine read_merra2(n, order, month, findex,  &
      if( LIS_FORC_Snowf%selectOpt.eq.1 .and. &
           merra2_struc(n)%usecorr.eq.0 ) then
         call LIS_verify(nf90_inq_varid(ftn_flx,'PRECSNO',precsnoId), &
-             'nf90_inq_varid failed for precsno (flx) in read_merra2')  
+             'nf90_inq_varid failed for precsno (flx) in read_merra2')
 
         call LIS_verify(nf90_get_var(ftn_flx,precsnoId, precsno), &
             'nf90_get_var failed for precsno (flx) in read_merra2')
@@ -326,15 +385,15 @@ subroutine read_merra2(n, order, month, findex,  &
 
      call LIS_verify(nf90_close(ftn_flx), &
           'failed to close flxfile in read_merra2')
-     
+
   else
      write(LIS_logunit,*) '[ERR] ',trim(flxname)//' does not exist'
      call LIS_endrun()
   endif
-  
+
 ! Read in the radiation file fields (*rad):
-  inquire(file=radname,exist=file_exists) 
-  if(file_exists) then 
+  inquire(file=radname,exist=file_exists)
+  if(file_exists) then
      write(LIS_logunit,*) '[INFO] Reading MERRA-2 file (bookend,',order,' ... ',trim(radname)
      call LIS_verify(nf90_open(path=trim(radname), mode=NF90_NOWRITE, &
           ncid=ftn_rad), 'nf90_open failed in read_merra2')
@@ -344,7 +403,7 @@ subroutine read_merra2(n, order, month, findex,  &
           'nf90_inq_varid failed for lwgab in read_merra2')
 !     call LIS_verify(nf90_inq_varid(ftn_rad,'emis',emisId), &
 !          'nf90_inq_varid failed for emis in read_merra2')
-    
+
      call LIS_verify(nf90_get_var(ftn_rad,swgdnId,swgdn), &
           'nf90_get_var failed for swgdn in read_merra2')
      call LIS_verify(nf90_get_var(ftn_rad,lwgabId,lwgab), &
@@ -363,7 +422,7 @@ subroutine read_merra2(n, order, month, findex,  &
   endif
 
 ! Checks: For reading in the surface layer file fields (*lfo):
-  read_lnd = .false. 
+  read_lnd = .false.
   if ( LIS_FORC_Pardr%selectOpt.eq.1.or.&
        LIS_FORC_Pardf%selectOpt.eq.1.or.&
        LIS_FORC_SWnet%selectOpt.eq.1 ) then
@@ -377,15 +436,15 @@ subroutine read_merra2(n, order, month, findex,  &
   endif
 
 ! Read in the surface layer fields (*lfo):
-  if(read_lnd) then 
-     inquire(file=lfoname,exist=file_exists) 
-     if(file_exists) then 
+  if(read_lnd) then
+     inquire(file=lfoname,exist=file_exists)
+     if(file_exists) then
        write(LIS_logunit,*) '[INFO] Reading MERRA-2 file (bookend,',order,&
              ' ... ',trim(lfoname)
        call LIS_verify(nf90_open(path=trim(lfoname), mode=NF90_NOWRITE, &
             ncid=ftn_lfo), 'nf90_open failed in read_merra2')
 
-       ! Read *corrected* convective precipitation, if selected: 
+       ! Read *corrected* convective precipitation, if selected:
        if( LIS_FORC_CRainf%selectOpt.eq.1 .and. &
           merra2_struc(n)%usecorr.eq.1 ) then
          call LIS_verify(nf90_inq_varid(ftn_lfo,'PRECCUCORR',precconId), &
@@ -397,7 +456,7 @@ subroutine read_merra2(n, order, month, findex,  &
          call interp_merra2_var(n,findex,month,preccon, 9,.true.,merraforc)
        endif
 
-       ! Read *corrected* snowfall field, if selected: 
+       ! Read *corrected* snowfall field, if selected:
        if( LIS_FORC_Snowf%selectOpt.eq.1 .and. &
           merra2_struc(n)%usecorr.eq.1 ) then
          call LIS_verify(nf90_inq_varid(ftn_flx,'PRECSNOCORR',precsnoId), &
@@ -409,34 +468,34 @@ subroutine read_merra2(n, order, month, findex,  &
          call interp_merra2_var(n,findex,month,precsno, 10,.true.,merraforc)
        endif
 
-       if(LIS_FORC_SWnet%selectOpt.eq.1) then 
+       if(LIS_FORC_SWnet%selectOpt.eq.1) then
           call LIS_verify(nf90_inq_varid(ftn_lfo,'SWLAND',swlandId), &
                'nf90_inq_varid failed for swland in read_merra2')
 
           call LIS_verify(nf90_get_var(ftn_lfo,swlandId,swland), &
                'nf90_get_var failed for swland in read_merra2')
-          
+
           call interp_merra2_var(n,findex,month,swland,11,.false.,merraforc)
        endif
-        
-        if(LIS_FORC_Pardr%selectOpt.eq.1) then 
+
+        if(LIS_FORC_Pardr%selectOpt.eq.1) then
            call LIS_verify(nf90_inq_varid(ftn_lfo,'PARDR',pardrId), &
                 'nf90_inq_varid failed for pardr in read_merra2')
 
            call LIS_verify(nf90_get_var(ftn_lfo,pardrId,pardr), &
                 'nf90_get_var failed for pardr in read_merra2')
-           
+
            call interp_merra2_var(n,findex,month,pardr,12,.false.,merraforc)
         endif
 
-        if(LIS_FORC_Pardf%selectOpt.eq.1) then 
+        if(LIS_FORC_Pardf%selectOpt.eq.1) then
            call LIS_verify(nf90_inq_varid(ftn_lfo,'PARDF',pardfId), &
                 'nf90_inq_varid failed for pardf in read_merra2')
 
            call LIS_verify(nf90_get_var(ftn_lfo,pardfId,pardf), &
                 'nf90_get_var failed for pardf in read_merra2')
            call interp_merra2_var(n,findex,month,pardf,13,.false.,merraforc)
-           
+
         endif
 
         call LIS_verify(nf90_close(ftn_lfo),&
@@ -447,25 +506,39 @@ subroutine read_merra2(n, order, month, findex,  &
      endif
 
   endif
-  
+
 #endif
+contains
+subroutine find_index(x,val,idx)
+  real, intent(in) :: x(:), val
+  integer, intent(out) :: idx
+  real :: dmin
+  integer :: k
+  dmin = huge(1.0); idx = -1
+  do k=1,size(x)
+     if (abs(x(k)-val) < dmin) then
+        dmin = abs(x(k)-val)
+        idx = k
+     end if
+  enddo
+end subroutine find_index
 end subroutine read_merra2
 
 !BOP
-! 
+!
 ! !ROUTINE: interp_merra2_var
 ! \label{interp_merra2_var}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
 subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
      pcp_flag, merraforc)
 
-! !USES: 
+! !USES:
   use LIS_coreMod
   use LIS_logMod
   use LIS_spatialDownscalingMod
   use merra2_forcingMod, only : merra2_struc
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)      
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
   implicit none
@@ -481,14 +554,13 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
   real,    intent(inout) :: merraforc(merra2_struc(n)%nvars, &
        24, LIS_rc%lnc(n)*LIS_rc%lnr(n))
   !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This subroutine spatially interpolates a MERRA2 field
 !  to the LIS running domain
-! 
+!
 !EOP
 
   integer   :: t,c,r,k,iret
-  integer   :: doy
   integer   :: ftn
   integer   :: pcp1Id, pcp2Id, pcp3Id, pcp4Id,pcp5Id, pcp6Id
   real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
@@ -496,30 +568,36 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   logical   :: scal_read_flag
+
+  external :: rescaleWithCDFmatching
+  external :: conserv_interp
+  external :: bilinear_interp
+  external :: neighbor_interp
+
 ! _____________________________________________________________
 
   input_size = merra2_struc(n)%ncold*merra2_struc(n)%nrold
 
-!-----------------------------------------------------------------------    
+!-----------------------------------------------------------------------
 ! Apply corrections
-!-----------------------------------------------------------------------  
-  
-  scal_read_flag = .false. 
+!-----------------------------------------------------------------------
 
-  if(merra2_struc(n)%pcpscal_cmo.ne.LIS_rc%mo) then 
-     scal_read_flag = .true. 
+  scal_read_flag = .false.
+
+  if(merra2_struc(n)%pcpscal_cmo.ne.LIS_rc%mo) then
+     scal_read_flag = .true.
   endif
-     
+
   if ( pcp_flag .and. merra2_struc(n)%usescalef==1.and.&
-       scal_read_flag ) then 
-     
+       scal_read_flag ) then
+
 !     call finddoy(doy, LIS_rc%yr, LIS_rc%mo, LIS_rc%da)
-     
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)      
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
      call LIS_verify(nf90_open(path=merra2_struc(n)%scaleffile,&
           mode=nf90_nowrite,ncid=ftn),&
           'failed to open MERRA2 precip scaling factor input file')
-     
+
      call LIS_verify(nf90_inq_varid(ftn,"REF_XRANGE",pcp1id),&
           'nf90_inq_varid failed for REF_XRANGE')
      call LIS_verify(nf90_get_var(ftn,pcp1id,merra2_struc(n)%refxrange,&
@@ -527,7 +605,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
           count=(/merra2_struc(n)%ncold,merra2_struc(n)%nrold,1,&
           merra2_struc(n)%nbins/)),&
           'nf90_get_var failed for REF_XRANGE')
-     
+
      call LIS_verify(nf90_inq_varid(ftn,"REF_CDF",pcp2id),&
           'nf90_inq_varid failed for REF_CDF')
      call LIS_verify(nf90_get_var(ftn,pcp2id,merra2_struc(n)%refcdf,&
@@ -535,7 +613,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
           count=(/merra2_struc(n)%ncold,merra2_struc(n)%nrold,1,&
           merra2_struc(n)%nbins/)),&
           'nf90_get_var failed for REF_CDF')
-     
+
      call LIS_verify(nf90_inq_varid(ftn,"MERRA2_XRANGE",pcp3id),&
           'nf90_inq_varid failed for MERRA2_XRANGE')
      call LIS_verify(nf90_get_var(ftn,pcp3id,merra2_struc(n)%merraxrange,&
@@ -543,7 +621,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
           count=(/merra2_struc(n)%ncold,merra2_struc(n)%nrold,1,&
           merra2_struc(n)%nbins/)),&
           'nf90_get_var failed for MERRA2_XRANGE')
-     
+
      call LIS_verify(nf90_inq_varid(ftn,"MERRA2_CDF",pcp4id),&
           'nf90_inq_varid failed for MERRA2_CDF')
      call LIS_verify(nf90_get_var(ftn,pcp4id,merra2_struc(n)%merracdf,&
@@ -552,7 +630,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
           merra2_struc(n)%nbins/)),&
           'nf90_get_var failed for MERRA2_CDF')
 
-     if(merra2_struc(n)%usepcpsampling.gt.0) then 
+     if(merra2_struc(n)%usepcpsampling.gt.0) then
         !REF MEAN, STDEV
         call LIS_verify(nf90_inq_varid(ftn,"REF_MEAN",pcp5id),&
              'nf90_inq_varid failed for REF_MEAN')
@@ -577,13 +655,13 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
         do c=1,merra2_struc(n)%ncold
            k= c+(r-1)*merra2_struc(n)%ncold
            f(k) = input_var(c,r,t)
-           if ( f(k) == 1.e+15 ) then 
+           if ( f(k) == 1.e+15 ) then
               f(k)  = LIS_rc%udef
-              lb(k) = .false. 
+              lb(k) = .false.
            endif
         enddo
      enddo
-     if ( pcp_flag .and. merra2_struc(n)%usescalef==1 ) then 
+     if ( pcp_flag .and. merra2_struc(n)%usescalef==1 ) then
 
         call rescaleWithCDFmatching(&
              merra2_struc(n)%ncold,&
@@ -596,25 +674,25 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
              f)
 
      endif
-!-----------------------------------------------------------------------    
+!-----------------------------------------------------------------------
 ! Apply downscaling
-!-----------------------------------------------------------------------    
-     
-     if(pcp_flag.and.LIS_rc%pcp_downscale(findex).ne.0) then 
-        !input_data becomes the ratio field. 
+!-----------------------------------------------------------------------
+
+     if(pcp_flag.and.LIS_rc%pcp_downscale(findex).ne.0) then
+        !input_data becomes the ratio field.
         call LIS_generatePcpClimoRatioField(n,findex,"MERRA2",&
-             month, & 
+             month, &
              input_size, &
              f, &
-             lb)     
+             lb)
      endif
-          
+
      if(pcp_flag.and.&
-         trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then 
+         trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
 
         call conserv_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
              merraforc(var_index,t,:), &
-             merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),& 
+             merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),&
              LIS_domain(n)%lat, LIS_domain(n)%lon,&
              merra2_struc(n)%w112,merra2_struc(n)%w122,&
              merra2_struc(n)%w212,merra2_struc(n)%w222,&
@@ -623,10 +701,10 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
              LIS_rc%udef, iret)
 
      elseif(trim(LIS_rc%met_interp(findex)).eq."bilinear".or.&
-             trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then 
+             trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
         call bilinear_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
              merraforc(var_index,t,:), &
-             merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), & 
+             merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), &
              LIS_domain(n)%lat, LIS_domain(n)%lon,&
              merra2_struc(n)%w111,merra2_struc(n)%w121,&
              merra2_struc(n)%w211,merra2_struc(n)%w221,&
@@ -634,7 +712,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
              merra2_struc(n)%n211,merra2_struc(n)%n221,&
              LIS_rc%udef, iret)
 
-     elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then 
+     elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then
         call neighbor_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
              merraforc(var_index,t,:),merra2_struc(n)%mi,&
              LIS_rc%lnc(n)*LIS_rc%lnr(n),&
@@ -647,41 +725,41 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
         call LIS_endrun()
      endif
 
-!Interpolate the refmean fields
+     !Interpolate the refmean fields
      if( pcp_flag .and. scal_read_flag.and. &
           merra2_struc(n)%usescalef==1.and. &
-          merra2_struc(n)%usepcpsampling.eq.1) then 
+          merra2_struc(n)%usepcpsampling.eq.1) then
 
-        lb = .false. 
+        lb = .false.
         f = -9999.0
         do r=1,merra2_struc(n)%nrold
            do c=1,merra2_struc(n)%ncold
               k= c+(r-1)*merra2_struc(n)%ncold
               f(k) = merra2_struc(n)%refmean(c,r,1)
-              if(f(k).ne.-9999.0) then 
+              if(f(k).ne.-9999.0) then
                  lb(k) = .true.
               endif
            enddo
         enddo
-        
-        if(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then 
+
+        if(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
 
            call conserv_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
                 merra2_struc(n)%refmean_ip, &
-                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),& 
+                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),&
                 LIS_domain(n)%lat, LIS_domain(n)%lon,&
                 merra2_struc(n)%w112,merra2_struc(n)%w122,&
                 merra2_struc(n)%w212,merra2_struc(n)%w222,&
                 merra2_struc(n)%n112,merra2_struc(n)%n122,&
                 merra2_struc(n)%n212,merra2_struc(n)%n222,&
                 LIS_rc%udef, iret)
-           
+
         elseif(trim(LIS_rc%met_interp(findex)).eq."bilinear".or.&
              trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
 
            call bilinear_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
                 merra2_struc(n)%refmean_ip, &
-                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), & 
+                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), &
                 LIS_domain(n)%lat, LIS_domain(n)%lon,&
                 merra2_struc(n)%w111,merra2_struc(n)%w121,&
                 merra2_struc(n)%w211,merra2_struc(n)%w221,&
@@ -689,7 +767,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
                 merra2_struc(n)%n211,merra2_struc(n)%n221,&
                 LIS_rc%udef, iret)
 
-        elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then 
+        elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then
            call neighbor_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
                 merra2_struc(n)%refmean_ip,merra2_struc(n)%mi,&
                 LIS_rc%lnc(n)*LIS_rc%lnr(n),&
@@ -698,41 +776,41 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
         endif
      endif
 
-!Interpolate the refstdev fields
+     !Interpolate the refstdev fields
      if( pcp_flag .and. scal_read_flag.and. &
           merra2_struc(n)%usescalef==1.and. &
-          merra2_struc(n)%usepcpsampling.eq.1) then 
+          merra2_struc(n)%usepcpsampling.eq.1) then
 
-        lb = .false. 
+        lb = .false.
         f = -9999.0
         do r=1,merra2_struc(n)%nrold
            do c=1,merra2_struc(n)%ncold
               k= c+(r-1)*merra2_struc(n)%ncold
               f(k) = merra2_struc(n)%refstdev(c,r,1)
-              if(f(k).ne.-9999.0) then 
+              if(f(k).ne.-9999.0) then
                  lb(k) = .true.
               endif
            enddo
         enddo
-        
-        if(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then 
+
+        if(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
 
            call conserv_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
                 merra2_struc(n)%refstdev_ip, &
-                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),& 
+                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n),&
                 LIS_domain(n)%lat, LIS_domain(n)%lon,&
                 merra2_struc(n)%w112,merra2_struc(n)%w122,&
                 merra2_struc(n)%w212,merra2_struc(n)%w222,&
                 merra2_struc(n)%n112,merra2_struc(n)%n122,&
                 merra2_struc(n)%n212,merra2_struc(n)%n222,&
                 LIS_rc%udef, iret)
-           
+
         elseif(trim(LIS_rc%met_interp(findex)).eq."bilinear".or.&
              trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
 
            call bilinear_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
                 merra2_struc(n)%refstdev_ip, &
-                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), & 
+                merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), &
                 LIS_domain(n)%lat, LIS_domain(n)%lon,&
                 merra2_struc(n)%w111,merra2_struc(n)%w121,&
                 merra2_struc(n)%w211,merra2_struc(n)%w221,&
@@ -740,7 +818,7 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
                 merra2_struc(n)%n211,merra2_struc(n)%n221,&
                 LIS_rc%udef, iret)
 
-        elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then 
+        elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then
            call neighbor_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
                 merra2_struc(n)%refstdev_ip,merra2_struc(n)%mi,&
                 LIS_rc%lnc(n)*LIS_rc%lnr(n),&
@@ -749,32 +827,32 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
         endif
      endif
 
-     if( pcp_flag.and.LIS_rc%pcp_downscale(findex).ne.0 ) then 
+     if( pcp_flag.and.LIS_rc%pcp_downscale(findex).ne.0 ) then
 
         call LIS_pcpClimoDownscaling(n, findex, month,&
              LIS_rc%lnc(n)*LIS_rc%lnr(n), merraforc(var_index,t,:), lo)
-        
+
      endif
-     
+
   enddo
-  
+
 end subroutine interp_merra2_var
 
 !BOP
-! 
-! !ROUTINE: interp_lapserate_var
-! \label{interp_lapserate_var}
-! 
-! !INTERFACE: 
-subroutine interp_lapserate_var(n,order,input_var)
+!
+! !ROUTINE: interp_lapserate_merra2
+! \label{interp_lapserate_merra2}
+!
+! !INTERFACE:
+subroutine interp_lapserate_merra2(n,order,input_var)
 
-! !USES: 
+! !USES:
   use LIS_coreMod
   use LIS_logMod
   use LIS_spatialDownscalingMod
   use merra2_forcingMod, only : merra2_struc
   use LIS_constantsMod, only : LIS_CONST_LAPSE_RATE
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)      
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
   implicit none
@@ -785,20 +863,21 @@ subroutine interp_lapserate_var(n,order,input_var)
        merra2_struc(n)%nrold,24)
 
   !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This subroutine spatially interpolates a MERRA2 field
 !  to the LIS running domain
-! 
+!
 !EOP
 
   integer   :: t,c,r,k,iret
-  integer   :: doy
-  integer   :: ftn,gid
+  integer   :: gid
   real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
   logical*1 :: lb(merra2_struc(n)%ncold*merra2_struc(n)%nrold)
   logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer   :: input_size
   real      :: output_var(LIS_rc%lnc(n)*LIS_rc%lnr(n),24)
+
+  external :: bilinear_interp
 
 ! _____________________________________________________________
 
@@ -859,14 +938,14 @@ subroutine interp_lapserate_var(n,order,input_var)
      endif
   enddo
 
-end subroutine interp_lapserate_var
+end subroutine interp_lapserate_merra2
 
-#if 0 
+#if 0
 !BOP
 !
 ! !ROUTINE: finddoy
-! \label{finddoy} 
-! 
+! \label{finddoy}
+!
 ! !INTERFACE:
   subroutine finddoy(doy,yr,mo,da)
 
@@ -876,17 +955,17 @@ end subroutine interp_lapserate_var
     integer,intent(out)  :: doy
 !
 ! !DESCRIPTION:
-! 
+!
 !  Determines the time, time in GMT, and the day of the year
-!  based on the value of year, month, day of month, hour of 
-!  the day, minute and second. This method is the inverse of 
+!  based on the value of year, month, day of month, hour of
+!  the day, minute and second. This method is the inverse of
 !  time2date.
 !
 !   NOTE: This routine has been known to give round off error
 !   problems when attempting to retrieving minutes and seconds
 !   from the given number. Use at your own risk!
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[yr]
 !    year
@@ -914,44 +993,44 @@ end subroutine interp_lapserate_var
 
     if((mod(yr,4).eq.0.and.mod(yr,100).ne.0) &     !correct for leap year
          .or.(mod(yr,400).eq.0))then             !correct for y2k
-       yrdays=366                  
+       yrdays=366
     else
        yrdays=365
     endif
-    
+
     doy=0
     do k=1,(mo-1)
        doy=doy+days(k)
     enddo
     doy=doy+da
-    
+
 !    if(yrdays.eq.366.and.mo.gt.2)doy=doy+1
-    
+
     return
   end subroutine finddoy
 #endif
 
 !BOP
-! 
+!
 ! !ROUTINE: rescaleWithCDFmatching
 ! \label{rescaleWithCDFmatching}
 !
 ! !INTERFACE:
   subroutine rescaleWithCDFmatching(&
-       nc,            & 
-       nr,            & 
-       nbins,         & 
-       ref_xrange,    & 
-       merra_xrange,  &       
+       nc,            &
+       nr,            &
+       nbins,         &
+       ref_xrange,    &
+       merra_xrange,  &
        ref_cdf,       &
        merra_cdf,     &
        out_value)
 
     use LIS_logMod
-       
+
     implicit none
-! 
-! !ARGUMENTS: 
+!
+! !ARGUMENTS:
     integer             :: nc
     integer             :: nr
     integer             :: nbins
@@ -961,17 +1040,17 @@ end subroutine interp_lapserate_var
     real                :: merra_cdf(nc,nr,1,nbins)
     real                :: out_value(nc*nr)
 !
-! !DESCRIPTION: 
-! 
+! !DESCRIPTION:
+!
 !   This routine rescales the input merraervation data to the ref's
 !   climatology so that the cumulative distribution functions (CDFs)
-!   of the merraervations and the ref match (for each grid point). 
-! 
-!   Ref: Reichle and Koster, 2004, Bias reduction in short records of 
-!   satellite soil moisture, Geophys. Res. Lett. 31, L19501, 
-!   doi:10.1029/2004GL020938. 
-! 
-!  The arguments are: 
+!   of the merraervations and the ref match (for each grid point).
+!
+!   Ref: Reichle and Koster, 2004, Bias reduction in short records of
+!   satellite soil moisture, Geophys. Res. Lett. 31, L19501,
+!   doi:10.1029/2004GL020938.
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n]               index of the nest
 !  \item[nbins]           number of bins used to compute the ref and merra CDFs
@@ -981,7 +1060,7 @@ end subroutine interp_lapserate_var
 !  \item[merra\_xrange]     x-axis values corresponding to the merra CDF
 !  \item[ref\_cdf]      y-axis (CDF) values corresponding to the ref CDF
 !  \item[merra\_cdf]        y-axis (CDF) values corresponding to the merra CDF
-!  \item[merra\_value]      merraervation value to be rescaled. 
+!  \item[merra\_value]      merraervation value to be rescaled.
 ! \end{description}
 !EOP
 
@@ -993,21 +1072,20 @@ end subroutine interp_lapserate_var
 
     integer              :: c,r,i
     integer              :: binval
-    integer              :: col,row
     real                 :: cdf_merraval
     real                 :: merra_tmp, merra_in
     integer,dimension(1) :: index_25 , index_75
     real                 :: Lb_xrange, Ub_xrange, iqr_merra, iqr_ref
 
-    ref_delta   = 0 
+    ref_delta   = 0
     merra_delta = 0
-   
+
     do r=1,nr
        do c=1,nc
           if(ref_xrange(c,r,1,2).ne.-9999.0.and.&
                ref_xrange(c,r,1,1).ne.-9999.0.and.&
                merra_xrange(c,r,1,2).ne.-9999.0.and.&
-               merra_xrange(c,r,1,1).ne.-9999.0) then 
+               merra_xrange(c,r,1,1).ne.-9999.0) then
              ref_delta(c,r) = ref_xrange(c,r,1,2)-ref_xrange(c,r,1,1)
              merra_delta(c,r)   = merra_xrange(c,r,1,2)-merra_xrange(c,r,1,1)
           endif
@@ -1015,7 +1093,7 @@ end subroutine interp_lapserate_var
     enddo
     do r=1,nr
        do c=1,nc
-          if(ref_delta(c,r).gt.1E-14.and.merra_delta(c,r).gt.1E-14) then 
+          if(ref_delta(c,r).gt.1E-14.and.merra_delta(c,r).gt.1E-14) then
              min_merra_value = ref_xrange(c,r,1,1)
              max_merra_value = ref_xrange(c,r,1,nbins)
              index_25 = minloc(abs(merra_cdf(c,r,1,:) - 0.25))
@@ -1023,37 +1101,37 @@ end subroutine interp_lapserate_var
              Lb_xrange = merra_xrange(c,r,1,index_25(1))
              Ub_xrange = merra_xrange(c,r,1,index_75(1))
              iqr_merra = Ub_xrange - Lb_xrange
-             
+
              index_25 = minloc(abs(ref_cdf(c,r,1,:) - 0.25))
              index_75 = minloc(abs(ref_cdf(c,r,1,:) - 0.75))
              Lb_xrange = ref_xrange(c,r,1,index_25(1))
              Ub_xrange = ref_xrange(c,r,1,index_75(1))
              iqr_ref = Ub_xrange - Lb_xrange
-             
+
 ! In a normal distribution 50% of data will fall between +/- 0.67448 sigma (1.134896 sigma)
 ! and 99.7% of data are between the +/-3 sigma (6 sigma) By dividing these two values we
-! get 1.134896 / 6 = 0.189. That means IQR is about the 0.19 of the 
+! get 1.134896 / 6 = 0.189. That means IQR is about the 0.19 of the
 ! x-range (~ dynamic range of the variable).
-! We can say if IQR is less than 0.05 of the x-range then CDF is too 
-! steep and it is better to ignore that for CDF matching.  
+! We can say if IQR is less than 0.05 of the x-range then CDF is too
+! steep and it is better to ignore that for CDF matching.
 ! NOTE: more tests are needed to determine the best threshold
 
 !             if( iqr_merra .lt. 0.05 * (merra_xrange(c,r,1,nbins)-merra_xrange(c,r,1,1)) .or. &
-!                  iqr_ref .lt. 0.05 * (ref_xrange(c,r,1,nbins)-ref_xrange(c,r,1,1)) ) then 
+!                  iqr_ref .lt. 0.05 * (ref_xrange(c,r,1,nbins)-ref_xrange(c,r,1,1)) ) then
 !                merra_delta(c,r) = 0
 !             endif
-             if(out_value(c+(r-1)*nc).lt.merra_xrange(c,r,1,nbins)) then 
-             
-                if(out_value(c+(r-1)*nc).ne.-9999.0) then 
+             if(out_value(c+(r-1)*nc).lt.merra_xrange(c,r,1,nbins)) then
+
+                if(out_value(c+(r-1)*nc).ne.-9999.0) then
                    merra_in = out_value(c+(r-1)*nc)
 !                print*,c,r,merra_in,merra_delta(c,r)
-                   if(merra_in.gt.1E-14) then 
+                   if(merra_in.gt.1E-14) then
 !                      print*, c,r,out_value(c+(r-1)*nc),merra_xrange(c,r,1,1),&
 !                           merra_xrange(c,r,1,nbins),&
-!                           merra_delta(c,r)                   
+!                           merra_delta(c,r)
                       binval = nint((out_value(c+(r-1)*nc)-merra_xrange(c,r,1,1))/&
                            merra_delta(c,r))+1
-                      
+
                       if(binval.gt.nbins) binval = nbins
                       if(binval.le.0) binval = 1
                       cdf_merraval = merra_cdf(c,r,1,binval)
@@ -1066,26 +1144,26 @@ end subroutine interp_lapserate_var
                       enddo
                       if(i.gt.nbins) i = i-1
                       merra_tmp = ref_xrange(c,r,1,i)
-                      
-                      if(merra_tmp.gt.max_merra_value) then 
+
+                      if(merra_tmp.gt.max_merra_value) then
                          !                      print*, 'max const',merra_tmp
                          merra_tmp = -9999.0
                       endif
-                      
-                      if(merra_tmp.lt.min_merra_value) then 
+
+                      if(merra_tmp.lt.min_merra_value) then
                          merra_tmp = -9999.0
                       endif
                       out_value(c+(r-1)*nc) = merra_tmp
                    endif
                    if(out_value(c+(r-1)*nc).lt.min_merra_value.and.&
-                        out_value(c+(r-1)*nc).ne.-9999.0) then 
+                        out_value(c+(r-1)*nc).ne.-9999.0) then
                       write(LIS_logunit,*) '[ERR] Problem in CDF scaling '
                       call LIS_endrun()
                    endif
                 else
                    out_value(c+(r-1)*nc) = -9999.0
                 endif
-                if(merra_in.ne.-9999.0.and.out_value(c+(r-1)*nc).eq.-9999.0) then 
+                if(merra_in.ne.-9999.0.and.out_value(c+(r-1)*nc).eq.-9999.0) then
                    print*,'mismatch', c,r,merra_in, out_value(c+(r-1)*nc)
                    stop
                 endif
