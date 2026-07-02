@@ -57,7 +57,7 @@ subroutine read_geositbias(n,order,month,findex,                     &
 !  1. tair    Temperature of air at 2-m, 10-m, or LML [$K$] \newline
 !  2. qair    Specific humidity of air at 2-m, 10-m, or LML [$kg/kg$] \newline
 !  3. ps      Instantaneous Surface Pressure [$Pa$] \newline
-!  4. lwgab   Downward longwave radiation at the ground [$W/m^2$] \newline 
+!  4. lwgab   Downward longwave radiation at the ground [$W/m^2$] \newline
 !
 !  The arguments are:
 !  \begin{description}

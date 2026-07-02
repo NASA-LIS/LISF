@@ -192,7 +192,7 @@ subroutine get_geositbias(n,findex)
              yr1,mo1,da1,hr1
         lapseratefname = trim(geositbias_struc(n)%dynlapseratedir)// &
              trim(geositbias_struc(n)%dynlapseratepfx)// &
-             fdate//trim(geositbias_struc(n)%dynlapseratesfx) 
+             fdate//trim(geositbias_struc(n)%dynlapseratesfx)
         call read_geositbias(n,order,mo1,findex,                       &
              geosname, lapseratefname,                                 &
              geositbias_struc(n)%geositbiasforc1(kk,:,:),ferror)
