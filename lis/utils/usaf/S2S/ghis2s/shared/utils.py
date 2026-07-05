@@ -116,6 +116,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
                 _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
                 if 'mil' in cfg['SETUP']['CONSTRAINT']:
                     _f.write('#SBATCH --partition=packable'  + '\n')
+            _f.write('#SBATCH --no-requeue'  + '\n')
 
         else:
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
@@ -379,7 +380,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
         elif os.path.isfile(lisf + '/env/hpc11/' + lisf_module):
             _f.write('module use -a ' + lisf + 'env/hpc11/' + '\n')
-            _f.write('module load ' + lisf_module + '\n')            
+            _f.write('module load ' + lisf_module + '\n')
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
             _f.write('module load ' + lisf_module + '\n')
@@ -448,10 +449,12 @@ def tiff_to_da(file):
     y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
 
     # Create an xarray DataArray
-    tiff2da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
+    tiff2da = xr.DataArray(data, dims=('y', 'x'),
+                           coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
     return tiff2da
 
-def load_ncdata(infile, logger, var_name=None, dask_lazy=True, max_retries=5, retry_delay=10, **kwargs):
+def load_ncdata(infile, logger, var_name=None, dask_lazy=True, max_retries=5,
+                retry_delay=10, **kwargs):
     ''' Generic function to load netcdf file[s] as an xarray dataset/dataarray logic '''
     kwargs.setdefault('decode_cf', False)
     kwargs.setdefault('decode_timedelta', False)
@@ -465,7 +468,8 @@ def load_ncdata(infile, logger, var_name=None, dask_lazy=True, max_retries=5, re
         elif len(matching_files) == 1:
             infile = matching_files[0]
             # Strip out mfdataset specific kwargs if only one file is found
-            multi_file_kwargs = ['combine', 'concat_dim', 'data_vars', 'coords', 'compat', 'join', 'parallel']
+            multi_file_kwargs = ['combine', 'concat_dim', 'data_vars', 'coords', 'compat',
+                                 'join', 'parallel']
             kwargs = {k: v for k, v in kwargs.items() if k not in multi_file_kwargs}
         else:
             infile = matching_files
@@ -473,7 +477,7 @@ def load_ncdata(infile, logger, var_name=None, dask_lazy=True, max_retries=5, re
     # 2. Retry Loop
     for attempt in range(max_retries):
         try:
-            dataset = None 
+            dataset = None
             if isinstance(infile, str):
                 dataset = xr.open_dataset(infile, **kwargs)
             else:
@@ -497,10 +501,12 @@ def load_ncdata(infile, logger, var_name=None, dask_lazy=True, max_retries=5, re
                 try:
                     dataset.close()
                 except Exception as close_error:
-                    logger[0].warning(f"Error closing dataset during cleanup: {close_error}", subtask=logger[1])
+                    logger[0].warning(
+                        f"Error closing dataset during cleanup: {close_error}",
+                        subtask=logger[1])
                 finally:
                     del dataset
-            # Purge xarray's hidden global file cache 
+            # Purge xarray's hidden global file cache
             try:
                 xr.backends.file_manager.FILE_CACHE.clear()
             except AttributeError:
@@ -508,11 +514,14 @@ def load_ncdata(infile, logger, var_name=None, dask_lazy=True, max_retries=5, re
             gc.collect()
 
             if attempt < max_retries - 1:
-                logger[0].warning(f"Attempt {attempt + 1}/{max_retries} failed opening files. Retrying in {retry_delay}s... Error: {e}", subtask=logger[1])
+                logger[0].warning(
+                    f"Attempt {attempt + 1}/{max_retries} failed opening files. Error: {e}",
+                    subtask=logger[1])
                 time.sleep(retry_delay)
             else:
                 # Out of retries, log the error and fail
-                logger[0].error(f"Couldn't open files after {max_retries} attempts: {infile}", subtask=logger[1])
+                logger[0].error(f"Couldn't open files after {max_retries} attempts: {infile}",
+                                subtask=logger[1])
                 logger[0].error(f"xarray error {e}", subtask=logger[1])
                 sys.exit(1)
 
@@ -570,7 +579,8 @@ def write_ncfile(out_xr, outfile, encoding, logger):
         is_lazy = hasattr(out_xr[main_var].data, 'chunks')
 
         if is_lazy:
-            logger[0].info(f"Rechunking lazy data for optimal writing: {outfile}", subtask=logger[1])
+            logger[0].info(f"Rechunking lazy data for optimal writing: {outfile}",
+                           subtask=logger[1])
             lat_dim, lon_dim = detect_spatial_dimensions(out_xr)
 
             if lat_dim and lon_dim:
@@ -610,17 +620,22 @@ def write_ncfile(out_xr, outfile, encoding, logger):
 
                     updated_encoding[var_name]['chunksizes'] = tuple(chunk_tuple)
 
-                logger[0].info(f"Updated encoding for variables: {list(updated_encoding.keys())}", subtask=logger[1])
+                logger[0].info(f"Updated encoding for variables: {list(updated_encoding.keys())}",
+                               subtask=logger[1])
 
                 with da.config.set({'array.chunk-size': '2GB', 'optimization.fuse': {}}):
                     out_xr_rechunked = out_xr.chunk(rechunk_dict)
-                out_xr_rechunked.to_netcdf(outfile, format='NETCDF4', encoding=updated_encoding, engine='netcdf4')
+                out_xr_rechunked.to_netcdf(outfile, format='NETCDF4', encoding=updated_encoding,
+                                           engine='netcdf4')
             else:
-                logger[0].info("Could not detect spatial dimensions, using standard write to NetCDF file", subtask=logger[1])
+                logger[0].info(
+                    "Could not detect spatial dimensions, using standard write to NetCDF file",
+                    subtask=logger[1])
                 out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding, engine='netcdf4')
 
         else:
-            logger[0].info("Pre-computed xarray dataset detected, writing directly to NetCDF file", subtask=logger[1])
+            logger[0].info("Pre-computed xarray dataset detected, writing directly to NetCDF file",
+                           subtask=logger[1])
             out_xr.to_netcdf(outfile, format='NETCDF4', encoding=encoding, engine='netcdf4')
 
         return
@@ -667,11 +682,9 @@ def log_memory_usage(message, logger):
 
 def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-9999.0):
     """
-    Pre-pack multiple variables in a dataset to int16.
-    This triggers parallel dask computation across all variables.
-    Uses memory-efficient processing with proper -9999 handling.
+    Pre-pack multiple variables in a dataset to int16 lazily.
+    Relies on Xarray's to_netcdf to evaluate the dask graph chunk-by-chunk.
     """
-    import dask
     import dask.array
 
     encoding = {
@@ -687,38 +700,19 @@ def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-
     }
 
     def pack_variable_to_int16(data_array, params):
-        """
-        Pre-pack a single xarray DataArray to int16 using dask operations.
-        Parameters:
-        -----------
-        data_array : xr.DataArray
-        Input data (may contain NaN or -9999 fill values)
-        params : dict
-        Dictionary with scale_factor, add_offset, _FillValue
-        """
         scale = params['scale_factor']
         offset = params['add_offset']
         fill = params['_FillValue']
 
         def pack_chunk(data):
-            """Pack a single dask chunk, handling -9999 and NaN"""
             packed = np.empty(data.shape, dtype=np.int16)
-
-            # Create mask for VALID data
-            # Valid = finite AND not equal to input_fill_value
             valid_mask = np.isfinite(data) & (np.abs(data - input_fill_value) > 0.1)
-
-            # Pack valid data
             if np.any(valid_mask):
                 packed_values = (data[valid_mask] - offset) / scale
                 packed[valid_mask] = np.round(packed_values).astype(np.int16)
-
-            # Set invalid data to output fill value
             packed[~valid_mask] = fill
-
             return packed
 
-        # Apply packing using dask (parallelized)
         if isinstance(data_array.data, dask.array.Array):
             packed_data = dask.array.map_blocks(
                 pack_chunk,
@@ -728,10 +722,8 @@ def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-
                 new_axis=[]
             )
         else:
-            # Handle non-dask arrays
             packed_data = pack_chunk(data_array.values)
 
-        # Create new DataArray with packed data
         packed_da = xr.DataArray(
             packed_data,
             coords=data_array.coords,
@@ -740,79 +732,52 @@ def pack_dataset_to_int16(ds, variables_to_pack, logger=None, input_fill_value=-
                 'scale_factor': scale,
                 'add_offset': offset,
                 '_FillValue': fill,
-                **data_array.attrs  # Preserve other attributes
+                **data_array.attrs
             }
         )
         return packed_da
 
     ds_packed = ds.copy(deep=False)
     if logger:
-        logger[0].info("Pre-packing variables to int16...", subtask=logger[1])
-        logger[0].info(f"  Input fill value: {input_fill_value}", subtask=logger[1])
+        logger[0].info("Pre-packing variables to int16 (Lazy Evaluation)...", subtask=logger[1])
 
-    # dask arrays to compute
-    vars_to_compute = {}
     encoding_dict = {}
+    vars_to_compute = {}
+
     for var_name in variables_to_pack:
-        packing_params = encoding[var_name]
         if var_name in ds_packed:
-            if logger:
-                logger[0].info(f"  Preparing {var_name} for packing...", subtask=logger[1])
+            packing_params = encoding[var_name]
+            packed_da = pack_variable_to_int16(ds_packed[var_name], packing_params)
+            vars_to_compute[var_name] = packed_da
+            ds_packed[var_name] = packed_da
 
-            # Get packed dask array (lazy) - with fill value handling
-            packed_da = pack_variable_to_int16(
-                ds_packed[var_name],
-                packing_params)
-
-            # update encoding dict dict
+            # Record encoding
             encoding_dict[var_name] = {
                 'scale_factor': packing_params['scale_factor'],
                 'add_offset': packing_params['add_offset'],
                 '_FillValue': packing_params['_FillValue'],
             }
-
-            # Store the dask array for batch computation
-            if isinstance(packed_da.data, dask.array.Array):
-                vars_to_compute[var_name] = packed_da
-            else:
-                # Already computed, just assign
-                ds_packed[var_name] = packed_da
-
     if vars_to_compute:
         if logger:
-            logger[0].info(f"Computing {len(vars_to_compute)} packed arrays in parallel...",
-                          subtask=logger[1])
+            logger[0].info(
+                f"Computing all {len(vars_to_compute)} variables together for maximum speed",
+                subtask=logger[1])
 
-        # Compute all at once (parallel + memory efficient)
-        computed_data = dask.compute(
+        # Compute them all at once!
+        computed_data = da.compute(
             *[var.data for var in vars_to_compute.values()],
             scheduler='threads'
         )
 
-        # Assign computed results
         for (var_name, packed_da), computed_array in zip(vars_to_compute.items(), computed_data):
-            # Replace dask array with numpy array
             ds_packed[var_name].data = computed_array
 
-            # Count valid vs fill values for verification
-            n_total = computed_array.size
-            n_fill = np.sum(computed_array == packed_da.attrs['_FillValue'])
-            n_valid = n_total - n_fill
-
-            if logger:
-                logger[0].info(
-                    f"  {var_name}: {computed_array.dtype}, "
-                    f"{computed_array.nbytes / 1e9:.2f} GB, "
-                    f"{n_valid:,} valid / {n_fill:,} fill", 
-                    subtask=logger[1]
-                )
-
-        # Explicit cleanup of intermediate dask structures
         del vars_to_compute, computed_data
         gc.collect()
 
-        if logger:
-            logger[0].info("Packing complete! Memory cleaned.", subtask=logger[1])
+    if logger:
+        logger[0].info("All variables computed successfully! Ready for disk write.",
+                       subtask=logger[1])
 
     return ds_packed, encoding_dict
 

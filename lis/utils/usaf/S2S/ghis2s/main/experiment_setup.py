@@ -1335,7 +1335,7 @@ class S2Srun(DownloadForecasts):
                      'TPN': 2*int(self.config["EXP"]["lead_months"]), 'l_sub': 2,'HOURS': str(1)},
             '10km': {'CPT': str(1), 'MEM':'120GB', 'NT': str(1), 'TPN': 2,
                      'l_sub': 2, 'HOURS': str(3)},
-            '5km': {'CPT': str(1), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1,
+            '5km': {'CPT': str(64), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1,
                     'HOURS': str(self.config["EXP"]["lead_months"] + 1)},
         }
         info = resol_info[self._resol]
@@ -1352,8 +1352,10 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = info['TPN']
         par_info['MP'] = False
         if self.fcst_model.upper() == 'GEOSV3' and self._resol == '5km':
-            par_info['MEM'] = '480GB'
-            info['HOURS'] = '12'
+            par_info['MEM'] = '400GB'
+            info['HOURS'] = '8'
+            par_info['MP'] = True
+            par_info['SKIP_ARG'] = True
 
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
