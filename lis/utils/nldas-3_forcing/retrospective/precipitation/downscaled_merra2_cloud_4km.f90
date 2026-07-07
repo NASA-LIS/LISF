@@ -114,8 +114,8 @@ program downscaled_merra2_cloud_4km
   ! ============================================================
   ! BUILD 50 KM GRID
   ! ============================================================
-  do i=1,NX1
-     do j=1,NY1
+  do j=1,NY1
+     do i=1,NX1
         latitude1(i,j)=7.0+(dx1*(j-1))
         longitude1(i,j)=-169+(dx1*(i-1))
      end do
@@ -124,8 +124,8 @@ program downscaled_merra2_cloud_4km
   ! ============================================================
   ! BUILD 4 KM GRID
   ! ============================================================
-  do i=1,NX
-     do j=1,NY
+  do j=1,NY
+     do i=1,NX
         latitude(i,j)=7.0+(dx*(j-1))
         longitude(i,j)=-169+(dx*(i-1))
         lat(j)=7.0+(dx*(j-1))
@@ -199,8 +199,8 @@ program downscaled_merra2_cloud_4km
         ! ============================================================
         ! AVERAGE MODIS AND MYD CFM
         ! ============================================================
-        do x=1,NX
-           do y=1,NY
+        do y=1,NY
+           do x=1,NX
               cfm_4km(x,y)=(cfm_4km_myd(x,y)+cfm_4km_mod(x,y))/2.0d0
            end do
         end do
@@ -211,8 +211,8 @@ program downscaled_merra2_cloud_4km
         cfm_50km=0.0d0
         inv_dist_50km=0.0d0
 
-        do i=1,NX1
-           do j=1,NY1
+        do j=1,NY1
+           do i=1,NX1
 
               xi=int((longitude1(i,j)-(-169.0d0))/dx)+1
               yi=int((latitude1(i,j)-7.0d0)/dx)+1
@@ -235,8 +235,8 @@ program downscaled_merra2_cloud_4km
               if (jj2>NY) jj2=NY
               if (jj2<1) jj2=1
 
-              do x=ii1,ii2
-                 do y=jj1,jj2
+              do y=jj1,jj2
+                 do x=ii1,ii2
 
                     if (cfm_4km(x,y)>=0.0d0) then
                        if (abs(latitude1(i,j)-latitude(x,y))<=dx1) then
@@ -312,8 +312,8 @@ program downscaled_merra2_cloud_4km
            inv_dist_50km=0.0d0
            pcfm_50km=0.0d0
 
-           do i=1,NX1
-              do j=1,NY1
+           do j=1,NY1
+              do i=1,NX1
 
                  xi=int((longitude1(i,j)-(-169.0d0))/0.04d0)+1
                  yi=int((latitude1(i,j)-7.0d0)/0.04d0)+1
@@ -336,8 +336,8 @@ program downscaled_merra2_cloud_4km
                  if (jj2>NY) jj2=NY
                  if (jj2<1) jj2=1
 
-                 do x=ii1,ii2
-                    do y=jj1,jj2
+                 do y=jj1,jj2
+                    do x=ii1,ii2
 
                        if (cfm_4km(x,y)>=0.0d0) then
                           if (abs(latitude1(i,j)-latitude(x,y))<=dx1) then
@@ -380,8 +380,8 @@ program downscaled_merra2_cloud_4km
            ! ============================================================
            ! APPLY CLOUD-FREQUENCY-BASED DOWNSCALING
            ! ============================================================
-           do i=1,NX
-              do j=1,NY
+           do j=1,NY
+              do i=1,NX
 
                  if (cfm_4km(i,j)>=0.0d0) then
 
@@ -410,8 +410,8 @@ program downscaled_merra2_cloud_4km
                     if (jj2>NY1) jj2=NY1
                     if (jj2<1) jj2=1
 
-                    do x=ii1,ii2
-                       do y=jj1,jj2
+                    do y=jj1,jj2
+                       do x=ii1,ii2
 
                           latb=latitude1(x,y)
                           lonb=longitude1(x,y)
