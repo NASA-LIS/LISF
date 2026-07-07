@@ -68,7 +68,7 @@ use netcdf
       integer :: nday(12),xi,yi
       integer :: dd
 
-      character(len=300) :: filename1,filename2,filename4
+      character(len=300) :: filename1,filename2
       character(len=300) :: fileplacea,filename1a
       character(len=300) :: daily_filename,hourly_filename
       character(len=4)   :: yyyy
@@ -78,9 +78,9 @@ use netcdf
       integer :: dimids(ndims),numLons,numLats,dimid,dimids1(ndims1)
       integer :: ncid,totprecip_id,lat_dimid,lon_dimid,lat_id,lon_id
       integer :: latitude_id,longitude_id
-      integer :: x,y,ndimsp,nvarsp,nattsp,unlimdimidp,dt_dimid,dt_id
+      integer :: ndimsp,nvarsp,nattsp,unlimdimidp,dt_dimid,dt_id
 
-      real*8 :: convergeThresh,inter
+      real*8 :: inter
 
       real*8, allocatable, dimension (:,:) :: lat1,lon1
       real*8, allocatable, dimension (:,:) :: precepmerra2,precepimerg,precep_hr
@@ -378,8 +378,6 @@ use netcdf
           END DO   ! MONTH
 
       END DO   ! YEAR
-
- 14 FORMAT(2000(1x,e13.7))
 
 contains
 
