@@ -149,8 +149,8 @@ program cloud_frequencies
         lat(j) = lat_min + dy * real(j - 1)
     end do
 
-    do i = 1, NX
-        do j = 1, NY
+    do j = 1, NY
+       do i = 1, NX
             longitude(i,j) = lon(i)
             latitude(i,j)  = lat(j)
         end do
@@ -200,9 +200,8 @@ program cloud_frequencies
                 ! ====================================================
                 ! STEP 1: EXTRACT CLOUD FLAG AND LAND/WATER FLAG
                 ! ====================================================
-                do i = 1, NX
-                    do j = 1, NY
-
+                do j = 1, NY
+                   do i = 1, NX
                         dbin = cfm_bin(i,j)
 
                         if (dbin == 65535) then
@@ -229,14 +228,13 @@ program cloud_frequencies
                 ! ====================================================
                 ! STEP 2: MASK OCEAN AND COASTLINE NEAR OCEAN
                 ! ====================================================
-                do i = 1, NX
-                    do j = 1, NY
+                do j = 1, NY
+                   do i = 1, NX
+                      if (coast_flag(i,j) == 1.0) then
 
-                        if (coast_flag(i,j) == 1.0) then
+                         has_ocean = .false.
 
-                            has_ocean = .false.
-
-                            do ii = max(1, i - radius_pixels), min(NX, i + radius_pixels)
+                         do ii = max(1, i - radius_pixels), min(NX, i + radius_pixels)
                                 do jj = max(1, j - radius_pixels), min(NY, j + radius_pixels)
 
                                     lw_flag = iand(ishft(cfm_bin(ii,jj), -landwater_bit_shift), landwater_mask)
@@ -266,8 +264,8 @@ program cloud_frequencies
                 ! ====================================================
                 ! STEP 3: ACCUMULATE DAILY CLOUD FLAGS INTO MONTHLY SUM
                 ! ====================================================
-                do i = 1, NX
-                    do j = 1, NY
+                do j = 1, NY
+                   do i = 1, NX
 
                         if (cfm_daily(i,j) >= 0.0) then
                             cfm_month(i,j) = cfm_month(i,j) + cfm_daily(i,j)
@@ -282,8 +280,8 @@ program cloud_frequencies
             ! ========================================================
             ! STEP 4: COMPUTE MONTHLY CLOUD FREQUENCY
             ! ========================================================
-            do i = 1, NX
-                do j = 1, NY
+            do j = 1, NY
+               do i = 1, NX
 
                     count_day(i,j) = real(cell_day(i,j))
 
