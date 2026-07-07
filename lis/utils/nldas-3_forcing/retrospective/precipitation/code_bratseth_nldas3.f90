@@ -18,13 +18,13 @@
 !  This program can be compiled on NASA Discover using the Intel MPI Fortran
 !  compiler and the LISF NetCDF/HDF5 libraries as follows:
 !
-!  mpif90 -g -check all -traceback -names lowercase -convert big_endian 
-!    -assume byterecl 
-!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include 
+!  mpif90 -g -check all -traceback -names lowercase -convert big_endian
+!    -assume byterecl
+!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include
 !    code_bratseth_nldas3.f90 -o code_bratseth_nldas3
-!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib 
-!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib 
-!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl 
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib
+!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl
 !    -Wl,--no-relax -shared-intel
 !
 ! !DESCRIPTION:
@@ -41,13 +41,13 @@ use mpi
 use netcdf
   implicit none
       !include 'mpif.h'
-      integer i,j,n,iyear,imonth,iday,nday(12)
-      integer comm, myid, numprocs,ierr,npts,npts_mpi,imaxabsdiff,ip,nobs,jd,id,xi,yi
+      integer i,j,iyear,imonth,iday,nday(12)
+      integer myid, numprocs,ierr,npts,imaxabsdiff,ip,nobs,jd,id,xi,yi
       integer, parameter:: NX=2926, NY=1626,NX2=187,NY2=111,NX3=118,NY3=66
-      Character (LEN=200) filename,fileplace,fvhour2,fvhour1,date_str,iav
-      Character (LEN=200) filename1,fileplace1,fileplace2,fvario,filenamenc
+      Character (LEN=200) filename,fileplace,date_str,iav
+      Character (LEN=200) fileplace1,fvario,filenamenc
       Integer, parameter :: ndims=2,ndims1=2,NX4=11700,NY4=6500,NX1=1171,NY1=651
-      integer :: dimids(ndims),numLons,numLats,dimid,dimids1(ndims1)
+      integer :: dimids(ndims),numLons,numLats,dimids1(ndims1)
       real*8 ::  merra2ErrScaleLength,convergeThresh,sigmasqr_back,sigmasqr_obs1
       real*8 :: sigmasqr_obs2,backErrScaleLength,maxabsdiff,y_prev,y_new
       real*8 :: sigmasqr_merra2,sigmasqr_obscapa,sigmasqr_obsimerg,sigmasqr_imerg,sigmasqr_capa,sigmasqr_obs
@@ -59,9 +59,9 @@ use netcdf
       real*8, allocatable, dimension (:) :: invDataDensities,sumObsEstimates,mrgp_pcp,mrgp_pcp_mpi,invDataDensities_mpi
       real*8, allocatable, dimension (:) :: lat,lon,latobs,lonobs
       integer, allocatable, dimension (:,:) :: id_imerg,jd_imerg
-      integer :: ncid,totprecip_id,lat_dimid,lon_dimid,lat_id,lon_id,latitude_id,longitude_id,length_id,sigma_id,obs_id,apcpobs_id,apcpback_id
-      integer :: x, y, ndimsp, nvarsp, nattsp, unlimdimidp,npasses,corrobs,ccount,ele_id
-      integer, allocatable, dimension (:) :: start,count,id_capa,jd_capa,obs_typ
+      integer :: ncid,totprecip_id
+      integer :: ndimsp, nvarsp, nattsp, unlimdimidp,npasses,ele_id
+      integer, allocatable, dimension (:) :: start,count,obs_typ
       logical :: done
 	npts=nx*ny
 
@@ -483,9 +483,9 @@ contains
       real*8, allocatable, intent(in) :: precep_back(:),precep_obs1(:),precep_obs2(:)
       real*8, allocatable :: invDataDensities(:)
       ! Local variables
-      real*8 :: dist,lat1,lon1,lat2_1,lon2_1,lat2_2,lon2_2,sigmaOSqriob,dust,o1,max_dist,data_sum,sigmaOSqri_1,sigmaOSqri_2
-      real*8 :: b, num, denom,sigmaOSqrj1,sigmaOSqri,sigmaBSqr,bErrScaleLength,inv_scale_length,oErrScaleLength
-      integer :: i,j,id,id_incr,i1,j1,j2,xi,yi,xj,yj,jj1,jj2,ii1,ii2,x,y,ic
+      real*8 :: dist,lat1,lon1,lat2_1,lon2_1,lat2_2,lon2_2,o1,max_dist,data_sum,sigmaOSqri_1,sigmaOSqri_2
+      real*8 :: b, num, denom,sigmaOSqrj1,sigmaBSqr,bErrScaleLength,oErrScaleLength
+      integer :: i,id,id_incr,j1,xi,yi,jj1,jj2,ii1,ii2,x,y,ic
       real*8,allocatable, dimension (:)  ::dataDensities
       integer, parameter:: NX=2926, NY=1626
 
@@ -641,9 +641,9 @@ deallocate(dataDensities)
       real*8, intent(in) :: sigmasqr_back,sigmasqr_obs1,sigmasqr_obs2,backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength
       real*8, allocatable :: sumObsEstimates(:)
       ! Local variables
-      real*8 :: dist,lat1,lon1,sigmaOSqri,sigmaOSqrj1,sigmaBSqr,oErrScaleLength,bErrScaleLength,sigmaOSqri_1,sigmaOSqri_2
+      real*8 :: dist,lat1,lon1,sigmaOSqrj1,sigmaBSqr,oErrScaleLength,bErrScaleLength,sigmaOSqri_1,sigmaOSqri_2
       real*8 :: b,weight,o1,max_dist,lat2_1,lon2_1,lat2_2,lon2_2
-      integer :: i,j,iob,x,y,imaxabsdiff,id,id_incr,i1,j1,xi,yi,xj,yj,jj1,jj2,ii1,ii2,ic
+      integer :: i,x,y,id,id_incr,j1,xi,yi,jj1,jj2,ii1,ii2,ic
       integer, parameter:: NX=2926, NY=1626
       ! In each iteration, we calculate both an updated observation estimate
       ! and an updated analysis.  The previous observation estimate vector
@@ -817,9 +817,9 @@ end do
       real*8, allocatable :: mrgp_pcp(:)
       ! Local variables
       real*8 :: tmp_mrgp,weight
-      real*8 :: dist,lat1,lon1,sigmaOSqri_1,sigmaOSqri_2,sigmaOSqrj1,sigmaBSqr,oErrScaleLength,bErrScaleLength
+      real*8 :: dist,lat1,lon1,sigmaBSqr,bErrScaleLength
       real*8 :: b,max_dist,lat2,lon2
-      integer :: i,j,id,x,y,id_incr,i1,j1,xi,yi,xj,yj,jj1,jj2,ii1,ii2,ic
+      integer :: i,id,x,y,id_incr,j1,xi,yi,jj1,jj2,ii1,ii2,ic
       integer, parameter:: NX=2926, NY=1626
 
 id = -1
@@ -944,7 +944,7 @@ subroutine create_and_write_netcdf(filename, lat, lon, precep, apcpback, latitud
 
     integer :: ncid, lat_dimid, lon_dimid
     integer :: lat_id, lon_id, latitude_id, longitude_id
-    integer :: totprecip_id, obs_id, apcpobs_id, apcpback_id
+    integer :: totprecip_id, apcpback_id
     integer, dimension(2) :: dimids1
     type var_info
         character(len=30) :: name
