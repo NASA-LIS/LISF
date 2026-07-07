@@ -1,0 +1,10 @@
+#short name  select  vlevels  units
+Tair:       1  1  K       # Near surface air temperature
+Qair:       1  1  kg/kg   # Near surface specific humidity
+SWdown:     1  1  W/m2    # Incident shortwave radiation (total)
+LWdown:     1  1  W/m2    # Incident longwave radiation
+Wind_E:     1  1  W/m2    # Eastward wind
+Wind_N:     1  1  m/s     # Northward wind
+Psurf:      1  1  Pa      # Surface pressure
+Rainf:      1  1  kg/m2   # Rainfall rate
+CRainf:     1  1  kg/m2   # Convective rainfall rate
