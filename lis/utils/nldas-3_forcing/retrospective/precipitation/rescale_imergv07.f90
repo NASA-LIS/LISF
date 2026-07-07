@@ -111,8 +111,8 @@ program rescale_imergv07
   ! ============================================================
   ! BUILD 0.5 DEGREE GRID
   ! ============================================================
-  do i=1,NX1
-     do j=1,NY1
+  do j=1,NY1
+     do i=1,NX1
         latitude1(i,j)=7.0+(dx1*(j-1))
         longitude1(i,j)=-169+(dx1*(i-1))
      end do
@@ -121,8 +121,8 @@ program rescale_imergv07
   ! ============================================================
   ! BUILD 0.1 DEGREE GRID
   ! ============================================================
-  do i=1,NX
-     do j=1,NY
+  do j=1,NY
+     do i=1,NX
         latitude(i,j)=7.0+(dx*(j-1))
         longitude(i,j)=-169+(dx*(i-1))
         lat(j)=7.0+(dx*(j-1))
@@ -203,8 +203,8 @@ program rescale_imergv07
            ! ============================================================
            ! APPLY MONTHLY SCALE FACTOR
            ! ============================================================
-           do i=1,NX
-              do j=1,NY
+           do j=1,NY
+              do i=1,NX
                  if (scal(i,j)<0.0d0) then
                     gimerg(i,j)=imerg_v07(i,j)
                  else
