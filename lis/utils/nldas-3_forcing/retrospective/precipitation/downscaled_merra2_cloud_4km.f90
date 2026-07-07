@@ -34,7 +34,7 @@
 !
 !EOP
 
-Program downscaled_merra2_cloud_4km
+program downscaled_merra2_cloud_4km
   use netcdf
   implicit none
 
@@ -484,8 +484,6 @@ Program downscaled_merra2_cloud_4km
            dimids1=(/lon_dimid,lat_dimid/)
 
            call check(nf90_def_var(ncid,"TotalPrecip",NF90_REAL,dimids1,totprecip_id))
-           !                 call check(nf90_def_var(ncid,"CFM",NF90_REAL,dimids1,cfm_id))
-
            call check(nf90_def_var(ncid,"lat",NF90_REAL,dimids1,latitude_id))
            call check(nf90_def_var(ncid,"lon",NF90_REAL,dimids1,longitude_id))
 
@@ -494,7 +492,6 @@ Program downscaled_merra2_cloud_4km
            call check(nf90_put_var(ncid,lat_id,lat))
            call check(nf90_put_var(ncid,lon_id,lon))
            call check(nf90_put_var(ncid,totprecip_id,merra2_hr))
-           !                 call check(nf90_put_var(ncid,cfm_id,cfm_4km))
            call check(nf90_put_var(ncid,latitude_id,latitude))
            call check(nf90_put_var(ncid,longitude_id,longitude))
 
@@ -574,4 +571,4 @@ contains
 
   end function great_circle_distance
 
-end Program downscaled_merra2_cloud_4km
+end program downscaled_merra2_cloud_4km
