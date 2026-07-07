@@ -186,9 +186,8 @@ program Pcp_assimilation
            ! Compose date string YYYYMMDDHH with HH='00'
            write(date_str, '(I4.4,I2.2,I2.2,A2)') 2000 + iyear, imonth, iday, '00'
 
-           filename = 'LIS_HIST_' // trim(date_str) // '00.d01.nc'       !trim(date_str(1:8))// '00.d01.nc'
+           filename = 'LIS_HIST_' // trim(date_str) // '00.d01.nc'
            fileplace=trim(date_str(1:6))
-           !            if (myid == 0) write(*,*) filename 
            ! Read statistics files
            fvario = "./merra2_semivar/fit_variomerr_" // trim(date_str(1:8)) // ".txt"
            open(11, file=trim(fvario), status='old', action='read', iostat=ierr)
@@ -325,7 +324,7 @@ program Pcp_assimilation
            invDataDensities_mpi = 0.0
 
            if (myid == 0) write(*,*) 'call calc_invDataDensities'
-           !            if (myid == 0) write(*,*) sigmasqr_back, sigmasqr_obs1, sigmasqr_obs2,backErrScaleLength, obs1ErrScaleLength, obs2ErrScaleLength
+
            call calc_invDataDensities(myid, numprocs, npts, obs_typ, sigmasqr_back, sigmasqr_obs1, sigmasqr_obs2, &
                 backErrScaleLength, obs1ErrScaleLength, obs2ErrScaleLength, lat1, lon1, latobs, lonobs, &
                 invDataDensities_mpi, precep_obs1,precep_obs2, precep_back)
@@ -672,7 +671,6 @@ contains
        if (precep_back(i) < 0.0  .or. precep_obs1(i)<0.0) cycle  ! skip invalid points
        call pick_proc(id,id_incr, numprocs)
        if (id .ne. myid) cycle
-       !      if(precep_back(i)>=0.0) then
        if (precep_back(i) >= 0.0 .and. precep_obs1(i)>=0.0) then
           !For obs1 (e.g. IMERG) at this grid point
           if (precep_obs1(i) >= 0.0) then
@@ -808,7 +806,6 @@ contains
 
     implicit none
     ! Arguments
-    ! Arguments
     real*8, allocatable, intent(in) :: lat(:),lon(:),latobs(:),lonobs(:),precep_back(:),precep_obs1(:),precep_obs2(:)
     real*8, allocatable, intent(in) :: sumObsEstimates(:),invDataDensities(:)
     integer, allocatable, intent(in) :: obs_typ(:)
@@ -894,7 +891,6 @@ contains
                 end if
              end do
           end do
-          !       write(*,*) i,tmp_mrgp,precep_back(i)
           if (tmp_mrgp < 0.0) tmp_mrgp = 0.0
 
        end if
@@ -1075,6 +1071,5 @@ contains
     central_angle = atan2( sqrt(term1 + term2) , term3 )
     great_circle_distance = real(6381000d0 * central_angle)
   end function great_circle_distance
-
 
 end program Pcp_assimilation
