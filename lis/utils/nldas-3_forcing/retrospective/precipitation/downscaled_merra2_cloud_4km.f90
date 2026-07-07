@@ -88,7 +88,7 @@ use netcdf
 
       integer :: ncid, totprecip_id,lat_dimid,lon_dimid,lat_id,lon_id
       integer :: latitude_id,longitude_id
-      integer :: ndimsp,nvarsp,nattsp,unlimdimidp,cfm_id
+      integer :: ndimsp,nvarsp,nattsp,unlimdimidp
 
 ! ============================================================
 ! ALLOCATE ARRAYS
@@ -505,8 +505,6 @@ use netcdf
           END DO   ! MONTH
 
       END DO   ! YEAR
-
- 14 FORMAT(2000(1x,e13.7))
 
 contains
 
