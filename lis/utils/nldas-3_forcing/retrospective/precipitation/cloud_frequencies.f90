@@ -234,8 +234,8 @@ program cloud_frequencies
 
                     has_ocean = .false.
 
-                    do ii = max(1, i - radius_pixels), min(NX, i + radius_pixels)
-                       do jj = max(1, j - radius_pixels), min(NY, j + radius_pixels)
+                    do jj = max(1, j - radius_pixels), min(NY, j + radius_pixels)
+                       do ii = max(1, i - radius_pixels), min(NX, i + radius_pixels)
 
                           lw_flag = iand(ishft(cfm_bin(ii,jj), -landwater_bit_shift), landwater_mask)
 
