@@ -1646,6 +1646,7 @@ class S2Srun(DownloadForecasts):
 
     def lis_fcst(self):
         """ LIS forecast """
+
         def check_recommend_nseg(lead_mons, nseg):
             """Check validity and print recommendation if invalid"""
             def check_jobseg(lead_mons, nseg):
@@ -1671,16 +1672,37 @@ class S2Srun(DownloadForecasts):
                 good_nseg = try_these_nseg(lead_mons)
             return is_valid, good_nseg
 
-        # checks validity of JOB_SEGMENTS
+        # Checks validity of JOB_SEGMENTS for each NMME model
         for model in self.models:
+            job_segments = self.config['FCST']['JOB_SEGMENTS'].get(model)
+            if job_segments is None:
+                # Raise an error to halt execution if this is critical
+                sys.exit(
+                    f"[ERROR] Model '{model}' is missing from the JOB_SEGMENTS configuration.\n"
+                    "   Please check your s2s_config file and ensure all NMME_models are mapped.\n"
+                    "   Exiting."
+                )
+
+            # If above check is complete, proceed with segment validity check
             is_valid, good_nseg = check_recommend_nseg(
                 self.config["EXP"]["lead_months"],
-                self.config['FCST']['JOB_SEGMENTS'].get(model))
+                job_segments
+            )
             if not is_valid:
                 print(f"[ERROR] {model} Unsupported nof job segments: "
                       f"{self.config['FCST']['JOB_SEGMENTS'][0].get(model)}")
                 print(f'Try these instead: {good_nseg}')
                 sys.exit()
+
+#        for model in self.models:
+#            is_valid, good_nseg = check_recommend_nseg(
+#                self.config["EXP"]["lead_months"],
+#                self.config['FCST']['JOB_SEGMENTS'].get(model))
+#            if not is_valid:
+#                print(f"[ERROR] {model} Unsupported nof job segments: "
+#                      f"{self.config['FCST']['JOB_SEGMENTS'][0].get(model)}")
+#                print(f'Try these instead: {good_nseg}')
+#                sys.exit()
 
         prev = [job for job in self.schedule
                 if 'ldtics' in job or 'combine_files' in job] or None

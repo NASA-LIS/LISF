@@ -26,7 +26,7 @@ nmme_path_dict = {
     'CESM1': ['COLA-RSMAS-CESM1', 'COLA-RSMAS-CESM1'],
     'GFDL': ['GFDL-SPEAR', 'GFDL-SPEAR'],
 }
-noah_nmme_path = {
+noaa_nmme_path = {
     'CFSv2': 'CFSv2',
     'GEOSv2':'NASA_GEOS5v2',
     'CanESM5': 'CanESM5',
@@ -122,9 +122,9 @@ class NMMEParams():
                                             nmme_path_[0], 'hindcast',
                                             nmme_path_[0], 'hindcast',
                                             cyr, month+1)
-        elif pforce == 'noah-nmme':
-            # NOAH-NMME
-            nmme_path_ = noah_nmme_path[self.model]
+        elif pforce == 'noaa-nmme':
+            # NOAA-NMME
+            nmme_path_ = noaa_nmme_path[self.model]
             infile_temp = '{}/{}/{}.prate.{:04d}{:02d}.fcst.nc'
             infile = infile_temp.format(conf['BCSD']['nmme_download_dir'],
                                             nmme_path_, nmme_path_, cyr, month+1)
@@ -148,7 +148,7 @@ class NMMEParams():
                     prec_da = nmme_xr['prec']
             elif pforce == 'ccsr-nmme':
                 prec_da = nmme_xr['prcp'].transpose('L', 'M', 'Y', 'X')
-            elif pforce == 'noah-nmme':
+            elif pforce == 'noaa-nmme':
                 nmme_xr = nmme_xr.rename({'lat': 'Y','lon': 'X','target': 'L',
                                           'ensmem': 'M'})
                 prec_da = nmme_xr['fcst'].transpose('L', 'M', 'Y', 'X')
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     VAR_NAME = 'prec'
     if PFORCE == 'ccsr-nmme':
         VAR_NAME = 'prcp'
-    if PFORCE == 'noah-nmme':
+    if PFORCE == 'noaa-nmme':
         VAR_NAME = 'fcst'
 
     # Set up variables based on DATATYPE
@@ -268,7 +268,7 @@ if __name__ == "__main__":
             YEAR0 = 1982
             YEAR_BEGIN = YEAR0
             YEAR_END = YEAR0 + CLIM_YEARS
-        elif PFORCE in [ 'ccsr-nmme', 'noah-nmme']:
+        elif PFORCE in [ 'ccsr-nmme', 'noaa-nmme']:
             YEAR_BEGIN = config['BCSD']['clim_start_year']
             YEAR_END = config['BCSD']['clim_end_year']
             CLIM_YEARS = YEAR_END - YEAR_BEGIN + 1
@@ -354,11 +354,11 @@ if __name__ == "__main__":
                 l1 = LEADS1[MM, l]
                 XPREC[l,:] = XPREC[l,:]/calendar.monthrange(jy, l1)[1]/86400.
 
-        elif PFORCE == 'noah-nmme':
+        elif PFORCE == 'noaa-nmme':
             nmme_da = nmme_da.rename({'lat': 'Y','lon': 'X','target': 'L',
                                          'ensmem': 'M'})
             nmme_da = nmme_da.transpose('L', 'M', 'Y', 'X')
-            # NOAH-NMME lats are north to south
+            # NOAA-NMME lats are north to south
             nmme_da = nmme_da.isel(Y=slice(None, None, -1))
             XPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
 
@@ -474,7 +474,7 @@ if __name__ == "__main__":
                     jy = YR + LDYR[MM, l]
                     l1 = LEADS1[MM, l]
                     XPREC[y,l,:] = YPREC[l,:]/calendar.monthrange(jy, l1)[1]/86400.
-        elif PFORCE == 'noah-nmme':
+        elif PFORCE == 'noaa-nmme':
             YR = YEAR_BEGIN - 1
             for y in range(YEAR_END - YEAR_BEGIN + 1):
                 YR = YR + 1
@@ -485,7 +485,7 @@ if __name__ == "__main__":
                 nmme_da = nmme_da.rename({'lat': 'Y','lon': 'X','target': 'L',
                                          'ensmem': 'M'})
                 nmme_da = nmme_da.transpose('L', 'M', 'Y', 'X')
-                # NOAH-NMME lats are north to south
+                # NOAA-NMME lats are north to south
                 nmme_da = nmme_da.isel(Y=slice(None, None, -1))
                 YPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
                 XPREC[y,:] = YPREC[:]
