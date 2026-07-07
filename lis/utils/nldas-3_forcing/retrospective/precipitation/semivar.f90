@@ -50,15 +50,15 @@ program semivar
   ! ---- Variables ----
   integer :: i, j, i1, j1, iobs, ii1, ii2, jj1, jj2, index
   integer :: iyear, imonth, iday, nday(12), nvar_day, nlines
-  integer :: bm1, bm2, nobs, nobsd, nobsd1, count_year,d1,jj
+  integer :: bm1, nobsd1, count_year,d1,jj
   integer :: ncid, totprecip_id,id,jd
-  character(len=300) :: filename1a, filenameobs, fileplacea, fileplaceb,filenamevar
+  character(len=300) :: filename1a, filenameobs, fileplaceb,filenamevar
   real(8) :: latb, lonb, lata, lona, dist,vario_bin_dist
   integer :: actual_year
 
   ! ---- Arrays ----
   real(8), allocatable :: lat1(:,:), lon1(:,:), precepimerg(:,:), precep_back(:,:), precep_obs(:,:)
-  real(8), allocatable :: diffij(:,:), vario_d(:,:), lat(:), lon(:), vario(:),diffij1(:,:)
+  real(8), allocatable :: diffij(:,:), vario_d(:,:), vario(:),diffij1(:,:)
   integer, allocatable :: icounts_vario_d(:,:), icounts_vario(:)
   real(8), allocatable :: lat_obs(:), lon_obs(:), precepobs(:)
   real(8), allocatable :: lat_obsd(:), lon_obsd(:), precepobsd(:)
