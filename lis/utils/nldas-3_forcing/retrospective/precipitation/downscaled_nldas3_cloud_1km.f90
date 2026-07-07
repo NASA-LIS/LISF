@@ -1,4 +1,4 @@
-i!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
 ! Version 7.8
