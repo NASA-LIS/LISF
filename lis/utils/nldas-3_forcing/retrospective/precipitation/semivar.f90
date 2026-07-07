@@ -79,8 +79,8 @@ program semivar
   allocate(vario_d(max_vario_bins,7000), icounts_vario_d(max_vario_bins,7000))
   allocate(vario(max_vario_bins), icounts_vario(max_vario_bins))
 
-  do i = 1, NX
-     do j = 1, NY
+  do j = 1, NY
+     do i = 1, NX
         lat1(i,j) = 7.0 + 0.04 * j
         lon1(i,j) = -169.0 + 0.04 * i
      end do
@@ -139,8 +139,8 @@ program semivar
            nvar_day = nvar_day + 1
            vario=0.0       ;       icounts_vario=0
            ! Semivariogram calculation
-           do i = 1, nx
-              do j = 1, ny
+           do j = 1, ny
+              do i = 1, nx
                  if (precep_back(i,j) >= 0.0d0 .and. precep_obs(i,j) >= 0.0d0) then
                     diffij(i,j) = precep_obs(i,j) - precep_back(i,j)
 
@@ -151,8 +151,8 @@ program semivar
                     jj1 = max(1, j - search_radius_cells)
                     jj2 = min(ny, j + search_radius_cells)
 
-                    do i1 = ii1, ii2
-                       do j1 = jj1, jj2
+                    do j1 = jj1, jj2
+                       do i1 = ii1, ii2
                           if ((i1 == i .and. j1 == j)) cycle  ! Skip self-pair
                           if (precep_back(i1,j1) >= 0.0d0 .and. precep_obs(i1,j1) >= 0.0d0) then
                              lata = lat1(i1,j1)
