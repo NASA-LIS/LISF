@@ -122,8 +122,8 @@ program downscaled_nldas3_cloud_1km
   ! BUILD 1 KM GRID
   ! Same as original
   ! ============================================================
-  do i=1,NX
-     do j=1,NY
+  do j=1,NY
+     do i=1,NX
         latitude(i,j)=7.005+(0.01*(j-1))
         lat(j)=7.005+(0.01*(j-1))
         longitude(i,j)=-168.995+(0.01*(i-1))
@@ -135,8 +135,8 @@ program downscaled_nldas3_cloud_1km
   ! BUILD 4 KM GRID
   ! Same as original
   ! ============================================================
-  do i=1,NX1
-     do j=1,NY1
+  do j=1,NY1
+     do i=1,NX1
         latitude1(i,j)=7.0+(dx1*(j-1))
         longitude1(i,j)=-169+(dx1*(i-1))
      end do
@@ -281,8 +281,8 @@ program downscaled_nldas3_cloud_1km
            ! ============================================================
            nldas3=0.0d0
 
-           do i=1,NX
-              do j=1,NY
+           do j=1,NY
+              do i=1,NX
 
                  cfm_1km(i,j)=(cfm_1km_myd(i,j)+cfm_1km_mod(i,j))/2.0d0
 
@@ -313,8 +313,8 @@ program downscaled_nldas3_cloud_1km
                  if (jj2>NY1) jj2=NY1
                  if (jj2<1) jj2=1
 
-                 do x=ii1,ii2
-                    do y=jj1,jj2
+                 do y=jj1,jj2
+                    do x=ii1,ii2
 
                        latb=latitude1(x,y)
                        lonb=longitude1(x,y)
@@ -358,8 +358,8 @@ program downscaled_nldas3_cloud_1km
            ! ============================================================
            pcfm_4km=0.0d0
 
-           do i=1,NX1
-              do j=1,NY1
+           do j=1,NY1
+              do i=1,NX1
 
                  inv_dist_4km=0.0d0
 
@@ -384,8 +384,8 @@ program downscaled_nldas3_cloud_1km
                  if (jj2>NY) jj2=NY
                  if (jj2<1) jj2=1
 
-                 do x=ii1,ii2
-                    do y=jj1,jj2
+                 do y=jj1,jj2
+                    do x=ii1,ii2
 
                        if (cfm_1km(x,y)>=0.0d0 .and. nldas3(x,y)>=0.0d0) then
 
@@ -431,8 +431,8 @@ program downscaled_nldas3_cloud_1km
            ! STEP 3:
            ! Apply cloud-frequency downscaling at 1 km
            ! ============================================================
-           do i=1,NX
-              do j=1,NY
+           do j=1,NY
+              do i=1,NX
 
                  if (cfm_1km(i,j)>=0.0d0 .and. nldas3(i,j)>=0.0d0) then
 
@@ -461,8 +461,8 @@ program downscaled_nldas3_cloud_1km
                     if (jj2>NY1) jj2=NY1
                     if (jj2<1) jj2=1
 
-                    do x=ii1,ii2
-                       do y=jj1,jj2
+                    do y=jj1,jj2
+                       do x=ii1,ii2
 
                           latb=latitude1(x,y)
                           lonb=longitude1(x,y)
@@ -522,8 +522,8 @@ program downscaled_nldas3_cloud_1km
            ! ============================================================
            ! STEP 4:
            ! ============================================================
-           do i=1,NX
-              do j=1,NY
+           do j=1,NY
+              do i=1,NX
                  if (mask(i,j)==1.0d0 .and. nldas3_1km(i,j)<0.0d0) then
                     stop
                  end if
@@ -594,7 +594,6 @@ contains
     end if
   end subroutine check
 
-
   logical function is_leap_year(year)
     implicit none
     integer, intent(in) :: year
@@ -610,7 +609,6 @@ contains
     end if
 
   end function is_leap_year
-
 
   !---------------------------------------------------------------------------
   ! Calculates great circle distance between two lat/lon points on globe
