@@ -119,8 +119,8 @@ program temporal_disaggregation_1km
   ! ============================================================
   ! BUILD 1 KM GRID
   ! ============================================================
-  do i=1,NX1
-     do j=1,NY1
+  do j=1,NY1
+     do i=1,NX1
         lat1(i,j)=7.005d0+(j-1)*0.01d0
         lat(j)=7.005d0+(j-1)*0.01d0
         lon1(i,j)=-168.995d0+(i-1)*0.01d0
@@ -202,8 +202,8 @@ program temporal_disaggregation_1km
            ! ============================================================
            ! CHECK DAILY 1 KM FIELD OVER LAND
            ! ============================================================
-           do i=1,NX1
-              do j=1,NY1
+           do j=1,NY1
+              do i=1,NX1
                  if (mask(i,j)==1.0d0 .and. precep_hr(i,j)<0.0d0) then
                     write(*,*) i,j,precep_hr(i,j)
                  end if
@@ -262,8 +262,8 @@ program temporal_disaggregation_1km
               ! ============================================================
               ! ACCUMULATE DAILY TOTALS AND STORE HOURLY VALUES
               ! ============================================================
-              do i=1,NX
-                 do j=1,NY
+              do j=1,NY
+                 do i=1,NX
                     precept1(i,j)=precept1(i,j)+precepmerra2(i,j)
                     preceph1(ihoura,i,j)=precepmerra2(i,j)
 
@@ -283,8 +283,8 @@ program temporal_disaggregation_1km
 
               inter=0.0d0
 
-              do i=1,NX1
-                 do j=1,NY1
+              do j=1,NY1
+                 do i=1,NX1
 
                     xi=int((lon1(i,j)-(-169.0d0))/0.04d0)+1
                     yi=int((lat1(i,j)-7.0d0)/0.04d0)+1
