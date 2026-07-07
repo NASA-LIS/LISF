@@ -18,13 +18,13 @@
 !  This program can be compiled on NASA Discover using the Intel Fortran
 !  compiler and the LISF NetCDF/HDF5 libraries as follows:
 !
-!  ifort -g -check all -traceback -names lowercase -convert big_endian 
-!    -assume byterecl 
-!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include 
-!    downscaled_nldas3_cloud_1km.f90 -o downscaled_nldas3_cloud_1km 
-!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib 
-!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib 
-!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl 
+!  ifort -g -check all -traceback -names lowercase -convert big_endian
+!    -assume byterecl
+!    -I/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/include
+!    downscaled_nldas3_cloud_1km.f90 -o downscaled_nldas3_cloud_1km
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/netcdf/4.8.1_intel-2021.4.0/lib
+!    -L/discover/nobackup/projects/lis/libs/sles-12.3/hdf5/1.12.1_intel-2021.4.0/lib
+!    -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl
 !    -Wl,--no-relax -shared-intel
 !
 ! !DESCRIPTION:
@@ -66,7 +66,6 @@ use netcdf
       integer :: nday(12),ii1,ii2,jj1,jj2,xi,yi
       integer :: x,y
       integer :: inv_p
-      integer :: numndts
 
       Character (LEN=300) :: filename1,filename2,filename4
       Character (LEN=300) :: fileplacea,fileplace1,filename1a
@@ -79,19 +78,18 @@ use netcdf
 
       real*8 :: dist,inv_dist,inv_dist_pt,nldas3_pt,cfm_pt
       real*8 :: lata,lona,latb,lonb,dx,dx1,nldas3_hr,inv_dist_4km
-      real*8 :: convergeThresh
 
       real, allocatable, dimension (:,:) :: latitude,longitude,latitude1,longitude1
 
       real*8, allocatable, dimension (:,:) :: cfm_1km,pcfm_4km,nldas3,mask,merra2_4km
-      real*8, allocatable, dimension (:,:) :: nldas3_4km,cfm_4km,nldas3_1km
+      real*8, allocatable, dimension (:,:) :: nldas3_4km,nldas3_1km
       real*8, allocatable, dimension (:,:) :: cfm_1km_mod,cfm_1km_myd
 
-      real*8, allocatable, dimension (:) :: lat,lon,t_dt
+      real*8, allocatable, dimension (:) :: lat,lon
 
       integer :: ncid, totprecip_id,lat_dimid,lon_dimid,lat_id,lon_id
       integer :: latitude_id,longitude_id
-      integer :: ndimsp,nvarsp,nattsp,unlimdimidp,cfm_id,dt_dimid,dt_id
+      integer :: ndimsp,nvarsp,nattsp,unlimdimidp
 
       integer, allocatable, dimension (:) :: start,count
 
@@ -584,8 +582,6 @@ use netcdf
           END DO   ! MONTH
 
       END DO   ! YEAR
-
- 14 FORMAT(2000(1x,e13.7))
 
 contains
 
