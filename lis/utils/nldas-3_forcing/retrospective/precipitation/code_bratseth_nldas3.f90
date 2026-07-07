@@ -85,7 +85,6 @@ program Pcp_assimilation
   call MPI_COMM_RANK(MPI_COMM_WORLD,myid,ierr)
   call MPI_COMM_SIZE( MPI_COMM_WORLD,numprocs,ierr)
 
-
   ! Read LANDMASK from 4km domain
   filename = 'nldas_domain_4km_0823.nc'
   call check(NF90_OPEN(filename, NF90_NOWRITE, ncid))
@@ -121,8 +120,8 @@ program Pcp_assimilation
   call check(nf90_get_var(ncid, ele_id, ele))
   call check(nf90_close(ncid))
 
-  do i=1,nx4
-     do j=1,ny4
+  do j=1,ny4
+     do i=1,nx4
         lat_1km(i,j)=7.005+(0.01*(j-1))
         lon_1km(i,j)=-168.995+(0.01*(i-1))
         xi=int((lon_1km(i,j)-(-169))/0.04)+1
@@ -133,9 +132,8 @@ program Pcp_assimilation
      end do
   end do
 
-
-  do i=1,nx
-     do j=1,ny
+  do j=1,ny
+     do i=1,nx
         latitude(i,j)=7.0+(0.04*(j-1))
         lat(j)=7.0+(0.04*(j-1))
         longitude(i,j)=-169+(0.04*(i-1))
@@ -227,7 +225,6 @@ program Pcp_assimilation
            sigmasqr_imerg = sigmasqr_obs * (sigmasqr_satimerg / sigmasqr_obsimerg)
 
            ! Define helper subroutine to open NetCDF, get dimensions and variable
-
            call read_netcdf("./merra2_daily_4km/" // trim(adjustl(fileplace)) // "/",  trim(adjustl(filename)), &
                 "TotalPrecip", precepmerra2, ncid, dimIDs, numLons, numLats)
 
@@ -244,8 +241,8 @@ program Pcp_assimilation
            precep_back = -9999.0
            precep_obs = -9999.0
 
-           do i=1,nx1
-              do j=1,ny1
+           do j=1,ny1
+              do i=1,nx1
                  latimerg(i,j)=7+(j-1)*0.1
                  lonimerg(i,j)=-169+(i-1)*0.1
                  id_imerg(i,j)=int((lonimerg(i,j)-(-169))/0.04)+1
@@ -255,8 +252,8 @@ program Pcp_assimilation
 
            if (myid == 0) write(*,*) iyear, imonth, iday
            ip = 0
-           do i = 1, nx
-              do j = 1, ny
+           do j = 1, ny
+              do i = 1, nx
                  ip = ip + 1
                  if (int(mask(i,j)) /= 0) then
                     precep_back(ip) = precepmerra2(i,j) * 86400.0
@@ -272,8 +269,8 @@ program Pcp_assimilation
 
            obs_typ=0
            precep_obs1=-9999.0  ;   precep_obs2=-9999.0  ; latobs=0.0  ; lonobs=0.0
-           do i=1,nx1
-              do j=1,ny1
+           do j=1,ny1
+              do i=1,nx1
                  ip=((id_imerg(i,j)-1)*ny)+jd_imerg(i,j)
                  latobs(ip)=latimerg(i,j)
                  lonobs(ip)=lonimerg(i,j)
@@ -408,8 +405,8 @@ program Pcp_assimilation
               obs_typxy = 0.0
               apcpback = 0.0
 
-              do i = 1, nx
-                 do j = 1, ny
+              do j = 1, ny
+                 do i = 1, nx
                     ip = ip + 1
                     precep(i,j) = mrgp_pcp(ip)
                     if (mrgp_pcp(ip)>1.0 .and. precep_back(ip)>1.0) then
