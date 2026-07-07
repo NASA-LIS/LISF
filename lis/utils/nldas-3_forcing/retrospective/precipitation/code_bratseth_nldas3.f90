@@ -444,10 +444,6 @@ program Pcp_assimilation
      end do ! imonth
   end do ! iyear
 
-
-14 FORMAT(2000(1x,e13.7))
-
-
 contains
   subroutine check(status)
     integer, intent ( in) :: status
