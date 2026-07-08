@@ -322,7 +322,7 @@ program Pcp_assimilation
 
            if (myid == 0) write(*,*) 'call calc_invDataDensities'
 
-           call calc_invDataDensities(myid, numprocs, npts, obs_typ, sigmasqr_back, sigmasqr_obs1, sigmasqr_obs2, &
+           call calc_invDataDensities(myid, numprocs, npts, sigmasqr_back, sigmasqr_obs1, sigmasqr_obs2, &
                 backErrScaleLength, obs1ErrScaleLength, obs2ErrScaleLength, lat1, lon1, latobs, lonobs, &
                 invDataDensities_mpi, precep_obs1,precep_obs2, precep_back)
 
@@ -340,8 +340,8 @@ program Pcp_assimilation
 
            do
               call MPI_BARRIER(MPI_COMM_WORLD, ierr)
-              call calc_obsAnalysis(myid, numprocs, npts, obs_typ, sigmasqr_obs1, sigmasqr_obs2, sigmasqr_back, invDataDensities, &
-                   backErrScaleLength, obs1ErrScaleLength, obs2ErrScaleLength, npasses, pprev_ana, pprev_est, &
+              call calc_obsAnalysis(myid, numprocs, npts, sigmasqr_obs1, sigmasqr_obs2, sigmasqr_back, invDataDensities, &
+                   backErrScaleLength, obs1ErrScaleLength, obs2ErrScaleLength, pprev_ana, pprev_est, &
                    pnew_ana_mpi, pnew_est_mpi, sumObsEstimates_mpi, lat1, lon1, latobs, lonobs, precep_obs1,precep_obs2, precep_back)
 
               pnew_est = 0.0
@@ -391,7 +391,7 @@ program Pcp_assimilation
 
            if (myid == 0) write(*,*) 'call calc_gridAnalysis'
            mrgp_pcp_mpi = 0.0
-           call calc_gridAnalysis(myid, numprocs, npts, obs_typ, sigmasqr_back, sigmasqr_obs1, sigmasqr_obs2, backErrScaleLength, obs1ErrScaleLength, &
+           call calc_gridAnalysis(myid, numprocs, npts, sigmasqr_back, backErrScaleLength, obs1ErrScaleLength, &
                 obs2ErrScaleLength, precep_obs1, precep_obs2, precep_back, sumObsEstimates, npasses, invDataDensities, lat1, lon1, latobs, lonobs, mrgp_pcp_mpi)
 
            mrgp_pcp = 0.0
@@ -465,11 +465,10 @@ contains
   ! correlated.
   !
   ! NOTE:  Requires LIS to be run in lat-lon projection!
-  subroutine calc_invDataDensities(myid,numprocs,npts,obs_typ,sigmasqr_back,sigmasqr_obs1,sigmasqr_obs2, &
+  subroutine calc_invDataDensities(myid,numprocs,npts,sigmasqr_back,sigmasqr_obs1,sigmasqr_obs2, &
        backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength,lat,lon,latobs,lonobs,invDataDensities,precep_obs1,precep_obs2,precep_back)
     ! Arguments
     real*8, allocatable, intent(in) :: lat(:),lon(:),latobs(:),lonobs(:)
-    integer, allocatable, intent(in) :: obs_typ(:)
     integer, intent(in) :: npts,myid, numprocs
     real*8, intent(in) :: sigmasqr_back,sigmasqr_obs1,sigmasqr_obs2,backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength
     real*8, allocatable, intent(in) :: precep_back(:),precep_obs1(:),precep_obs2(:)
@@ -620,16 +619,16 @@ contains
   ! "observation estimates" do (see Sashegyi et al 1993).
   ! The observed, background, and analysis values at the observation
   ! points are also collected in an OBA structure for post-processing.
-  subroutine calc_obsAnalysis(myid, numprocs,npts,obs_typ,sigmasqr_obs1,sigmasqr_obs2,sigmasqr_back,invDataDensities,&
-       backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength,npasses,pprev_ana,pprev_est,pnew_ana,pnew_est,&
+  subroutine calc_obsAnalysis(myid, numprocs,npts,sigmasqr_obs1,sigmasqr_obs2,sigmasqr_back,invDataDensities,&
+       backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength,pprev_ana,pprev_est,pnew_ana,pnew_est,&
        sumObsEstimates,lat,lon,latobs,lonobs,precep_obs1,precep_obs2,precep_back)
+
     implicit none
     ! Arguments
     real*8, allocatable, intent(in) :: lat(:),lon(:),latobs(:),lonobs(:),invDataDensities(:)
     real*8, allocatable, intent(in) :: precep_back(:),precep_obs1(:),precep_obs2(:)
-    integer, allocatable, intent(in) :: obs_typ(:)
     real*8, allocatable, intent(inout) :: pnew_ana(:),pprev_ana(:),pnew_est(:),pprev_est(:)
-    integer, intent(in) :: npts,npasses,myid, numprocs
+    integer, intent(in) :: npts,myid, numprocs
     real*8, intent(in) :: sigmasqr_back,sigmasqr_obs1,sigmasqr_obs2,backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength
     real*8, allocatable :: sumObsEstimates(:)
     ! Local variables
@@ -793,7 +792,7 @@ contains
   ! analysis pass was performed at the observation points.
   ! NOTE:  Bratseth values are not interpolated to water points.
 
-  subroutine calc_gridAnalysis(myid,numprocs,npts,obs_typ,sigmasqr_back,sigmasqr_obs1,sigmasqr_obs2,backErrScaleLength,obs1ErrScaleLength,&
+  subroutine calc_gridAnalysis(myid,numprocs,npts,sigmasqr_back,backErrScaleLength,obs1ErrScaleLength,&
        obs2ErrScaleLength,precep_obs1,precep_obs2,precep_back,&
        sumObsEstimates,npasses,invDataDensities,lat,lon,latobs,lonobs,mrgp_pcp)
 
@@ -801,9 +800,8 @@ contains
     ! Arguments
     real*8, allocatable, intent(in) :: lat(:),lon(:),latobs(:),lonobs(:),precep_back(:),precep_obs1(:),precep_obs2(:)
     real*8, allocatable, intent(in) :: sumObsEstimates(:),invDataDensities(:)
-    integer, allocatable, intent(in) :: obs_typ(:)
     integer, intent(in) :: npasses,npts,myid, numprocs
-    real*8, intent(in) :: sigmasqr_back,sigmasqr_obs1,sigmasqr_obs2,backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength
+    real*8, intent(in) :: sigmasqr_back,backErrScaleLength,obs1ErrScaleLength,obs2ErrScaleLength
     real*8, allocatable :: mrgp_pcp(:)
     ! Local variables
     real*8 :: tmp_mrgp,weight
