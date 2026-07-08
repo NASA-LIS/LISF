@@ -22,6 +22,7 @@ module LIS_metforcing_pluginMod
 ! !REVISION HISTORY: 
 !  11 Dec 2003   Sujay Kumar:  Initial Specification
 !  11 Oct 2014   K. Arsenault: Reorganzed for syncing with LDT
+!  29 Jun 2026: Kristen whitney, added support for MERRA2bias
 ! 
 !EOP  
   implicit none
@@ -134,6 +135,10 @@ subroutine LIS_metforcing_plugin
 
 #if ( defined MF_MERRA2 )
    use merra2_forcingMod
+#endif
+
+#if ( defined MF_MERRA2bias )
+   use merra2bias_forcingMod
 #endif
 
 #if ( defined MF_GEOS_IT )
@@ -386,6 +391,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_merra2
    external finalize_merra2
    external reset_merra2
+#endif
+
+#if ( defined MF_MERRA2bias )
+   external get_merra2bias
+   external timeinterp_merra2bias
+   external finalize_merra2bias
+   external reset_merra2bias
 #endif
 
 #if ( defined MF_GEOS_IT )
@@ -798,6 +810,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_merra2)
    call registerresetmetforc(trim(LIS_merra2Id)//char(0),reset_merra2)
    call registerfinalmetforc(trim(LIS_merra2Id)//char(0),finalize_merra2)
+#endif
+
+#if ( defined MF_MERRA2bias )
+! - MERRA2bias Reanalysis Forcing:
+   call registerinitmetforc(trim(LIS_merra2biasId)//char(0),init_merra2bias)
+   call registerretrievemetforc(trim(LIS_merra2biasId)//char(0),get_merra2bias)
+   call registertimeinterpmetforc(trim(LIS_merra2biasId)//char(0), &
+                                  timeinterp_merra2bias)
+   call registerresetmetforc(trim(LIS_merra2biasId)//char(0),reset_merra2bias)
+   call registerfinalmetforc(trim(LIS_merra2biasId)//char(0),finalize_merra2bias)
 #endif
 
 #if ( defined MF_GEOS_IT )
