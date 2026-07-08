@@ -17,6 +17,8 @@
 ! 07 Jan 2026: Kristen Whitney, initial code for using dynamic lapse rate
 ! 17 Jun 2026: Kristen Whitney, simplified metadata handling
 !              and updated dynamic lapse-rate filename construction.
+! 08 Jul 2026: Kristen Whitney, fixed hourly GEOS-ITbias time
+!              progression to correctly advance forcing input files.
 !
 ! !INTERFACE:
 subroutine get_geositbias(n,findex)
@@ -146,6 +148,9 @@ subroutine get_geositbias(n,findex)
         ss2 = 0
         ts2 = 0
         call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
+
+        geositbias_struc(n)%findtime1 = 1
+        geositbias_struc(n)%geositbiastime2 = time2
      endif
   else
      if (timenow.ge.geositbias_struc(n)%geositbiastime2) then
