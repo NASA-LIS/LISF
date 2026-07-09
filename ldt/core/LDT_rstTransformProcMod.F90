@@ -193,10 +193,10 @@ contains
     real   ,     allocatable  :: w12(:)
     real   ,     allocatable  :: w21(:)
     real   ,     allocatable  :: w22(:)
-    real   ,     allocatable  :: n11(:)
-    real   ,     allocatable  :: n12(:)
-    real   ,     allocatable  :: n21(:)
-    real   ,     allocatable  :: n22(:)
+    integer,     allocatable  :: n11(:)
+    integer,     allocatable  :: n12(:)
+    integer,     allocatable  :: n21(:)
+    integer,     allocatable  :: n22(:)
 
       ! Generate router model ensemble restart file:
     if(LDT_rc%rstsource.eq."LSM") then 

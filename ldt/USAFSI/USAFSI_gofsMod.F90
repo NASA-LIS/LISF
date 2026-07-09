@@ -302,7 +302,7 @@ contains
       logical*1, allocatable :: lb(:)
       logical*1, allocatable :: lo(:)
       real :: griddesci(50)
-      real, allocatable :: n11(:)
+      integer, allocatable :: n11(:)
       integer :: gindex
       real :: rlat
 
@@ -565,7 +565,7 @@ contains
       logical*1, allocatable :: lb(:)
       logical*1, allocatable :: lo(:)
       real :: griddesci(50)
-      real, allocatable :: n11(:)
+      integer, allocatable :: n11(:)
       integer :: gindex, nlat
 
       ! Sanity check the region
