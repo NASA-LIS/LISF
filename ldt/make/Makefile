@@ -5,8 +5,8 @@
 RM := rm -f
 
 # Define functions
-make-clean := $(RM) *.o *.mod LDT
-make-real-clean := $(RM) *.o *.mod LDT *.d
+make-clean := $(RM) LDT *.o *.mod *_genmod.f90
+make-real-clean := $(RM) LDT *.o *.mod *_genmod.f90 *.d
 
 # Do not include Filepath when the goal is either
 # clean, realclean, or help.
