@@ -28,6 +28,7 @@ module LDT_pluginIndices
 !  28 Jun 2022: Eric Kemp -- Added NAFPA background precipitation
 !  24 Apr 2025: Yeosang Yoon -- Added RAPID
 !  08 Jul 2025: Eric Kemp -- Added SNIP
+!  02 Jul 2026: J Nattala -- Updated for unified CHIRPS
 !
 !EOP
   PRIVATE
@@ -169,7 +170,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_stg4Id         = "CPC STAGEIV"
    character*50, public,  parameter :: LDT_RFE2DailyId    = "RFE2(daily)"
    character*50, public,  parameter :: LDT_RFE2gdasId     = "RFE2(GDAS bias-corrected)"
-   character*50, public,  parameter :: LDT_chirps2Id      = "CHIRPS2"
+   character*50, public,  parameter :: LDT_chirpsId       = "CHIRPS"
    character*50, public,  parameter :: LDT_ceopId         = "CEOP"
    character*50, public,  parameter :: LDT_ALMIPIIId      = "ALMIPII"
    character*50, public,  parameter :: LDT_scanId         = "SCAN"

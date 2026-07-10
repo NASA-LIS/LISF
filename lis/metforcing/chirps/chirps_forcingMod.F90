@@ -7,15 +7,21 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-module chirps2_forcingMod
+module chirps_forcingMod
 !BOP
-! !MODULE: chirps2_forcingMod
+! !MODULE: chirps_forcingMod
 ! 
 ! !DESCRIPTION: 
 !  This module contains variables and data structures that are used
 !  for the implementation of the precipitation product derived from 
+!  the Climate Hazards Center InfraRed Precipitation with Stations
+!  (CHIRPS). CHIRPS provides quasi-global (50S-50N for v2.0, 60S-60N
+!  for v3.0) satellite and observation-based precipitation estimates
+!  over land at 0.05 degree resolution, from 1981 to near-real time.
+!  Produced by the Climate Hazards Center, UC Santa Barbara, in
+!  collaboration with USAID FEWS NET and USGS EROS.
 ! 
-!  The implementation in LIS has the derived data type {\tt chirps2\_struc}
+!  The implementation in LIS has the derived data type {\tt chirps\_struc}
 !  that includes the variables to specify the runtime options, and 
 !  the weights and neighbor information for spatial interpolation
 ! 
@@ -45,6 +51,11 @@ module chirps2_forcingMod
 ! !REVISION HISTORY:
 !  Yudong Tian,  10/26/2010: Updated to support reading raw .gz files 
 !  KR Arsenault, 07/06/2015: Updated to support latest V7 files
+!  J Nattala,    06/28/2026: Updated to support both CHIRPS v2.0 and v3.0;
+!                            added 'version' and boundary exclusion latitude
+!                            members to chirps_type_dec type; converted
+!                            chirps_struc to generic
+!                            
 
 ! !USES:
   use ESMF
@@ -55,29 +66,32 @@ module chirps2_forcingMod
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: init_chirps2      !defines the native resolution of
-                                 !the input data
+  public :: init_chirps      ! defines the native resolution of
+                             ! input data
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
-  public :: chirps2_struc
+  public :: chirps_struc
 
 !EOP
 
-  type, public ::  chirps2_type_dec
+  type, public :: chirps_type_dec
+     integer            :: version     ! CHIRPS version (2 or 3)
      real               :: xres, yres
      real               :: ts
      integer            :: nc
      integer            :: nr
      integer            :: mi
-     character(len=LIS_CONST_PATH_LEN) :: directory  
+     character(len=LIS_CONST_PATH_LEN) :: directory
      real*8             :: chirpstime1, chirpstime2
      logical            :: reset_flag
      integer            :: start_nc, start_nr
      real               :: gridDesc(50) ! EMK Corrected array length
-
-   ! "Interp" or spatial transform arrays:
-   ! Budget-bilinear:
+     ! Boundary exclusion latitudes (CHIRPS3):
+     real               :: north_excl_lat
+     real               :: south_excl_lat
+     ! "Interp" or spatial transform arrays:
+     ! Budget-bilinear:
      integer, allocatable  :: n112(:,:)
      integer, allocatable  :: n122(:,:)
      integer, allocatable  :: n212(:,:)
@@ -88,38 +102,38 @@ module chirps2_forcingMod
      integer, allocatable  :: n113(:)
    ! Average:
      integer, allocatable  :: n111(:)
-     
-     integer           :: nIter, st_iterid,en_iterid  ! Forecast parameters
 
-     real, allocatable :: metdata1(:,:,:) 
-     real, allocatable :: metdata2(:,:,:) 
+     integer           :: nIter, st_iterid, en_iterid  ! Forecast parameters
 
-  end type chirps2_type_dec
-  
-  type(chirps2_type_dec), allocatable :: chirps2_struc(:)
+     real, allocatable :: metdata1(:,:,:)
+     real, allocatable :: metdata2(:,:,:)
+
+  end type chirps_type_dec
+
+  type(chirps_type_dec), allocatable :: chirps_struc(:)
 
 contains
-  
+
 !BOP
 !
-! !ROUTINE: init_chirps2
-! \label{init_chirps2}
-! 
+! !ROUTINE: init_chirps
+! \label{init_chirps}
+!
 !
 ! !REVISION HISTORY: 
 ! 11Dec2015: KR Arsenault; Initial Specification
 ! 
 ! !INTERFACE:
-  subroutine init_chirps2(findex)
+  subroutine init_chirps(findex)
 ! !USES: 
     use LIS_coreMod, only : LIS_rc, LIS_config, LIS_domain, &
                             LIS_isatAfinerResolution
     use LIS_timeMgrMod, only : LIS_date2time, LIS_update_timestep, &
                                LIS_tick, LIS_parseTimeString, &
-                               LIS_registerAlarm 
+                               LIS_registerAlarm
     use LIS_logMod,  only : LIS_logunit, LIS_endrun, &
                             LIS_getNextUnitNumber, &
-                            LIS_releaseUnitNumber, LIS_verify 
+                            LIS_releaseUnitNumber, LIS_verify
     use LIS_gridmappingMod
     use LIS_FORC_AttributesMod
     use LIS_forecastMod
@@ -129,14 +143,14 @@ contains
     integer, intent(in) :: findex
 ! 
 ! !DESCRIPTION: 
-!  Defines the native resolution of the input forcing for CHIRPS 2.0
+!  Defines the native resolution of the input forcing for CHIRPS
 !  data. The grid description arrays are based on the netcdf files
 !  (see Section~\ref{interp}).
 !
 !  The routines invoked are: 
 !  \begin{description}
-!   \item[readconfig\_chirps2](\ref{readconfig_chirps2}) \newline
-!     reads the runtime options specified for CHIRPS 2.0 data
+!   \item[readconfig\_chirps](\ref{readconfig_chirps}) \newline
+!     reads the runtime options specified for CHIRPS data
 !   \item[LIS\_date2time](\ref{LIS_date2time}) \newline
 !     converts date to the real time format
 !   \item[conserv\_interp\_input](\ref{conserv_interp_input}) \newline
@@ -146,28 +160,29 @@ contains
 !  \end{description}
 !
 !EOP
-    integer :: n 
-    integer :: rc             
+    integer :: n
+    integer :: rc
     integer :: updoy,yr1,mo1,da1,hr1,mn1,ss1
     real    :: upgmt
-    integer :: ts1,ts2 
+    integer :: ts1,ts2
 
-    integer :: LIS_syr,LIS_smo,LIS_sda,LIS_shr,LIS_smn,LIS_sss 
+    integer :: LIS_syr,LIS_smo,LIS_sda,LIS_shr,LIS_smn,LIS_sss
     real*8  :: FirstDateTime
-    real*8  :: LIS_StartTime  
-    character (len=10):: time 
+    real*8  :: LIS_StartTime
+    character (len=10):: time
 
     integer :: subpnc, subpnr, glpnc, glpnr
-    real     :: sub_gridDesci(50) ! EMK Corrected array length
-    real    :: fulldomain_gridDesci(50) ! EMK Corrected array length
+    real    :: sub_gridDesci(50)          ! EMK Corrected array length
+    real    :: fulldomain_gridDesci(50)   ! EMK Corrected array length
     integer, allocatable  :: lat_line(:,:), lon_line(:,:)
+    real    :: lat_min, lat_max
 
 ! _________________________________________________________________
 
-    allocate(chirps2_struc(LIS_rc%nnest))
-    chirps2_struc%reset_flag = .false.
+    allocate(chirps_struc(LIS_rc%nnest))
+    chirps_struc%reset_flag = .false.
 
-    write(LIS_logunit,fmt=*)"[INFO] Initializing CHIRPS v2.0 forcing parameters ... "
+    write(LIS_logunit,fmt=*)"[INFO] Initializing CHIRPS forcing parameters ... "
 
     ! Temporary note to alert users of issue with convective precip ratios:
     if( LIS_FORC_CRainf%selectOpt == 1 ) then
@@ -176,46 +191,64 @@ contains
       write(LIS_logunit,*)" -- This feature will be applied in future LIS releases -- "
     endif
 
-  ! Read CHIRPS 2.0 config file entries:
-    call readconfig_chirps2()
+    ! Read CHIRPS config file entries:
+    call readconfig_chirps()
 
     LIS_rc%met_nf(findex)   = 2          ! number of met variables in CHIRPS forcing
     LIS_rc%met_proj(findex) = "latlon"
 
- !- Select and define interp input arrays:
-    if( chirps2_struc(1)%xres == 0.05 ) then
-      glpnc = 7200
-      glpnr = 2000
-    elseif( chirps2_struc(1)%xres == 0.25 ) then
-      glpnc = 1440
-      glpnr = 400
+    !- Select and define interp input arrays based on version:
+    if( chirps_struc(1)%version == 3 ) then
+       ! CHIRPS 3.0 parameters
+       if( chirps_struc(1)%xres == 0.05 ) then
+         glpnc = 7200  ! nc
+         glpnr = 2400  ! nr - CHIRPS3 (expanded from 2000)
+       elseif( chirps_struc(1)%xres == 0.25 ) then
+         glpnc = 1440  ! nc
+         glpnr =  480  ! nr - CHIRPS3 (expanded from 400)
+       endif
+       lat_min = -60.0  ! CHIRPS3 latitude range
+       lat_max =  60.0
     else
-       write(LIS_logunit,*) "[ERR] Other resolutions are not available with CHIRPS 2.0" 
+       ! CHIRPS 2.0 parameters (default)
+       if( chirps_struc(1)%xres == 0.05 ) then
+         glpnc = 7200  ! nc
+         glpnr = 2000  ! nr - CHIRPS2
+       elseif( chirps_struc(1)%xres == 0.25 ) then
+         glpnc = 1440  ! nc
+         glpnr =  400  ! nr - CHIRPS2
+       endif
+       lat_min = -50.0  ! CHIRPS2 latitude range
+       lat_max =  50.0
+    endif
+
+    if( chirps_struc(1)%xres /= 0.05 .and. chirps_struc(1)%xres /= 0.25 ) then
+       write(LIS_logunit,*) "[ERR] Other resolutions are not available with CHIRPS"
        write(LIS_logunit,*) "     precipitation reader, at this time.  Only"
        write(LIS_logunit,*) "     0.05 or 0.25 deg are available ..."
        write(LIS_logunit,*) "Program stopping ... "
        call LIS_endrun
     endif
 
-  ! Grid description array:
+    ! Grid description array:
     fulldomain_gridDesci(:) = 0
     fulldomain_gridDesci(1) = 0
     fulldomain_gridDesci(2) = glpnc
     fulldomain_gridDesci(3) = glpnr
-    fulldomain_gridDesci(4) = -50.0 +  ( chirps2_struc(1)%yres/2 )
-    fulldomain_gridDesci(5) = -180.0 + ( chirps2_struc(1)%xres/2 )
+    fulldomain_gridDesci(4) = lat_min + ( chirps_struc(1)%yres/2 )
+    fulldomain_gridDesci(5) = -180.0  + ( chirps_struc(1)%xres/2 )
     fulldomain_gridDesci(6) = 128
-    fulldomain_gridDesci(7) = 50.0 -  ( chirps2_struc(1)%yres/2 )
-    fulldomain_gridDesci(8) = 180.0 + ( chirps2_struc(1)%xres/2 )
-    fulldomain_gridDesci(9)  = chirps2_struc(1)%xres
-    fulldomain_gridDesci(10) = chirps2_struc(1)%yres
+    fulldomain_gridDesci(7) = lat_max - ( chirps_struc(1)%yres/2 )
+    fulldomain_gridDesci(8) = 180.0   + ( chirps_struc(1)%xres/2 )
+    fulldomain_gridDesci(9)  = chirps_struc(1)%xres
+    fulldomain_gridDesci(10) = chirps_struc(1)%yres
     fulldomain_gridDesci(20) = 64
 
-!-- Map Parameter Grid Info to LIS Target Grid/Projection Info -- 
+!-- Map Parameter Grid Info to LIS Target Grid/Projection Info --
     sub_gridDesci = 0.
     subpnc = 0; subpnr = 0
-    chirps2_struc(:)%start_nc = 0
-    chirps2_struc(:)%start_nr = 0
+    chirps_struc(:)%start_nc = 0
+    chirps_struc(:)%start_nr = 0
 
     do n=1,LIS_rc%nnest
 
@@ -231,58 +264,58 @@ contains
             call LIS_endrun()
          endif
 
-         chirps2_struc(n)%st_iterid = LIS_forecast_struc(1)%st_iterId
-         chirps2_struc(n)%en_iterId = LIS_forecast_struc(1)%niterations
-         chirps2_struc(n)%nIter = LIS_forecast_struc(1)%niterations
+         chirps_struc(n)%st_iterid = LIS_forecast_struc(1)%st_iterId
+         chirps_struc(n)%en_iterId = LIS_forecast_struc(1)%niterations
+         chirps_struc(n)%nIter = LIS_forecast_struc(1)%niterations
 
-         allocate(chirps2_struc(n)%metdata1(LIS_forecast_struc(1)%niterations,&
+         allocate(chirps_struc(n)%metdata1(LIS_forecast_struc(1)%niterations,&
               LIS_rc%met_nf(findex),&
               LIS_rc%ngrid(n)))
-         allocate(chirps2_struc(n)%metdata2(LIS_forecast_struc(1)%niterations,&
+         allocate(chirps_struc(n)%metdata2(LIS_forecast_struc(1)%niterations,&
               LIS_rc%met_nf(findex),&
               LIS_rc%ngrid(n)))
 
        ! Regular retrospective or non-forecast mode:
        else
 
-         chirps2_struc(n)%st_iterid = 1
-         chirps2_struc(n)%en_iterId = 1
-         chirps2_struc(n)%nIter = 1
+         chirps_struc(n)%st_iterid = 1
+         chirps_struc(n)%en_iterId = 1
+         chirps_struc(n)%nIter = 1
 
-         allocate(chirps2_struc(n)%metdata1(1,&
+         allocate(chirps_struc(n)%metdata1(1,&
               LIS_rc%met_nf(findex),&
               LIS_rc%ngrid(n)))
-         allocate(chirps2_struc(n)%metdata2(1,&
+         allocate(chirps_struc(n)%metdata2(1,&
               LIS_rc%met_nf(findex),&
               LIS_rc%ngrid(n)))
 
        endif
-       chirps2_struc(n)%metdata1 = 0
-       chirps2_struc(n)%metdata2 = 0
+       chirps_struc(n)%metdata1 = 0
+       chirps_struc(n)%metdata2 = 0
 
 #if 0
      ! Do not subset for speeding up runtime (read in full CHIRPS domain):
      ! if( optimize_runtime == 0 ) then
-         chirps2_struc(n)%start_nc = 1
-         chirps2_struc(n)%start_nr = 1
+         chirps_struc(n)%start_nc = 1
+         chirps_struc(n)%start_nr = 1
          subpnc = glpnc
          subpnr = glpnr
          sub_gridDesci(:) = fulldomain_gridDesci(:)
      ! elseif( optimize_runtime == 1 ) then
-#endif 
+#endif
      ! Subset option
        call LIS_RunDomainPts( n, LIS_rc%met_proj(findex), fulldomain_gridDesci(:), &
             glpnc, glpnr, subpnc, subpnr, sub_gridDesci, lat_line, lon_line )
 
-       chirps2_struc(n)%start_nc = lon_line(1,1)
-       chirps2_struc(n)%start_nr = lat_line(1,1)
-   end do
+       chirps_struc(n)%start_nc = lon_line(1,1)
+       chirps_struc(n)%start_nr = lat_line(1,1)
+    end do
 
 ! - Subsetted domains:
-    chirps2_struc(:)%nc = subpnc
-    chirps2_struc(:)%nr = subpnr
+    chirps_struc(:)%nc = subpnc
+    chirps_struc(:)%nr = subpnr
 
-  ! First date available for the CHIRPS v2.0 dataset:
+    ! First date available for the CHIRPS dataset:
     yr1 = 1981
     mo1 = 01
     da1 = 01
@@ -292,7 +325,7 @@ contains
     call LIS_tick(FirstDateTime,updoy,upgmt,yr1,mo1,&
          da1,hr1,mn1,ss1,real(ts1) )
 
-  ! Starting date/time for user-specified inputs:
+    ! Starting date/time for user-specified inputs:
     LIS_syr = LIS_rc%syr
     LIS_smo = LIS_rc%smo
     LIS_sda = LIS_rc%sda
@@ -303,9 +336,9 @@ contains
     call LIS_tick(LIS_StartTime,updoy,upgmt,LIS_syr,LIS_smo,&
          LIS_sda,LIS_shr,LIS_smn,LIS_sss,real(ts2) )
 
-  ! Starting date/time for user-specified inputs:
+    ! Starting date/time for user-specified inputs:
     if( FirstDateTime .gt. LIS_StartTime ) then
-      write(LIS_logunit,*) "[WARN] LIS start time is earlier than CHIRPS 2.0 data availability time ..."
+      write(LIS_logunit,*) "[WARN] LIS start time is earlier than CHIRPS data availability time ..."
       write(LIS_logunit,*) " ... Relying on baseforcing precipitation to fill ..."
       if( LIS_rc%nmetforc == 1 ) then
         write(LIS_logunit,*) "[ERR] No other underlying forcings and no available CHIRPS precipitation files."
@@ -316,24 +349,24 @@ contains
 
     do n=1,LIS_rc%nnest
 
-       chirps2_struc(n)%gridDesc(:) = sub_gridDesci(:)
-       chirps2_struc(n)%mi = chirps2_struc(n)%nc*chirps2_struc(n)%nr
+       chirps_struc(n)%gridDesc(:) = sub_gridDesci(:)
+       chirps_struc(n)%mi = chirps_struc(n)%nc*chirps_struc(n)%nr
 
-       chirps2_struc(n)%ts = 24 * 3600.   ! seconds per day
-       call LIS_update_timestep(LIS_rc, n, chirps2_struc(n)%ts)
+       chirps_struc(n)%ts = 24 * 3600.   ! seconds per day
+       call LIS_update_timestep(LIS_rc, n, chirps_struc(n)%ts)
 
-       call LIS_registerAlarm("CHIRPS 2.0 alarm",&
-            chirps2_struc(n)%ts,&
-            chirps2_struc(n)%ts )
+       call LIS_registerAlarm("CHIRPS alarm",&
+            chirps_struc(n)%ts,&
+            chirps_struc(n)%ts )
 
-     ! Set local - 1 hour timestep (to replicate model timestep):
-       call LIS_update_timestep(LIS_rc, n, 3600.) 
+       ! Set local - 1 hour timestep (to replicate model timestep):
+       call LIS_update_timestep(LIS_rc, n, 3600.)
 
-     ! Check if interp/upscale option is correct for resolution selected:
+       ! Check if interp/upscale option is correct for resolution selected:
        ! LIS resolution < CHIRPS resolution
-       if( LIS_isatAfinerResolution(n,chirps2_struc(n)%xres) ) then
+       if( LIS_isatAfinerResolution(n,chirps_struc(n)%xres) ) then
          write(LIS_logunit,*) " The LIS Run domain is at a finer resolution than "
-         write(LIS_logunit,*) "  CHIRPS 2.0 selected resolution, ",chirps2_struc(n)%xres
+         write(LIS_logunit,*) "  CHIRPS selected resolution, ",chirps_struc(n)%xres
 
          if( trim(LIS_rc%met_interp(findex)) .eq. "average" ) then
             write(LIS_logunit,*) "[ERR] Given the selected LIS and CHIRPS resolutions, "
@@ -346,9 +379,9 @@ contains
        ! LIS resolution >= CHIRPS resolution
        else
          write(LIS_logunit,*) "[WARN] The LIS Run domain is at a coarser (or =) resolution than "
-         write(LIS_logunit,*) "  CHIRPS 2.0 selected resolution, ",chirps2_struc(n)%xres
+         write(LIS_logunit,*) "  CHIRPS selected resolution, ",chirps_struc(n)%xres
 
-         LIS_rc%met_interp(findex) = LIS_rc%met_upscale(findex) 
+         LIS_rc%met_interp(findex) = LIS_rc%met_upscale(findex)
 
          if( trim(LIS_rc%met_interp(findex)) .ne. "average" ) then
             write(LIS_logunit,*) "[ERR] Given the selected LIS and CHIRPS resolutions, "
@@ -364,36 +397,36 @@ contains
 
         case( "budget-bilinear" )
 
-          allocate(chirps2_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(chirps2_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(chirps2_struc(n)%n212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(chirps2_struc(n)%n222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(chirps2_struc(n)%w112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(chirps2_struc(n)%w122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(chirps2_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-          allocate(chirps2_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%n212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%n222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%w112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%w122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+          allocate(chirps_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
 
           call conserv_interp_input(n,sub_gridDesci(:),&
-               chirps2_struc(n)%n112,chirps2_struc(n)%n122,&
-               chirps2_struc(n)%n212,chirps2_struc(n)%n222,&
-               chirps2_struc(n)%w112,chirps2_struc(n)%w122,&
-               chirps2_struc(n)%w212,chirps2_struc(n)%w222)
+               chirps_struc(n)%n112,chirps_struc(n)%n122,&
+               chirps_struc(n)%n212,chirps_struc(n)%n222,&
+               chirps_struc(n)%w112,chirps_struc(n)%w122,&
+               chirps_struc(n)%w212,chirps_struc(n)%w222)
 
-        case( "neighbor" )   
+        case( "neighbor" )
 
-          allocate(chirps2_struc(n)%n113(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+          allocate(chirps_struc(n)%n113(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
           call neighbor_interp_input(n,sub_gridDesci(:),&
-               chirps2_struc(n)%n113)
+               chirps_struc(n)%n113)
 
-       ! Upscale option(s):
+        ! Upscale option(s):
         case( "average" )
 
-          allocate( chirps2_struc(n)%n111(chirps2_struc(n)%mi) )
+          allocate( chirps_struc(n)%n111(chirps_struc(n)%mi) )
           call upscaleByAveraging_input(sub_gridDesci,&
                LIS_rc%gridDesc(n,:),&
-               chirps2_struc(n)%mi,&
+               chirps_struc(n)%mi,&
                LIS_rc%lnc(n)*LIS_rc%lnr(n),&
-               chirps2_struc(n)%n111)
+               chirps_struc(n)%n111)
 
         case default
           write(LIS_logunit,*) "[ERR] This interpolation option not defined yet for CHIRPS data"
@@ -404,6 +437,6 @@ contains
 
     enddo
 
-  end subroutine init_chirps2
+  end subroutine init_chirps
 
-end module chirps2_forcingMod
+end module chirps_forcingMod

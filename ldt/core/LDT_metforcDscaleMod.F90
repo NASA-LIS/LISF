@@ -17,6 +17,10 @@ module LDT_metforcDscaleMod
 ! 
 ! !REVISION HISTORY: 
 !  16 Oct 2014: KR Aresnault; initial specification
+!  16 Apr 2026: J Nattala; Added cycle guard in LDT_applyDscaleCorrection
+!                          to prevent unconditional overlay unless an explicit
+!                          blending algorithm ("overlay" or "ensemble") is
+!                          specified.
 !
 
   use ESMF
@@ -747,6 +751,15 @@ contains
 
      ! Loop over stored metforcing dataset types:
      do m=1,LDT_rc%nmetforc
+        !
+        ! If no explicit blending algorithm is specified, skip all but the final
+        ! (temporally downscaled) source. This prevents earlier forcing sources
+        ! from being copied to the merged output over regions where the target
+        ! source is undefined.
+        !
+        if( LDT_rc%metforc_blend_alg.ne."overlay" .and. &
+          LDT_rc%metforc_blend_alg.ne."ensemble" .and. &
+          m.ne.LDT_rc%nmetforc ) cycle
         call ESMF_StateGet(LDT_FORC_Base_State(n,m),forcobjs(i),baseField,&
              rc=status1)
 

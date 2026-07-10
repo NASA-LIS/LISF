@@ -31,6 +31,7 @@ module LIS_pluginIndices
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF
 !               for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS
+!  08 Jul 2026: J Nattala -- Updated for unified CHIRPS
 !
 !EOP
 
@@ -157,7 +158,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_geositId          = "GEOS-IT"
 
    character*50, public,  parameter :: LIS_cmapId            = "CMAP"
-   character*50, public,  parameter :: LIS_chirps2Id         = "CHIRPS2"
+   character*50, public,  parameter :: LIS_chirpsId         = "CHIRPS"
 
    character*50, public,  parameter :: LIS_TRMM3B42RTId      = &
         "TRMM 3B42RT"

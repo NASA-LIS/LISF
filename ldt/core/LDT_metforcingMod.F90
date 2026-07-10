@@ -55,6 +55,11 @@ module LDT_metforcingMod
 !                              Moved CRainf (convective rainfall forcing)
 !                                 from LDT_MOC_RAINFCONV to LDT_MOC_CRAINFFORC.
 !                              Added units of [kg/m^2] for PET and CRainf.
+!  16 Apr 2026:   J Nattala;   Conditioned overlayForcings/ensembleForcings in
+!                              LDT_get_met_forcing to bypass them during temporal
+!                              downscaling mode; merged state written by
+!                              overlayForcings is never used by any downscaling
+!                              function and is clobbered by LDT_applyDscaleCorrection.
 ! 
   use ESMF
   use LDT_FORC_AttributesMod
@@ -866,10 +871,14 @@ contains
        enddo
 
      ! Blending algorithms (overlay, forcing ensembles, bias correction..)
-       if( LDT_rc%metforc_blend_alg.eq."overlay" ) then ! simple overlays
-          call overlayForcings(n)
-       elseif(LDT_rc%metforc_blend_alg.eq."ensemble") then !forcing ensembles
-          call ensembleForcings(n)
+     ! Gate overlayForcings/ensembleForcings in LDT_get_met_forcing for temporal
+     ! downscaling mode:
+       if( trim(LDT_rc%runmode).ne."Metforce temporal downscaling" ) then
+         if( LDT_rc%metforc_blend_alg.eq."overlay" ) then ! simple overlays
+            call overlayForcings(n)
+         elseif(LDT_rc%metforc_blend_alg.eq."ensemble") then !forcing ensembles
+            call ensembleForcings(n)
+         endif
        endif
 
     endif
