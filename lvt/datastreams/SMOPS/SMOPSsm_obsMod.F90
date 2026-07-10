@@ -217,7 +217,7 @@ contains
     type(ESMF_TimeInterval) :: alarmInterval
     type(ESMF_Time)         :: alarmTime
     integer                 :: status, rc
-    real                    :: gridDesci(20) ! real                  :: gridDesci(50)
+    real                    :: gridDesci(50) ! real                  :: gridDesci(50)
     integer                 :: n 
     integer                 :: updoy,yr1,mo1,da1,hr1,mn1,ss1
     real                    :: upgmt
