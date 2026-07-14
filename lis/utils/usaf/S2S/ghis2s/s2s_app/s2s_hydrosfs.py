@@ -71,7 +71,7 @@ class HydroSFS(S2Srun):
     def monthly_hydroscs(self):
         ''' compute HydroSCS monthlies from hourly data '''
         # manage jobs from SCRATCH
-        outdir='/discover/nobackup/projects/ghilis/smahanam/SERVIR/HydroSCS_monthly/'
+        outdir='/discover/nobackup/projects/servir-s2s/HydroSCSv2_monthly/'
 
         clim_syr = self.config['BCSD']['clim_start_year']
         clim_eyr = self.config['BCSD']['clim_end_year']

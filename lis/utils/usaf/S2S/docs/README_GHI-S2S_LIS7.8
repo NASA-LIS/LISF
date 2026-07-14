@@ -140,9 +140,24 @@
   This would include the "BCSD:" list:
 
  BCSD:
+  source: {metforce: CFSv2, precip: nmme, obs: USAF-LIS7.3rc8}
   fcst_download_dir: [DIRECTORY_PATH_WHERE_CFSV2_FORECAST_FILES_ARE_DOWNLOADED]
   nmme_download_dir: [DIRECTORY_PATH_WHERE_NMME_FORECAST_FILES_ARE_DOWNLOADED]
   ... 
+
+ ** NEW OPTIONS WITH LISV7.8 RP2 **
+ 
+  The Columbia/IRI source for NMME files will be "sunsetted" by late
+   summer of 2026, so new NMME data source options are now offered.
+   These include:
+
+  - CCSR (replacement to IRI)   ==> Set precip: ccsr-nmme
+  - NOAA (being made available) ==> Set precip: noaa-nmme
+
+  Then ensure updates to the "nmme_download_dir" pairs with
+   the above new options, once the IRI dataset is retired.
+
+ * * * * * * * * * * * * * * * * * *
 
  Currently, the climatology-based years are set from 1991-2020, 
   which will be reflected in the climatology input files that
