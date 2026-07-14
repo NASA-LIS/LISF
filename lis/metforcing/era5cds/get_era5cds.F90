@@ -207,22 +207,6 @@ subroutine get_era5cds(n, findex)
            write(LIS_logunit,*)'[ERR] ERA5CDS data missing file 1'
            call LISrun()
         endif
-        call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
-             yr1, mo1, da1, hr1, instfilename, accfilename, lmlfilename, &
-             prevaccfilename)
-        write(LIS_logunit,*) '[INFO] opening Bookend1 ',LIS_get_nstep(LIS_rc,n),hr1
-        call read_era5cds(n, kk, order, yr1, mo1, da1, hr1, retrieve_file,&
-             findex, instfilename, accfilename, lmlfilename, &
-             prevaccfilename, ferror)
-
-     if(ferror.ge.1) then !successfully retrieved forcing data
-        era5cds_struc(n)%era5cdstime1=time1
-        retrieve_file = .false.
-        if(era5cds_struc(n)%findtime2==0) era5cds_struc(n)%era5cdstime2=time2
-     else  !ferror still=0
-        write(LIS_logunit,*)'[ERR] ERA5CDS data missing file 1'
-        call LISrun()
-     endif
   endif
 
   if(era5cds_struc(n)%findtime2.eq.1) then
