@@ -1,0 +1,80 @@
+MERRA2bias Dynamic Lapse-Rate Forcing Test Case
+
+This test case performs a 1-km simulation over central California using
+the TEMPLATE LSM option from 2026-01-31 01:00 UTC through 2026-01-31
+06:00 UTC to test the processing of MERRA2bias forcing data and
+dynamic lapse-rate downscaling within the NASA Land Information System
+(LIS). The testcase uses dynamic lapse-rate fields generated from
+MERRA-2 air-temperature fields following the methodology described by
+Whitney et al. (2025).
+
+The test case uses:
+
+(a) MERRA2bias forcing data containing MERRA-2 near-surface air
+    temperature, near-surface specific humidity, and surface pressure,
+    and bias-corrected downward longwave radiation.
+
+(b) Dynamic lapse-rate downscaling within LIS.
+
+(c) The TEMPLATE LSM option, which serves as a placeholder land surface
+    model and outputs the processed forcing fields.
+
+(d) A 1-km domain over central California.
+
+(e) Dynamic lapse-rate fields generated from MERRA2bias air-temperature
+    inputs using the methodology of Whitney et al. (2025).
+
+MERRA2bias forcings are generated upstream of LIS by combining native
+MERRA-2 near-surface air temperature, near-surface specific humidity,
+and surface pressure with bias-corrected downward longwave radiation.
+The longwave radiation field is bias corrected using monthly
+climatological reference datasets generated outside of LIS. The
+resulting MERRA2bias forcing fields are provided as input to LIS
+through the input/MERRA2BIAS directory.
+
+The dynamic lapse-rate fields used by this test case are provided
+through the input/dynlapserates_merra2bias directory. These lapse rates
+are generated from MERRA-2 air-temperature fields using the
+methodology described by Whitney et al. (2025) and are used by LIS to
+perform elevation-based downscaling of air temperature.
+
+This directory contains:
+
+* this README file.
+* the ldt.config file used to generate the LIS parameter file.
+* the lis.config file used for this test case.
+* the MODEL_OUTPUT_LIST.TBL file used to specify output variables.
+* a sample GrADS control file that can be used to visualize the LIS
+  parameter file (input.ctl).
+* a sample GrADS control file that can be used to visualize the model
+  output (output.ctl).
+* a sample GrADS control file that can be used to visualize the target
+  output (testcase.ctl).
+
+To run this test case:
+
+* Generate the LIS executable.
+* Run the LIS executable using the supplied lis.config file and the
+  testcase input data.
+* Compare the generated output against the supplied target output.
+* View the output using the provided GrADS control files.
+
+Notes
+
+Additional information regarding the dynamic lapse-rate generation
+workflow used for NLDAS-3 forcing production can be found in:
+
+  lis/utils/nldas-3_forcing/dynamic_lapse_rates
+
+The dynamic lapse-rate methodology follows the framework of Rouf et al.
+(2020) with modifications described by Whitney et al. (2025). The
+associated workflow documentation and implementation are maintained in
+the dynamic_lapse_rates directory.
+
+References
+
+Whitney, K. M., Kumar, S. V., Mocko, D., Pflug, J., Bolten, J. D.,
+Maina, F. Z., Wrzesien, M. L., and Hain, C. R., 2025:
+Quantifying the Impacts of Dynamic Lapse Regimes on Snow Simulations.
+Journal of Hydrometeorology, 26(10), 1525–1560.
+https://doi.org/10.1175/JHM-D-25-0021.1
