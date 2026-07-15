@@ -190,7 +190,6 @@ subroutine get_merra2bias(n,findex)
              merra2bias_struc(n)%merra2biasdir,    &
              doy1,yr1,mo1,da1,hr1,                 &
              merra2name)
-
         ! Get lapse rate filename
         write(fdate, fmt='(i4.4,"-",i2.2,"-",i2.2,"-",i2.2)') &
              yr1,mo1,da1,hr1
@@ -300,7 +299,7 @@ subroutine merra2biasfiles(n,kk,findex,merra2biasdir,doy,yr,mo,da,hr,    &
 
   character*4  :: cyear
   character*2  :: cmo,cdy,chr
-  character*9 :: prefix
+  character*11 :: prefix
 
   write(unit=cyear,fmt='(i4.4)') yr
   write(unit=cmo,  fmt='(i2.2)') mo
