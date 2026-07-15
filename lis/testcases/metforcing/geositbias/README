@@ -24,10 +24,13 @@ The test case uses:
 
 GEOS-ITbias forcings are generated upstream of LIS by bias-adjusting
 native GEOS-IT fields using climatological reference datasets. For the
-NLDAS-3 near-real-time forcing workflow, the temperature, humidity,
-and pressure fields are adjusted using MERRA-2 monthly climatologies
-spanning 2001–2024. The resulting GEOS-ITbias forcing fields are
-provided as input to LIS through the input/GEOSITBIAS directory.
+NLDAS-3 near-real-time forcing workflow, the temperature, humidity, and
+surface pressure fields are bias-adjusted using MERRA-2 monthly
+climatologies spanning 2001–2024. Downward longwave radiation is
+bias-adjusted using the NLDAS-3 retrospective downward longwave
+radiation climatology spanning the 2001–2024 period. The resulting
+GEOS-ITbias forcing fields are provided as input to LIS through the
+input/GEOSITBIAS directory.
 
 The dynamic lapse-rate fields used by this test case are provided
 through the input/dynlapserates_geositbias directory. These lapse rates
