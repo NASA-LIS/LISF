@@ -173,28 +173,27 @@ subroutine get_era5cds(n, findex)
      era5cds_struc(n)%era5cdstime1=era5cds_struc(n)%era5cdstime2
      do f=1,LDT_rc%met_nf(findex)
         do c=1,LDT_rc%ngrid(n)
-           era5cds_struc(n)%metdata1(f,c)=era5cds_struc(n)%metdata2(f,c)
+           LDT_forc(n,findex)%metdata1(f,c)= LDT_forc(n,findex)%metdata2(f,c)
         enddo
      enddo
   endif    !end of movetime=1
   
   if( retrieve_file ) then 
      !- Obtaining ERA5 File:
-        do kk= era5cds_struc(n)%st_iterid, era5cds_struc(n)%en_iterid
-           if (LDT_get_nstep(LDT_rc,n) == 1) then
-            order = 1
-           else
-            order = 2
-            era5cds_struc(n)%findtime2 = 0
-           endif
-           call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, & 
-                yr1, mo1, da1, hr1, instfilename, accfilename, lmlfilename, &
-                prevaccfilename)
-           write(LDT_logunit,*) '[INFO] opening Bookend1 ',LDT_get_nstep(LDT_rc,n),hr1
-           call read_era5cds(n, kk, order, yr1, mo1, da1, hr1, retrieve_file,&
-                findex, instfilename, accfilename, lmlfilename, &
-                prevaccfilename, ferror)
-        enddo
+        kk= 1
+        if (LDT_get_nstep(LDT_rc,n) == 1) then
+         order = 1
+        else
+         order = 2
+         era5cds_struc(n)%findtime2 = 0
+        endif
+        call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, & 
+             yr1, mo1, da1, hr1, instfilename, accfilename, lmlfilename, &
+             prevaccfilename)
+        write(LDT_logunit,*) '[INFO] opening Bookend1 ',LDT_get_nstep(LDT_rc,n),hr1
+        call read_era5cds(n, kk, order, yr1, mo1, da1, hr1, retrieve_file,&
+             findex, instfilename, accfilename, lmlfilename, &
+             prevaccfilename, ferror)
 
         if(ferror.ge.1) then !successfully retrieved forcing data
           era5cds_struc(n)%era5cdstime1=time1
@@ -208,16 +207,15 @@ subroutine get_era5cds(n, findex)
 
   if(era5cds_struc(n)%findtime2.eq.1) then
      ! just need to assign metdata2
-        do kk= era5cds_struc(n)%st_iterid, era5cds_struc(n)%en_iterid
-           order = 2
-           call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
-                yr2, mo2, da2, hr2, instfilename, accfilename, lmlfilename, &
-                prevaccfilename)
-           write(LDT_logunit,*) '[INFO] using Bookend2 ',LDT_get_nstep(LDT_rc,n),hr2
-           call read_era5cds(n, kk, order, yr2, mo2, da2, hr2, retrieve_file, &
-               findex, instfilename, accfilename, lmlfilename, &
-               prevaccfilename, ferror)
-        end do
+        kk= 1
+        order = 2
+        call era5cdsfiles(n,kk,findex,era5cds_struc(n)%era5cdsdir, &
+             yr2, mo2, da2, hr2, instfilename, accfilename, lmlfilename, &
+             prevaccfilename)
+        write(LDT_logunit,*) '[INFO] using Bookend2 ',LDT_get_nstep(LDT_rc,n),hr2
+        call read_era5cds(n, kk, order, yr2, mo2, da2, hr2, retrieve_file, &
+            findex, instfilename, accfilename, lmlfilename, &
+            prevaccfilename, ferror)
 
         if(ferror.ge.1) then !successfully retrieved forcing data
            era5cds_struc(n)%era5cdstime2=time2
@@ -226,6 +224,12 @@ subroutine get_era5cds(n, findex)
            call LDT_endrun()
         endif
   endif 
+
+! should findex = 1 always?
+       if( LDT_rc%met_ecor(findex).eq."lapse-rate")  then
+          call read_era5cdselev_ldtproc(n, findex, 0)
+       endif
+
 end subroutine get_era5cds
 
 

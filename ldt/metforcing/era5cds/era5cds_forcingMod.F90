@@ -81,11 +81,9 @@ module era5cds_forcingMod
      character(len=LDT_CONST_PATH_LEN) :: era5cdsdir   !ERA5 Forcing Directory
      character(len=LDT_CONST_PATH_LEN) :: era5cdshgt_file
      real*8       :: era5cdstime1,era5cdstime2
-!     character*50 :: met_interp
      logical      :: reset_flag
      integer      :: mon
 
-     real :: gridDesc(50)
      integer                :: mi
      integer, allocatable   :: n111(:)
      integer, allocatable   :: n121(:)
@@ -121,17 +119,12 @@ module era5cds_forcingMod
      real, allocatable      :: prev_swd(:,:)
      real, allocatable      :: prev_lwd(:,:)
 
-     integer            :: nvars
+     integer            :: nmif
      integer            :: uselml
      integer            :: tdimsize
 
      real*8             :: ringtime
      
-     integer            :: nIter, st_iterid,en_iterid
-
-     real, allocatable :: metdata1(:,:) 
-     real, allocatable :: metdata2(:,:) 
-
   end type era5cds_type_dec
 
   type(era5cds_type_dec), allocatable :: era5cds_struc(:)
@@ -152,8 +145,8 @@ contains
   subroutine init_era5cds(findex)
 
 ! !USES:
-    use LDT_coreMod
-    use LDT_logMod
+    use LDT_coreMod,    only : LDT_rc, LDT_domain
+    use LDT_logMod,     only : LDT_logunit, LDT_endrun
     use LDT_timeMgrMod
     use map_utils,      only : proj_latlon
 
@@ -186,64 +179,58 @@ contains
     real :: upgmt
     integer :: n
     integer :: ftn
-
+    real :: gridDesc(20)
 
     allocate(era5cds_struc(LDT_rc%nnest))
 
-    do n=1, LDT_rc%nnest
-       era5cds_struc(n)%ncold = 1440
-       era5cds_struc(n)%nrold = 720
-       era5cds_struc(n)%mon = -1
+    write(LDT_logunit,*) "Reading the ERA5CDS forcing data"
 
-       allocate(era5cds_struc(n)%tair(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%qair(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%uwind(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%vwind(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%ps(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%rainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%crainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%swd(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-       allocate(era5cds_struc(n)%lwd(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
-
-       allocate(era5cds_struc(n)%prev_rainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
-       allocate(era5cds_struc(n)%prev_crainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
-       allocate(era5cds_struc(n)%prev_swd(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
-       allocate(era5cds_struc(n)%prev_lwd(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
-
-    enddo 
-
+!-  Read in config ERA5CDS inputs:
     call readcrd_era5cds(findex)
-    LDT_rc%met_nf(findex) = 9
-    LDT_rc%met_ts(findex) = 3600
-    LDT_rc%met_zterp(findex) = .true. 
-
-    era5cds_struc%reset_flag = .false.
 
     do n=1, LDT_rc%nnest
        era5cds_struc(n)%ts = 3600  !hour
        call LDT_update_timestep(LDT_rc, n, era5cds_struc(n)%ts)
     enddo
 
-    LDT_rc%met_proj(findex) = "latlon"
+    era5cds_struc%reset_flag = .false.
+    era5cds_struc(:)%nmif = 9
+
     ! Metforcing and parameter grid info:
+    LDT_rc%met_proj(findex) = "latlon"
+
+    era5cds_struc(:)%ncold = 1440
+    era5cds_struc(:)%nrold = 720
+    gridDesc = 0
+    gridDesc(1) = 0
+    gridDesc(2) = era5cds_struc(1)%ncold
+    gridDesc(3) = era5cds_struc(1)%nrold
+    gridDesc(4) = -89.875
+    gridDesc(5) = -179.875
+    gridDesc(6) = 128
+    gridDesc(7) = 89.875
+    gridDesc(8) = 179.875
+    gridDesc(9) = 0.25
+    gridDesc(10) = 0.25
+    gridDesc(20) = 0
+
+    LDT_rc%met_nc(findex) = era5cds_struc(1)%ncold
+    LDT_rc%met_nr(findex) = era5cds_struc(1)%nrold
+    LDT_rc%met_gridDesc(findex,1:20) = gridDesc(1:20)
+
+ !- If only processing parameters, then return to main routine calls ...
+    if( LDT_rc%runmode == "LSM parameter processing" ) return
+
+    LDT_rc%met_nf(findex) = 9
+    LDT_rc%met_ts(findex) = 3600
+    LDT_rc%met_zterp(findex) = .true. 
+
     do n=1,LDT_rc%nnest
-       era5cds_struc(n)%gridDesc = 0
-       era5cds_struc(n)%gridDesc(1) = 0
-       era5cds_struc(n)%gridDesc(2) = era5cds_struc(n)%ncold
-       era5cds_struc(n)%gridDesc(3) = era5cds_struc(n)%nrold
-       era5cds_struc(n)%gridDesc(4) = -89.875
-       era5cds_struc(n)%gridDesc(5) = -179.875
-       era5cds_struc(n)%gridDesc(6) = 128
-       era5cds_struc(n)%gridDesc(7) = 89.875
-       era5cds_struc(n)%gridDesc(8) = 179.875
-       era5cds_struc(n)%gridDesc(9) = 0.25
-       era5cds_struc(n)%gridDesc(10) = 0.25
-       era5cds_struc(n)%gridDesc(20) = 0
 
-       LDT_rc%met_gridDesc(findex,1:20) = era5cds_struc(n)%gridDesc(1:20)
+       era5cds_struc(n)%findtime1 = 0
+       era5cds_struc(n)%findtime2 = 0
 
-       LDT_rc%met_nc(findex) = era5cds_struc(n)%ncold
-       LDT_rc%met_nr(findex) = era5cds_struc(n)%nrold
+       era5cds_struc(n)%mi = era5cds_struc(n)%ncold*era5cds_struc(n)%nrold
 
        ! ERA5 accumulation data starts at 7z on 1940-01-01
        yr1 = 1940
@@ -253,10 +240,8 @@ contains
        mn1 = 0; ss1 = 0
        call LDT_date2time( era5cds_struc(n)%validstart,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1 )
 
-       era5cds_struc(n)%mi = era5cds_struc(n)%ncold*era5cds_struc(n)%nrold
-
-       if( era5cds_struc(n)%gridDesc(9)  == LDT_rc%gridDesc(n,9) .and. &
-           era5cds_struc(n)%gridDesc(10) == LDT_rc%gridDesc(n,10).and. &
+       if( gridDesc(9)  == LDT_rc%gridDesc(n,9) .and. &
+           gridDesc(10) == LDT_rc%gridDesc(n,10).and. &
            LDT_rc%gridDesc(n,1) == proj_latlon .and. &
            LDT_rc%met_gridtransform(findex) .ne. "neighbor" ) then
          write(LDT_logunit,*) "[ERR]  The ERA5CDS 0.25 deg grid was selected for the"
@@ -278,7 +263,7 @@ contains
           allocate(era5cds_struc(n)%w121(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
           allocate(era5cds_struc(n)%w211(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
           allocate(era5cds_struc(n)%w221(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
-          call bilinear_interp_input(n, era5cds_struc(n)%gridDesc(:),&
+          call bilinear_interp_input(n, gridDesc(:),&
                era5cds_struc(n)%n111,era5cds_struc(n)%n121,&
                era5cds_struc(n)%n211,era5cds_struc(n)%n221,&
                era5cds_struc(n)%w111,era5cds_struc(n)%w121,&
@@ -293,7 +278,7 @@ contains
           allocate(era5cds_struc(n)%w121(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
           allocate(era5cds_struc(n)%w211(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
           allocate(era5cds_struc(n)%w221(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
-          call bilinear_interp_input(n, era5cds_struc(n)%gridDesc(:),&
+          call bilinear_interp_input(n, gridDesc(:),&
                era5cds_struc(n)%n111,era5cds_struc(n)%n121,&
                era5cds_struc(n)%n211,era5cds_struc(n)%n221,&
                era5cds_struc(n)%w111,era5cds_struc(n)%w121,&
@@ -307,7 +292,7 @@ contains
           allocate(era5cds_struc(n)%w122(LDT_rc%lnc(n)*LDT_rc%lnr(n),25))
           allocate(era5cds_struc(n)%w212(LDT_rc%lnc(n)*LDT_rc%lnr(n),25))
           allocate(era5cds_struc(n)%w222(LDT_rc%lnc(n)*LDT_rc%lnr(n),25))
-          call conserv_interp_input(n, era5cds_struc(n)%gridDesc(:),&
+          call conserv_interp_input(n, gridDesc(:),&
                era5cds_struc(n)%n112,era5cds_struc(n)%n122,&
                era5cds_struc(n)%n212,era5cds_struc(n)%n222,&
                era5cds_struc(n)%w112,era5cds_struc(n)%w122,&
@@ -315,7 +300,7 @@ contains
 
         case("neighbor")
           allocate(era5cds_struc(n)%n113(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
-          call neighbor_interp_input(n, era5cds_struc(n)%gridDesc(:),&
+          call neighbor_interp_input(n, gridDesc(:),&
                era5cds_struc(n)%n113)
 
         case default
@@ -330,18 +315,25 @@ contains
        era5cds_struc(n)%startFlag = .true.
        era5cds_struc(n)%dayFlag = .true.
 
-       era5cds_struc(n)%nvars = 9
+!       if( LDT_rc%met_ecor(findex).eq."lapse-rate")  then
+!          call read_era5cdselev_ldtproc(n, findex, 0)
+!       endif
 
-       allocate(era5cds_struc(n)%metdata1(LDT_rc%met_nf(findex),&
-            LDT_rc%ngrid(n)))
-       allocate(era5cds_struc(n)%metdata2(LDT_rc%met_nf(findex),&
-            LDT_rc%ngrid(n)))
+       era5cds_struc(n)%mon = -1
+       allocate(era5cds_struc(n)%tair(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%qair(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%uwind(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%vwind(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%ps(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%rainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%crainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%swd(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
+       allocate(era5cds_struc(n)%lwd(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
 
-       era5cds_struc(n)%metdata1 = 0
-       era5cds_struc(n)%metdata2 = 0
-
-       era5cds_struc(n)%findtime1 = 0
-       era5cds_struc(n)%findtime2 = 0
+       allocate(era5cds_struc(n)%prev_rainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
+       allocate(era5cds_struc(n)%prev_crainf(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
+       allocate(era5cds_struc(n)%prev_swd(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
+       allocate(era5cds_struc(n)%prev_lwd(LDT_rc%lnc(n)*LDT_rc%lnr(n),7))
 
     enddo   ! End nest loop
     

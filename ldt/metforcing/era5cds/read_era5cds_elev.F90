@@ -83,20 +83,6 @@ subroutine read_era5cds_elev( n, findex, era5cdselev, elevdiff )
    era5cdselev = LDT_rc%udef
    elevdiff = LDT_rc%udef
 
-   ! Check if ERA5 grid is selected but downscaling options, 
-   !  like bilinear, is incorrectly selected.
-   if( era5cds_struc(n)%gridDesc(9)  == LDT_rc%gridDesc(n,9) .and. &
-       era5cds_struc(n)%gridDesc(10) == LDT_rc%gridDesc(n,10).and. &
-       LDT_rc%gridDesc(n,1) == 0 .and. &
-       LDT_rc%met_gridtransform_parms(findex) .ne. "neighbor" ) then
-      write(LDT_logunit,*) "[WARN] The ERA5CDS grid was selected for the"
-      write(LDT_logunit,*) "  LDT run domain; however, 'bilinear', 'budget-bilinear',"
-      write(LDT_logunit,*) "  or some other unknown option was selected to spatially"
-      write(LDT_logunit,*) "  downscale the grid, which will cause errors during runtime."
-      write(LDT_logunit,*) "Program stopping ..."
-      call LDT_endrun()
-   endif
-
    inquire(file = trim(era5cds_struc(n)%era5cdshgt_file), exist=file_exists)
    if(.not. file_exists) then
       write(LDT_logunit,*) "[ERR] The ERA5CDS terrain height file ",&

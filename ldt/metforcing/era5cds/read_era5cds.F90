@@ -725,22 +725,22 @@ subroutine read_era5cds(n, kk,order, year, month, day, hour, read_flag, findex,&
    atindex = era5cds_struc(n)%tdimsize - n_last_steps
   endif  !(rec_size < tindex)
 
-   call assign_processed_era5cdsf(n,kk,order,1,era5cds_struc(n)%tair(:,tindex))
-   call assign_processed_era5cdsf(n,kk,order,2,era5cds_struc(n)%qair(:,tindex))
-   call assign_processed_era5cdsf(n,kk,order,5,era5cds_struc(n)%uwind(:,tindex))
-   call assign_processed_era5cdsf(n,kk,order,6,era5cds_struc(n)%vwind(:,tindex))
-   call assign_processed_era5cdsf(n,kk,order,7,era5cds_struc(n)%ps(:,tindex))
+   call assign_processed_era5cdsf(n,kk,findex,order,1,era5cds_struc(n)%tair(:,tindex))
+   call assign_processed_era5cdsf(n,kk,findex,order,2,era5cds_struc(n)%qair(:,tindex))
+   call assign_processed_era5cdsf(n,kk,findex,order,5,era5cds_struc(n)%uwind(:,tindex))
+   call assign_processed_era5cdsf(n,kk,findex,order,6,era5cds_struc(n)%vwind(:,tindex))
+   call assign_processed_era5cdsf(n,kk,findex,order,7,era5cds_struc(n)%ps(:,tindex))
    if ( atindex .le. 0 ) then
      atindex = atindex + n_last_steps
-     call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%prev_swd(:,atindex))
-     call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%prev_lwd(:,atindex))
-     call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%prev_rainf(:,atindex))
-     call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%prev_crainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,3,era5cds_struc(n)%prev_swd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,4,era5cds_struc(n)%prev_lwd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,8,era5cds_struc(n)%prev_rainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,9,era5cds_struc(n)%prev_crainf(:,atindex))
    else
-     call assign_processed_era5cdsf(n,kk,order,3,era5cds_struc(n)%swd(:,atindex))
-     call assign_processed_era5cdsf(n,kk,order,4,era5cds_struc(n)%lwd(:,atindex))
-     call assign_processed_era5cdsf(n,kk,order,8,era5cds_struc(n)%rainf(:,atindex))
-     call assign_processed_era5cdsf(n,kk,order,9,era5cds_struc(n)%crainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,3,era5cds_struc(n)%swd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,4,era5cds_struc(n)%lwd(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,8,era5cds_struc(n)%rainf(:,atindex))
+     call assign_processed_era5cdsf(n,kk,findex,order,9,era5cds_struc(n)%crainf(:,atindex))
    endif
    if ( .not. read_flag .and. ferror == 0 ) ferror = 1
 
@@ -938,9 +938,10 @@ end subroutine era5grid_2_lisgrid
 ! \label{assign_processed_era5cdsf}
 !
 ! !INTERFACE:
-subroutine assign_processed_era5cdsf(n,kk,order,var_index,era5forc)
+subroutine assign_processed_era5cdsf(n,kk,findex,order,var_index,era5forc)
 ! !USES:
   use LDT_coreMod
+  use LDT_metforcingMod,  only : LDT_forc
   use era5cds_forcingMod, only : era5cds_struc
 !
 ! !DESCRIPTION:
@@ -953,6 +954,7 @@ subroutine assign_processed_era5cdsf(n,kk,order,var_index,era5forc)
 
   integer :: n
   integer :: kk
+  integer :: findex
   integer :: order
   integer :: var_index
   real    :: era5forc(LDT_rc%lnc(n)*LDT_rc%lnr(n))
@@ -964,11 +966,11 @@ subroutine assign_processed_era5cdsf(n,kk,order,var_index,era5forc)
      do c=1,LDT_rc%lnc(n)
         if(LDT_domain(n)%gindex(c,r).ne.-1) then
            if(order.eq.1) then
-              era5cds_struc(n)%metdata1(var_index,&
+              LDT_forc(n,findex)%metdata1(var_index,&
                    LDT_domain(n)%gindex(c,r)) = &
                    era5forc(c+(r-1)*LDT_rc%lnc(n))
            elseif(order.eq.2) then
-              era5cds_struc(n)%metdata2(var_index,&
+              LDT_forc(n,findex)%metdata2(var_index,&
                    LDT_domain(n)%gindex(c,r)) = &
                    era5forc(c+(r-1)*LDT_rc%lnc(n))
            endif

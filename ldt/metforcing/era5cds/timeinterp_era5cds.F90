@@ -144,16 +144,16 @@ subroutine timeinterp_era5cds(n,findex)
           gmt1,gmt2,LDT_rc%gmt,zdoy,zw1,zw2,czb,cze,czm,LDT_rc)
      
 ! past hour average
-     if (era5cds_struc(n)%metdata1(3,index1).ne.LDT_rc%udef) then
+     if (LDT_forc(n,findex)%metdata1(3,index1).ne.LDT_rc%udef) then
 
-        swd(t) = zw1 * era5cds_struc(n)%metdata1(3,index1)
+        swd(t) = zw1 * LDT_forc(n,findex)%metdata1(3,index1)
 
         if (swd(t).gt.LDT_CONST_SOLAR) then
            write(unit=LDT_logunit,fmt=*)'[WARN] sw radiation too high in ERA5!!'
            write(unit=LDT_logunit,fmt=*)'[WARN] it is',swd(t), zw1
            write(unit=LDT_logunit,fmt=*)'[WARN] at ',t,LDT_domain(n)%grid(index1)%lat,LDT_domain(n)%grid(index1)%lon
-           write(unit=LDT_logunit,fmt=*)'[WARN] era5cdsdata1=',era5cds_struc(n)%metdata1(3,index1)
-           write(unit=LDT_logunit,fmt=*)'[WARN] era5cdsdata2=',era5cds_struc(n)%metdata2(3,index1)
+           write(unit=LDT_logunit,fmt=*)'[WARN] era5cdsdata1=',LDT_forc(n,findex)%metdata1(3,index1)
+           write(unit=LDT_logunit,fmt=*)'[WARN] era5cdsdata2=',LDT_forc(n,findex)%metdata2(3,index1)
            swd(t) = LDT_CONST_SOLAR
            write(unit=LDT_logunit,fmt=*)'[WARN] forcing set to ',swd(t)
         endif
@@ -166,7 +166,7 @@ subroutine timeinterp_era5cds(n,findex)
         write(LDT_logunit,*) &
              '[WARN] timeinterp_era5cds -- forcing not udef but lt0'
         write(LDT_logunit,*)'[WARN] timeinterp_era5cds -- ', & 
-             t,swd(t),era5cds_struc(n)%metdata2(3,index1), & 
+             t,swd(t),LDT_forc(n,findex)%metdata2(3,index1), & 
              ' (',LDT_localPet,')'
         !call LDT_endrun
      endif
@@ -178,8 +178,8 @@ subroutine timeinterp_era5cds(n,findex)
 !-----------------------------------------------------------------------  
   do t=1,LDT_rc%ntiles(n)
      index1 = LDT_domain(n)%tile(t)%index
-     pcp(t) = era5cds_struc(n)%metdata1(8,index1)
-     cpcp(t) = era5cds_struc(n)%metdata1(9,index1)
+     pcp(t) = LDT_forc(n,findex)%metdata1(8,index1)
+     cpcp(t) = LDT_forc(n,findex)%metdata1(9,index1)
      
      if ( pcp(t) < 0 ) then
         pcp(t) = 0
@@ -194,7 +194,7 @@ subroutine timeinterp_era5cds(n,findex)
 !-----------------------------------------------------------------------  
   do t=1,LDT_rc%ntiles(n)
      index1 = LDT_domain(n)%tile(t)%index
-     lwd(t) = era5cds_struc(n)%metdata1(4,index1)
+     lwd(t) = LDT_forc(n,findex)%metdata1(4,index1)
   enddo
 
 !-----------------------------------------------------------------------
@@ -204,16 +204,16 @@ subroutine timeinterp_era5cds(n,findex)
   do t=1,LDT_rc%ntiles(n)
      index1 = LDT_domain(n)%tile(t)%index
      
-     tmp(t) = era5cds_struc(n)%metdata1(1,index1)*wt1 + &
-          era5cds_struc(n)%metdata2(1,index1)*wt2
-     q2(t)  = era5cds_struc(n)%metdata1(2,index1)*wt1 + &
-          era5cds_struc(n)%metdata2(2,index1)*wt2
-     uwind(t) = era5cds_struc(n)%metdata1(5,index1)*wt1+&
-          era5cds_struc(n)%metdata2(5,index1)*wt2
-     vwind(t) = era5cds_struc(n)%metdata1(6,index1)*wt1+&
-          era5cds_struc(n)%metdata2(6,index1)*wt2
-     psurf(t) = era5cds_struc(n)%metdata1(7,index1)*wt1 + &
-          era5cds_struc(n)%metdata2(7,index1)*wt2
+     tmp(t) = LDT_forc(n,findex)%metdata1(1,index1)*wt1 + &
+          LDT_forc(n,findex)%metdata2(1,index1)*wt2
+     q2(t)  = LDT_forc(n,findex)%metdata1(2,index1)*wt1 + &
+          LDT_forc(n,findex)%metdata2(2,index1)*wt2
+     uwind(t) = LDT_forc(n,findex)%metdata1(5,index1)*wt1+&
+          LDT_forc(n,findex)%metdata2(5,index1)*wt2
+     vwind(t) = LDT_forc(n,findex)%metdata1(6,index1)*wt1+&
+          LDT_forc(n,findex)%metdata2(6,index1)*wt2
+     psurf(t) = LDT_forc(n,findex)%metdata1(7,index1)*wt1 + &
+          LDT_forc(n,findex)%metdata2(7,index1)*wt2
   enddo
 
 end subroutine timeinterp_era5cds
