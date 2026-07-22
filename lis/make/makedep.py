@@ -15,6 +15,7 @@ import sys
 import os
 import re
 import glob
+from pathlib import Path
 
 #
 # Note that an issue was encountered processing (with Python3) a Fortran90 source file
@@ -117,6 +118,111 @@ def print_status(*pargs, **kwargs):
     if cli_args.VERBOSE >= cli_args.STATUS:
         print(*pargs, **kwargs)
 
+class FileF90:
+    """
+    Class to represent a Fortran90 file containing module definitions.
+    FileF90 caches modules in the file for performance.
+    """
+    def __init__(self, filepath: Path):
+        self.filepath = filepath.resolve()
+        self.casefolded_name = self.filepath.name.casefold()
+        self._modscan = False
+        self._modules = set()
+
+    def _scan_modules(self):
+        if not self._modscan:
+            self._modules = get_modules_in_file(self.filepath)
+            self._modscan = True
+
+    def has_module(self, desired_mod):
+        self._scan_modules()
+        return desired_mod.casefold() in self._modules
+
+class DirF90:
+    """
+    Class to represent a directory containing Fortran90 files with module definitions.
+    DirF90 caches Fortran90 files and their modules for performance.
+    """
+    def __init__(self, dirpath: Path):
+        self._dirpath = dirpath.resolve()
+        self._f90scan = False
+        self._f90s = []
+        self._mods = {}
+
+    def _scan_files(self):
+        if not self._f90scan:
+            self._f90s = [FileF90(f) for f in list_f90s_in_dir(self._dirpath)]
+            self._f90scan = True
+
+    def search_modules_fname_match(self, desired_mod):
+        self._scan_files()
+        search_mod = desired_mod.casefold()
+        if search_mod in self._mods:
+            return self._mods[search_mod]
+        for f in self._f90s:
+            if search_mod in f.casefolded_name and f.has_module(search_mod):
+                self._mods[search_mod] = f
+                return f
+        return None
+
+    def search_modules_fname_mismatch(self, desired_mod):
+        self._scan_files()
+        search_mod = desired_mod.casefold()
+        if search_mod in self._mods:
+            return self._mods[search_mod]
+        for f in self._f90s:
+            if search_mod not in f.casefolded_name and f.has_module(search_mod):
+                self._mods[search_mod] = f
+                return f
+        return None
+
+    def search_modules(self, desired_mod):
+        self._scan_files()
+        search_mod = desired_mod.casefold()
+        if search_mod in self._mods:
+            return self._mods[search_mod]
+        for f in self._f90s:
+            if f.has_module(search_mod):
+                self._mods[search_mod] = f
+                return f
+        return None
+
+class DirListF90:
+    """
+    Class to represent a list of directories containing Fortran90 files with module definitions.
+    DirListF90 caches modules for performance.
+    """
+    def __init__(self, dirlist):
+        self._dirs = {Path(d).resolve(): DirF90(Path(d)) for d in dirlist}
+        self._mods = {}
+
+    def search_modules(self, desired_mod, current_dir):
+        search_mod = desired_mod.casefold()
+        search_dir = current_dir.resolve()
+        core_dir = Path("../core").resolve()
+        if (search_mod, search_dir) in self._mods:
+            return self._mods[(search_mod, search_dir)]
+        level = 1
+        search_dirs = {search_dir: level}
+        for _, d in enumerate(search_dir.parents):
+            level += 1
+            search_dirs[d.resolve()] = level
+        sorted_dirs = sorted(self._dirs, key=lambda sd:
+            0 if sd == core_dir else
+            search_dirs[sd] if sd in search_dirs else
+            level + 1,
+        )
+        for d in sorted_dirs:
+            f = self._dirs[d].search_modules_fname_match(search_mod)
+            if f is not None:
+                self._mods[(search_mod, search_dir)] = f
+                return f
+        for d in sorted_dirs:
+            f = self._dirs[d].search_modules_fname_mismatch(search_mod)
+            if f is not None:
+                self._mods[(search_mod, search_dir)] = f
+                return f
+        return None
 
 def get_cli_exclude_files(stype):
     """
@@ -223,8 +329,29 @@ def add_prerequisite(prereqs, fname, suffix=None):
         prereqs.add(os.path.basename(fname))
     return prereqs
 
+def list_f90s_in_dir(dirname):
+    """
+    Return a list of all Fortran 90 paths in the directory dirname.
 
-def find_module_file(desired_mod):
+    dirname is the name of the directory to search.
+    """
+    return sorted(Path(dirname).glob("*.[fF]90"))
+
+def get_modules_in_file(fname):
+    """
+    Return a set of all modules defined in the Fortran file fname.
+
+    fname is the name of the Fortran file to search.
+    """
+    modules = set()
+    with input_open(fname, 'r', errors='replace') as f:
+        for line in f:
+            result = module_def_pattern.match(line)
+            if result:
+                modules.add(result.group(1).casefold())
+    return modules
+
+def find_module_file(desired_mod, current_dir):
     """
     Return the name of the file containing the module specified by desired_mod.
 
@@ -245,23 +372,9 @@ def find_module_file(desired_mod):
     exclude_fmod_files = get_cli_exclude_files('fmod')
     if desired_mod.lower() in exclude_fmod_files:
         return None
-    check_files = [desired_mod+'.F90', desired_mod+'.f90',
-                   desired_mod.lower()+'.F90', desired_mod.lower()+'.f90',
-                   desired_mod.upper()+'.F90', desired_mod.upper()+'.f90']
-    for d in get_cli_search_dirs():
-        for cf in check_files:
-            filename = os.path.join(d, cf)
-            if os.path.isfile(filename):
-                if contains_module_definition(filename, desired_mod):
-                    return cf
-    for d in get_cli_search_dirs():
-        f90s = os.path.join(d, '*.f90')
-        F90s = os.path.join(d, '*.F90')
-        check_files = glob.glob(f90s)
-        check_files += glob.glob(F90s)
-        for cf in check_files:
-            if contains_module_definition(cf, desired_mod):
-                return cf
+    f = dir_list_f90s.search_modules(desired_mod, current_dir)
+    if f is not None:
+        return f.filepath
     print_warn('module {} not found.'.format(desired_mod))
     return None
 
@@ -282,7 +395,7 @@ def contains_module_definition(file_name, desired_mod):
             return False
 
 
-def find_use_module_statement(line):
+def find_use_module_statement(line, current_dir=None):
     """
     Determine whether line contains a Fortran USE statement.  If so,
     find the file that contains the definition of the module being USE'd
@@ -293,7 +406,7 @@ def find_use_module_statement(line):
     result = use_statement_pattern.match(line)
     if result:
         use_mod = result.group(1)
-        return find_module_file(use_mod)
+        return find_module_file(use_mod, current_dir=current_dir)
     else:
         return None
 
@@ -372,6 +485,7 @@ def process_fortran90_file(fname, prereqs):
     """
     try:
         ffname = find_file(fname)
+        fparent = Path(ffname).parent
         f = input_open(ffname, 'r', errors='replace')
     except IOError as e:
         print_err("Cannot open file '{}'; skipping.".format(fname))
@@ -379,7 +493,7 @@ def process_fortran90_file(fname, prereqs):
         print(e)
     else:
         for line in f:
-            name = find_use_module_statement(line)
+            name = find_use_module_statement(line, current_dir=fparent)
             if name:
                 prereqs = add_prerequisite(prereqs, name, '.o')
             name = find_f_include_statement(line)
@@ -558,6 +672,8 @@ cli_args = process_command_line()
 print_dbg('cli_args: ', cli_args)
 
 files = cli_args.files
+
+dir_list_f90s = DirListF90(get_cli_search_dirs())
 
 for full_filename in files:
     print_status('Generating dependencies for {}'.format(full_filename))
