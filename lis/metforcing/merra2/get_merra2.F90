@@ -19,6 +19,7 @@
 ! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
 ! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
 ! 18 Dec 2024: Kristen Whitney, code for using double-sided dynamic lapse rate cutoff
+! 07 Jan 2026: Kristen Whitney, added use of dynamic lapse rate input filename prefix and suffix variables
 !
 ! !INTERFACE:
 subroutine get_merra2(n, findex)
@@ -180,7 +181,9 @@ subroutine get_merra2(n, findex)
 
   character(len=LIS_CONST_PATH_LEN) :: lapseratefname
   character*8                       :: fdate
-  
+
+  external :: merra2files
+  external :: read_merra2
 ! _________________________________________________________
 
 ! Please note that the timing logic has been tested only for
@@ -317,8 +320,8 @@ subroutine get_merra2(n, findex)
 
         write(unit=fdate, fmt='(i4.4,i2.2,i2.2)') yr1,mo1,da1
         lapseratefname = trim(merra2_struc(n)%dynlapseratedir)//&
-             '/MERRA2.lapse_rate.hourly.'//&
-             trim(fdate)//'.global.nc'
+             trim(merra2_struc(n)%dynlapseratepfx)//&
+             trim(fdate)//trim(merra2_struc(n)%dynlapseratesfx)
 
         call read_merra2(n, order, mo1, &
              findex, slvname, flxname, lfoname, radname, lapseratefname, &
@@ -344,8 +347,8 @@ subroutine get_merra2(n, findex)
 
         write(unit=fdate, fmt='(i4.4,i2.2,i2.2)') yr2,mo2,da2
         lapseratefname = trim(merra2_struc(n)%dynlapseratedir)//&
-             '/MERRA2.lapse_rate.hourly.'//&
-             trim(fdate)//'.global.nc'
+             trim(merra2_struc(n)%dynlapseratepfx)//&
+             trim(fdate)//trim(merra2_struc(n)%dynlapseratesfx)
 
         call read_merra2(n, order, mo2,&
              findex, slvname, flxname, lfoname, radname, lapseratefname, &
@@ -553,12 +556,7 @@ subroutine merra2files(n, kk, findex, merra2dir, yr, mo, da, slvname, flxname, l
   character*10 :: prefix
   character*17 :: slv_spec, flx_spec, lfo_spec, rad_spec
   character*20 :: dir
-  integer      :: seed
-  real         :: rand
   integer      :: hr, mn, ss
-  real*8       :: time
-  integer      :: doy
-  real         :: gmt
 
   hr = 0 
   mn = 0 
