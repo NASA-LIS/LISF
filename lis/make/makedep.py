@@ -144,14 +144,14 @@ class DirF90:
     DirF90 caches Fortran90 files and their modules for performance.
     """
     def __init__(self, dirpath: Path):
-        self._dirpath = dirpath.resolve()
+        self.dirpath = dirpath.resolve()
         self._f90scan = False
         self._f90s = []
         self._mods = {}
 
     def _scan_files(self):
         if not self._f90scan:
-            self._f90s = [FileF90(f) for f in list_f90s_in_dir(self._dirpath)]
+            self._f90s = [FileF90(f) for f in list_f90s_in_dir(self.dirpath)]
             self._f90scan = True
 
     def search_modules_fname_match(self, desired_mod):
@@ -193,32 +193,42 @@ class DirListF90:
     DirListF90 caches modules for performance.
     """
     def __init__(self, dirlist):
-        self._dirs = {Path(d).resolve(): DirF90(Path(d)) for d in dirlist}
+        self._corepath = Path("../core").resolve()
+        self._dirs = [DirF90(Path(d)) for d in dirlist]
         self._mods = {}
+
+    def _sorted_dirs(self, search_dir):
+        search_parent = search_dir.parent
+        prioritized = []
+        remaining = []
+        for d in self._dirs:
+            if d.dirpath == self._corepath:
+                prioritized.append((1, d))
+            elif d.dirpath == search_dir:
+                prioritized.append((2, d))
+            elif d.dirpath == search_parent:
+                prioritized.append((3, d))
+            elif d.dirpath.parent == search_dir:
+                prioritized.append((4, d))
+            else:
+                remaining.append(d)
+        prioritized.sort(key=lambda item: item[0])
+        return [d for _, d in prioritized] + remaining
 
     def search_modules(self, desired_mod, current_dir):
         search_mod = desired_mod.casefold()
         search_dir = current_dir.resolve()
-        core_dir = Path("../core").resolve()
         if (search_mod, search_dir) in self._mods:
             return self._mods[(search_mod, search_dir)]
-        level = 1
-        search_dirs = {search_dir: level}
-        for _, d in enumerate(search_dir.parents):
-            level += 1
-            search_dirs[d.resolve()] = level
-        sorted_dirs = sorted(self._dirs, key=lambda sd:
-            0 if sd == core_dir else
-            search_dirs[sd] if sd in search_dirs else
-            level + 1,
-        )
+
+        sorted_dirs = self._sorted_dirs(search_dir)
         for d in sorted_dirs:
-            f = self._dirs[d].search_modules_fname_match(search_mod)
+            f = d.search_modules_fname_match(search_mod)
             if f is not None:
                 self._mods[(search_mod, search_dir)] = f
                 return f
         for d in sorted_dirs:
-            f = self._dirs[d].search_modules_fname_mismatch(search_mod)
+            f = d.search_modules_fname_mismatch(search_mod)
             if f is not None:
                 self._mods[(search_mod, search_dir)] = f
                 return f
