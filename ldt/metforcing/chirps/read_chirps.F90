@@ -26,8 +26,7 @@
 subroutine read_chirps( n, findex, chirps_filename, year, mon, day, ferror )
 
 ! !USES:
-  use LDT_coreMod,         only : LDT_rc, LDT_domain, LDT_localPet, &
-                                  LDT_masterproc
+  use LDT_coreMod,         only : LDT_rc, LDT_domain, LDT_localPet
   use LDT_metforcingMod,   only : LDT_forc
   use LDT_timeMgrMod,      only : LDT_tick
   use LDT_logMod,          only : LDT_logunit, LDT_endrun, LDT_verify
@@ -93,6 +92,10 @@ subroutine read_chirps( n, findex, chirps_filename, year, mon, day, ferror )
   real      :: lisprec_1d(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real      :: lisprec_2d(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
+  external :: conserv_interp
+  external :: neighbor_interp
+  external :: upscaleByAveraging
+  
 ! ______________________________________________
 
   lisprec_2d = LDT_rc%udef

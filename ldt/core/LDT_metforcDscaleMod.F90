@@ -95,7 +95,7 @@ contains
 !EOP
 
    integer          :: rc
-   integer          :: n, m
+   integer          :: n
    character*10     :: time
    character*100    :: temp
    character*1      :: nestid(2)
@@ -330,7 +330,7 @@ contains
 !
 !EOP
 
-    integer                :: k,m
+    integer                :: k
     type(ESMF_Field)       :: varField1, varField2
     type(ESMF_Field)       :: sumVarField1,   sumVarField2
     type(ESMF_Field)       :: countVarField1, countVarField2
@@ -473,7 +473,7 @@ contains
 !   at each timestep through the time window.
 !
 !EOP
-    integer                    :: i,t,m,fobjcount
+    integer                    :: i,t,fobjcount
     character*100, allocatable :: forcobjs(:)       ! The saved array of forcing fields
     type(ESMF_Field)           :: base1Field, base2Field
     type(ESMF_Field)           :: dscale1Field, dscale2Field
@@ -485,7 +485,7 @@ contains
     real,          pointer     :: forcdata_count_dscale1(:), forcdata_count_dscale2(:)
     integer                    :: status, status1, status2
     real                       :: factor1, factor2
-    logical                    :: attrib_exists
+
 ! ____________________________________________________________________
     
     call ESMF_StateGet(LDT_FORC_State(n),itemCount=fobjcount,rc=status)
@@ -609,7 +609,7 @@ contains
 !
 !EOP
     integer                    :: n 
-    integer                    :: i,t,m,fobjcount
+    integer                    :: i,fobjcount
     character*100, allocatable :: forcobjs(:)
     type(ESMF_Field)           :: dscale1Field, dscale2Field
     type(ESMF_Field)           :: sumDscale1Field, sumDscale2Field
@@ -722,6 +722,8 @@ contains
   integer                :: status, status1, status2
   real, pointer          :: forcdata_base(:), forcdata_mrg(:)
   character*100, allocatable :: forcobjs(:)
+
+  external :: applytimedscale
 ! ______________________________________________________________
 
 
@@ -826,8 +828,7 @@ contains
     logical                 :: check_flag
     integer                 :: status
     integer                 :: yr, mo, da, hr, mn, ss
-    integer                 :: tstep_n_secs
-    integer                 :: interval_int
+
 ! ___________________________________________________________
 
     write(LDT_logunit,*) "[INFO] Initializing LDT Time Window Book-ends "
@@ -958,9 +959,7 @@ contains
     type(ESMF_Time)         :: currTime
     type(ESMF_TimeInterval) :: ts
     integer  :: rc
-    integer  :: YY, MM, DD, H, M, S
-    integer  :: yr, mo, da, hr
-    integer  :: ewyr, ewmo, ewda, ewhr
+
 ! ___________________________________________________________
 
     call ESMF_ClockGet(LDT_clock, currTime=currTime, &
@@ -1004,11 +1003,10 @@ contains
 !EOP
     integer                 :: rc,status
     integer                 :: yr,mo,da,hr,mn,ss
-    integer                 :: interval_int
     logical                 :: check_flag
     type(ESMF_Time)         :: tTime
     type(ESMF_TimeInterval) :: timeStep
-    integer                 :: tstep_n_secs
+
 ! ____________________________________________________
 
     ! Set the clock at the start Time:

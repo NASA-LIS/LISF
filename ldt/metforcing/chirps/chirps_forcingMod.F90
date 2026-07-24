@@ -124,7 +124,7 @@ contains
 ! !INTERFACE:
   subroutine init_chirps(findex)
 ! !USES: 
-    use LDT_coreMod, only : LDT_rc, LDT_config, LDT_domain, &
+    use LDT_coreMod, only : LDT_rc, &
             LDT_isLDTatAfinerResolution
     use LDT_timeMgrMod, only : LDT_date2time, LDT_update_timestep, &
                                LDT_tick, LDT_parseTimeString, &
@@ -157,7 +157,6 @@ contains
 !
 !EOP
     integer :: n
-    integer :: rc
     integer :: updoy,yr1,mo1,da1,hr1,mn1,ss1
     real    :: upgmt
     integer :: ts1,ts2
@@ -165,7 +164,6 @@ contains
     integer :: LDT_syr,LDT_smo,LDT_sda,LDT_shr,LDT_smn,LDT_sss
     real*8  :: FirstDateTime
     real*8  :: LDT_StartTime
-    character (len=10):: time
 
     integer :: subpnc, subpnr, glpnc, glpnr
     real    :: sub_gridDesci(20)
@@ -173,6 +171,10 @@ contains
     integer, allocatable  :: lat_line(:,:), lon_line(:,:)
     real    :: lat_min, lat_max
 
+    external :: readconfig_chirps
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
+    external :: upscaleByAveraging_input
 ! _________________________________________________________________
 
     allocate(chirps_struc(LDT_rc%nnest))

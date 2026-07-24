@@ -141,10 +141,12 @@ contains
 !    perturbations. 
 ! \end{description}
 !EOP
-    integer :: n, m, k
+    integer :: n, m
     integer :: rc
     character(10) :: time
     integer :: nensem
+
+    external :: initmetforc
 ! _______________________________________________________
 
     if( LDT_rc%nmetforc > 0 ) then
@@ -848,6 +850,9 @@ contains
 
     integer :: m
 
+    external :: retrievemetforc
+    external :: timeinterpmetforc
+
     if(LDT_rc%nmetforc.gt.0) then 
        do m=1,LDT_rc%nmetforc
 
@@ -967,7 +972,7 @@ contains
 !
 !EOP
     integer                :: fobjcount
-    integer                :: i,t,m,tid,tid1,tid2,index1
+    integer                :: i,t,m,tid,tid1,tid2
     type(ESMF_Field)       :: mrgField, baseField
     integer                :: status, status1, status2
     real, pointer          :: forcdata_base(:), forcdata_mrg(:)
@@ -1067,6 +1072,8 @@ contains
 !EOP
     integer  :: m
 
+    external :: resetmetforc
+
     ! Call the C function-table to reset each forcing dataset variables/parameters,
     !  where needed.
     if(LDT_rc%nmetforc.gt.0) then 
@@ -1100,13 +1107,15 @@ contains
 !EOP
     integer  :: m
 
-    print *, " I AM HERE (inside core/LDT_metforcingMod)!"      ! KRA - 08/17/2015
+    external :: finalmetforc
+
+    !print *, " I AM HERE (inside core/LDT_metforcingMod)!"      ! KRA - 08/17/2015
 
     if(LDT_rc%nmetforc.gt.0) then 
        do m=1,LDT_rc%nmetforc
           call finalmetforc(trim(LDT_rc%metforc(m))//char(0),m)
-          print *, m, LDT_rc%nmetforc, trim(LDT_rc%metforc(m))  ! KRA - 08/17/2015
- stop
+          !print *, m, LDT_rc%nmetforc, trim(LDT_rc%metforc(m))  ! KRA - 08/17/2015
+! stop
        enddo
        deallocate(LDT_FORC_State)
 #if 0          
@@ -1310,12 +1319,12 @@ contains
     integer            :: status, t
     integer            :: k 
     type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
-    type(ESMF_Field)   :: psurfField,pcpField,cpcpField,snowfField,totprecField
+    type(ESMF_Field)   :: psurfField,pcpField,cpcpField,snowfField
     type(ESMF_Field)   :: swdirField,swdifField,hField,chField,cmField
     type(ESMF_Field)   :: emissField,mixField,coszField,albField
     type(ESMF_Field)   :: tempField
     real, pointer      :: tmp(:),q2(:),uwind(:),vwind(:),snowf(:)
-    real, pointer      :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:),totprec(:)
+    real, pointer      :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:)
     real, pointer      :: swdir(:),swdif(:),harray(:),charray(:),cmarray(:)
     real, pointer      :: emiss(:),mix(:),cosz(:),alb(:)
     real, pointer      :: tempPtr(:)
@@ -1987,9 +1996,8 @@ contains
 !  This routine maps a single output variable to the appropriate variable 
 !  in the generic list of the LDT history writer. 
 !EOP
-    integer                 :: i
+
     logical                 :: unit_status
-    logical                 :: dir_status
     real                    :: mfactor
     real                    :: value
     integer                 :: sftype
@@ -2313,8 +2321,7 @@ contains
 
     integer :: count
     integer :: k, m
-    integer :: ierr
-    
+
     if(dataEntry%selectProc.ne.0) then 
        do k=1,dataEntry%vlevels
 #if (defined SPMD)
@@ -2463,14 +2470,12 @@ contains
     character*6           :: xtime_begin_time
     character*50          :: xtime_units
     character*50          :: xtime_timeInc
-    integer               :: iret
 ! Note that the fix to add lat/lon to the NETCDF output will output
 ! undefined values for the water points. 
     character(len=8)      :: date
     character(len=10)     :: time
     character(len=5)      :: zone
     integer, dimension(8) :: values
-    type(LDT_forcdataEntry), pointer :: dataEntry
 
     character(100)        :: zterp_flag
 ! __________________________________________________________
@@ -3151,7 +3156,7 @@ contains
 !     writes a variable into a netcdf formatted file. 
 !   \end{description}
 !EOP    
-    integer       :: i,k,m,t
+    integer       :: k,m,t
     logical       :: nmodel_status
     logical       :: write_flag
 

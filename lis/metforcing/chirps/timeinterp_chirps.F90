@@ -53,8 +53,8 @@ subroutine timeinterp_chirps(n,findex)
     integer            :: t, index1
     integer            :: mfactor, m, k, kk
     integer            :: status
-    type(ESMF_Field)   :: pcpField, cpcpField
-    real, pointer      :: pcp(:), cpcp(:)
+    type(ESMF_Field)   :: pcpField
+    real, pointer      :: pcp(:)
 ! ________________________________________________________
 
    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&

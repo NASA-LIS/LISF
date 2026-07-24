@@ -67,6 +67,9 @@ subroutine get_chirps(n,findex)
   character(len=LDT_CONST_PATH_LEN) :: chirps_filename
   logical       :: file_exists
 
+  external :: return_chirps_filename
+  external :: read_chirps
+  
 ! ___________________________________________________________________
 
   openfile2_flag = 0
@@ -153,7 +156,6 @@ end subroutine get_chirps
 ! !INTERFACE:
 subroutine return_chirps_filename( filename, dirpath, yr, mo, res, version )
 
-  use LDT_logMod, only : LDT_logunit
   implicit none
 
 ! !ARGUMENTS: 

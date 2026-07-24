@@ -58,6 +58,7 @@ subroutine LDT_readConfig(configfile)
   character(len=LDT_CONST_PATH_LEN) :: diag_dir
   integer, external :: LDT_create_subdirs
 
+  external :: LDT_mapSurfaceModelType
 !____________________________________________________________
 
   LDT_config = ESMF_ConfigCreate(rc=rc)

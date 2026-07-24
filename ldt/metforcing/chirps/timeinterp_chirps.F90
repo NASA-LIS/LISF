@@ -52,9 +52,8 @@ subroutine timeinterp_chirps(n,findex)
 !EOP
     integer            :: t, index1
     integer            :: status
-    type(ESMF_Field)   :: pcpField, cpcpField
-    real, pointer      :: pcp(:), cpcp(:)
-    real,  allocatable :: ratio(:)
+    type(ESMF_Field)   :: pcpField
+    real, pointer      :: pcp(:)
 ! ________________________________________________________
 
     call ESMF_StateGet(LDT_FORC_Base_State(n,findex), &

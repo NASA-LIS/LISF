@@ -70,6 +70,9 @@ subroutine get_chirps(n,findex)
   character(len=LIS_CONST_PATH_LEN) :: chirps_filename
   logical :: file_exists
 
+  external :: return_chirps_filename
+  external :: read_chirps
+  
 ! ___________________________________________________________________
 
   openfile2_flag = 0
@@ -164,7 +167,6 @@ subroutine return_chirps_filename(n, kk, findex, filename, dirpath, yr, mo, &
 
   use LIS_coreMod
   use LIS_forecastMod
-  use LIS_logMod, only : LIS_logunit
 
   implicit none
 

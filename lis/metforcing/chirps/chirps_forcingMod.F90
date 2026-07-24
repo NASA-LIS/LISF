@@ -126,7 +126,7 @@ contains
 ! !INTERFACE:
   subroutine init_chirps(findex)
 ! !USES: 
-    use LIS_coreMod, only : LIS_rc, LIS_config, LIS_domain, &
+    use LIS_coreMod, only : LIS_rc, &
                             LIS_isatAfinerResolution
     use LIS_timeMgrMod, only : LIS_date2time, LIS_update_timestep, &
                                LIS_tick, LIS_parseTimeString, &
@@ -161,7 +161,6 @@ contains
 !
 !EOP
     integer :: n
-    integer :: rc
     integer :: updoy,yr1,mo1,da1,hr1,mn1,ss1
     real    :: upgmt
     integer :: ts1,ts2
@@ -169,7 +168,6 @@ contains
     integer :: LIS_syr,LIS_smo,LIS_sda,LIS_shr,LIS_smn,LIS_sss
     real*8  :: FirstDateTime
     real*8  :: LIS_StartTime
-    character (len=10):: time
 
     integer :: subpnc, subpnr, glpnc, glpnr
     real    :: sub_gridDesci(50)          ! EMK Corrected array length
@@ -177,6 +175,10 @@ contains
     integer, allocatable  :: lat_line(:,:), lon_line(:,:)
     real    :: lat_min, lat_max
 
+    external :: readconfig_chirps
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
+    external :: upscaleByAveraging_input
 ! _________________________________________________________________
 
     allocate(chirps_struc(LIS_rc%nnest))

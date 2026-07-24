@@ -25,8 +25,7 @@
 subroutine read_chirps( n, kk, findex, chirps_filename, year, mon, day, ferror )
 
 ! !USES:
-  use LIS_coreMod,         only : LIS_rc, LIS_domain, LIS_localPet, &
-                                  LIS_masterproc
+  use LIS_coreMod,         only : LIS_rc, LIS_domain, LIS_localPet
   use LIS_metforcingMod,   only : LIS_forc
   use LIS_timeMgrMod,      only : LIS_tick
   use LIS_logMod,          only : LIS_logunit, LIS_endrun, LIS_verify
@@ -95,6 +94,9 @@ subroutine read_chirps( n, kk, findex, chirps_filename, year, mon, day, ferror )
   real      :: lisprec_1d(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real      :: lisprec_2d(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
+  external :: conserv_interp
+  external :: neighbor_interp
+  external :: upscaleByAveraging
 ! ______________________________________________
 
   lisprec_2d = LIS_rc%udef
