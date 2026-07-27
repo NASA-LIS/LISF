@@ -12,10 +12,6 @@
 ! \label{timeinterp_merra2bias}
 !
 ! !REVISION HISTORY:
-! 02 Oct 2025: Fadji Maina, initial code (based on -it)
-! 09 Jan 2026: Eric Kemp, reformatting.
-! 17 Jun 2026: Kristen Whitney, updated metadata storage references
-!              and corrected GEOS-ITbias forcing indexing.
 ! 29 Jun 2026: Kristen Whitney, initial code (based on geos-itbias)
 !
 ! !INTERFACE:

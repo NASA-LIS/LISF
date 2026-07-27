@@ -13,10 +13,6 @@
 ! \label{get_merra2bias}
 !
 ! !REVISION HISTORY:
-! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
-! 07 Jan 2026: Kristen Whitney, initial code for using dynamic lapse rate
-! 17 Jun 2026: Kristen Whitney, simplified metadata handling
-!              and updated dynamic lapse-rate filename construction.
 ! 29 Jun 2026: Kristen Whitney, initial code (based on geos-itbias)
 !
 ! !INTERFACE:

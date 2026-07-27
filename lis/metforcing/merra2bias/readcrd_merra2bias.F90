@@ -13,9 +13,6 @@
 ! \label{readcrd_merra2bias}
 !
 ! !REVISION HISTORY:
-! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
-! 07 Jan 2026: Kristen Whitney, initial code for using dynamic lapse rate
-! 09 Jan 2026: Eric Kemp, reformatting.
 ! 29 Jun 2026: Kristen Whitney, initial code (based on geos-itbias)
 !
 ! !INTERFACE:

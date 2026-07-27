@@ -12,9 +12,6 @@ module merra2bias_forcingMod
 ! !MODULE: merra2bias_forcingMod
 !
 ! !REVISION HISTORY:
-! 02 Oct 2025: Fadji Maina, initial code (based on geos-it)
-! 07 Jan 2026: Kristen Whitney, initial code for using dynamic lapse rate
-! 09 Jan 2026: Eric Kemp, reformatted.
 ! 29 Jun 2026: Kristen Whitney, initial code (based on geos-itbias)
 !
 ! !DESCRIPTION:
