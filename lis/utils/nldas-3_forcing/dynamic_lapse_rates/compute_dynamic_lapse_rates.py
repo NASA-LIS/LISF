@@ -448,7 +448,65 @@ python compute_dynamic_lapse_rates.py \
   --clip_to_reference_bbox \
   --reference_grid_file ./lis_input.nldas3.noahmp401.1km.land_and_inland_water.m2interp.nc
 
-3) NLDAS-3 near-real-time, GEOS-ITbias
+3) Whitney et al. (2025) Cascade–Sierra workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Whitney et al. (2025) generated dynamic lapse rates for the Cascade–Sierra
+study domain using MERRA-2 2-m air temperature together with MERRA-2
+elevation and land-mask inputs. The workflow described below reproduces the
+configuration used in Whitney et al. (2025). As in the NLDAS-3 retrospective
+workflow, one output file is written per day while preserving all hourly
+time steps from the corresponding MERRA-2 input file.
+
+Unlike the NLDAS-3 forcing workflows, where a dynamic lapse-rate cap of
+±10 °C km⁻¹ is applied later within the LIS meteorological downscaling
+framework, Whitney et al. (2025) applied the ±10 °C km⁻¹ cap directly during
+dynamic lapse-rate generation using the ``--min_lapse_rate_cutoff`` and
+``--max_lapse_rate_cutoff`` options.
+
+Processing was limited to the Cascade–Sierra study domain using the
+``--clip_to_reference_bbox`` option. The clipping domain was defined using
+a reference grid generated with the Land Data Toolkit (LDT) distributed with
+NASA's Land Information System (LIS). Users wishing to reproduce this
+workflow may generate an equivalent reference grid defining the study-domain
+bounding box using LDT. See the LDT User Guide:
+
+https://nasa-lis.github.io/LISF/LDT_users_guide/LDT_users_guide.html
+
+The published dataset generated using this workflow is available from:
+
+Whitney, K. M., S. V. Kumar, D. Mocko, J. Pflug, J. D. Bolten,
+F. Z. Maina, M. L. Wrzesien, and C. R. Hain, 2026:
+Dynamic near-surface air-temperature lapse rates for the Cascade–Sierra
+study domain derived from MERRA-2 (2000–2020), Version 1.0.0.
+Zenodo.
+https://doi.org/10.5281/zenodo.21044739
+
+The dataset was generated using the example command below:
+
+python compute_dynamic_lapse_rates.py \
+  --infile_Z ./merra2.elevation_and_landmask.nc \
+  --infile_landmask ./merra2.elevation_and_landmask.nc \
+  --inpath_T ./data/MERRA2/temperature/ \
+  --outpath ./outputs/lapse_rates_merra2/ \
+  --yyyymmdd_start 20000601 \
+  --yyyymmdd_end 20201231 \
+  --infile_date_format YYYYMMDD \
+  --outfile_date_format YYYYMMDD \
+  --output_mode daily \
+  --fname_in_pfx_T MERRA2.tavg1_2d_slv_Nx. \
+  --fname_in_sfx_T .nc4 \
+  --fname_out_pfx MERRA2.lapse_rate.hourly. \
+  --fname_out_sfx .nc \
+  --landmask_trueval 1 \
+  --min_land_neighbors 5 \
+  --LR_forced_val -0.0065 \
+  --save_units_as_per_km 1 \
+  --min_lapse_rate_cutoff -0.01 \
+  --max_lapse_rate_cutoff 0.01 \
+  --clip_to_reference_bbox \
+  --reference_grid_file /path/to/lis_input.cascade_sierra.nc
+
+4) NLDAS-3 near-real-time, GEOS-ITbias
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Computes dynamic lapse rates from GEOS-ITbias 2-m air-temperature inputs.
 
@@ -486,7 +544,7 @@ python compute_dynamic_lapse_rates.py \
   --LR_forced_val -0.0065 \
   --save_units_as_per_km 1
 
-4) Overwrite or preview outputs
+5) Overwrite or preview outputs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Overwrite existing files:
 python compute_dynamic_lapse_rates.py ... --force
