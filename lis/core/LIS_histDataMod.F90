@@ -6579,7 +6579,8 @@ end subroutine get_moc_attributes
     character(len=20)       :: cfunit
 
     if(dataEntry%selectOpt.ne.0) then 
-       if(dataEntry%timeAvgOpt.eq.2) then 
+       if(dataEntry%timeAvgOpt.eq.2 .or. &
+            dataEntry%timeAvgOpt.eq.4) then 
           allocate(dataEntry%modelOutput(2,ntiles,dataEntry%vlevels))
        else
           allocate(dataEntry%modelOutput(1,ntiles,dataEntry%vlevels))
@@ -7030,7 +7031,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
           endif
           if(value.ne.LIS_rc%udef) then 
              ! accumulate values and record instantaneous values
-             if(dataEntry%timeAvgOpt.eq.2) then 
+             if(dataEntry%timeAvgOpt.eq.2) then
                 dataEntry%modelOutput(1,t,vlevel) = &
                      dataEntry%modelOutput(1,t,vlevel) + value
                 dataEntry%modelOutput(2,t,vlevel) = value
@@ -7047,10 +7048,24 @@ end subroutine LIS_diagnoseIrrigationOutputVar
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
                 !$OMP END CRITICAL 
+                ! record data for _tavg and _acc
+             elseif(dataEntry%timeAvgOpt.eq.4) then
+                dataEntry%modelOutput(1,t,vlevel) = &
+                     dataEntry%modelOutput(1,t,vlevel) + value
+                dataEntry%modelOutput(2,t,vlevel) = &
+                     dataEntry%modelOutput(2,t,vlevel) + value
+                !$OMP CRITICAL 
+                dataEntry%count(t,vlevel) = &
+                     dataEntry%count(t,vlevel)+1
+                !$OMP END CRITICAL 
                 ! record instantaneous values
-             else 
+             else if (dataEntry%timeAvgOpt.eq.0) then
                 dataEntry%modelOutput(1,t,vlevel) = value
                 dataEntry%count(t,vlevel) = 1
+             else
+                write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt value for ', &
+                     trim(dataEntry%standard_name)
+                call LIS_endrun
              endif
              
              if ( dataEntry%minMaxOpt /= 0 ) then
@@ -7181,10 +7196,24 @@ end subroutine LIS_diagnoseIrrigationOutputVar
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
                 !$OMP END CRITICAL 
+             elseif(dataEntry%timeAvgOpt.eq.4) then 
+                dataEntry%modelOutput(1,t,vlevel) = &
+                     dataEntry%modelOutput(1,t,vlevel) + value
+                dataEntry%modelOutput(2,t,vlevel) = &
+                     dataEntry%modelOutput(2,t,vlevel) + value
+                !$OMP CRITICAL 
+                dataEntry%count(t,vlevel) = &
+                     dataEntry%count(t,vlevel)+1
+                !$OMP END CRITICAL 
+
                 ! record instantaneous values
-             else 
+             else if (dataEntry%timeAvgOpt.eq.0) then
                 dataEntry%modelOutput(1,t,vlevel) = value
                 dataEntry%count(t,vlevel) = 1
+             else
+                write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt for ', &
+                     trim(dataEntry%standard_name)
+                call LIS_endrun
              endif
              
           endif
