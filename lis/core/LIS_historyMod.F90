@@ -2816,6 +2816,14 @@ contains
           short_name = trim(dataEntry%short_name)//'_tavg'
        elseif (dataEntry%timeAvgOpt.eq.3) then
           short_name = trim(dataEntry%short_name)//'_acc'
+       elseif (dataEntry%timeAvgOpt.eq.4) then
+          ! This flag means write both _tavg and _acc. We do _tavg
+          ! first, and will handle _acc further down.
+          short_name = trim(dataEntry%short_name)//'_tavg'
+       else
+          write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt selected for ', &
+               trim(dataEntry%short_name)
+          call LIS_endrun
        endif
     endif
 
@@ -2840,7 +2848,7 @@ contains
 #endif
 
     if (dataEntry%timeAvgOpt.eq.2) then
-       ! We requested both_tavg and _inst.  Handling _inst now.
+       ! We requested both _tavg and _inst.  Handling _inst now.
        call LIS_verify(nf90_def_var(ftn, &
             trim(dataEntry%short_name)//'_inst',&
             nf90_float,&
@@ -2861,6 +2869,29 @@ contains
             'failed in defineNETCDFheadervar')
 #endif
     end if ! timeAvgOpt == 2
+
+    if (dataEntry%timeAvgOpt.eq.4) then
+       ! We requested both _tavg and _acc.  Handling _acc now.
+       call LIS_verify(nf90_def_var(ftn, &
+            trim(dataEntry%short_name)//'_acc',&
+            nf90_float,&
+            dimids = dimID(start:end), varID=dataEntry%varId_opt1),&
+            'nf90_def_var for ' // &
+            trim(dataEntry%short_name) // '_acc' // &
+            'failed in defineNETCDFheadervar')
+#if(defined USE_NETCDF4)
+       call LIS_verify(nf90_def_var_fill(ftn, &
+            dataEntry%varId_opt1, &
+            1,fill_value), 'nf90_def_var_fill failed for ' // &
+            dataEntry%short_name // '_acc')
+       call LIS_verify(nf90_def_var_deflate(ftn, &
+            dataEntry%varId_opt1, &
+            shuffle, deflate, deflate_level), &
+            'nf90_def_var_deflate for ' // &
+            trim(dataEntry%short_name) // "_acc" // &
+            'failed in defineNETCDFheadervar')
+#endif
+    end if ! timeAvgOpt == 4
 
     ! Now handle _min and _max, if requested.
     if (dataEntry%minMaxOpt.gt.0) then
@@ -2966,6 +2997,37 @@ contains
             "vmax", dataEntry%valid_max), &
             'nf90_put_att for vmax failed in defineNETCDFheaderVar')
     endif ! timeAvgOpt == 2
+
+     ! Special handling for case where both _tavg and _acc are written.
+    if (dataEntry%timeAvgOpt.eq.4) then
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "units", trim(dataEntry%units)), &
+            'nf90_put_att for units failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "standard_name", trim(dataEntry%standard_name)), &
+            'nf90_put_att for standard_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "long_name", trim(dataEntry%long_name)), &
+            'nf90_put_att for long_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "scale_factor", 1.0), &
+            'nf90_put_att for scale_factor failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "add_offset", 0.0), &
+            'nf90_put_att for add_offset failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "missing_value", LIS_rc%udef), &
+            'nf90_put_att for missing_value failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "_FillValue", LIS_rc%udef), &
+            'nf90_put_att for _FillValue failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "vmin", dataEntry%valid_min), &
+            'nf90_put_att for vmin failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "vmax", dataEntry%valid_max), &
+            'nf90_put_att for vmax failed in defineNETCDFheaderVar')
+    endif ! timeAvgOpt == 4
 
     ! Add metadata for max/min variables
     if (dataEntry%minMaxOpt.gt.0) then
