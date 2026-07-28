@@ -269,7 +269,7 @@ contains
           write(unit=cdate1, fmt='(i4.4, i2.2)') LIS_rc%yr, LIS_rc%mo
           out_dname = trim(out_dname)//trim(cdate1)
        endif
-    elseif(LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+    elseif(LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle .eq. "557WW medium range forecast convention") then
        out_dname = trim(LIS_rc%odir)
        if (trim(mname).eq."SURFACEMODEL") then
@@ -631,7 +631,7 @@ contains
           out_fname = trim(dname)//'.GR2'
        case default
        end select
-    elseif(LIS_rc%wstyle.eq."557WW streamflow convention") then
+    elseif(LIS_rc%wstyle.eq."557WW NRT forecast convention") then
        write(unit=fint,fmt='(i2.2)') nint(writeint)/3600
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, LIS_rc%da
@@ -689,16 +689,16 @@ contains
             //'_DI.'//trim(LIS_rc%distribution_class)
        if (LIS_rc%lsm .eq. "Noah.3.9") then
           dname = trim(dname) &
-               //'_GP.'//'LIS-NOAH'
+               //'_GP.'//'LIS-NRT-NOAH'
        else if (LIS_rc%lsm .eq. "Noah-MP.4.0.1") then
           dname = trim(dname) &
-               //'_GP.'//'LIS-NOAHMP'
+               //'_GP.'//'LIS-NRT-NOAHMP'
        else if (LIS_rc%lsm .eq. "JULES.5.0") then
           dname = trim(dname) &
-               //'_GP.'//'LIS-JULES'
+               //'_GP.'//'LIS-NRT-JULES'
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Land surface model for 557WW streamflow convention ', &
+               '[ERR] Invalid Land surface model for 557WW NRT forecast convention ', &
                trim(LIS_rc%lsm)
           call LIS_endrun()
        end if
@@ -715,34 +715,66 @@ contains
           continue
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Routing model for 557WW streamflow convention ', &
+               '[ERR] Invalid Routing model for 557WW NRT forecast convention ', &
                trim(LIS_rc%routingmodel)
           call LIS_endrun()
        end if
 
+       write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+            LIS_rc%syr, LIS_rc%smo, LIS_rc%sda
+       write(unit=inithr, fmt='(i2.2)') LIS_rc%shr
+       call ESMF_TimeSet(starttime, &
+            yy=LIS_rc%syr, mm=LIS_rc%smo, dd=LIS_rc%sda, &
+            h=LIS_rc%shr, m=LIS_rc%smn, s=LIS_rc%sss, rc=rc)
+       if (rc .ne. ESMF_SUCCESS) then
+          write(LIS_logunit,*)'[ERR] Cannot set starttime object!'
+          call LIS_endrun()
+       end if
+       call ESMF_TimeSet(curtime, &
+            yy=LIS_rc%yr, mm=LIS_rc%mo, dd=LIS_rc%da, &
+            h=LIS_rc%hr, m=LIS_rc%mn, s=LIS_rc%ss, rc=rc)
+       if (rc .ne. ESMF_SUCCESS) then
+          write(LIS_logunit,*)'[ERR] Cannot set curtime object!'
+          call LIS_endrun()
+       end if
+       deltatime = curtime - starttime
+       call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+       if (rc .ne. ESMF_SUCCESS) then
+          write(LIS_logunit,*)'[ERR] Cannot get hr from deltatime!'
+          call LIS_endrun()
+       end if
+       write(unit=fhr, fmt='(i3.3)') hr
+
+!       dname = trim(dname) &
+!            //'_GR.'//trim(fproj)//trim(fres2) &
+!            //'_AR.'//trim(LIS_rc%area_of_data) &
+!            //'_PA.'//trim(model_name) &
+!            //'_DD.'//trim(cdate1) &
+!            //'_DT.'//trim(cdate) &
+!            //'_DF'
        dname = trim(dname) &
             //'_GR.'//trim(fproj)//trim(fres2) &
             //'_AR.'//trim(LIS_rc%area_of_data) &
             //'_PA.'//trim(model_name) &
-            //'_DD.'//trim(cdate1) &
-            //'_DT.'//trim(cdate) &
-            //'_DF'
+            //'_DD.'//trim(initdate) &
+            //'_CY.'//trim(inithr) &
+            //'_FH.'//trim(fhr)
 
        select case (LIS_rc%wout)
        case ("binary")
           if(LIS_rc%wopt.eq."1d tilespace") then
-             out_fname = trim(dname)//'.DAT'
+             out_fname = trim(dname)//'_DF.DAT'
           elseif(LIS_rc%wopt.eq."2d gridspace") then
-             out_fname = trim(dname)//'.DAT'
+             out_fname = trim(dname)//'_DF.DAT'
           elseif(LIS_rc%wopt.eq."1d gridspace") then
-             out_fname = trim(out_fname)//'.DAT'
+             out_fname = trim(out_fname)//'_DF.DAT'
           endif
        case ("grib1")
-          out_fname = trim(dname)//'.GR1'
+          out_fname = trim(dname)//'_DF.GR1'
        case ("netcdf")
-          out_fname = trim(dname)//'.NC'
+          out_fname = trim(dname)//'_DF.NC'
        case ("grib2")
-          out_fname = trim(dname)//'.GR2'
+          out_fname = trim(dname)//'_DF.GR2'
        case default
        end select
 
@@ -1326,7 +1358,7 @@ contains
        case default
        end select
 
-    elseif(LIS_rc%wstyle.eq."557WW streamflow convention") then
+    elseif(LIS_rc%wstyle.eq."557WW NRT forecast convention") then
        write(unit=fint,fmt='(i2.2)') nint(writeint)/3600
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
             yr, mo, da
@@ -1384,16 +1416,16 @@ contains
             //'_DI.'//trim(LIS_rc%distribution_class)
        if (LIS_rc%lsm .eq. "Noah.3.9") then
           dname = trim(dname) &
-               //'_GP.'//'LIS-NOAH'
+               //'_GP.'//'LIS-NRT-NOAH'
        else if (LIS_rc%lsm .eq. "Noah-MP.4.0.1") then
           dname = trim(dname) &
-               //'_GP.'//'LIS-NOAHMP'
+               //'_GP.'//'LIS-NRT-NOAHMP'
        else if (LIS_rc%lsm .eq. "JULES.5.0") then
           dname = trim(dname) &
-               //'_GP.'//'LIS-JULES'
+               //'_GP.'//'LIS-NRT-JULES'
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Land surface model for 557WW streamflow convention ', &
+               '[ERR] Invalid Land surface model for 557WW NRT forecast convention ', &
                trim(LIS_rc%lsm)
           call LIS_endrun()
        end if
@@ -1410,18 +1442,50 @@ contains
           continue
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Routing model for 557WW streamflow convention ', &
+               '[ERR] Invalid Routing model for 557WW NRT forecast convention ', &
                trim(LIS_rc%routingmodel)
           call LIS_endrun()
        end if
 
+       write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+            LIS_rc%syr, LIS_rc%smo, LIS_rc%sda
+       write(unit=inithr, fmt='(i2.2)') LIS_rc%shr
+       call ESMF_TimeSet(starttime, &
+            yy=LIS_rc%syr, mm=LIS_rc%smo, dd=LIS_rc%sda, &
+            h=LIS_rc%shr, m=LIS_rc%smn, s=LIS_rc%sss, rc=rc)
+       if (rc .ne. ESMF_SUCCESS) then
+          write(LIS_logunit,*)'[ERR] Cannot set starttime object!'
+          call LIS_endrun()
+       end if
+       call ESMF_TimeSet(curtime, &
+            yy=LIS_rc%yr, mm=LIS_rc%mo, dd=LIS_rc%da, &
+            h=LIS_rc%hr, m=LIS_rc%mn, s=LIS_rc%ss, rc=rc)
+       if (rc .ne. ESMF_SUCCESS) then
+          write(LIS_logunit,*)'[ERR] Cannot set curtime object!'
+          call LIS_endrun()
+       end if
+       deltatime = curtime - starttime
+       call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+       if (rc .ne. ESMF_SUCCESS) then
+          write(LIS_logunit,*)'[ERR] Cannot get hr from deltatime!'
+          call LIS_endrun()
+       end if
+       write(unit=fhr, fmt='(i3.3)') hr
+
+!       dname = trim(dname) &
+!            //'_GR.'//trim(fproj)//trim(fres2) &
+!            //'_AR.'//trim(LIS_rc%area_of_data) &
+!            //'_PA.'//trim(model_name) &
+!            //'_DD.'//trim(cdate1) &
+!            //'_DT.'//trim(cdate) &
+!            //'_DF'
        dname = trim(dname) &
             //'_GR.'//trim(fproj)//trim(fres2) &
             //'_AR.'//trim(LIS_rc%area_of_data) &
             //'_PA.'//trim(model_name) &
-            //'_DD.'//trim(cdate1) &
-            //'_DT.'//trim(cdate) &
-            //'_DF'
+            //'_DD.'//trim(initdate) &
+            //'_CY.'//trim(inithr) &
+            //'_FH.'//trim(fhr)
 
        select case (wout)
        case ("binary")
@@ -1703,7 +1767,7 @@ contains
        out_fname = trim(out_fname)//'.bin'
     elseif(LIS_rc%wstyle.eq."2 level hierarchy".or.&
          LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, &
@@ -1840,7 +1904,7 @@ contains
        out_fname = trim(out_fname)//'.bin'
     elseif(LIS_rc%wstyle.eq."2 level hierarchy".or.&
          LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
             yr, mo, &
@@ -2004,7 +2068,7 @@ contains
        fname = out_fname
 
     elseif(LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
 
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2,i2.2)') &
@@ -2171,7 +2235,7 @@ contains
        fname = out_fname
 
     elseif(LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
 
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2,i2.2)') &
@@ -2397,7 +2461,7 @@ contains
 
        out_fname = trim(out_fname)//'.nc'
     elseif(LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, &
@@ -2568,7 +2632,7 @@ contains
 
        out_fname = trim(out_fname)//'.nc'
     elseif(LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, &
@@ -2721,7 +2785,7 @@ contains
        out_fname = trim(out_fname)//'.nc'
     elseif(LIS_rc%wstyle.eq."2 level hierarchy".or.&
          LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, &
@@ -3203,7 +3267,7 @@ contains
        out_fname = trim(out_fname)//'.nc'
     elseif(LIS_rc%wstyle.eq."2 level hierarchy".or.&
          LIS_rc%wstyle.eq."WMO convention" .or. &
-         LIS_rc%wstyle.eq."557WW streamflow convention" .or. &
+         LIS_rc%wstyle.eq."557WW NRT forecast convention" .or. &
          LIS_rc%wstyle.eq."557WW medium range forecast convention") then
        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
             LIS_rc%yr, LIS_rc%mo, &

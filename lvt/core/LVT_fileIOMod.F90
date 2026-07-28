@@ -192,7 +192,7 @@ subroutine LVT_create_output_directory(mname,dir_name,style)
       endif      
    elseif((style_temp.eq."WMO convention").or.  &
         (style_temp.eq."WMO convention (AFW OPS)").or. &
-        (style_temp.eq."557WW streamflow convention")) then 
+        (style_temp.eq."557WW NRT forecast convention")) then 
       out_dname = trim(LVT_rc%odir)
 
       if ( present(dir_name) ) then
@@ -218,7 +218,8 @@ subroutine LVT_create_output_directory(mname,dir_name,style)
 subroutine create_output_filename(n, source, fname, model_name, writeint, &
      wout, style,odir)
 ! 
-! !USES:
+  ! !USES:
+   use ESMF
    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
    use LVT_logMod,   only : LVT_log_msg, LVT_endrun, LVT_logunit
@@ -297,7 +298,14 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
    character(len=50)        :: style_temp
    character(len=LVT_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
-
+   type(ESMF_Time) :: starttime, curtime
+   type(ESMF_TimeInterval) :: deltatime
+   character(len=8) :: initdate
+   character(len=2) :: inithr
+   character(len=3) :: fhr
+   integer :: rc
+   integer :: hr
+   
    if(.not.PRESENT(odir)) then 
       odir_temp = LVT_rc%odir
    else
@@ -485,7 +493,7 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
            endselect
         endif
      elseif(style_temp.eq."WMO convention" .or. &
-          style_temp .eq. "557WW streamflow convention") then 
+          style_temp .eq. "557WW NRT forecast convention") then 
         write(unit=fint,fmt='(i2.2)') writeint/3600
         write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
              LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
@@ -540,16 +548,53 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
                 //trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
                 '_PA.'//trim(fint)//'-HR-SUM_DD.'// &
                 trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
-        else if (style_temp .eq. "557WW streamflow convention") then
+        else if (style_temp .eq. "557WW NRT forecast convention") then
+
+           write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                LVT_rc%syr, LVT_rc%smo, LVT_rc%sda
+           write(unit=inithr, fmt='(i2.2)') LVT_rc%shr
+           call ESMF_TimeSet(starttime, &
+                yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
+                h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
+           if (rc .ne. ESMF_SUCCESS) then
+              write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
+              call LVT_endrun()
+           end if
+           call ESMF_TimeSet(curtime, &
+                yy=LVT_rc%yr, mm=LVT_rc%mo, dd=LVT_rc%da, &
+                h=LVT_rc%hr, m=LVT_rc%mn, s=LVT_rc%ss, rc=rc)
+           if (rc .ne. ESMF_SUCCESS) then
+              write(LVT_logunit,*)'[ERR] Cannot set curtime object!'
+              call LVT_endrun()
+           end if
+           deltatime = curtime - starttime
+           call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+           if (rc .ne. ESMF_SUCCESS) then
+              write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+              call LVT_endrun()
+           end if
+           write(unit=fhr, fmt='(i3.3)') hr
+
            dname = trim(odir_temp)//'/'//&
-                '/PS.557WW_SC.' &
-                //trim(LVT_rc%security_class)//'_DI.' &
-                //trim(LVT_rc%distribution_class)//'_GP.' &
-                //trim(LVT_rc%generating_process)//'_GR.' &
-                //trim(fproj)//trim(fres2)//'_AR.' &
-                //trim(LVT_rc%area_of_data)//'_PA.' &
-                //'SURFACEMODEL' // '_DD.' & ! EMK FIXME
-                //trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+                ! '/PS.557WW_SC.' &
+                ! //trim(LVT_rc%security_class)//'_DI.' &
+                ! //trim(LVT_rc%distribution_class)//'_GP.' &
+                ! //trim(LVT_rc%generating_process)//'_GR.' &
+                ! //trim(fproj)//trim(fres2)//'_AR.' &
+                ! //trim(LVT_rc%area_of_data)//'_PA.' &
+                ! //'SURFACEMODEL' // '_DD.' & ! EMK FIXME
+                ! //trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+                '/PS.557WW' // &
+                '_SC.'//trim(LVT_rc%security_class)// &
+                '_DI.'//trim(LVT_rc%distribution_class)// &
+                '_GP.'//trim(LVT_rc%generating_process)// &
+                '_GR.'//trim(fproj)//trim(fres2)// &
+                '_AR.'//trim(LVT_rc%area_of_data)// &
+                '_PA.'//'SURFACEMODEL'// &
+                '_DD.'//trim(initdate)// &
+                '_CY.'//trim(inithr)// &
+                '_FH.'//trim(fhr)// &
+                '_DF.'
         end if
 
         select case (LVT_LIS_rc(source)%format)
@@ -559,7 +604,7 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
            out_fname = trim(dname)//'.GR1'
         case ( "netcdf" )
            out_fname = trim(dname)//'.nc'
-           if (style_temp .eq. "557WW streamflow convention") then
+           if (style_temp .eq. "557WW NRT forecast convention") then
               out_fname = trim(dname)//'.NC'
            endif
         case ( "grib2" )

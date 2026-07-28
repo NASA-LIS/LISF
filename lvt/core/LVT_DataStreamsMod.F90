@@ -360,6 +360,7 @@ contains
   subroutine LVT_writeDataStreams
 !
     ! !USES:
+    use ESMF
     use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_logMod
     use LVT_coreMod, only: LVT_LIS_rc ! EMK
@@ -448,6 +449,14 @@ contains
     character*1             :: fres1(10)
     character(len=1)        :: fproj
     integer                 :: varid_def_local
+
+    type(ESMF_Time) :: starttime, curtime
+    type(ESMF_TimeInterval) :: deltatime
+    character(len=8) :: initdate
+    character(len=2) :: inithr
+    character(len=3) :: fhr
+    integer :: rc
+
 
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
@@ -567,149 +576,152 @@ contains
 
        if (LVT_rc%lvt_out_format .eq. "grib1") then
 
-          write(unit=cdate2, fmt='(i4.4,i2.2,i2.2)') &
-               LVT_rc%yr, LVT_rc%mo, LVT_rc%da
-          write(unit=cdate3, fmt='(i2.2,i2.2)') &
-               LVT_rc%hr, LVT_rc%mn
+          write(LVT_logunit,*)'[ERR] grib1 output not supported!'
+          call LVT_endrun()
 
-          ! EMK...Include LSM in GP section
-          if (trim(LVT_LIS_rc(1)%model_name) == "NOAH.3.9") then
-             model_name = "LIS-NOAH"
-          else if (trim(LVT_LIS_rc(1)%model_name) == "NOAHMP.4.0.1") then
-             model_name = "LIS-NOAHMP"
-          else if (trim(LVT_LIS_rc(1)%model_name) == "JULES.5.0") then
-             model_name = "LIS-JULES"
-          else
-             write(LVT_logunit,*)'[ERR] Unknown LSM selected'
-             write(LVT_logunit,*)&
-                  '[ERR] Must be NOAH.3.9, NOAHMP.4.0.1, or JULES.5.0'
-             write(LVT_logunit,*) &
-                  "[ERR] Update 'LIS output model name:' in lis.config" // &
-                  " and try again!"
-             call LVT_endrun()
-          end if
+          ! write(unit=cdate2, fmt='(i4.4,i2.2,i2.2)') &
+          !      LVT_rc%yr, LVT_rc%mo, LVT_rc%da
+          ! write(unit=cdate3, fmt='(i2.2,i2.2)') &
+          !      LVT_rc%hr, LVT_rc%mn
 
-          ! EMK...Different file name convention for 24-hr data
-          if (LVT_rc%tavgInterval == 86400) then
+          ! ! EMK...Include LSM in GP section
+          ! if (trim(LVT_LIS_rc(1)%model_name) == "NOAH.3.9") then
+          !    model_name = "LIS-NOAH"
+          ! else if (trim(LVT_LIS_rc(1)%model_name) == "NOAHMP.4.0.1") then
+          !    model_name = "LIS-NOAHMP"
+          ! else if (trim(LVT_LIS_rc(1)%model_name) == "JULES.5.0") then
+          !    model_name = "LIS-JULES"
+          ! else
+          !    write(LVT_logunit,*)'[ERR] Unknown LSM selected'
+          !    write(LVT_logunit,*)&
+          !         '[ERR] Must be NOAH.3.9, NOAHMP.4.0.1, or JULES.5.0'
+          !    write(LVT_logunit,*) &
+          !         "[ERR] Update 'LIS output model name:' in lis.config" // &
+          !         " and try again!"
+          !    call LVT_endrun()
+          ! end if
 
-             fname_mean = trim(LVT_rc%statsodir) &
-                  //'/PS.557WW' &
-                  //'_SC.'//trim(LVT_rc%security_class) &
-                  //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
-                  //'_AR.'//trim(LVT_rc%area_of_data) &
-                  //'_PA.LIS24' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
-                  //'_DF.GR1'
+          ! ! EMK...Different file name convention for 24-hr data
+          ! if (LVT_rc%tavgInterval == 86400) then
 
-             fname_ssdev = trim(LVT_rc%statsodir) &
-                  //'/PS.557WW' &
-                  //'_SC.'//trim(LVT_rc%security_class) &
-                  //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
-                  //'_AR.'//trim(LVT_rc%area_of_data) &
-                  //'_PA.LIS24-SSDEV' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
-                  //'_DF.GR1'
-          else
+          !    fname_mean = trim(LVT_rc%statsodir) &
+          !         //'/PS.557WW' &
+          !         //'_SC.'//trim(LVT_rc%security_class) &
+          !         //'_DI.'//trim(LVT_rc%data_category) &
+          !         //'_GP.'//trim(model_name) &
+          !         //'_GR.C0P09DEG' &
+          !         //'_AR.'//trim(LVT_rc%area_of_data) &
+          !         //'_PA.LIS24' &
+          !         //'_DD.'//trim(cdate2) &
+          !         //'_DT.'//trim(cdate3) &
+          !         //'_DF.GR1'
 
-             fname_mean = trim(LVT_rc%statsodir) &
-                  //'/PS.557WW' &
-                  //'_SC.'//trim(LVT_rc%security_class) &
-                  //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
-                  //'_AR.'//trim(LVT_rc%area_of_data) &
-                  //'_PA.LIS' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
-                  //'_DF.GR1'
+          !    fname_ssdev = trim(LVT_rc%statsodir) &
+          !         //'/PS.557WW' &
+          !         //'_SC.'//trim(LVT_rc%security_class) &
+          !         //'_DI.'//trim(LVT_rc%data_category) &
+          !         //'_GP.'//trim(model_name) &
+          !         //'_GR.C0P09DEG' &
+          !         //'_AR.'//trim(LVT_rc%area_of_data) &
+          !         //'_PA.LIS24-SSDEV' &
+          !         //'_DD.'//trim(cdate2) &
+          !         //'_DT.'//trim(cdate3) &
+          !         //'_DF.GR1'
+          ! else
 
-             fname_ssdev = trim(LVT_rc%statsodir) &
-                  //'/PS.557WW' &
-                  //'_SC.'//trim(LVT_rc%security_class) &
-                  //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
-                  //'_AR.'//trim(LVT_rc%area_of_data) &
-                  //'_PA.SSDEV' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
-                  //'_DF.GR1'
+          !    fname_mean = trim(LVT_rc%statsodir) &
+          !         //'/PS.557WW' &
+          !         //'_SC.'//trim(LVT_rc%security_class) &
+          !         //'_DI.'//trim(LVT_rc%data_category) &
+          !         //'_GP.'//trim(model_name) &
+          !         //'_GR.C0P09DEG' &
+          !         //'_AR.'//trim(LVT_rc%area_of_data) &
+          !         //'_PA.LIS' &
+          !         //'_DD.'//trim(cdate2) &
+          !         //'_DT.'//trim(cdate3) &
+          !         //'_DF.GR1'
 
-          end if
+          !    fname_ssdev = trim(LVT_rc%statsodir) &
+          !         //'/PS.557WW' &
+          !         //'_SC.'//trim(LVT_rc%security_class) &
+          !         //'_DI.'//trim(LVT_rc%data_category) &
+          !         //'_GP.'//trim(model_name) &
+          !         //'_GR.C0P09DEG' &
+          !         //'_AR.'//trim(LVT_rc%area_of_data) &
+          !         //'_PA.SSDEV' &
+          !         //'_DD.'//trim(cdate2) &
+          !         //'_DT.'//trim(cdate3) &
+          !         //'_DF.GR1'
 
-          ! Setup of GRIB-1 and GRIB-2 Metadata Section
+          ! end if
 
-          ! toplev is the depth of the top of each soil layer
-          ! botlev is the depth of the bottom of each soil layer
-          toplev(1) = 0.0
-          botlev(1) = lyrthk(1)
+          ! ! Setup of GRIB-1 and GRIB-2 Metadata Section
 
-          ! determine bounding levels for each soil moisture layer
-          do i = 2, nsoillayers
-             toplev(i) = toplev(i-1) + lyrthk(i-1)
-             botlev(i) = botlev(i-1) + lyrthk(i)
-          enddo
-          !hardcoded to zero for now
-          !depscale = 0
+          ! ! toplev is the depth of the top of each soil layer
+          ! ! botlev is the depth of the bottom of each soil layer
+          ! toplev(1) = 0.0
+          ! botlev(1) = lyrthk(1)
 
-          ! Set values for non layered fields (Fluxes, Sfc Fields, etc.)
-          toplev0 = 0
-          botlev0 = 0
+          ! ! determine bounding levels for each soil moisture layer
+          ! do i = 2, nsoillayers
+          !    toplev(i) = toplev(i-1) + lyrthk(i-1)
+          !    botlev(i) = botlev(i-1) + lyrthk(i)
+          ! enddo
+          ! !hardcoded to zero for now
+          ! !depscale = 0
 
-          yr = LVT_rc%yr
-          mo = LVT_rc%mo
-          da = LVT_rc%da
-          hr = LVT_rc%hr
-          mn = LVT_rc%mn
-          ss = LVT_rc%ss
+          ! ! Set values for non layered fields (Fluxes, Sfc Fields, etc.)
+          ! toplev0 = 0
+          ! botlev0 = 0
 
-          call LVT_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,-1*LVT_rc%statswriteint)
+          ! yr = LVT_rc%yr
+          ! mo = LVT_rc%mo
+          ! da = LVT_rc%da
+          ! hr = LVT_rc%hr
+          ! mn = LVT_rc%mn
+          ! ss = LVT_rc%ss
 
-          if(LVT_rc%statswriteint .GT. 0) then
-             time_unit = 254     ! seconds
-             time_curr = 0
-             time_past = LVT_rc%statswriteint
-          endif
-          if(LVT_rc%statswriteint .GE. 60) then
-             time_unit = 0      ! minutes
-             time_curr = 0
-             time_past = (LVT_rc%statswriteint / 60)
-          endif
-          if(LVT_rc%statswriteint .GE. 3600) then
-             time_unit = 1    ! hours
-             time_curr = 0
-             time_past = (LVT_rc%statswriteint / 3600)
-          endif
-          if(LVT_rc%statswriteint .GE. 86400) then
-             time_unit = 2   ! days
-             time_curr = 0
-             time_past = (LVT_rc%statswriteint / 86400)
-          endif
+          ! call LVT_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,-1*LVT_rc%statswriteint)
 
-          !time_past: from LVT_grib1_finalize
-          !time_P1 (Negative Time Unit for avg, or 0 for analysis)
-          !According to the in-line comments, time_past must be negative or 0.
-          !Here we are setting it to a positive value.  This produces bad output.
-          !Setting it to a negative value also produces bad output.
-          !So I am resetting it to zero.  This produces output that matches
-          !the binary output.
-          !    time_past=0
+          ! if(LVT_rc%statswriteint .GT. 0) then
+          !    time_unit = 254     ! seconds
+          !    time_curr = 0
+          !    time_past = LVT_rc%statswriteint
+          ! endif
+          ! if(LVT_rc%statswriteint .GE. 60) then
+          !    time_unit = 0      ! minutes
+          !    time_curr = 0
+          !    time_past = (LVT_rc%statswriteint / 60)
+          ! endif
+          ! if(LVT_rc%statswriteint .GE. 3600) then
+          !    time_unit = 1    ! hours
+          !    time_curr = 0
+          !    time_past = (LVT_rc%statswriteint / 3600)
+          ! endif
+          ! if(LVT_rc%statswriteint .GE. 86400) then
+          !    time_unit = 2   ! days
+          !    time_curr = 0
+          !    time_past = (LVT_rc%statswriteint / 86400)
+          ! endif
 
-          call grib_open_file(ftn_mean, fname_mean, 'w', iret)
-          call LVT_verify(iret, 'failed to open grib file '//trim(fname_mean))
+          ! !time_past: from LVT_grib1_finalize
+          ! !time_P1 (Negative Time Unit for avg, or 0 for analysis)
+          ! !According to the in-line comments, time_past must be negative or 0.
+          ! !Here we are setting it to a positive value.  This produces bad output.
+          ! !Setting it to a negative value also produces bad output.
+          ! !So I am resetting it to zero.  This produces output that matches
+          ! !the binary output.
+          ! !    time_past=0
 
-          if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
-             call grib_open_file(ftn_ssdev, fname_ssdev, 'w', iret)
-             call LVT_verify(iret, &
-                  'failed to open grib file '//trim(fname_ssdev))
-          end if
+          ! call grib_open_file(ftn_mean, fname_mean, 'w', iret)
+          ! call LVT_verify(iret, 'failed to open grib file '//trim(fname_mean))
+
+          ! if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
+          !      LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+          !    call grib_open_file(ftn_ssdev, fname_ssdev, 'w', iret)
+          !    call LVT_verify(iret, &
+          !         'failed to open grib file '//trim(fname_ssdev))
+          ! end if
 
        elseif (LVT_rc%lvt_out_format .eq. "grib2") then
           write(unit=cdate2, fmt='(i4.4,i2.2,i2.2)') &
@@ -803,6 +815,32 @@ contains
                      //'_DF.GR2'
              end if
           else
+
+             write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                  LVT_rc%syr, LVT_rc%smo, LVT_rc%sda
+             write(unit=inithr, fmt='(i2.2)') LVT_rc%shr
+             call ESMF_TimeSet(starttime, &
+                  yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
+                  h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
+                call LVT_endrun()
+             end if
+             call ESMF_TimeSet(curtime, &
+                  yy=LVT_rc%yr, mm=LVT_rc%mo, dd=LVT_rc%da, &
+                  h=LVT_rc%hr, m=LVT_rc%mn, s=LVT_rc%ss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set curtime object!'
+                call LVT_endrun()
+             end if
+             deltatime = curtime - starttime
+             call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                call LVT_endrun()
+             end if
+             write(unit=fhr, fmt='(i3.3)') hr
+
              ! EMK...Assume 3-hr
              ! fname_mean = trim(LVT_rc%statsodir) &
              !      //'/PS.557WW' &
@@ -823,8 +861,9 @@ contains
                   //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
+                  //'_DD.'//trim(initdate) &
+                  //'_CY.'//trim(inithr) &
+                  //'_FH.'//trim(fhr) &
                   //'_DF.GR2'
 
              if (LVT_rc%nensem > 1) then
@@ -847,8 +886,9 @@ contains
                      //'_GR.'//trim(fproj)//trim(fres2) &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.SSDEV' &
-                     //'_DD.'//trim(cdate2) &
-                     //'_DT.'//trim(cdate3) &
+                     //'_DD.'//trim(initdate) &
+                     //'_CY.'//trim(inithr) &
+                     //'_FH.'//trim(fhr) &
                      //'_DF.GR2'
 
              end if
