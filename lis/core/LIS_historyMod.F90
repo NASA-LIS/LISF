@@ -949,16 +949,22 @@ contains
           m = LIS_domain(n)%tile(t)%sftype
           do k=1,dataEntry%vlevels
              if(dataEntry%count(t,k).gt.0) then 
-                if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                if(dataEntry%timeAvgOpt .eq. 0 .or. &
+                     dataEntry%timeAvgOpt.eq. 3) then  ! _inst or _acc
                    continue       
-                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
+                elseif (dataEntry%timeAvgOpt.eq.1.or. &
+                     dataEntry%timeAvgOpt.eq.2 .or. &
+                     dataEntry%timeAvgOpt.eq.4) then ! Handle _tavg
+                   dataEntry%modelOutput(1,t,k) = &
+                        dataEntry%modelOutput(1,t,k)/&
                         dataEntry%count(t,k)
-                else !do nothing
-                   continue
+                else 
+                   write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt for ', &
+                        trim(dataEntry%standard_name), dataEntry%timeAvgOpt
+                   call LIS_endrun
                 endif
              else
-                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                dataEntry%modelOutput(:,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
@@ -975,14 +981,24 @@ contains
                   dataEntry%modelOutput(2,:,k),&
                   trim(dataEntry%short_name)//'('//&
                   trim(dataEntry%units)//')',dataEntry%form)
-             ! time-averaged or instantaneous values
+          else if(dataEntry%timeAvgOpt.eq.4) then
+             ! _tavg and _acc
+             call LIS_writevar_bin(ftn,ftn_stats,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',dataEntry%form)
+             call LIS_writevar_bin(ftn,ftn_stats,n,&
+                  dataEntry%modelOutput(2,:,k),&
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',dataEntry%form)
+             ! time-averaged or instantaneous or _acc
           else
              call LIS_writevar_bin(ftn,ftn_stats,n,&
                   dataEntry%modelOutput(1,:,k),&
                   trim(dataEntry%short_name)//'('//&
                   trim(dataEntry%units)//')',dataEntry%form)
           endif
-          
+
           if ( dataEntry%minMaxOpt.ne.0 ) then
              call LIS_writevar_bin(ftn,ftn_stats,n,&
                   dataEntry%minimum(:,k),&
@@ -1081,16 +1097,22 @@ contains
           m = LIS_domain(n)%tile(t)%sftype
           do k=1,dataEntry%vlevels
              if(dataEntry%count(t,k).gt.0) then 
-                if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                if(dataEntry%timeAvgOpt.eq.0 .or. &
+                     dataEntry%timeAvgOpt.eq.3) then ! _inst or _acc
                    continue       
-                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
+                elseif(dataEntry%timeAvgOpt.eq.1 .or. &
+                     dataEntry%timeAvgOpt.eq.2 .or. &
+                     dataEntry%timeAvgOpt.eq.4) then ! _tavg
+                   dataEntry%modelOutput(1,t,k) = &
+                        dataEntry%modelOutput(1,t,k)/&
                         dataEntry%count(t,k)
-                else !do nothing
-                   continue
+                else 
+                   write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt for ', &
+                        trim(dataEntry%standard_name), dataEntry%timeAvgOpt
+                   call LIS_endrun
                 endif
              else
-                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                dataEntry%modelOutput(:,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
@@ -1113,6 +1135,13 @@ contains
           ! accumulated values
           ! time-averaged values and instantaneous values
           if(dataEntry%timeAvgOpt.eq.2) then 
+             call writevar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%form)
+             call writevar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%form)
+          else if(dataEntry%timeAvgOpt.eq.4) then ! _tavg and _acc
              call writevar_dist_bin(ftn,n,&
                   dataEntry%modelOutput(1,:,k),&
                   dataEntry%form)
@@ -1183,17 +1212,22 @@ contains
        do t=1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
           do k=1,dataEntry%vlevels
              if(dataEntry%count(t,k).gt.0) then 
-                if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                if (dataEntry%timeAvgOpt.eq.0 .or. &
+                     dataEntry%timeAvgOpt.eq.3) then ! _inst or _acc
                    continue       
-                elseif(dataEntry%timeAvgOpt.eq.2.or.&
-                     dataEntry%timeAvgOpt.eq.1) then
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
+                elseif(dataEntry%timeAvgOpt.eq.1 .or. &
+                     dataEntry%timeAvgOpt.eq.2 .or. &
+                     dataEntry%timeAvgOpt.eq.4) then ! _tavg
+                   dataEntry%modelOutput(1,t,k) = &
+                        dataEntry%modelOutput(1,t,k)/&
                         dataEntry%count(t,k)
-                else !do nothing
-                   continue
+                else 
+                   write(LIS_logunit,*) '[ERR] Invalid timeAvgOpt for ', &
+                        trim(dataEntry%standard_name), dataEntry%timeAvgOpt
+                   call LIS_endrun
                 endif
              else
-                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                dataEntry%modelOutput(:,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
@@ -1216,6 +1250,13 @@ contains
           ! accumulated values
           ! time-averaged values and instantaneous values
           if(dataEntry%timeAvgOpt.eq.2) then 
+             call writeroutingvar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%form)
+             call writeroutingvar_dist_bin(ftn,n,&
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%form)
+          else if(dataEntry%timeAvgOpt.eq.4) then ! _tavg and _acc
              call writeroutingvar_dist_bin(ftn,n,&
                   dataEntry%modelOutput(1,:,k),&
                   dataEntry%form)
@@ -1504,16 +1545,22 @@ contains
           m = LIS_domain(n)%tile(t)%sftype
           do k=1,dataEntry%vlevels
              if(dataEntry%count(t,k).gt.0) then 
-                if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                if(dataEntry%timeAvgOpt.eq.0 .or. &
+                     dataEntry%timeAvgOpt.eq.3) then ! _inst or _acc
                    continue   
-                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then 
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
+                elseif(dataEntry%timeAvgOpt.eq.1.or. &
+                     dataEntry%timeAvgOpt.eq.2 .or. &
+                     dataEntry%timeAvgOpt.eq.4) then ! _tavg
+                   dataEntry%modelOutput(1,t,k) = &
+                        dataEntry%modelOutput(1,t,k)/&
                         dataEntry%count(t,k)
-                else !do nothing
-                   continue   
+                else 
+                   write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt for ', &
+                        trim(dataEntry%standard_name), dataEntry%timeAvgOpt
+                   call LIS_endrun
                 endif
              else
-                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                dataEntry%modelOutput(:,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
@@ -1544,7 +1591,57 @@ contains
                   dataEntry%form, &
                   toplevtemp(k:k), botlevtemp(k:k), 1)
              
+             ! time-averaged values and _acc values
+          else if(dataEntry%timeAvgOpt.eq.4) then
+
+             ! _tavg first
+             stepType = 'avg'
+#if (defined AFWA_GRIB_CONFIGS)
+             if ((var_index.ne.LIS_MOC_QS).and.                     &
+                  (var_index.ne.LIS_MOC_QSB).and.                    &
+                  (var_index.ne.LIS_MOC_TOTALPRECIP)) then
+                timeRange = 7
+             endif
+#else
+             timeRange = 7
+#endif                
+             call LIS_writevar_grib1(ftn,ftn_stats,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%short_name,&
+                  dataEntry%varId_def, &
+                  dataEntry%gribSF, &
+                  dataEntry%gribSfc,&
+                  dataEntry%gribLvl,&
+                  stepType, & 
+                  time_unit, time_past,time_curr,timeRange,&
+                  dataEntry%form,  &
+                  toplevtemp(k:k), botlevtemp(k:k), 1)!dataEntry%vlevels)
+
+             ! Now _acc
+             stepType = 'accum'
+#if (defined AFWA_GRIB_CONFIGS)
+             if ((var_index.ne.LIS_MOC_QS).and.                     &
+                  (var_index.ne.LIS_MOC_QSB).and.                    &
+                  (var_index.ne.LIS_MOC_TOTALPRECIP)) then
+                timeRange = 4
+             endif
+#else 
+             timeRange = 4
+#endif
+             call LIS_writevar_grib1(ftn, ftn_stats, n,   &
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%short_name,&
+                  dataEntry%varId_def, &
+                  dataEntry%gribSF, &
+                  dataEntry%gribSfc,&
+                  dataEntry%gribLvl,&
+                  stepType, & 
+                  time_unit, time_past,time_curr,timeRange,&
+                  dataEntry%form, &
+                  toplevtemp(k:k), botlevtemp(k:k), 1)
+             
              ! time-averaged values and instantaneous values
+
           elseif(dataEntry%timeAvgOpt.eq.2) then  
              stepType = 'avg'
 #if (defined AFWA_GRIB_CONFIGS)
@@ -1727,6 +1824,7 @@ contains
        time_curr, nsoillayers,toplev, botlev, nsoillayers2,topleva,botleva, &
        var_index,dataEntry)
 ! !USES: 
+    use LIS_logMod, only: LIS_logunit, LIS_endrun
     
     implicit none
 ! !ARGUMENTS:
@@ -1805,16 +1903,22 @@ contains
           m = LIS_domain(n)%tile(t)%sftype
           do k=1,dataEntry%vlevels
              if(dataEntry%count(t,k).gt.0) then 
-                if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                if(dataEntry%timeAvgOpt.eq.0 .or. &
+                     dataEntry%timeAvgOpt.eq.3) then  ! _inst or _acc
                    continue   
-                elseif(dataEntry%timeAvgOpt.eq.2.or.dataEntry%timeAvgOpt.eq.1) then 
-                   dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/&
+                elseif(dataEntry%timeAvgOpt.eq.1.or. &
+                     dataEntry%timeAvgOpt.eq.2 .or. &
+                     dataEntry%timeAvgOpt.eq.4) then ! Handle _tavg
+                   dataEntry%modelOutput(1,t,k) = &
+                        dataEntry%modelOutput(1,t,k) / &
                         dataEntry%count(t,k)
-                else !do nothing
-                   continue   
+                else
+                   write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt for ', &
+                        trim(dataEntry%standard_name), dataEntry%timeAvgOpt
+                   call LIS_endrun
                 endif
              else
-                dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                dataEntry%modelOutput(:,t,k) = LIS_rc%udef
              endif
           enddo
        enddo
@@ -1869,7 +1973,38 @@ contains
                   time_unit, timeRange, pdTemplate,&
                   dataEntry%form,  &
                   toplevtemp(k:k), botlevtemp(k:k), 1, depscale(k))
-             
+
+          elseif(dataEntry%timeAvgOpt.eq.4) then ! _tavg and _acc
+             stepType = 'avg'
+             pdTemplate = 8
+             call LIS_writevar_grib2(ftn,ftn_stats,n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%short_name,&
+                  dataEntry%varId_def, &
+                  dataEntry%gribSF, &
+                  dataEntry%gribSfc,&
+                  dataEntry%gribDis,&
+                  dataEntry%gribCat,&
+                  stepType, & 
+                  time_unit, timeRange, pdTemplate,&
+                  dataEntry%form,  &
+                  toplevtemp(k:k), botlevtemp(k:k), 1, depscale(k))!dataEntry%vlevels)
+
+             stepType = 'accum'
+             pdTemplate = 8
+             call LIS_writevar_grib2(ftn, ftn_stats, n,   &
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%short_name,&
+                  dataEntry%varId_def, &
+                  dataEntry%gribSF, &
+                  dataEntry%gribSfc,&
+                  dataEntry%gribDis,&
+                  dataEntry%gribCat,&
+                  stepType, & 
+                  time_unit, timeRange, pdTemplate, &
+                  dataEntry%form, &
+                  toplevtemp(k:k), botlevtemp(k:k), 1, depscale(k))
+
              ! time-averaged values
           elseif(dataEntry%timeAvgOpt.eq.1) then  
              stepType = 'avg'
@@ -2800,7 +2935,7 @@ contains
 
     ! Now define the variable.  We must consider lat, lon, _inst, _tavg,
     ! or _acc.  Extra logic below will consider _tavg and _inst
-    ! together, as well as _min and _max.
+    ! together, as well as _min and _max.  Also, _tavg and _acc.
     if (nmodel_status .ne. 0) then
        ! Latitude or Longitude.  Just use the actual variable name.
        short_name = trim(dataEntry%short_name)
@@ -2822,7 +2957,7 @@ contains
           short_name = trim(dataEntry%short_name)//'_tavg'
        else
           write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt selected for ', &
-               trim(dataEntry%short_name)
+               trim(dataEntry%standard_name), dataEntry%timeAvgOpt
           call LIS_endrun
        endif
     endif
@@ -3151,15 +3286,19 @@ contains
              
              do k=1,dataEntry%vlevels
                 if(dataEntry%count(t,k).gt.0) then 
-                   if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
+                   if(dataEntry%timeAvgOpt.eq.0 .or. &
+                        dataEntry%timeAvgOpt.eq.3) then  !_inst or _acc
                       continue   
-                   elseif(dataEntry%timeAvgOpt.eq.2.or.&
-                        dataEntry%timeAvgOpt.eq.1) then 
+                   elseif(dataEntry%timeAvgOpt.eq.1 .or. &
+                        dataEntry%timeAvgOpt.eq.2 .or. &
+                        dataEntry%timeAvgOpt.eq.4) then ! Handle _tavg
                       dataEntry%modelOutput(1,t,k) = &
                            dataEntry%modelOutput(1,t,k)/&
                            dataEntry%count(t,k)
-                   else !do nothing
-                      continue   
+                   else 
+                      write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt for ', &
+                           trim(dataEntry%standard_name), dataEntry%timeAvgOpt
+                      call LIS_endrun
                    endif
                 else
                    ! Handle all outputs
@@ -3185,15 +3324,29 @@ contains
                   trim(dataEntry%short_name)//'('//&
                   trim(dataEntry%units)//')',&
                   dataEntry%form,nmodel_status,dim1=k)
-          ! time-averaged values or instantaneous values
-          else
+          else if(dataEntry%timeAvgOpt.eq.4) then
+             ! Write both _tavg and _acc
              call LIS_writevar_netcdf(ftn,ftn_stats, n,&
                   dataEntry%modelOutput(1,:,k),&
                   dataEntry%varId_def, &
                   trim(dataEntry%short_name)//'('//&
                   trim(dataEntry%units)//')',&
                   dataEntry%form,nmodel_status,dim1=k)
-          end if ! EMK
+             call LIS_writevar_netcdf(ftn,ftn_stats, n,&
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%varId_opt1, &
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+          else
+             ! Only one output requested (_inst, _tavg, or _acc)
+             call LIS_writevar_netcdf(ftn,ftn_stats, n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%varId_def, &
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+          end if 
           if(dataEntry%minmaxOpt.gt.0) then 
              call LIS_writevar_netcdf(ftn,ftn_stats, n,&
                   dataEntry%minimum(:,k),&
@@ -3266,18 +3419,22 @@ contains
           do t=1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
              do k=1,dataEntry%vlevels
                 if(dataEntry%count(t,k).gt.0) then 
-                   if(dataEntry%timeAvgOpt.eq.3) then  !do nothing
-                      continue   
-                   elseif(dataEntry%timeAvgOpt.eq.2.or.&
-                        dataEntry%timeAvgOpt.eq.1) then 
+                   if(dataEntry%timeAvgOpt.eq.0 .or. &
+                        dataEntry%timeAvgOpt.eq.3) then  ! _inst or _acc
+                      continue
+                   elseif(dataEntry%timeAvgOpt.eq.1 .or.&
+                        dataEntry%timeAvgOpt.eq.2 .or. &
+                        dataEntry%timeAvgOpt.eq.4) then ! Handle _tavg
                       dataEntry%modelOutput(1,t,k) =&
                            dataEntry%modelOutput(1,t,k)/&
                            dataEntry%count(t,k)
-                   else !do nothing
-                      continue   
+                   else 
+                      write(LIS_logunit,*)'[ERR] Invalid timeAvgOpt for ', &
+                           trim(dataEntry%standard_name), dataEntry%timeAvgOpt
+                      call LIS_endrun
                    endif
                 else
-                   dataEntry%modelOutput(1,t,k) = LIS_rc%udef
+                   dataEntry%modelOutput(:,t,k) = LIS_rc%udef
                 endif
              enddo
           enddo
@@ -3299,7 +3456,22 @@ contains
                   trim(dataEntry%short_name)//'('//&
                   trim(dataEntry%units)//')',&
                   dataEntry%form,nmodel_status,dim1=k)
-          ! time-averaged values or instantaneous values
+          else if(dataEntry%timeAvgOpt.eq.4) then
+             ! _tavg and _acc
+             call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
+                  dataEntry%modelOutput(1,:,k),&
+                  dataEntry%varId_def, &
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+             call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
+                  dataEntry%modelOutput(2,:,k),&
+                  dataEntry%varId_opt1, &
+                  trim(dataEntry%short_name)//'('//&
+                  trim(dataEntry%units)//')',&
+                  dataEntry%form,nmodel_status,dim1=k)
+
+             ! time-averaged values, instantaneous values, or _acc
           else
              call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
                   dataEntry%modelOutput(1,:,k),&
@@ -3307,7 +3479,7 @@ contains
                   trim(dataEntry%short_name)//'('//&
                   trim(dataEntry%units)//')',&
                   dataEntry%form,nmodel_status,dim1=k)
-          end if ! EMK
+          end if
           if(dataEntry%minmaxOpt.gt.0) then 
              call writeroutingvar_netcdf_real(ftn,ftn_stats, n,&
                   dataEntry%minimum(:,k),&
