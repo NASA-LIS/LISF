@@ -201,7 +201,7 @@ if($opt_lev == -2) {
    }
 }
 if($opt_lev == -1) {
-    $sys_opt = "-g -O0"; # Default flags for Fortran.
+    $sys_opt = "-g -O0 "; # Default flags for Fortran.
     $sys_c_opt = "-g -O0"; # Default flags for C.
 }
 elsif($opt_lev == 0) {
