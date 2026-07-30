@@ -26,7 +26,7 @@ subroutine timeinterp_era5cds(n,findex)
   use LDT_metforcingMod,    only : LDT_forc, LDT_FORC_Base_State
   use LDT_FORC_AttributesMod
   use LDT_constantsMod,     only : LDT_CONST_SOLAR
-  use LDT_timeMgrMod,       only : LDT_tick
+  use LDT_timeMgrMod
   use LDT_logMod,           only : LDT_logunit, LDT_verify, LDT_endrun
   use era5cds_forcingMod,    only : era5cds_struc
 
@@ -56,6 +56,8 @@ subroutine timeinterp_era5cds(n,findex)
   integer :: index1
   real    :: wt1,wt2,czb,cze,czm,gmt1,gmt2
   real    :: zw1,zw2
+  integer :: bdoy,byr,bmo,bda,bhr,bmn
+  real*8  :: btime
   integer            :: status
   type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
   type(ESMF_Field)   :: psurfField,pcpField,cpcpField
@@ -65,6 +67,11 @@ subroutine timeinterp_era5cds(n,findex)
 !-----------------------------------------------------------------------
 !  Interpolate Data in Time
 !-----------------------------------------------------------------------
+
+  btime=era5cds_struc(n)%era5cdstime1
+  call LDT_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)
+  btime=era5cds_struc(n)%era5cdstime2
+  call LDT_time2date(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn)
 
   wt1=(era5cds_struc(n)%era5cdstime2-LDT_rc%time)/ & 
       (era5cds_struc(n)%era5cdstime2-era5cds_struc(n)%era5cdstime1)

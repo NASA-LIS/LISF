@@ -152,6 +152,10 @@ subroutine read_era5cds(n, kk,order, year, month, day, hour, read_flag, findex,&
                                           !in Cloud Physics, pp.12-17
                                           ! A in kPa, B in K.
   real            :: p_kPa
+
+  external :: era5grid_2_lisgrid
+  external :: interp_era5cds_var
+  external :: assign_processed_era5cdsff
 ! __________________________________________________________________________
 
   ferror = 0 ! 1 success
@@ -938,11 +942,10 @@ end subroutine era5grid_2_lisgrid
 ! \label{assign_processed_era5cdsf}
 !
 ! !INTERFACE:
-subroutine assign_processed_era5cdsf(n,kk,findex,order,var_index,era5forc)
+subroutine assign_processed_era5cdsf(n,kk,findex,order,var_index,era5data)
 ! !USES:
-  use LDT_coreMod
+  use LDT_coreMod,       only : LDT_rc, LDT_domain
   use LDT_metforcingMod,  only : LDT_forc
-  use era5cds_forcingMod, only : era5cds_struc
 !
 ! !DESCRIPTION:
 !  This routine assigns the interpolated ERA5 forcing data
@@ -952,12 +955,12 @@ subroutine assign_processed_era5cdsf(n,kk,findex,order,var_index,era5forc)
 !EOP
   implicit none
 
-  integer :: n
-  integer :: kk
-  integer :: findex
-  integer :: order
-  integer :: var_index
-  real    :: era5forc(LDT_rc%lnc(n)*LDT_rc%lnr(n))
+  integer, intent(in) :: n
+  integer, intent(in) :: kk
+  integer, intent(in) :: findex
+  integer, intent(in) :: order
+  integer, intent(in) :: var_index
+  real, intent(in)    :: era5data(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 
 
   integer :: c,r
@@ -968,11 +971,11 @@ subroutine assign_processed_era5cdsf(n,kk,findex,order,var_index,era5forc)
            if(order.eq.1) then
               LDT_forc(n,findex)%metdata1(var_index,&
                    LDT_domain(n)%gindex(c,r)) = &
-                   era5forc(c+(r-1)*LDT_rc%lnc(n))
+                   era5data(c+(r-1)*LDT_rc%lnc(n))
            elseif(order.eq.2) then
               LDT_forc(n,findex)%metdata2(var_index,&
                    LDT_domain(n)%gindex(c,r)) = &
-                   era5forc(c+(r-1)*LDT_rc%lnc(n))
+                   era5data(c+(r-1)*LDT_rc%lnc(n))
            endif
         endif
      enddo

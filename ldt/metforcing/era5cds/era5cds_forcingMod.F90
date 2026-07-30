@@ -315,10 +315,6 @@ contains
        era5cds_struc(n)%startFlag = .true.
        era5cds_struc(n)%dayFlag = .true.
 
-!       if( LDT_rc%met_ecor(findex).eq."lapse-rate")  then
-!          call read_era5cdselev_ldtproc(n, findex, 0)
-!       endif
-
        era5cds_struc(n)%mon = -1
        allocate(era5cds_struc(n)%tair(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
        allocate(era5cds_struc(n)%qair(LDT_rc%lnc(n)*LDT_rc%lnr(n),745))
