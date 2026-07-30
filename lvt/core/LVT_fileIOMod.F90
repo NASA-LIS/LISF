@@ -298,14 +298,15 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
    character(len=50)        :: style_temp
    character(len=LVT_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
-   type(ESMF_Time) :: starttime, curtime
-   type(ESMF_TimeInterval) :: deltatime
+   type(ESMF_Time) :: starttime, starttime_tmp, curtime
+   type(ESMF_TimeInterval) :: deltatime, deltatime6
    character(len=8) :: initdate
    character(len=2) :: inithr
    character(len=3) :: fhr
    integer :: rc
    integer :: hr
-   
+   integer :: yy, mm, dd, h
+
    if(.not.PRESENT(odir)) then 
       odir_temp = LVT_rc%odir
    else
@@ -567,14 +568,44 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
               write(LVT_logunit,*)'[ERR] Cannot set curtime object!'
               call LVT_endrun()
            end if
-           deltatime = curtime - starttime
-           call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+
+           call ESMF_TimeIntervalSet(deltatime6, h=6, rc=rc)
            if (rc .ne. ESMF_SUCCESS) then
-              write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+              write(LVT_logunit,*)'[ERR] Cannot set deltatime6 object!'
               call LVT_endrun()
            end if
-           write(unit=fhr, fmt='(i3.3)') hr
 
+           ! Construct the start date, cycle hour, and forecast hour for
+           ! the LIS filename
+           do
+              deltatime = curtime - starttime
+              call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+              if (rc .ne. ESMF_SUCCESS) then
+                 write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                 call LVT_endrun()
+              end if
+
+              ! If less than or equal to 6 hours, we're done -- jump out
+              ! of loop.
+              if (hr .le. 6) exit
+
+              ! We need to adjust the starttime forward 6 hours and try
+              ! again.
+              starttime_tmp = starttime + deltatime6
+              starttime = starttime_tmp
+              call ESMF_TimeGet(starttime, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
+              if (rc .ne. ESMF_SUCCESS) then
+                 write(LVT_logunit,*) &
+                      '[ERR] Cannot get time value from starttime!'
+                 call LVT_endrun()
+              end if
+
+              write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                   yy, mm, dd
+              write(unit=inithr, fmt='(i2.2)') h
+
+           end do
+           write(unit=fhr, fmt='(i3.3)') hr
            dname = trim(odir_temp)//'/'//&
                 ! '/PS.557WW_SC.' &
                 ! //trim(LVT_rc%security_class)//'_DI.' &
@@ -599,17 +630,17 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
 
         select case (LVT_LIS_rc(source)%format)
         case ( "binary" )
-           out_fname = trim(dname)//'.DAT'
+           out_fname = trim(dname)//'DAT'
         case ( "grib1" )
-           out_fname = trim(dname)//'.GR1'
+           out_fname = trim(dname)//'GR1'
         case ( "netcdf" )
-           out_fname = trim(dname)//'.nc'
+           out_fname = trim(dname)//'nc'
            if (style_temp .eq. "557WW NRT forecast convention") then
-              out_fname = trim(dname)//'.NC'
+              out_fname = trim(dname)//'NC'
            endif
         case ( "grib2" )
-           out_fname = trim(dname)//'.GR2'
-        case default            
+           out_fname = trim(dname)//'GR2'
+        case default
         end select
      elseif(style_temp.eq."WMO convention (AFW OPS)") then 
         write(unit=fint,fmt='(i2.2)') writeint/3600
