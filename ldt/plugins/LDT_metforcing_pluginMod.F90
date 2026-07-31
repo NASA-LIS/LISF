@@ -101,6 +101,7 @@ contains
     use gfs_forcingMod
     use merra2_forcingMod
     use era5_forcingMod
+    use era5cds_forcingMod
     use gswp1_forcingMod
     use gswp2_forcingMod
 #if ( defined MF_AGRMET )
@@ -196,6 +197,11 @@ contains
     external timeinterp_era5
     external finalize_era5
     external reset_era5
+
+    external get_era5cds
+    external timeinterp_era5cds
+    external finalize_era5cds
+    external reset_era5cds
 
     external get_agrradps
     external timeinterp_agrradps
@@ -397,6 +403,13 @@ contains
     call registertimeinterpmetforc(trim(LDT_ERA5Id)//char(0),timeinterp_ERA5)
     call registerresetmetforc(trim(LDT_ERA5Id)//char(0),reset_ERA5)
     call registerfinalmetforc(trim(LDT_ERA5Id)//char(0),finalize_ERA5)
+
+! - ERA5 Reanalysis Forcing from Climate Data Store:
+    call registerinitmetforc(trim(LDT_era5cdsId)//char(0),init_era5cds)
+    call registerretrievemetforc(trim(LDT_era5cdsId)//char(0),get_era5cds)
+    call registertimeinterpmetforc(trim(LDT_era5cdsId)//char(0),timeinterp_era5cds)
+    call registerresetmetforc(trim(LDT_era5cdsId)//char(0),reset_era5cds)
+    call registerfinalmetforc(trim(LDT_era5cdsId)//char(0),finalize_era5cds)
 
 ! - WRFv2 Analysis Forcing:
     call registerinitmetforc(trim(LDT_wrfoutv2Id)//char(0),init_WRFoutv2)

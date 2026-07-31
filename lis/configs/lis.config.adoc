@@ -391,6 +391,7 @@ endif::devonly[]
 |"`AWAP`"                      | AWAP precipitation data
 |"`GDAS T1534`"                | NCEP-specific GDAS T1534 forcing data
 |"`ERA5`"                      | ERA5 reanalysis meteorology
+|"`ERA5CDS`"                   | ERA5 reanalysis meteorology from Climate Data Store
 |"`AWRAL processed forcing`"   | AWRA-L processed forcing
 |"`PLUMBER2`"                  | PLUMBER2 forcing
 |"`GDDP`"                      | NEX GDDP forcing
@@ -6259,6 +6260,31 @@ ERA5 forcing directory:              ./ERA5/
 ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
 ....
 
+[[sssec_forcings_ERA5CDS,ERA5CDS]]
+==== ERA5CDS
+
+`ERA5CDS forcing directory:` specifies the location of
+the ERA5 from Climate Data Store forcing files.
+
+
+`ERA5CDS surface altitude file:` specifies the ERA5CDS reanalysis elevation file.
+
+`ERA5CDS use lowest model level forcing:` specifies whether to use the
+model lowest level or 2m/10m diagnosed wind fields.  The 2m/10m file is used
+if this model level forcing option is turned off.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Use 2m temperature, 2m dew point temperature, and 10m u/v wind
+|1     | Use model lowest level temperature, specific humidity, and u/v wind
+|==== 
+.Example _lis.config_ entry
+....
+ERA5CDS forcing directory:              ./ERA5/single_hourly
+ERA5CDS surface altitude file: ../ERA5/era5cds_elev.nc
+ERA5CDS use lowest model level forcing: 1 
 
 [[sssec_forcings_gswp1,GSWP1]]
 ==== GSWP1
