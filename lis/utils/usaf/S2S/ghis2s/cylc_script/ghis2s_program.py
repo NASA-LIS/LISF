@@ -284,15 +284,42 @@ class Ghis2sProgram():
         with config_file.open('r', encoding="utf-8") as file:
             filedata = file.read()
 
+        # set global env variables
+        scr_root = (
+            f"{self.env['E2ESDIR']}/scratch/"
+            f"{self.env['FORECAST_YEAR']:04d}{self.env['FORECAST_MONTH']:02d}"
+        ).replace('//', '/')
+        pythonpath_root = self.env["PYTHONPATH"].replace('//', '/')
+        modulepath_root = ""
+        for line in filedata.splitlines():
+            if "MODULEPATH" in line and ":$MODULEPATH" in line:
+                modulepath_root = line.split("=")[1].split(":$MODULEPATH")[0].strip()
+                break
+
+        # Replace hardcoded paths with Jinja2 variables in flow.cylc
+        filedata = filedata.replace(scr_root, '{{ SCRATCH_ROOT }}')
+        filedata = filedata.replace(pythonpath_root, '{{ PYTHONPATH_ROOT }}')
+        filedata = filedata.replace(modulepath_root, '{{ MODULEPATH_ROOT }}')
+
         # Replace placeholders
         filedata = filedata.replace('USEREMAIL', self.env["USER_EMAIL"])
         filedata = filedata.replace('YYYY-MM', self.forecast_date)
         filedata = filedata.replace('--output ', '--output=')
         filedata = filedata.replace('--error ', '--error=')
         filedata = filedata.replace('--exclusive', '--exclusive=')
+        filedata = filedata.replace('--no-requeue', '--no-requeue=')
         filedata = filedata.replace('-N ', '--nodes=')
         filedata = filedata.replace('PF_SLURM', self.env["PF_SLURM"])
         filedata = filedata.replace('PF_LHOST', self.env["PF_LHOST"])
+
+        # Update Jinja2 env vaiables at the top
+        jinja_injection = (
+            f"#!jinja2\n"
+            f"{{% set SCRATCH_ROOT = '{scr_root}' %}}\n"
+            f"{{% set PYTHONPATH_ROOT = '{pythonpath_root}' %}}\n"
+            f"{{% set MODULEPATH_ROOT = '{modulepath_root}' %}}\n"
+        )
+        filedata = filedata.replace("#!jinja2", jinja_injection, 1)
 
         with config_file.open('w', encoding="utf-8") as file:
             file.write(filedata)
