@@ -450,13 +450,13 @@ contains
     character(len=1)        :: fproj
     integer                 :: varid_def_local
 
-    type(ESMF_Time) :: starttime, curtime
-    type(ESMF_TimeInterval) :: deltatime
+    type(ESMF_Time) :: starttime, starttime_last, curtime
+    type(ESMF_TimeInterval) :: deltatime, deltatime12
     character(len=8) :: initdate
     character(len=2) :: inithr
     character(len=3) :: fhr
+    integer :: yy, mm, dd, h
     integer :: rc
-
 
     ! EMK...This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
@@ -786,18 +786,45 @@ contains
 
           ! EMK...Different file name convention for 24-hr data
           if (LVT_rc%tavgInterval == 86400) then
+
+             ! We need to specify the LIS run that will provide output for
+             ! the last 12 hours of the 24 hour period.  Outside of LVT,
+             ! these LIS24 hour files will be appended to 12-hr LIS
+             ! forecasts of snow depth and SWE.
+             call ESMF_TimeSet(starttime, &
+                  yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
+                  h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
+                call LVT_endrun()
+             end if
+             call ESMF_TimeIntervalSet(deltatime12, h=12, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set deltatime18 object!'
+                call LVT_endrun()
+             end if
+             starttime_last = starttime + deltatime12 ! Most recent LIS cycle
+             call ESMF_TimeGet(starttime_last, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*) &
+                     '[ERR] Cannot get time value from starttime_last!'
+                call LVT_endrun()
+             end if
+             write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                   yy, mm, dd
+             write(unit=inithr, fmt='(i2.2)') h
+
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
                   //'_GP.'//trim(LVT_rc%generating_process) &
-                  !//'_GP.'//trim(model_name) &
-                  !//'_GR.C0P09DEG' &
                   //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS24' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
+                  //'_DD.'//trim(initdate) &
+                  //'_CY.'//trim(inithr) &
+                  //'_FH.012' &
                   //'_DF.GR2'
 
              if (LVT_rc%nensem > 1) then
@@ -806,12 +833,12 @@ contains
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
                      //'_GP.'//trim(LVT_rc%generating_process) &
-                     !//'_GP.'//trim(model_name) &
                      //'_GR.C0P09DEG' &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.LIS24-SSDEV' &
-                     //'_DD.'//trim(cdate2) &
-                     //'_DT.'//trim(cdate3) &
+                     //'_DD.'//trim(initdate) &
+                     //'_CY.'//trim(inithr) &
+                     //'_FH.012' &
                      //'_DF.GR2'
              end if
           else
@@ -841,18 +868,6 @@ contains
              end if
              write(unit=fhr, fmt='(i3.3)') hr
 
-             ! EMK...Assume 3-hr
-             ! fname_mean = trim(LVT_rc%statsodir) &
-             !      //'/PS.557WW' &
-             !      //'_SC.'//trim(LVT_rc%security_class) &
-             !      //'_DI.'//trim(LVT_rc%data_category) &
-             !      //'_GP.'//trim(model_name) &
-             !      //'_GR.C0P09DEG' &
-             !      //'_AR.'//trim(LVT_rc%area_of_data) &
-             !      //'_PA.LIS' &
-             !      //'_DD.'//trim(cdate2) &
-             !      //'_DT.'//trim(cdate3) &
-             !      //'_DF.GR2'
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
@@ -867,17 +882,6 @@ contains
                   //'_DF.GR2'
 
              if (LVT_rc%nensem > 1) then
-                ! fname_ssdev = trim(LVT_rc%statsodir) &
-                !      //'/PS.557WW' &
-                !      //'_SC.'//trim(LVT_rc%security_class) &
-                !      //'_DI.'//trim(LVT_rc%data_category) &
-                !      //'_GP.'//trim(model_name) &
-                !      //'_GR.C0P09DEG' &
-                !      //'_AR.'//trim(LVT_rc%area_of_data) &
-                !      //'_PA.SSDEV' &
-                !      //'_DD.'//trim(cdate2) &
-                !      //'_DT.'//trim(cdate3) &
-                !      //'_DF.GR2'
                 fname_ssdev = trim(LVT_rc%statsodir) &
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &

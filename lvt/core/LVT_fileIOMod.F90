@@ -298,8 +298,8 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
    character(len=50)        :: style_temp
    character(len=LVT_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
-   type(ESMF_Time) :: starttime, starttime_tmp, curtime
-   type(ESMF_TimeInterval) :: deltatime, deltatime6
+   type(ESMF_Time) :: starttime, starttime6, starttime12, endtime, curtime
+   type(ESMF_TimeInterval) :: deltatime
    character(len=8) :: initdate
    character(len=2) :: inithr
    character(len=3) :: fhr
@@ -551,9 +551,13 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
                 trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
         else if (style_temp .eq. "557WW NRT forecast convention") then
 
+           ! We need special logic here to handle 24-hr calculations versus
+           ! 3-hrly.
+
            write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
                 LVT_rc%syr, LVT_rc%smo, LVT_rc%sda
            write(unit=inithr, fmt='(i2.2)') LVT_rc%shr
+
            call ESMF_TimeSet(starttime, &
                 yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
                 h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
@@ -561,6 +565,7 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
               write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
               call LVT_endrun()
            end if
+
            call ESMF_TimeSet(curtime, &
                 yy=LVT_rc%yr, mm=LVT_rc%mo, dd=LVT_rc%da, &
                 h=LVT_rc%hr, m=LVT_rc%mn, s=LVT_rc%ss, rc=rc)
@@ -569,30 +574,84 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
               call LVT_endrun()
            end if
 
-           call ESMF_TimeIntervalSet(deltatime6, h=6, rc=rc)
+           call ESMF_TimeSet(endtime, &
+                yy=LVT_rc%eyr, mm=LVT_rc%emo, dd=LVT_rc%eda, &
+                h=LVT_rc%ehr, m=LVT_rc%emn, s=LVT_rc%ess, rc=rc)
            if (rc .ne. ESMF_SUCCESS) then
-              write(LVT_logunit,*)'[ERR] Cannot set deltatime6 object!'
+              write(LVT_logunit,*)'[ERR] Cannot set endtime object!'
               call LVT_endrun()
            end if
 
-           ! Construct the start date, cycle hour, and forecast hour for
-           ! the LIS filename
-           do
-              deltatime = curtime - starttime
-              call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+           deltatime = endtime - starttime
+           call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+           if (rc .ne. ESMF_SUCCESS) then
+              write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+              call LVT_endrun()
+           end if
+
+           if (hr == 24) then
+
+              call ESMF_TimeIntervalSet(deltatime, h=6, rc=rc)
               if (rc .ne. ESMF_SUCCESS) then
-                 write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                 write(LVT_logunit,*)'[ERR] Cannot set deltatime!'
                  call LVT_endrun()
               end if
+              starttime6 = starttime + deltatime
 
-              ! If less than or equal to 6 hours, we're done -- jump out
-              ! of loop.
-              if (hr .le. 6) exit
+              call ESMF_TimeIntervalSet(deltatime, h=12, rc=rc)
+              if (rc .ne. ESMF_SUCCESS) then
+                 write(LVT_logunit,*)'[ERR] Cannot set deltatime!'
+                 call LVT_endrun()
+              end if
+              starttime12 = starttime + deltatime
 
-              ! We need to adjust the starttime forward 6 hours and try
-              ! again.
-              starttime_tmp = starttime + deltatime6
-              starttime = starttime_tmp
+              if (curtime <= starttime6) then
+                 call ESMF_TimeGet(starttime, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
+                 if (rc .ne. ESMF_SUCCESS) then
+                    write(LVT_logunit,*) &
+                         '[ERR] Cannot get time value from starttime!'
+                    call LVT_endrun()
+                 end if
+
+                 deltatime = curtime - starttime
+                 call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+                 if (rc .ne. ESMF_SUCCESS) then
+                    write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                    call LVT_endrun()
+                 end if
+
+              else if (curtime <= starttime12) then
+                 call ESMF_TimeGet(starttime6, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
+                 if (rc .ne. ESMF_SUCCESS) then
+                    write(LVT_logunit,*) &
+                         '[ERR] Cannot get time value from starttime6!'
+                    call LVT_endrun()
+                 end if
+
+                 deltatime = curtime - starttime6
+                 call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+                 if (rc .ne. ESMF_SUCCESS) then
+                    write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                    call LVT_endrun()
+                 end if
+
+              else
+                 call ESMF_TimeGet(starttime12, yy=yy, mm=mm, dd=dd, h=h, &
+                      rc=rc)
+                 if (rc .ne. ESMF_SUCCESS) then
+                    write(LVT_logunit,*) &
+                         '[ERR] Cannot get time value from starttime12!'
+                    call LVT_endrun()
+                 end if
+
+                 deltatime = curtime - starttime12
+                 call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+                 if (rc .ne. ESMF_SUCCESS) then
+                    write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                    call LVT_endrun()
+                 end if
+              end if
+           else
               call ESMF_TimeGet(starttime, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
               if (rc .ne. ESMF_SUCCESS) then
                  write(LVT_logunit,*) &
@@ -600,21 +659,20 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
                  call LVT_endrun()
               end if
 
-              write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
-                   yy, mm, dd
-              write(unit=inithr, fmt='(i2.2)') h
+              deltatime = curtime - starttime
+              call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+              if (rc .ne. ESMF_SUCCESS) then
+                 write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                 call LVT_endrun()
+              end if
 
-           end do
+           end if
+
+           write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                yy, mm, dd
+           write(unit=inithr, fmt='(i2.2)') h
            write(unit=fhr, fmt='(i3.3)') hr
            dname = trim(odir_temp)//'/'//&
-                ! '/PS.557WW_SC.' &
-                ! //trim(LVT_rc%security_class)//'_DI.' &
-                ! //trim(LVT_rc%distribution_class)//'_GP.' &
-                ! //trim(LVT_rc%generating_process)//'_GR.' &
-                ! //trim(fproj)//trim(fres2)//'_AR.' &
-                ! //trim(LVT_rc%area_of_data)//'_PA.' &
-                ! //'SURFACEMODEL' // '_DD.' & ! EMK FIXME
-                ! //trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
                 '/PS.557WW' // &
                 '_SC.'//trim(LVT_rc%security_class)// &
                 '_DI.'//trim(LVT_rc%distribution_class)// &
