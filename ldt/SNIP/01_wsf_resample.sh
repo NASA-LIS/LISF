@@ -1,0 +1,36 @@
+#SBATCH --job-name=01_wsf_resample
+#SBATCH --output=./log/01_wsf_resample_%j.log
+#SBATCH --nodes=1
+#SBATCH --ntasks=8
+#SBATCH --time=00:30:00
+#SBATCH --mail-type=FAIL
+#SBATCH --account=s1189
+#SBATCH --qos=debug
+
+# load modules
+module purge
+unset LD_LIBRARY_PATH
+module use --append /home/emkemp/privatemodules/sles15
+module load lisf_7.6_intel_2023.2.1_emk_aiml
+
+cd "$(dirname "$0")"
+
+
+CFG="./01_wsf_resample.ldt.config"
+
+if [ ! -f "$CFG" ]; then
+  echo "ERROR: WSF config file not found: $CFG"
+  exit 1
+fi
+
+# User must provide the target datetime as the first argument
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 YYYYMMDDHHMM"
+  echo "Example: $0 202501200600"
+  exit 1
+fi
+
+TARGET_DATETIME="$1"
+
+# Run the resampling worker via workflow.py (worker mode)
+python ./SNIP_ops/workflow.py --input WSF --resample "$TARGET_DATETIME" --config "$CFG"
