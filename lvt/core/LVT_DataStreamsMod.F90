@@ -992,59 +992,203 @@ contains
              call LVT_endrun()
           end if
 
+          if(LVT_rc%domain.eq."polar") then
+             fproj = 'P'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."lambert") then
+             fproj = 'L'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."mercator") then
+             fproj = 'M'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(1)%gridDesc(9)
+             fres1 = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."gaussian") then
+             fproj = 'G'
+             write(unit=fres, fmt='(i2.2)') &
+                  LVT_LIS_rc(1)%gridDesc(9)*100
+             fres1 = '0P'//trim(fres)//'DEG'
+          else
+            fproj = 'C'
+             write(unit=fres, fmt='(i10)') &
+                  nint(LVT_LIS_rc(1)%gridDesc(10)*100)
+             read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
+             c = 0
+             do i=1,10
+                if(fres1(i).ne.' '.and.c==0) c = i
+             enddo
+             if (LVT_LIS_rc(1)%gridDesc(10) .lt. 0.1) then
+                fres2 = '0P0'
+             else
+                fres2 = '0P'
+             end if
+             do i=c,10
+                fres2 = trim(fres2)//trim(fres1(i))
+             enddo
+             fres2 = trim(fres2)//'DEG'
+          endif
+
           ! EMK...Different file name convention for 24-hr data
           if (LVT_rc%tavgInterval == 86400) then
+
+             ! We need to specify the LIS run that will provide output for
+             ! the last 12 hours of the 24 hour period.  Outside of LVT,
+             ! these LIS24 hour files will be appended to 12-hr LIS
+             ! forecasts of snow depth and SWE.
+             call ESMF_TimeSet(starttime, &
+                  yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
+                  h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
+                call LVT_endrun()
+             end if
+             call ESMF_TimeIntervalSet(deltatime12, h=12, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set deltatime18 object!'
+                call LVT_endrun()
+             end if
+             starttime_last = starttime + deltatime12 ! Most recent LIS cycle
+             call ESMF_TimeGet(starttime_last, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*) &
+                     '[ERR] Cannot get time value from starttime_last!'
+                call LVT_endrun()
+             end if
+             write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                   yy, mm, dd
+             write(unit=inithr, fmt='(i2.2)') h
+
+             !fname_mean = trim(LVT_rc%statsodir) &
+             !     //'/PS.557WW' &
+             !     //'_SC.'//trim(LVT_rc%security_class) &
+             !     //'_DI.'//trim(LVT_rc%data_category) &
+             !     //'_GP.'//trim(model_name) &
+             !     //'_GR.C0P09DEG' &
+             !     //'_AR.'//trim(LVT_rc%area_of_data) &
+             !     //'_PA.LIS24' &
+             !     //'_DD.'//trim(cdate2) &
+             !     //'_DT.'//trim(cdate3) &
+             !     //'_DF.NC'
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
+                  //'_GP.'//trim(LVT_rc%generating_process) &
+                  //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS24' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
-                  //'_DF.nc'
+                  //'_DD.'//trim(initdate) &
+                  //'_DT.'//trim(inithr) &
+                  //'_FH.012' &
+                  //'_DF.NC'
 
-             if (LVT_rc%nensem > 1) then
+             if (LVT_rc%nensem > 1 .and. &
+                  .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
+                !fname_ssdev = trim(LVT_rc%statsodir) &
+                !     //'/PS.557WW' &
+                !     //'_SC.'//trim(LVT_rc%security_class) &
+                !     //'_DI.'//trim(LVT_rc%data_category) &
+                !     //'_GP.'//trim(model_name) &
+                !     //'_GR.C0P09DEG' &
+                !     //'_AR.'//trim(LVT_rc%area_of_data) &
+                !     //'_PA.LIS24-SSDEV' &
+                !     //'_DD.'//trim(cdate2) &
+                !     //'_DT.'//trim(cdate3) &
+                !     //'_DF.NC'
                 fname_ssdev = trim(LVT_rc%statsodir) &
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
-                     //'_GP.'//trim(model_name) &
-                     //'_GR.C0P09DEG' &
+                     //'_GP.'//trim(LVT_rc%generating_process) &
+                     //'_GR.'//trim(fproj)//trim(fres2) &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.LIS24-SSDEV' &
                      //'_DD.'//trim(cdate2) &
                      //'_DT.'//trim(cdate3) &
-                     //'_DF.nc'
+                     //'_DF.NC'
+
              end if
           else
+
+             write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                  LVT_rc%syr, LVT_rc%smo, LVT_rc%sda
+             write(unit=inithr, fmt='(i2.2)') LVT_rc%shr
+             call ESMF_TimeSet(starttime, &
+                  yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
+                  h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
+                call LVT_endrun()
+             end if
+             call ESMF_TimeSet(curtime, &
+                  yy=LVT_rc%yr, mm=LVT_rc%mo, dd=LVT_rc%da, &
+                  h=LVT_rc%hr, m=LVT_rc%mn, s=LVT_rc%ss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set curtime object!'
+                call LVT_endrun()
+             end if
+             deltatime = curtime - starttime
+             call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                call LVT_endrun()
+             end if
+             write(unit=fhr, fmt='(i3.3)') hr
+
+             !fname_mean = trim(LVT_rc%statsodir) &
+             !     //'/PS.557WW' &
+             !     //'_SC.'//trim(LVT_rc%security_class) &
+             !     //'_DI.'//trim(LVT_rc%data_category) &
+             !     //'_GP.'//trim(model_name) &
+             !     //'_GR.C0P09DEG' &
+             !     //'_AR.'//trim(LVT_rc%area_of_data) &
+             !     //'_PA.LIS' &
+             !     //'_DD.'//trim(cdate2) &
+             !     //'_DT.'//trim(cdate3) &
+             !     //'_DF.nc'
 
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
-                  //'_GP.'//trim(model_name) &
-                  //'_GR.C0P09DEG' &
+                  //'_GP.'//trim(LVT_rc%generating_process) &
+                  //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
                   //'_PA.LIS' &
-                  //'_DD.'//trim(cdate2) &
-                  //'_DT.'//trim(cdate3) &
-                  //'_DF.nc'
+                  //'_DD.'//trim(initdate) &
+                  //'_CY.'//trim(inithr) &
+                  //'_FH.'//trim(fhr) &
+                  //'_DF.NC'
 
-             if (LVT_rc%nensem > 1) then
+             if (LVT_rc%nensem > 1 .and. &
+                  .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
+
+                !fname_ssdev = trim(LVT_rc%statsodir) &
+                !     //'/PS.557WW' &
+                !     //'_SC.'//trim(LVT_rc%security_class) &
+                !     //'_DI.'//trim(LVT_rc%data_category) &
+                !     //'_GP.'//trim(model_name) &
+                !     //'_GR.C0P09DEG' &
+                !     //'_AR.'//trim(LVT_rc%area_of_data) &
+                !     //'_PA.SSDEV' &
+                !     //'_DD.'//trim(cdate2) &
+                !     //'_DT.'//trim(cdate3) &
+                !     //'_DF.nc'
+
                 fname_ssdev = trim(LVT_rc%statsodir) &
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
-                     //'_GP.'//trim(model_name) &
-                     //'_GR.C0P09DEG' &
+                     //'_GP.'//trim(LVT_rc%generating_process) &
+                     //'_GR.'//trim(fproj)//trim(fres2) &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
                      //'_PA.SSDEV' &
-                     //'_DD.'//trim(cdate2) &
-                     //'_DT.'//trim(cdate3) &
-                     //'_DF.nc'
+                     //'_DD.'//trim(initdate) &
+                     //'_CY.'//trim(inithr) &
+                     //'_FH.'//trim(fhr) &
+                     //'_DF.NC'
+
              end if
           end if
           ! Setup of GRIB-1 and GRIB-2 Metadata Section
@@ -1143,23 +1287,26 @@ contains
 #if (defined USE_NETCDF4)
           iret = nf90_create(path=trim(fname_mean), cmode=nf90_hdf5, &
                ncid=ftn_mean)
-          call LVT_verify(iret, 'failed to open grib file '//trim(fname_mean))
+          call LVT_verify(iret, 'failed to open netcdf file ' // &
+               trim(fname_mean))
 
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow .and. &
+               .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
              iret = nf90_create(path=trim(fname_ssdev), cmode=nf90_hdf5, &
                   ncid=ftn_ssdev)
              call LVT_verify(iret, &
-                  'failed to open grib file '//trim(fname_ssdev))
+                  'failed to open netcdf file '//trim(fname_ssdev))
           end if
 #endif
 #if (defined USE_NETCDF3)
           iret = nf90_create(path=trim(fname_mean), cmode=nf90_clobber, &
                ncid=ftn_mean)
-          call LVT_verify(iret, 'failed to open grib file '//trim(fname_mean))
+          call LVT_verify(iret, 'failed to open netcdf file '//trim(fname_mean))
 
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+               .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
              iret = nf90_create(path=trim(fname_ssdev), cmode=nf90_clobber, &
                   ncid=ftn_ssdev)
              call LVT_verify(iret, &
@@ -1328,7 +1475,8 @@ contains
           endif
 
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow .and. &
+               .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
              !Headers
              call LVT_verify(nf90_def_dim(ftn_ssdev, 'east_west', &
                   LVT_rc%gnc, dimID(1)))
@@ -1529,7 +1677,9 @@ contains
                    call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
 
                    if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-                        LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+                        LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+                        .and. .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
+
                       call defineNETCDFheaderVar_ss(ftn_ssdev, dimID, &
                            lisdataEntry)
                    end if
@@ -1551,7 +1701,8 @@ contains
                'nf90_put_att for title failed in LVT_DataStreamsMod')
 
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+             .and. .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
              call LVT_verify(nf90_put_att(ftn_ssdev, NF90_GLOBAL, &
                   "NUM_SOIL_LAYERS", &
                   nsoillayers), &
@@ -1743,7 +1894,8 @@ contains
           call LVT_verify(nf90_put_var(ftn_mean, xtimeID, 0.0))
 
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+             .and. .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
              call LVT_verify(nf90_enddef(ftn_ssdev))
              call LVT_verify(nf90_put_var(ftn_ssdev, xtime_ss_ID, 0.0))
           end if
@@ -1759,7 +1911,9 @@ contains
                'nf90_put_var failed for lon')
 
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+               .and. .not. LVT_rc%lvt_wopt .eq. "2d gridspace") then
+
              call LVT_verify(nf90_put_var(ftn_ssdev, xlat_ss_ID, &
                   lat, (/1, 1/),&
                   (/LVT_rc%gnc, LVT_rc%gnr/)),&
@@ -2127,7 +2281,9 @@ contains
 
                       if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
                            LVT_rc%nensem > 1 &
-                           .and. .not. jules_ps41_ens_snow) then
+                           .and. .not. jules_ps41_ens_snow &
+                           .and. .not. &
+                           LVT_rc%lvt_wopt .eq. "2d gridspace") then
                          call writeSingleGrib2Var(ftn_ssdev, &
                               gtmp1_ss, &
                               varid_def_local, &
@@ -2274,7 +2430,9 @@ contains
 
                       if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
                            LVT_rc%nensem > 1 &
-                           .and. .not. jules_ps41_ens_snow) then
+                           .and. .not. jules_ps41_ens_snow &
+                           .and. .not. &
+                           LVT_rc%lvt_wopt .eq. "2d gridspace") then
                          call writeSingleGrib2Var(ftn_ssdev, &
                               gtmp1_ss, &
                               lisdataentry%varid_def, &
@@ -2316,7 +2474,9 @@ contains
 
                       if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
                            LVT_rc%nensem > 1 &
-                           .and. .not. jules_ps41_ens_snow) then
+                           .and. .not. jules_ps41_ens_snow &
+                           .and. .not. &
+                           LVT_rc%lvt_wopt .eq. "2d gridspace") then
 
                          call writeSingleGrib1Var(ftn_ssdev, &
                               gtmp1_ss, &
@@ -2341,12 +2501,16 @@ contains
                            k)
                       if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
                            LVT_rc%nensem > 1 &
-                           .and. .not. jules_ps41_ens_snow) then
+                           .and. .not. jules_ps41_ens_snow &
+                           .and. .not. &
+                           LVT_rc%lvt_wopt .eq. "2d gridspace") then
+
                          call writeSingleNetcdfVar(ftn_ssdev, &
                               gtmp1_ss, &
                               lisdataentry%varid_ss, &
                               k)
                       end if
+
                    endif
 
                 enddo ! k
@@ -2390,19 +2554,25 @@ contains
        if (LVT_rc%lvt_out_format .eq. "grib1") then
           call grib_close_file(ftn_mean, iret)
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+               .and. .not. &
+               LVT_rc%lvt_wopt .eq. "2d gridspace") then
              call grib_close_file(ftn_ssdev, iret)
           end if
        elseif (LVT_rc%lvt_out_format .eq. "grib2") then
           call grib_close_file(ftn_mean, iret)
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+               .and. .not. &
+               LVT_rc%lvt_wopt .eq. "2d gridspace") then
              call grib_close_file(ftn_ssdev, iret)
           end if
        elseif (LVT_rc%lvt_out_format .eq. "netcdf") then
           call LVT_verify(nf90_close(ftn_mean))
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
+               LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
+               .and. .not. &
+               LVT_rc%lvt_wopt .eq. "2d gridspace") then
              call LVT_verify(nf90_close(ftn_ssdev))
           end if
        endif
@@ -4369,7 +4539,6 @@ contains
 #endif
        endif
 
-
        call LVT_verify(nf90_put_att(ftn, dataEntry%varId_def, &
             "units", trim(dataEntry%units)), &
             'nf90_put_att for units failed in defineNETCDFheaderVar')
@@ -4400,6 +4569,7 @@ contains
 
     endif
 #endif
+
   end subroutine defineNETCDFheaderVar
 
 
