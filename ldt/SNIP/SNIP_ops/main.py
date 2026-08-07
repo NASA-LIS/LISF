@@ -20,6 +20,7 @@ REVISION HISTORY:
 15 Aug 2025: Kehan Yang, Initial specification
 18 Aug 2025: Eric Kemp, Code cleanup.
 12 Apr 2025: Kehan Yang, Add WSF workflow
+6 Aug 2026: Kehan Yang, Add WSF resampling 
 """
 
 # Standard modules
@@ -33,7 +34,8 @@ from config.load_config import Config
 from data_processing.amsr2_reader import AMSR2DataProcessor
 from ml_prediction.run_prediction import AMSR2SnowDepthPredictor
 from ml_prediction.run_prediction_WSF import WSFSnowWorkflow
-
+import json
+from pathlib import Path
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
