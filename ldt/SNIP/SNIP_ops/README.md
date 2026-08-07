@@ -123,8 +123,8 @@ Under the parent folder, we provide SLURM job submission script samples to run t
 
 | File | Description |
 |------|-------------|
-| `01_wsf_resample.sh` | Step 1 SLURM script that runs WSF resampling via `SNIP_ops/data_processing/WSF_reader.py`
-| `01_wsf_resample.ldt.config` | Config file for WSF resampling. Key parameters include:<br>• **`ldt_config_template`**: Path to the LDT configuration template file<br>• **`v522_sdr_base`**: Base directory for WSF-M v5.2.2 SDR input data<br>• **`raw_sdr_base`**: Base directory for WSF-M SDR input data for newer versions<br>• **`resampled_base`**: Directory for storing the resampled WSF SDR output |
+| `01_wsf_resample.sh` | Step 1 SLURM script that runs WSF resampling via `SNIP_ops/data_processing/WSF_reader.py`.
+| `01_wsf_resample.ldt.config` | Config file for WSF resampling. Key parameters include:<br>• **`ldt_config_template`**: Path to the LDT configuration template file<br>• **`v522_sdr_base`**: Base directory for WSF-M v5.2.2 SDR input data<br>• **`raw_sdr_base`**: Base directory for WSF-M SDR input data for newer versions<br>• **`resampled_base`**: Directory for storing the resampled WSF SDR output; Note this directory needs to be the same as it in the SNIP_config.json file. |
 | `02_snip_python.sh` | Step 2 SLURM script that runs the Python module for the ML-based snow depth prediction pipeline. |
 | `./SNIP_ops/config/SNIP_config.json` | Configuration file for the Python prediction step with the details introduced in the previous table. Make sure the `project_path`is provided correctly.|
 | `03_ldt_integration.sh` | Step 3 SLURM script that runs LDT and outputs the final SNIP product. |
