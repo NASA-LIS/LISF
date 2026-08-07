@@ -1,6 +1,6 @@
 {
-  "target_datetime": "201902131800",
-  "project_path": "/discover/nobackup/kyang17/projects/LISF/ldt/SNIP/SNIP_ops/",
+  "target_datetime": "202501200000",
+  "project_path": "/Users/Kyang17/projects/LISF/ldt/SNIP/SNIP_ops/",
 
   "input_SD": "WSF",
   "model_path": "./data/models/model",
