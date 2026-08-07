@@ -9,28 +9,17 @@ The SNIP system addresses the need for accurate, automated snow depth mapping fr
 - Provides reliable, near real-time snow depth estimation with improved accuracy over traditional methods
 - Python-based processing pipeline with satellite data reading, reprojection, and machine learning predictions
 - Snow depth quality control and gap filling in LIS LDT module
-
-- LIS LVT post-processing
+- LIS LVT post processing
 
 ## Features
 
-
-
-- ✅ Read and resample AMSR2 L1R and WSF-M SDR data to geographic grid cells
-- ✅ Save data quality flag including flags for cold desert, frozen ground, glaciers, rain, and C-band RFI 
+- ✅ Read and resample AMSR2 L1R data to geographic gridcells
+- ✅ Save data quality flag including flags for cold desert, frozen ground, glaciers, rain, and C bands RFI 
 - ✅ AI/ML-based snow depth prediction
 - ✅ Snow depth prediction quality control and gap filling in LDT
-
-- ✅ LVT post-processing to write outputs to legacy GRIB-1 and GRIB-2 formats
+- ✅ LVT post processing to write outputs to legacy GRIB-1 and GRIB-2 formats
 
 ## Python module: AI/ML snow depth retrieval sub-system
-
-### Prerequisites
-- Recommended runtime (SLURM): load the LISF module used in SLURM scripts:
-  module load lisf_7.6_intel_2023.2.1_emk_aiml
-- Or create a conda environment with required Python packages: numpy, pandas, xarray, rioxarray, rasterio, xgboost, h5py, netCDF4. Exact package versions will depend on your runtime.
-- The WSF resampling step (01_wsf_resample.sh) and LDT integrationn step calls LDT; the LDT executable must be built and available for that step.
-
 ### Configuration Files
 
 | File | Description |
@@ -43,14 +32,12 @@ The SNIP pipeline is controlled via a central JSON configuration file. Below is 
 #### Basic configuration 
 * **`target_datetime`**: Target processing time in `YYYYMMDDHHMM` format (e.g., `"202501200600"`).
 * **`project_path`**: Root directory of the project containing source code and configuration files.
-
-* **`input_SD`**: Passive microwave data source (`"WSF"` or `"AMSR2"`). *Note: This value can be overridden at runtime using the `--input` flag in `main.py`.*
+* **`input_SD`**: Passive microwave data source (`"WSF"` or `"AMSR2"`). *Note: This value can be overridden at runtime using the `--input` flag in `workflow.py`.*
 
 #### Model & Output Paths
 * **`model_path`**: Path to the pre-trained machine learning model directory/file.
 * **`output_dir`**: Directory for saving the final ML-based snow depth retrievals and reprojected data products.
-
-* **`resampled_base`**: Directory for storing the resampled WSF SDR output. Ensure this matches the `resampled_base` in the WSF resampling config (01_wsf_resample.ldt.config).
+* **`resampled_base`**: Directory for storing the resampled WSF SDR output. Save directory as it in the WSF read and resampling config file.
 
 #### AMSR2 Settings
 * **`AMSR2_source`**: AMSR2 L1R data source specification (`"NOAA"` or `"JAXA"`).
@@ -75,16 +62,14 @@ The SNIP pipeline is controlled via a central JSON configuration file. Below is 
 | File | Description |
 |------|-------------|
 | `data_processing/amsr2_reader.py` | Core data processing module that:<br>• Reads AMSR2 L1R data files<br>• Reprojects data to common grids<br>• Processes data quality flags<br>• Merges multiple data extents<br>• Saves processed data to NetCDF format |
-
-| `data_processing/WSF_reader.py` | Core data processing module to call LDT for WSF-M data reading and resampling. Data processing includes<br>• Searches and reads WSF SDR data files<br>• Resample and reprojects data to AF grids<br>• Processes data quality flags<br>• Saves data to NetCDF format |
+| `data_processing/WSF_reader.py` | Core data processing module to call LDT for WSF-M data reading and resampling. Data processing includes<br>• Search and reads WSF SDR data files<br>• Resample and reprojects data to AF grids<br>• Processes data quality flags<br>• Saves data to NetCDF format |
 
 ## Machine Learning Prediction 
 
 | File                                        | Description                                                                                                                                                                                                                                                                                       |
 |---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `ml_prediction/run_prediction.py`           | ML inference pipeline that:<br>• Loads pretrained machine learning models<br>• Runs ML predictions on processed data<br>• Applies VIIRS Snow Covered Area (SCA) masking (default config false) <br>• Handles data quality flagging<br>• Reprojects results to Analysis Framework (AF) grids<br>• Saves prediction results |
-
-| `ml_prediction/run_traditional_approach.py` | Traditional snow depth retrieval pipeline that:<br>• Calculate snow depth  using Kelly, (2009) approach and Foster et al, (2005) approach. <br>• Options provided in config file to output these two snow depth results. <br>• Saves prediction results at PMW native resolution        |
+| `ml_prediction/run_traditional_approach.py` | Traditional snow depth retrival pipeline that:<br>• Calculate snow depth  using Kelly, (2009) approach and Foster et al, (2005) approach. <br>• Options provided in config file to output these two snow depth results. <br>• Saves prediction results at PMW native resolution        |
 | `ml_prediction/run_prediction_WSF.py` |   ML inference pipeline that:<br>• Loads pretrained machine learning models<br>• Runs ML predictions on hourly resampled WSF data<br>• Merges predicted snow depth every six hours for LDT post-processing<br>• Applies VIIRS Snow Covered Area (SCA) masking (default config false) <br>• Handles data quality flagging|
 
 
@@ -140,11 +125,9 @@ Under the parent folder, we provide SLURM job submission script samples to run t
 | File | Description |
 |------|-------------|
 | `01_wsf_resample.sh` | Step 1 SLURM script that runs WSF resampling via `SNIP_ops/data_processing/WSF_reader.py`.
-
-| `01_wsf_resample.ldt.config` | Config file for WSF resampling. Key parameters include:<br>• **`ldt_config_template`**: Path to the LDT configuration file<br>• **`v522_sdr_base`**: Base directory for WSF-M v5.2.2 SDR input data<br>• **`raw_sdr_base`**: Base directory for WSF-M SDR input data for newer versions<br>• **`resampled_base`**: Directory for storing the resampled WSF SDR output. Note: this path must match the `resampled_base` in `config/SNIP_config.json`. If `resampled_base` is relative it is interpreted relative to `project_path`; absolute paths are allowed. |
+| `01_wsf_resample.ldt.config` | Config file for WSF resampling. Key parameters include:<br>• **`ldt_config_template`**: Path to the LDT configuration file<br>• **`v522_sdr_base`**: Base directory for WSF-M v5.2.2 SDR input data<br>• **`raw_sdr_base`**: Base directory for WSF-M SDR input data for newer versions<br>• **`resampled_base`**: Directory for storing the resampled WSF SDR output; Note this directory needs to be the same as it in the SNIP_config.json file. |
 | `02_snip_python.sh` | Step 2 SLURM script that runs the Python module for the ML-based snow depth prediction pipeline. |
-
-| `./SNIP_ops/config/SNIP_config.json` | Configuration file for the Python prediction step with the details introduced in the previous table. Make sure the `project_path` is provided correctly.|
+| `./SNIP_ops/config/SNIP_config.json` | Configuration file for the Python prediction step with the details introduced in the previous table. Make sure the `project_path`is provided correctly.|
 | `03_ldt_integration.sh` | Step 3 SLURM script that runs LDT and outputs the final SNIP product. |
 | `03_ldt_integration.config` | LDT config file. Similar to the USAFSI config file, updated to use WSF-M and AMSR2 as inputs. |
 
