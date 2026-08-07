@@ -1,9 +1,9 @@
+#!/bin/sh
 #SBATCH --job-name=01_wsf_resample
 #SBATCH --output=./log/01_wsf_resample_%j.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --time=00:30:00
-#SBATCH --mail-type=FAIL
 #SBATCH --account=s1189
 #SBATCH --qos=debug
 
@@ -13,8 +13,7 @@ unset LD_LIBRARY_PATH
 module use --append /home/emkemp/privatemodules/sles15
 module load lisf_7.6_intel_2023.2.1_emk_aiml
 
-cd "$(dirname "$0")"
-
+cd $SLURM_SUBMIT_DIR
 
 CFG="./01_wsf_resample.ldt.config"
 
@@ -33,4 +32,4 @@ fi
 TARGET_DATETIME="$1"
 
 # Run the resampling worker via workflow.py (worker mode)
-python ./SNIP_ops/workflow.py --input WSF --resample "$TARGET_DATETIME" --config "$CFG"
+python ./SNIP_ops/data_processing/WSF_reader.py --resample "$TARGET_DATETIME" --config "$CFG"

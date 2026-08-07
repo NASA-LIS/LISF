@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --job-name=03_ldt_postprocess
 #SBATCH --output=./log/03_ldt_postprocess_%j.log
 #SBATCH --nodes=1
@@ -16,7 +16,7 @@ module load lisf_7.6_intel_2023.2.1_emk_aiml
 
 set -euo pipefail
 
-cd "$(dirname "$0")"
+cd $SLURM_SUBMIT_DIR
 
 LDT_CONFIG="./03_ldt.config"
 
