@@ -1,6 +1,6 @@
 #!/bin/sh
-#SBATCH --job-name=01_wsf_resample
-#SBATCH --output=./log/01_wsf_resample_%j.log
+#SBATCH --job-name=01_ldt_wsf_resample
+#SBATCH --output=./logs/01/01_ldt_wsf_resample_%j.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --time=00:30:00
@@ -11,11 +11,11 @@
 module purge
 unset LD_LIBRARY_PATH
 module use --append /home/emkemp/privatemodules/sles15
-module load lisf_7.6_intel_2023.2.1_emk_aiml
+module load lisf_7.8_intel_2023.2.1_emk_aiml
 
 cd $SLURM_SUBMIT_DIR
 
-CFG="./01_wsf_resample.ldt.config"
+CFG="./01_ldt_wsf_resample.json"
 
 if [ ! -f "$CFG" ]; then
   echo "ERROR: WSF config file not found: $CFG"
