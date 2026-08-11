@@ -7,18 +7,10 @@
   "output_dir": "../data/02_python_ml_retrieval",
   "resampled_base": "../data/01_ldt_wsf_resample",
 
-  "AMSR2_source": "JAXA",
-  "_AMSR2_source_comment": "AMSR2_source: JAXA or NOAA",
-  "amsr2_path": "../data/input/amsr2_JAXA",
-  "amsr2_merge_path": "../data/input/amsr2_merge_JAXA",
-  "viirs_path": "../data/input/viirs",
-
   "template_path": "../data/input/template/USAFSI_2024123112.nc",
-  "AMSR2_template_path": "../data/input/template/AMSR2.nc",
-  "fraction_forest_cover": "../data/input/template/MCD12Q1_LC_frac_2019_reprojected.tif",
-  "forest_density": "../data/input/template/MOD44B_FF_2019_reprojected.tif",
 
   "flag_output_kelly": false,
   "flag_output_foster": false,
   "apply_viirs_mask": false
+
 }
