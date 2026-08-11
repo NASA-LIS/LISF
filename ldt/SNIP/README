@@ -1,0 +1,89 @@
+DOCUMENTATION FOR SNIP
+
+Eric Kemp
+Last updated 11 Aug 2026
+
+The Snow and Ice Product (SNIP) workflow consists of three major steps.  First,
+LDT is run to resample WSF brightness temperatures via the
+"OPL WSF brightness temperature resampling" runmode. Second, Python scripts
+are used to retrieve snow depths from the resampled WSF data via a ML model.
+Third, LDT is run to create the final analysis via the "SNIP analysis" run
+mode; this uses an earlier SNIP or USAFSI analysis (as first guess), the ML
+snow depth retrievals, snow gage reports, 2-m air temperatures from GALWEM,
+climatology, and other static inputs.  Postprocessing of SNIP netCDF files is
+handled separately by LVT.
+
+Three batch scripts are available for Discover to automate these three
+steps:
+        - 01_ldt_wsf_resample.sh
+        - 02_python_ml_retrieval.sh
+        - 03_ldt_snip_analysis.sh
+
+Each batch script is run via 'sbatch $scriptname YYYYMMDDHH'.  The first two
+batch scripts leverage SNIP_ops Python scripts to handle WSF data.  The Python
+script in the first step will customize a ldt.config file and run LDT under
+the hood.  The second batch script only runs Python code.  The third batch
+script will run LDT directly.
+
+There are two JSON files used by the Python scripts:
+
+        - 01_ldt_wsf_resample.json
+        - 02_python_ml_retrieval.json
+
+There is a ldt.config template that the Python script will use to customize
+in the first step:
+
+        - 01_ldt_wsf_resample.ldt.config
+
+And there is a separate ldt.config file used as-is in the third step:
+
+        - 03_ldt_snip_analysis.ldt.config
+
+A number of directories with input data are used by the SNIP workflow.
+
+
+  - data/input # Contains lis parameter file.
+  - data/input/ESPC-D # Contains sea surface temperature and sea ice from
+                      #   US Navy ESPC-D
+  - data/input/GALWEM # Contains GRIB2 files from 17-km GALWEM
+  - data/input/models # Contains JSON files defining the ML algorithms
+                      #   used for snow depth retrievals
+  - data/input/sfcobs # Contains ASCII files with snow gage reports
+  - data/input/static # Contains static file for e.g., snow climatology,
+                      #   and snow mask
+  - data/input/template # Contains binary template files for final USAF netCDF
+                        #   files.
+  - data/input/viirs # Latest GeoTIFF files with VIIRS snow age and snow maps
+  - data/input/wsf_sdr_data # Latest WSF-M brightness temperature files
+  - data/03_ldt_snip_analysis # Contains recent final SNIP files (some will
+                              # be used as first-guess fields). This should
+                              # also be where new SNIP netCDF files are
+                              # written.
+
+
+
+
+
+* LDT executable w/ two run modes
+* Python scripts
+  - SNIP_ops/data_processing/WSF_reader.py
+  - SNIP_ops/main.py
+* Batch scripts for Discover
+  - 01_ldt_wsf_resample.sh
+  - 02_python_ml_retrieval.sh
+  - 03_ldt_snip_analysis.sh
+* Configure files
+  - 01_ldt_wsf_resample.json
+  - 01_ldt_wsf_resample.ldt.config (template)
+  - 02_python_ml_retrieval.json
+  - 03_ldt_snip_analysis.ldt.config
+* Input data (not included in LISF tar file)
+  - data/input/ESPC-D
+  - data/input/GALWEM
+  - data/input/models
+  - data/input/sfcobs
+  - data/input/static
+  - data/input/template
+  - data/input/viirs
+  - data/input/wsf_sdr_data
+  - data/03_ldt_snip_analysis # For prior SNIP analysis
