@@ -33,4 +33,4 @@ if [ ! -f "$CONFIG" ]; then
 fi
 
 # Run the python script
-python ./SNIP_ops/main.py "$CONFIG" --input "WSF" --target-datetime "$TARGET_DATETIME"
+./SNIP_ops/main.py "$CONFIG" --input "WSF" --target-datetime "$TARGET_DATETIME"
