@@ -1,7 +1,7 @@
 DOCUMENTATION FOR SNIP
 
 Eric Kemp
-Last updated 11 Aug 2026
+Last updated 13 Aug 2026
 
 The Snow and Ice Product (SNIP) workflow consists of three major steps.  First,
 LDT is run to resample WSF brightness temperatures via the
@@ -13,11 +13,12 @@ snow depth retrievals, snow gage reports, 2-m air temperatures from GALWEM,
 climatology, and other static inputs.  Postprocessing of SNIP netCDF files is
 handled separately by LVT.
 
-Three batch scripts are available for Discover to automate these three
-steps:
-        - 01_ldt_wsf_resample.sh
-        - 02_python_ml_retrieval.sh
-        - 03_ldt_snip_analysis.sh
+Three batch scripts are available for Discover and HPC11 to automate these
+three steps:
+
+        - 01_ldt_wsf_resample_{discover|hpc11}.sh
+        - 02_python_ml_retrieval_{discover|hpc11}.sh
+        - 03_ldt_snip_analysis_{discover|hpc11}.sh
 
 Each batch script is run via 'sbatch $scriptname YYYYMMDDHH'.  The first two
 batch scripts leverage SNIP_ops Python scripts to handle WSF data.  The Python
@@ -41,7 +42,6 @@ And there is a separate ldt.config file used as-is in the third step:
 
 A number of directories with input data are used by the SNIP workflow.
 
-
   - data/input # Contains lis parameter file.
   - data/input/ESPC-D # Contains sea surface temperature and sea ice from
                       #   US Navy ESPC-D
@@ -60,30 +60,3 @@ A number of directories with input data are used by the SNIP workflow.
                               # also be where new SNIP netCDF files are
                               # written.
 
-
-
-
-
-* LDT executable w/ two run modes
-* Python scripts
-  - SNIP_ops/data_processing/WSF_reader.py
-  - SNIP_ops/main.py
-* Batch scripts for Discover
-  - 01_ldt_wsf_resample.sh
-  - 02_python_ml_retrieval.sh
-  - 03_ldt_snip_analysis.sh
-* Configure files
-  - 01_ldt_wsf_resample.json
-  - 01_ldt_wsf_resample.ldt.config (template)
-  - 02_python_ml_retrieval.json
-  - 03_ldt_snip_analysis.ldt.config
-* Input data (not included in LISF tar file)
-  - data/input/ESPC-D
-  - data/input/GALWEM
-  - data/input/models
-  - data/input/sfcobs
-  - data/input/static
-  - data/input/template
-  - data/input/viirs
-  - data/input/wsf_sdr_data
-  - data/03_ldt_snip_analysis # For prior SNIP analysis
