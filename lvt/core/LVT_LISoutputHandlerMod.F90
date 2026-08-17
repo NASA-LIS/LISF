@@ -8256,7 +8256,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 ! !INTERFACE:
   subroutine LVT_readSingleNETCDFVar(ftn, source, dataEntry)
 ! 
-! !USES:   
+! !USES:
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -8296,6 +8296,8 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     logical :: find_max ! EMK
     logical :: find_min ! EMK
     logical :: find_rhmin ! EMK
+    character*20 :: var_units
+    real :: conversion_factor
 
     find_max = .false. ! EMK
     find_min = .false. ! EMK
@@ -8364,15 +8366,33 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                 call LVT_verify(ios,'Error in nf90_inq_varid:'//&
                      trim(dataEntry%short_name))
              endif
-             
+
+             ! For 557WW
+             conversion_factor = 1.
+             if (LVT_rc%runmode .eq. "557 post" .and. &
+                  (short_name .eq. "Qs_tavg" .or. &
+                  short_name .eq. "Qsb_tavg")) then
+                call LVT_verify(nf90_get_att(ftn, varid, 'units', &
+                     var_units), &
+                     'nf90_get_att for units failed in LVT_readSingleNETCDFVar')
+                if (var_units .eq. "kg m-2" .and. &
+                     dataEntry%units .eq. "kg/m2s") then
+                   write(LVT_logunit,*) '[INFO] Will convert ', &
+                        trim(short_name), ' from ', trim(var_units), &
+                        ' to ', trim(dataEntry%units)
+                   conversion_factor = 1. / LVT_rc%lis_ts
+                end if
+             end if
+             ! END for 557WW
+
              allocate(value1d(LVT_LIS_rc(source)%ntiles))
              allocate(value2d(LVT_LIS_rc(source)%lnc,LVT_LIS_rc(source)%lnr))
              allocate(value2d_ip(LVT_rc%lnc,LVT_rc%lnr))
-             
+
              ios = nf90_get_var(ftn,varid,value1d)
              call LVT_verify(ios,'Error in nf90_get_var for '&
                   //trim(dataEntry%short_name))
-             
+
              if(LVT_rc%computeEnsMetrics.eq.1) then 
                 do t=1,LVT_LIS_rc(source)%ntiles
                    c = LVT_LIS_domain(source)%tile(t)%col
@@ -8388,9 +8408,10 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                if (time_period_count .gt. 1) then
                                   dataEntry%value(t,1,1) = &
                                        max(dataEntry%value(t,1,1),&
-                                       value1d(t))
+                                       conversion_factor*value1d(t))
                                else
-                                  dataEntry%value(t,1,1) = value1d(t)
+                                  dataEntry%value(t,1,1) = &
+                                       conversion_factor*value1d(t)
                                end if
                                if (LVT_rc%computeFlag) then
                                   dataEntry%count(t,1,1) = &
@@ -8404,7 +8425,8 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                ! is the source of this minimum (needed for
                                ! RHMin)
                                if (time_period_count .gt. 1) then
-                                  if (value1d(t) < dataEntry%value(t,1,1)) then
+                                  if (conversion_factor*value1d(t) < &
+                                       dataEntry%value(t,1,1)) then
                                      if (allocated(tmin_time_index)) then
                                         tmin_time_index(t,1,1) = &
                                              time_period_count
@@ -8412,30 +8434,32 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                   end if
                                   dataEntry%value(t,1,1) = &
                                        min(dataEntry%value(t,1,1),&
-                                       value1d(t))
-                               else                                  
+                                       conversion_factor*value1d(t))
+                               else
                                   if (allocated(tmin_time_index)) then
                                      tmin_time_index(t,1,1) = 1
                                   end if
-                                  dataEntry%value(t,1,1) = value1d(t)
+                                  dataEntry%value(t,1,1) = &
+                                       conversion_factor*value1d(t)
                                end if
                                if (LVT_rc%computeFlag) then
                                   dataEntry%count(t,1,1) = &
                                        dataEntry%count(t,1,1) + 1
-                               end if                               
+                               end if
                             else if (find_rhmin) then
                                ! EMK: RHMin processing.  We only update the
                                ! RHMin dataentry to use the same time 
                                ! period as the Tair_f_min.
                                if (time_period_count .eq. &
                                     tmin_time_index(t,1,1)) then
-                                  dataEntry%value(t,1,1) = value1d(t)
+                                  dataEntry%value(t,1,1) = &
+                                       conversion_factor*value1d(t)
                                   dataEntry%count(t,1,1) = 1
                                end if
                             else
                                dataEntry%value(t,1,1) = &
                                     dataEntry%value(t,1,1) + &
-                                    value1d(t)
+                                    conversion_factor*value1d(t)
                                !dataEntry%count(t,1,1) = &
                                !  dataEntry%count(t,1,1) + 1
 ! EMK...For accumulations, only update the count at the compute time.
@@ -8476,10 +8500,10 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                      if (time_period_count .gt. 1) then
                                         dataEntry%value(gid,m,1) = &
                                              max(dataEntry%value(gid,m,1), &
-                                             value2d_ip(c,r))
+                                             conversion_factor*value2d_ip(c,r))
                                      else
                                         dataEntry%value(gid,m,1) = &
-                                             value2d_ip(c,r)
+                                             conversion_factor*value2d_ip(c,r)
                                      end if
                                      if (LVT_rc%computeFlag) then
                                         dataEntry%count(gid,m,1) = &
@@ -8493,7 +8517,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                      ! of which time level is the source of 
                                      ! this minimum (needed for RHMin)
                                      if (time_period_count .gt. 1) then
-                                        if (value2d_ip(c,r) < &
+                                        if (conversion_factor*value2d_ip(c,r) < &
                                              dataEntry%value(gid,m,1)) then
                                            if (allocated(tmin_time_index)) then
                                               tmin_time_index(gid,m,1) = &
@@ -8502,10 +8526,10 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                         end if
                                         dataEntry%value(gid,m,1) = &
                                              min(dataEntry%value(gid,m,1), &
-                                             value2d_ip(c,r))
+                                             conversion_factor*value2d_ip(c,r))
                                      else
                                         dataEntry%value(gid,m,1) = &
-                                             value2d_ip(c,r)
+                                             conversion_factor*value2d_ip(c,r)
                                         if (allocated(tmin_time_index)) then
                                            tmin_time_index(gid,m,1) = 1
                                         end if
@@ -8522,14 +8546,14 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                      if (time_period_count .eq. &
                                           tmin_time_index(gid,m,1)) then
                                         dataEntry%value(gid,m,1) = &
-                                             value2d_ip(c,r)
+                                             conversion_factor*value2d_ip(c,r)
                                         dataEntry%count(gid,m,1) = 1
                                      end if
 
                                   else
                                      dataEntry%value(gid,m,1) = &
                                           dataEntry%value(gid,m,1) + &
-                                          value2d_ip(c,r)
+                                          value2d_ip(c,r)*conversion_factor
                                      ! dataEntry%count(gid,1,1) = &
                                      !   dataEntry%count(gid,1,1) + 1
 ! EMK...For accumulations, only update the count at the compute time.
@@ -8716,6 +8740,26 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                      trim(short_name))
              endif
 
+             ! For 557WW
+             conversion_factor = 1.
+             if (LVT_rc%runmode .eq. "557 post" .and. &
+                  (short_name .eq. "Qs_tavg" .or. &
+                  short_name .eq. "Qsb_tavg")) then
+                call LVT_verify(nf90_get_att(ftn, varid, 'units', &
+                     var_units), &
+                     'nf90_get_att for units failed in LVT_readSingleNETCDFVar')
+                if (var_units .eq. "kg m-2" .and. &
+                     dataEntry%units .eq. "kg/m2s") then
+
+                   write(LVT_logunit,*) '[INFO] Will convert ', &
+                        trim(short_name), ' from ', trim(var_units), &
+                        ' to ', trim(dataEntry%units)
+
+                   conversion_factor = 1. / LVT_rc%lis_ts
+                end if
+             end if
+             ! END for 557WW
+
              allocate(value2d(LVT_LIS_rc(source)%lnc, LVT_LIS_rc(source)%lnr))
              allocate(value2d_ip(LVT_rc%lnc, LVT_rc%lnr))
 
@@ -8741,9 +8785,10 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                if (time_period_count .gt. 1) then
                                   dataEntry%value(gid,1,1) = &
                                        max(dataEntry%value(gid,1,1), &
-                                       value2d_ip(c,r))
+                                       conversion_factor*value2d_ip(c,r))
                                else
-                                  dataEntry%value(gid,1,1) = value2d_ip(c,r)
+                                  dataEntry%value(gid,1,1) = &
+                                       conversion_factor*value2d_ip(c,r)
                                end if
                                if (LVT_rc%computeFlag) then
                                   dataEntry%count(gid,1,1) = &
@@ -8758,7 +8803,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                ! of which time level is the source of 
                                ! this minimum (needed for RHMin)
                                if (time_period_count .gt. 1) then
-                                  if (value2d_ip(c,r) < &
+                                  if (conversion_factor*value2d_ip(c,r) < &
                                        dataEntry%value(gid,m,1)) then
                                      if (allocated(tmin_time_index)) then
                                         tmin_time_index(gid,m,1) = &
@@ -8767,9 +8812,10 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                   end if
                                   dataEntry%value(gid,1,1) = &
                                        min(dataEntry%value(gid,1,1), &
-                                       value2d_ip(c,r))
+                                       conversion_factor*value2d_ip(c,r))
                                else
-                                  dataEntry%value(gid,1,1) = value2d_ip(c,r)
+                                  dataEntry%value(gid,1,1) = &
+                                       conversion_factor*value2d_ip(c,r)
                                   if (allocated(tmin_time_index)) then
                                      tmin_time_index(gid,m,1) = 1
                                   end if
@@ -8786,13 +8832,13 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                if (time_period_count .eq. &
                                     tmin_time_index(gid,1,1)) then
                                   dataEntry%value(gid,1,1) = &
-                                       value2d_ip(c,r)
+                                       conversion_factor*value2d_ip(c,r)
                                   dataEntry%count(gid,1,1) = 1
                                end if
 
                             else 
                                dataEntry%value(gid,1,1) = dataEntry%value(gid,1,1) + &
-                                    value2d_ip(c,r)
+                                    conversion_factor*value2d_ip(c,r)
                                ! dataEntry%count(gid,1,1) = dataEntry%count(gid,1,1) + 1
                                ! EMK...For accumulations, only update the count at the compute time.
                                if (dataEntry%timeAvgOpt .ne. 3 .or. &
@@ -8931,6 +8977,24 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                      trim(short_name))
              endif
 
+             ! For 557WW
+             conversion_factor = 1.
+             if (LVT_rc%runmode .eq. "557 post" .and. &
+                  (short_name .eq. "Qs_tavg" .or. &
+                  short_name .eq. "Qsb_tavg")) then
+                call LVT_verify(nf90_get_att(ftn, varid, 'units', &
+                     var_units), &
+                     'nf90_get_att for units failed in LVT_readSingleNETCDFVar')
+                if (var_units .eq. "kg m-2" .and. &
+                     dataEntry%units .eq. "kg/m2s") then
+                   write(LVT_logunit,*) '[INFO] Will convert ', &
+                        trim(short_name), ' from ', trim(var_units), &
+                        ' to ', trim(dataEntry%units)
+                   conversion_factor = 1. / LVT_rc%lis_ts
+                end if
+             end if
+             ! END for 557WW
+
              allocate(value3d(LVT_LIS_rc(source)%lnc, LVT_LIS_rc(source)%lnr,&
                   LVT_LIS_rc(source)%nensem))
              allocate(value3d_ip(LVT_rc%lnc, LVT_rc%lnr,&
@@ -8960,10 +9024,10 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                   if (time_period_count .gt. 1) then
                                      dataEntry%value(gid,kk,1) = &
                                           max(dataEntry%value(gid,kk,1), &
-                                          value3d_ip(c,r,kk))
+                                          conversion_factor*value3d_ip(c,r,kk))
                                   else
                                      dataEntry%value(gid,kk,1) = &
-                                          value3d_ip(c,r,kk)
+                                          conversion_factor*value3d_ip(c,r,kk)
                                   end if
                                   if (LVT_rc%computeFlag) then
                                      dataEntry%count(gid,kk,1) = &
@@ -8978,7 +9042,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                   ! of which time level is the source of 
                                   ! this minimum (needed for RHMin)
                                   if (time_period_count .gt. 1) then
-                                     if (value3d_ip(c,r,kk) < &
+                                     if (conversion_factor*value3d_ip(c,r,kk) < &
                                           dataEntry%value(gid,kk,1)) then
                                         if (allocated(tmin_time_index)) then
                                            tmin_time_index(gid,kk,1) = &
@@ -8987,10 +9051,10 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                      end if
                                      dataEntry%value(gid,kk,1) = &
                                           min(dataEntry%value(gid,kk,1), &
-                                          value3d_ip(c,r,kk))
+                                          conversion_factor*value3d_ip(c,r,kk))
                                   else
                                      dataEntry%value(gid,kk,1) = &
-                                          value3d_ip(c,r,kk)
+                                          conversion_factor*value3d_ip(c,r,kk)
                                      if (allocated(tmin_time_index)) then
                                         tmin_time_index(gid,kk,1) = 1
                                      end if
@@ -9007,14 +9071,14 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
                                   if (time_period_count .eq. &
                                        tmin_time_index(gid,kk,1)) then
                                      dataEntry%value(gid,kk,1) = &
-                                          value3d_ip(c,r,kk)
+                                          conversion_factor*value3d_ip(c,r,kk)
                                      dataEntry%count(gid,kk,1) = 1
                                   end if
 
                                else
                                   dataEntry%value(gid,kk,1) = &
                                        dataEntry%value(gid,kk,1) + &
-                                       value3d_ip(c,r,kk)
+                                       conversion_factor*value3d_ip(c,r,kk)
                                   ! dataEntry%count(gid,kk,1) = dataEntry%count(gid,kk,1) + 1
 ! EMK...For accumulations, only update the count at the compute time.
                                   if (dataEntry%timeAvgOpt .ne. 3 .or. &
