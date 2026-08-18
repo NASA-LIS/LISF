@@ -32,4 +32,4 @@ fi
 TARGET_DATETIME="$1"
 
 
-python ./SNIP_ops/data_processing/WSF_reader.py --resample "$TARGET_DATETIME" --config "$CFG"
+./SNIP_ops/data_processing/WSF_reader.py --resample "$TARGET_DATETIME" --config "$CFG"
