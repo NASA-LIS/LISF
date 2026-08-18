@@ -122,22 +122,22 @@ The operational SNIP subsystem is organized as a three-step SLURM workflow. This
 
 Under the parent folder, we provide SLURM job submission script samples to run the workflow for a single time step.
 
-| File | Description |
-|------|-------------|
-| `01_wsf_resample.sh` | Step 1 SLURM script that runs WSF resampling via `SNIP_ops/data_processing/WSF_reader.py`.
-| `01_wsf_resample.ldt.config` | Config file for WSF resampling. Key parameters include:<br>• **`ldt_config_template`**: Path to the LDT configuration file<br>• **`v522_sdr_base`**: Base directory for WSF-M v5.2.2 SDR input data<br>• **`raw_sdr_base`**: Base directory for WSF-M SDR input data for newer versions<br>• **`resampled_base`**: Directory for storing the resampled WSF SDR output; Note this directory needs to be the same as it in the SNIP_config.json file. |
-| `02_snip_python.sh` | Step 2 SLURM script that runs the Python module for the ML-based snow depth prediction pipeline. |
-| `./SNIP_ops/config/SNIP_config.json` | Configuration file for the Python prediction step with the details introduced in the previous table. Make sure the `project_path`is provided correctly.|
-| `03_ldt_integration.sh` | Step 3 SLURM script that runs LDT and outputs the final SNIP product. |
-| `03_ldt_integration.config` | LDT config file. Similar to the USAFSI config file, updated to use WSF-M and AMSR2 as inputs. |
+| File                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `01_ldt_wsf_resample_{discover/hpc11}.sh` | Step 1 SLURM script that runs WSF resampling via `SNIP_ops/data_processing/WSF_reader.py`.
+| `01_ldt_wsf_resample.json`                | Config file for WSF resampling. Key parameters include:<br>• **`ldt_config_template`**: Path to the LDT configuration file<br>• **`v522_sdr_base`**: Base directory for WSF-M v5.2.2 SDR input data<br>• **`raw_sdr_base`**: Base directory for WSF-M SDR input data for newer versions<br>• **`resampled_base`**: Directory for storing the resampled WSF SDR output; Note this directory needs to be the same as it in the SNIP_config.json file. |
+| `02_python_ml_retrieval_{discover/hpc11}.sh`                    | Step 2 SLURM script that runs the Python module for the ML-based snow depth prediction pipeline.                                                                                                                                                                                                                                                                                                                                                   |
+| `02_python_ml_retrieval.json`      | Configuration file for the Python prediction step with the details introduced in the previous table. Make sure the `project_path`is provided correctly.                                                                                                                                                                                                                                                                                            |
+| `03_ldt_snip_analysis_{discover/hpc11}.sh`                   | Step 3 SLURM script that runs LDT and outputs the final SNIP product.                                                                                                                                                                                                                                                                                                                                                                              |
+| `03_ldt_snip_analysis.ldt.config`               | LDT config file. Similar to the USAFSI config file, updated to use WSF-M and AMSR2 as inputs.                                                                                                                                                                                                                                                                                                                                                      |
 
 ### Command Line Execution Examples
 
 **To run the full workflow for snow depth retrieval at 00:00 UTC on 2025-01-21:** 
 ```shell
-sbatch 01_wsf_resample.sh 202501210000
-sbatch 02_snip_python.sh 202501210000
-sbatch 03_ldt_integration.sh 202501210000
+sbatch 01_ldt_wsf_resample_discover.sh 202501210000
+sbatch 02_python_ml_retrieval_discover.sh 202501210000
+sbatch 03_ldt_snip_analysis_discover.sh 202501210000
 ```
 
 ## Support
