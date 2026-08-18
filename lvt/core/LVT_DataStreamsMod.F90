@@ -868,6 +868,7 @@ contains
              end if
              write(unit=fhr, fmt='(i3.3)') hr
 
+             
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
@@ -1148,6 +1149,7 @@ contains
              !     //'_DT.'//trim(cdate3) &
              !     //'_DF.nc'
 
+             ! STR NETCDF output needs to have _PA.SURFACEMODEL.
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
@@ -1155,7 +1157,7 @@ contains
                   //'_GP.'//trim(LVT_rc%generating_process) &
                   //'_GR.'//trim(fproj)//trim(fres2) &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
-                  //'_PA.LIS' &
+                  //'_PA.SURFACEMODEL' &
                   //'_DD.'//trim(initdate) &
                   //'_CY.'//trim(inithr) &
                   //'_FH.'//trim(fhr) &
