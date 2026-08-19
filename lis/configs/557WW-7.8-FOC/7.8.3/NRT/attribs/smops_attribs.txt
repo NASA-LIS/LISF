@@ -1,0 +1,5 @@
+#nfields
+1
+#name  varmin  varmax
+SMOPS soil moisture
+  0.01 1.0
