@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.5
+# Version 7.8
 #
-# Copyright (c) 2024 United States Government as represented by the
+# Copyright (c) 2026 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -476,42 +476,54 @@ class WSFSnowWorkflow:
 
     def _find_pmw_files(self) -> list:
         """Find WSF PMW data files for the specific 6-hour window."""
-        window_end = self.target_datetime.strftime("%H%M")
+        
+        # 1. Format the target datetime
+        if isinstance(self.target_datetime, str):
+            dt_obj = pd.to_datetime(self.target_datetime, format="%Y%m%d%H%M")
+        else:
+            dt_obj = pd.to_datetime(self.target_datetime)
+            
+        window_end = dt_obj.strftime("%H%M")
+        
         if window_end not in self.time_windows:
-            logger.error(
-                "Invalid target hour %s. Must be 0000, "
-                "0600, 1200, or 1800.",
-                window_end)
+            logger.error("Invalid target hour %s. Must be 0000, 0600, 1200, or 1800.", window_end)
             return []
 
+        # 2. Get expected hours
         expected_hours = self.time_windows[window_end]
+        print(f"\n--- DEBUG: Expected hours: {expected_hours} ---")
 
-        data_date = self.target_datetime - pd.Timedelta(hours=1)
+        # Subtract 1 hour to get the correct calendar day for the window
+        data_date = dt_obj - pd.Timedelta(hours=1)
         date_str = data_date.strftime("%Y%m%d")
         year_month_str = data_date.strftime("%Y%m")
-        # Directly access resampled_base from the merged config
-        if not hasattr(self.config,
-                       'resampled_base') or not self.config.resampled_base:
-            logger.error(
-                "Configuration missing 'resampled_base'. "
-                "Cannot find resampled WSF files.")
+
+        # 3. Get directory paths
+        if not hasattr(self.config, 'resampled_base') or not self.config.resampled_base:
+            logger.error("Configuration missing 'resampled_base'. Cannot find resampled WSF files.")
             return []
 
         wsf_resample_dir = self.config.resampled_base
-        logger.info("Using resampled_base from config: %s",
-                    wsf_resample_dir)
+        print(f"--- DEBUG: Resample dir: {wsf_resample_dir} ---")
 
+        # Construct the absolute search pattern
         search_pattern = os.path.join(
-            self.config.project_path, '..', wsf_resample_dir, year_month_str,
-            f"*{date_str}*_t*DES.nc"
+            str(self.config.project_path), 
+            str(wsf_resample_dir), 
+            year_month_str,
+            f"*_{date_str}_t*DES.nc" 
         )
+        print(f"--- DEBUG: Search pattern: {search_pattern} ---")
 
+        # 4. Search and filter
         all_files = sorted(glob.glob(search_pattern))
-
-        window_files = [f for f in all_files if
-                        any(h in os.path.basename(f) for h in expected_hours)]
+        print(f"--- DEBUG: All files found today ({len(all_files)}): {all_files} ---")
+        
+        window_files = [f for f in all_files if any(h in os.path.basename(f) for h in expected_hours)]
+        print(f"--- DEBUG: Window files kept ({len(window_files)}): {window_files} ---\n")
 
         return window_files
+
 
     def run_workflow(self) -> bool:
         """Execute the full prediction workflow,

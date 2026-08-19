@@ -11214,6 +11214,20 @@ Acceptable values are:
 |1     | Use
 |====
 
+`HYMAP3 use localization update in DA:` specifies whether to enable the localization scheme for DA.
+
+Acceptable values are:
+
+|====
+|Value   | Description
+|0       | Do not use localization
+|1       | Use localization for DA
+|====
+
+`HYMAP3 localization update window size:` specifies localization update window size.
+
+`HYMAP3 localization weight map:` specifies the file location of the localization weight map
+
 .Example _lis.config_ entry
 ....
 HYMAP3 routing model time step: "30mn"
@@ -11237,6 +11251,9 @@ HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_19
 HYMAP3 enable 2-way coupling: 0
 HYMAP3 2-way coupling flooded fraction threshold: 0.1
 HYMAP3 runoff bias correction: 1
+HYMAP3 use localization update in DA: 0
+HYMAP3 localization update window size: 10
+HYMAP3 localization weight map: ./input/localization_map/distance_map_full_ohio_010.nc
 ....
 
 

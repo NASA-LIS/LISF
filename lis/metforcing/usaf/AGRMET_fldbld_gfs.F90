@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.8
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2026 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -419,8 +419,8 @@ subroutine AGRMET_fldbld_gfs(n,order,julhr,rc)
      found = .true.
      exit
 
-  end do
 #endif     
+  end do
 
   ! Give up if no acceptable GFS files were found
   if (.not. found) then

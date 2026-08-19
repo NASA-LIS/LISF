@@ -5,10 +5,9 @@
 
 LISF and its dependencies have been compiled and run on
 Linux PC (Intel/AMD based) systems,
-//IBM AIX systems
-//SGI Altix systems
-Cray systems,
-and IBM Power9 systems.
+//Cray systems,
+//and IBM Power9 systems.
+and Cray systems.
 
 These instructions expect that you are using such a system.  In particular you need:
 
@@ -16,7 +15,7 @@ These instructions expect that you are using such a system.  In particular you n
 
 ===== Compilers
 
-* Intel Fortran Compiler versions 2021 or 2022 with corresponding Intel C Compiler along with GNU`'s Compiler Collection version 11.2.0 or 12.1.0.
+* Intel Fortran Compiler (ifort) version 2023 with corresponding Intel C Compiler (icc) along with GNU`'s Compiler Collection version 11.2.0 or 12.1.0.
 * or GNU`'s Compiler Collection version 11.2.0, both gfortran and gcc.
 
 ===== Tools
@@ -24,6 +23,10 @@ These instructions expect that you are using such a system.  In particular you n
 * GNU`'s make, gmake, version 3.77 or 3.81
 * Perl, version 5.10
 * Python, version 3.6
+// On discover (May 2026)
+// 4.2.1
+// 5.26.1
+// 3.6.5
 
 IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Section <<Python support>>.
 
@@ -40,38 +43,33 @@ IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Secti
 ===== Compilers
 
 * Intel Fortran Compiler version 2021 or 2022 with corresponding Intel C Compiler, along with GNU`'s Compiler Collection version 11.2.0 or 12.1.0.
-* or Cray Compiler Environment (cce) version 14.0.0, along with GNU`'s Compiler Collection version 11.2.0.
+* or Cray Compiler Environment (cce) version 15.0.0 or 19.0.0, along with GNU`'s Compiler Collection version 7.5.0 or 11.2.0.
 
 ===== Tools
 
 * GNU`'s make, gmake, version 3.77 or 3.81
 * Perl, version 5.10
 * Python, version 3.6
+// On narwhal (May 2026)
+// 4.2.1
+// 5.26.1
+// 3.6.5
 
 IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Section <<Python support>>.
 
-==== IBM/Linux
-
-===== Compilers
-
-* GNU`'s Compiler Collection version 11.0, both gfortan and gcc.
-
-===== Tools
-
-* GNU`'s make, gmake, version 3.77 or 3.81
-* Perl, version 5.10
-* Python, version 3.6
-
-IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Section <<Python support>>.
-
+//==== IBM/Linux
 //
-//   * IBM
-//      ** XL Fortran version 10.1.0.6
-//      ** GNU`'s make, gmake, version 3.77
+//===== Compilers
 //
-//   * SGI Altix
-//      ** Intel Fortran Compiler version 12
-//      ** GNU`'s make, gmake, version 3.77
+//* GNU`'s Compiler Collection version 11.0, both gfortan and gcc.
+//
+//===== Tools
+//
+//* GNU`'s make, gmake, version 3.77 or 3.81
+//* Perl, version 5.10
+//* Python, version 3.6
+//
+//IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Section <<Python support>>.
 
 ==== Python support
 

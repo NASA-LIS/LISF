@@ -24,7 +24,30 @@ Go to the _$WORKING_ directory.  This directory contains two scripts for buildin
 
 ==== Step 3
 
-Set the LVT_ARCH environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
+Set the appropriate LVT environment variables.  These are used to control the compilation of LVT and to specify the locations of the required and optional libraries.
+
+[cols="<,<,<",]
+|===
+| Variable         | Description                | Usage
+
+| `LVT_ARCH`       | Architecture               | required
+| `LVT_FC`         | Fortran 90                 | required
+| `LVT_CC`         | C compiler                 | required
+| `LVT_MODESMF`    | path to ESMF modules files | required
+| `LVT_LIBESMF`    | path to ESMF library files | required
+| `LVT_OPENJPEG`   | path to openJPEG library   | required
+| `LVT_ECCODES`    | path to ecCodes library    | required
+| `LVT_NETCDF`     | path to NETCDF library     | optional
+| `LVT_HDF4`       | path to HDF4 library       | optional (required to use HDFEOS2)
+| `LVT_HDF5`       | path to HDF5 library       | optional
+| `LVT_HDFEOS`     | path to HDFEOS2 library    | optional
+| `LVT_GDAL`       | path to GDAL library       | optional
+| `LVT_FORTRANGIS` | path to FortranGIS library | optional (required to use GDAL)
+| `LVT_JPEG`       | path to JPEG library       | optional (use system libjpeg by default)
+| `LVT_RPC`        | path to RPC library        | optional (use system RPC library by default)
+|===
+
+Set the `LVT_ARCH` environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
 
 .For a Linux system with the Intel Fortran compiler
 ....
@@ -66,7 +89,17 @@ Set the LVT_ARCH environment variable based on the system you are using.  The fo
 //% export LVT_ARCH=linux_lf95
 //....
 
-It is suggested that you set this environment variable in a modulefile footnote:modulefile[See the "`Creating a Custom Modulefile`" document found at {nasalisfpages}] to load or in an environment script to source before compiling and/or running LVT.
+//{cpp} is C++
+Note that the `LVT_CC` variable must be set to a C compiler, not a {cpp} compiler.  A {cpp} compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.
+
+You may encounter errors either when trying to compile LVT or when trying to run LVT because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your `$LD_LIBRARY_PATH` environment variable.
+For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):
+
+....
+% export LD_LIBRARY_PATH=$LVT_HDF5/lib:$LVT_LIBESMF:$LVT_NETCDF/lib:$LVT_ECCODES/lib:$LD_LIBRARY_PATH
+....
+
+It is suggested that you set these environment variables in a modulefile footnote:modulefile[See the "`Creating a Custom Modulefile`" document found at {nasalisfpages}] to load or in an environment script to source before compiling and/or running LVT.
 
 ==== Step 4
 
@@ -76,41 +109,7 @@ Run the _configure_ script first by typing:
 % ./configure
 ....
 
-This script will prompt the user with a series of questions regarding support to compile into LVT, requiring the user to specify the locations of the required and optional libraries via several LVT specific environment variables.  The following environment variables are used by LVT.
-
-[cols="<,<,<",]
-|===
-| Variable         | Description                | Usage
-
-| `LVT_FC`         | Fortran 90                 | required
-| `LVT_CC`         | C compiler                 | required
-| `LVT_MODESMF`    | path to ESMF modules files | required
-| `LVT_LIBESMF`    | path to ESMF library files | required
-| `LVT_OPENJPEG`   | path to openJPEG library   | required
-| `LVT_ECCODES`    | path to ecCodes library    | required
-| `LVT_NETCDF`     | path to NETCDF library     | optional
-| `LVT_HDF4`       | path to HDF4 library       | optional (required to use HDFEOS2)
-| `LVT_HDF5`       | path to HDF5 library       | optional
-| `LVT_HDFEOS`     | path to HDFEOS2 library    | optional
-| `LVT_GDAL`       | path to GDAL library       | optional
-| `LVT_FORTRANGIS` | path to FortranGIS library | optional (required to use GDAL)
-| `LVT_JPEG`       | path to JPEG library       | optional (use system libjpeg by default)
-| `LVT_RPC`        | path to RPC library        | optional (use system RPC library by default)
-|===
-
-//{cpp} is C++
-Note that the `CC` variable must be set to a C compiler, not a {cpp} compiler.  A {cpp} compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.
-
-It is suggested that you set these environment variables in a modulefile footnote:modulefile[] to load or in an environment script to source before compiling and/or running LVT.
-
-You may encounter errors either when trying to compile LVT or when trying to run LVT because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your `$LD_LIBRARY_PATH` environment variable.
-For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):
-
-....
-% export LD_LIBRARY_PATH=$LVT_HDF5/lib:$LVT_LIBESMF:$LVT_NETCDF/lib:$LVT_ECCODES/lib:$LD_LIBRARY_PATH
-....
-
-It is suggested that you set this environment variable in a modulefile footnote:modulefile[] to load or in an environment script to source before compiling and/or running LVT.
+This script will prompt the user with a series of questions regarding support to compile into LVT.
 
 ===== Example
 
@@ -128,7 +127,7 @@ Use NETCDF? (1-yes, 0-no, default=1):
 NETCDF version (3 or 4, default=4):
 NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
 NETCDF use deflate filter? (1-yes, 0-no, default = 1):
-NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9):
+NETCDF use deflate level? (1 to 9-yes, 0-no, default = 1):
 Use HDF4? (1-yes, 0-no, default=1):
 Use HDF5? (1-yes, 0-no, default=1):
 Use HDFEOS? (1-yes, 0-no, default=1):

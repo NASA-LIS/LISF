@@ -2,54 +2,7 @@
 
 The following tables provide some specific platforms with compiler and library versions that LISF has been tested with.  See Appendix <<Additional platforms>> for more.
 
-// discover (lisf_7.5_intel_2021.4.0)
-.SUSE Linux Enterprise Server 12.3
-|====
-| Library        | Version
-
-| GNU compiler   | 11.2.0
-| Intel compiler | 2021.4.0
-| Intel MPI      | 2021.4.0
-| HDF 5          | 1.12.1
-| NetCDF         | 4.8.1
-| NetCDF-Fortran | 4.5.3
-| openJPEG       | 2.4.0
-| ecCodes        | 2.23.0
-| ESMF           | 8.1.1
-| HDF 4          | 4.2.15
-| HDF-EOS2       | 3.0
-| SQLite3        | 3.35.0
-| PROJ           | 9.1.0
-| GeoTIFF        | 1.7.0
-| GDAL           | 3.5.2
-| FortranGIS     | 2.6
-| PETSc          | 3.16.1
-| JPEG           | 8d
-|====
-
-// discover (lisf_7.5_gnu_11.2.0_impi_2021.4.0)
-.SUSE Linux Enterprise Server 12.3
-|====
-| Library        | Version
-
-| GNU compiler   | 11.2.0
-| Intel MPI      | 2021.4.0
-| HDF 5          | 1.12.1
-| NetCDF         | 4.8.1
-| NetCDF-Fortran | 4.5.3
-| openJPEG       | 2.4.0
-| ecCodes        | 2.23.0
-| ESMF           | 8.1.1
-| HDF 4          | 4.2.15
-| HDF-EOS2       | 3.0
-| SQLite3        | 3.35.0
-| PROJ           | 9.1.0
-| GeoTIFF        | 1.7.0
-| GDAL           | 3.5.2
-| FortranGIS     | 2.6
-| PETSc          | 3.16.1
-| JPEG           | 8d
-|====
+=== LISF 7.5 through 7.8
 
 // discover (lisf_7.5_intel_2023.2.1)
 .SUSE Linux Enterprise Server 15.4
@@ -98,8 +51,32 @@ The following tables provide some specific platforms with compiler and library v
 | PETSc          | 3.20.0
 |====
 
+// narwhal (lisf_7.6_prgenv_cray_8.3.3)
+.Cray/SUSE Linux Enterprise Server 15.5
+|====
+| Library        | Version
+
+| GNU compiler   | 7.5.0
+| Cray compiler  | 15.0.0
+| Cray MPI       | 8.1.26
+| HDF 5          | 1.14.2
+| NetCDF         | 4.9.2
+| NetCDF-Fortran | 4.6.1
+| openJPEG       | 2.4.0
+| ecCodes        | 2.32.0
+| ESMF           | 8.5.0
+| HDF 4          | 4.2.16-2
+| HDF-EOS2       | 3.0
+| SQLite3        | 3.43.2
+| PROJ           | 9.3.0
+| GeoTIFF        | 1.7.1
+| GDAL           | 3.7.2
+| FortranGIS     | 3.0-1
+| PETSc          | 3.20.1
+|====
+
 // narwhal (lisf_7.5_prgenv_intel_8.3.3)
-.Cray/SUSE Linux Enterprise Server 15.4
+.Cray/SUSE Linux Enterprise Server 15.4 and 15.5
 |====
 | Library        | Version
 
@@ -123,7 +100,7 @@ The following tables provide some specific platforms with compiler and library v
 |====
 
 // narwhal (lisf_7.5_prgenv_cray_8.3.3)
-.Cray/SUSE Linux Enterprise Server 15.4
+.Cray/SUSE Linux Enterprise Server 15.4 and 15.5
 |====
 | Library        | Version
 
@@ -146,26 +123,26 @@ The following tables provide some specific platforms with compiler and library v
 | PETSc          | 3.20.1
 |====
 
-// hpc11 (lisf_7.6_prgenv_cray_8.5.0_cpe_23.12)
-.Cray/SUSE Linux Enterprise Server 15.5
+// hpc11 (lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0)
+.Cray/SUSE Linux Enterprise Server 15.6
 |====
 | Library        | Version
 
 | GNU compiler   | 7.5.0
-| Cray compiler  | 17.0.1
-| Cray MPI       | 8.1.28
-| HDF 5          | 1.14.3
-| NetCDF         | 4.9.2
-| NetCDF-Fortran | 4.6.1
-| openJPEG       | 2.4.0
-| ecCodes        | 2.32.0
-| ESMF           | 8.6.0
-| HDF 4          | 4.2.16-2
+| Cray compiler  | 19.0.0
+| Cray MPI       | 8.1.32
+| HDF 5          | 1.14.6
+| NetCDF         | 4.9.3
+| NetCDF-Fortran | 4.6.2
+| openJPEG       | 2.5.3
+| ecCodes        | 2.42.0
+| ESMF           | 8.9.0
+| HDF 4          | 4.3.1
 | HDF-EOS2       | 3.0
-| SQLite3        | 3.43.2
-| PROJ           | 9.3.0
-| GeoTIFF        | 1.7.1
-| GDAL           | 3.7.2
+| SQLite3        | 3.50.3
+| PROJ           | 9.6.2
+| GeoTIFF        | 1.7.4
+| GDAL           | 3.11.3
 | FortranGIS     | 3.0-1
 | PETSc          | 3.20.1
 |====

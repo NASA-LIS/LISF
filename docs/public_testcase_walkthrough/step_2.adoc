@@ -43,7 +43,7 @@ Users on NASA's NCCS Discover HPC system do not need to download the data as des
 
 [source,shell]
 ----
-% ln -s /discover/nobackup/projects/lis/MET_FORCING/NLDAS2.FORCING NLDAS2.FORCING
+% ln -s /css/nldas/NLDAS2/FORA NLDAS2.FORCING
 ----
 
 Jump to the <<The LIS Configuration File,next step>>.

@@ -2,6 +2,57 @@
 [[sec_additional_platforms,Additional platforms]]
 == Additional platforms
 
+=== LISF 7.5
+
+// hpc11 (lisf_7.6_prgenv_cray_8.5.0_cpe_23.12)
+.Cray/SUSE Linux Enterprise Server 15.5
+|====
+| Library        | Version
+
+| GNU compiler   | 7.5.0
+| Cray compiler  | 17.0.1
+| Cray MPI       | 8.1.28
+| HDF 5          | 1.14.3
+| NetCDF         | 4.9.2
+| NetCDF-Fortran | 4.6.1
+| openJPEG       | 2.4.0
+| ecCodes        | 2.32.0
+| ESMF           | 8.6.0
+| HDF 4          | 4.2.16-2
+| HDF-EOS2       | 3.0
+| SQLite3        | 3.43.2
+| PROJ           | 9.3.0
+| GeoTIFF        | 1.7.1
+| GDAL           | 3.7.2
+| FortranGIS     | 3.0-1
+| PETSc          | 3.20.1
+|====
+
+// discover (lisf_7.5_intel_2021.4.0)
+.SUSE Linux Enterprise Server 12.3
+|====
+| Library        | Version
+
+| GNU compiler   | 11.2.0
+| Intel compiler | 2021.4.0
+| Intel MPI      | 2021.4.0
+| HDF 5          | 1.12.1
+| NetCDF         | 4.8.1
+| NetCDF-Fortran | 4.5.3
+| openJPEG       | 2.4.0
+| ecCodes        | 2.23.0
+| ESMF           | 8.1.1
+| HDF 4          | 4.2.15
+| HDF-EOS2       | 3.0
+| SQLite3        | 3.35.0
+| PROJ           | 9.1.0
+| GeoTIFF        | 1.7.0
+| GDAL           | 3.5.2
+| FortranGIS     | 2.6
+| PETSc          | 3.16.1
+| JPEG           | 8d
+|====
+
 // discover
 .SUSE Linux Enterprise Server 12.3
 |====
@@ -27,7 +78,7 @@
 | JPEG           | 8d
 |====
 
-// discover
+// discover (lisf_7.5_gnu_11.2.0_impi_2021.4.0)
 .SUSE Linux Enterprise Server 12.3
 |====
 | Library        | Version
@@ -254,6 +305,8 @@
 | GDAL           | 2.4.1
 | FortranGIS     | 2.4
 |====
+
+=== Older
 
 // conrad
 .Cray XC40
