@@ -207,15 +207,7 @@ prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"
 # Latest AFW Python Builds:
 module use /sw/afw_sw/modulefiles
 
-# Check for optional CYLC environment override
-set use_cylc_env [info exists env(USE_CYLC_ENV)]
-if { $use_cylc_env && $env(USE_CYLC_ENV) == "1" } {
-    # CYLC-specific environment
-    module load cylc/8.5.0
-    puts stderr "Using CYLC environment: cylc/8.5.0"
-} else {
-    # Default AFW environment
-    module load afw-python/3.11-202511
-    puts stderr "Using default S2S environment: afw-python/3.11-202511"
-}
+# Latest production S2S environment
+module load afw-python/3.13-202605
+
 
