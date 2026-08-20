@@ -5,8 +5,8 @@
 #######################################################################
 
 SETUP:
-  E2ESDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/
-  LISFDIR: /discover/nobackup/projects/ghilis/S2S/LISF/
+  E2ESDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.8/
+  LISFDIR: /discover/nobackup/projects/ghilis/S2S/LISF_557ww_7.8.3/
   LISFMOD: lisf_7.5_intel_2023.2.1_s2s
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
@@ -26,20 +26,21 @@ EXP:
   routing_model: {model: hymap2, subdomains: false}
   pertmode: restart
   lead_months: 9
-  NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]
+  NMME_models: [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52, CCSM4]
 
 #######################################################################
 #              Bias Correction and Spatial Downscaling (BCSD)
 #######################################################################
-
+# NMME Precip source options: "IRI": nmme, "NOAA": "noaa-nmme"
+#
 BCSD:
-  fcst_download_dir: /discover/nobackup/projects/lis/MET_FORCING/CFSv2/
-  nmme_download_dir: /discover/nobackup/projects/usaf_lis/GHI_S2S/NMME/
+  source: {metforce: CFSv2, precip: noaa-nmme, obs: USAF-LIS7.3rc8}
+  nof_raw_ens: 12
+  fcst_download_dir: /lustre/typhoon/nwp601/proj-shared/karsenau/GHI_S2S/JUL2026_INPUT/CFSv2/
+  nmme_download_dir: /lustre/typhoon/nwp601/proj-shared/karsenau/GHI_S2S/JUL2026_INPUT/NOAA_NMME/
   clim_start_year: 1991
   clim_end_year: 2020
-  nof_raw_ens: 12
-  source: {metforce: CFSv2, precip: nmme, obs: USAF-LIS7.3rc8}
-  force_corr: {lapserate: false, aspect: false}
+  force_corr: {lapsrate: false, aspect: false}
 
 #######################################################################
 #                            LIS Forecast
@@ -49,7 +50,7 @@ FCST:
   numprocx: 4
   numprocy: 72
   JOB_SEGMENTS: {CanESM5: 5, CESM1: 5, GNEMO52: 5, GEOSv2: 2, CFSv2: 5,
-                 GFDL: 9}
+                 CCSM4: 5, GFDL: 9}
   
 #######################################################################
 #                          Post-processor

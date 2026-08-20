@@ -196,7 +196,9 @@ Each month requires customized LIS input/configuration files, job script argumen
   
 **b) Can the same flow.cylc file be reused each month?**  
   
-No. As stated above, monthly differences in input files and configurations require that **ghis2s_program.py** be executed each time. The **ghis2s** package programmatically generates the 800+ line flow.cylc file to minimize human error and improve efficiency.  
+No. As stated above, monthly differences in input files and configurations require that **ghis2s_program.py** be executed each time. The **ghis2s** package programmatically generates the 1500 to 2000 line flow.cylc file to minimize human error and improve efficiency.  
+
+However, one new feature in LISFV7.8 RP3 removes the main hard-coded paths throughout the automatically constructed flow.cylc file by placing the paths at the top of the file defined as Jinja2 variables. This allows the flow.cylc file to be portable across different users and forecast months, given the core forecast configuration does not change (the paths come from your s2s_config_global_fcast). Those new variables point to your GHI S2S scratch run directory, your LISF GHI S2S python scripts path, and your LISF-based private module path.
   
 **c) Why is [[dependencies]] → [[[R1]]] necessary?**  
   
@@ -222,8 +224,7 @@ That said, ghis2s includes a feature to generate fully system-agnostic shell scr
 
 **e) How does ghis2s differ from other GHI subsystems (GHI-NRT, GHI-MR)?**  
   
-Although the GHI-S2S workflow includes over 150 tasks and is more complex than other subsystems, **the main script of the ghis2s software tool, [*s2s_run.py*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)**, simplifies execution by consolidating all tasks into a single command driven by a unified configuration file.  
+Although the GHI-S2S workflow includes hundreds of tasks and is more complex than other subsystems, **the main script of the ghis2s software tool, [*s2s_run.py*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)**, simplifies execution by consolidating all tasks into a single command driven by a unified configuration file.  
 The script automates the execution of all tasks based on their dependencies, effectively eliminating the need for manual intervention.
   
-
 
