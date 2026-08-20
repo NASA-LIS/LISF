@@ -23,6 +23,8 @@ Output methodology:                     "2d gridspace"
 Output model restart files:             0
 Output data format:                     netcdf
 Output naming style:                    "557WW medium range forecast convention"
+Number of dimensions in the lat/lon output fields: "2D"
+
 AGRMET security classification:         U
 AGRMET distribution classification:     C
 AGRMET data category:                   FCST
