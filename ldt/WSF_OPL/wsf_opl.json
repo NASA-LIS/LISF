@@ -10,23 +10,23 @@
     "step1_wsf_opl": {
         "ldt_running_mode":    "OPL WSF brightness temperature resampling",
         "ldt_config_template": "./01_ldt_wsfm_resample.ldt.config",
-        "v522_sdr_base":       "./wsf_sdr_data/v5.2.2/res_sdr_01",
-        "raw_sdr_base":        "./wsf_sdr_data",
-        "resampled_base":      "./01_wsfm_resampled"
+        "v522_sdr_base":       "./data/input/wsf_sdr_data/v5.2.2/res_sdr_01",
+        "raw_sdr_base":        "./data/input/wsf_sdr_data",
+        "resampled_base":      "./data/01_wsfm_resampled"
     },
 
     "step2_prediction": {
         "predict_script": "./prediction/predict_sm_stratified.py",
-        "model_dir":      "./models/cluster_models",
-        "cluster_dir":    "./models",
-        "sm_output_dir":  "./02_wsfm_sm_retrievals",
+        "model_dir":      "./data/input/models/cluster_models",
+        "cluster_dir":    "./data/input/models",
+        "sm_output_dir":  "./data/02_wsfm_sm_retrievals",
         "top_k":          3,
         "env_paths": {
-            "land_cover": "./static_data/LC/lc_arfs.nc",
-            "climate":    "./static_data/LC/clm_usaf.nc",
-            "clay":       "./static_data/soil/sg_clay_usaf.nc",
-            "sand":       "./static_data/soil/sg_sand_usaf.nc",
-            "silt":       "./static_data/soil/sg_silt_usaf.nc"
+            "land_cover": "./data/input/static_data/LC/lc_arfs.nc",
+            "climate":    "./data/input/static_data/LC/clm_usaf.nc",
+            "clay":       "./data/input/static_data/soil/sg_clay_usaf.nc",
+            "sand":       "./data/input/static_data/soil/sg_sand_usaf.nc",
+            "silt":       "./data/input/static_data/soil/sg_silt_usaf.nc"
         }
     }
 }
