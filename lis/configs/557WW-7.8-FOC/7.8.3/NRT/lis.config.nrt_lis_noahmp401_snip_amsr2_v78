@@ -23,6 +23,8 @@ Output methodology:                     "1d tilespace"
 Output model restart files:             1
 Output data format:                     netcdf
 Output naming style:                    "WMO convention"
+Number of dimensions in the lat/lon output fields: "2D"
+
 Enable output statistics:               .false.
 Start mode:                             restart
 Starting year:                          2025
