@@ -36,8 +36,8 @@ EXP:
 BCSD:
   source: {metforce: CFSv2, precip: noaa-nmme, obs: USAF-LIS7.3rc8}
   nof_raw_ens: 12
-  fcst_download_dir: /lustre/typhoon/nwp601/proj-shared/karsenau/GHI_S2S/JUL2026_INPUT/CFSv2/
-  nmme_download_dir: /lustre/typhoon/nwp601/proj-shared/karsenau/GHI_S2S/JUL2026_INPUT/NOAA_NMME/
+  fcst_download_dir: /discover/nobackup/projects/lis/MET_FORCING/CFSv2/
+  nmme_download_dir: /discover/nobackup/projects/usaf_lis/GHI_S2S/NOAA_NMME/netcdf/realtime/
   clim_start_year: 1991
   clim_end_year: 2020
   force_corr: {lapsrate: false, aspect: false}
