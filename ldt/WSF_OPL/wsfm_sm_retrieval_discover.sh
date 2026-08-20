@@ -59,7 +59,7 @@ module load lisf_7.8_intel_2023.2.1_emk_aiml
 ulimit -s unlimited
 export JOBLIB_TEMP_FOLDER=${JOBLIB_TEMP_FOLDER:-/tmp}
 
-./prediction/wsf_opl.py "$START_DT" "$END_DT" \
+./wsf_opl.py "$START_DT" "$END_DT" \
     --config wsf_opl.json \
     --batch-size "${MAX_PARALLEL:-$SLURM_CPUS_PER_TASK}" \
     ${STEP:+--step $STEP} \
