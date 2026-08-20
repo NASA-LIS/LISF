@@ -23,6 +23,8 @@ Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
 Output naming style:                    "557WW streamflow convention"
+Number of dimensions in the lat/lon output fields: "2D"
+
 Enable output statistics:               .false.
 Start mode:                             restart
 Starting year:                          2025
