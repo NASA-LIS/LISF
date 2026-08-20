@@ -60,6 +60,7 @@ ulimit -s unlimited
 export JOBLIB_TEMP_FOLDER=${JOBLIB_TEMP_FOLDER:-/tmp}
 
 ./WSF_OPL/prediction/wsf_opl.py "$START_DT" "$END_DT" \
+    --config wsf_opl.json \
     --batch-size "${MAX_PARALLEL:-$SLURM_CPUS_PER_TASK}" \
     ${STEP:+--step $STEP} \
     ${FORCE:+--force}
