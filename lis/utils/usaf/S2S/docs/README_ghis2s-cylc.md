@@ -197,9 +197,14 @@ Each month requires customized LIS input/configuration files, job script argumen
   
 **b) Can the same flow.cylc file be reused each month?**  
   
-No. As stated above, monthly differences in input files and configurations require that **ghis2s_program.py** be executed each time. The **ghis2s** package programmatically generates the 1500 to 2000 line flow.cylc file to minimize human error and improve efficiency.  
+**Yes**, ghis2s-generated flow.cylc file can be used by different across different users and forecast months but with a few caveats !
+1.	The core forecast configuration **must remain unchanged** (the paths and **Cylc graph** depend on s2s_config_global_fcast)
+2.	The three paths in the first three lines ([flow.cylc example](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/docs/flow.cylc_example)) of the flow.cylc file **must be updated** for the current forecast:
+The ghis2s-generated flow.cylc file defines three paths as jinja2 variables at the top. This allows the flow.cylc file to be portable across different users and forecast months, given the core forecast configuration does not change (the paths come from your s2s_config_global_fcast). Those paths point to your GHI S2S scratch run directory, your LISF GHI S2S python scripts path, and your LISF-based private module path.
 
-However, one new feature in LISFV7.8 RP3 removes the main hard-coded paths throughout the new automatically constructed ([flow.cylc example](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/docs/flow.cylc_example)) file by placing the paths at the top of the file defined as Jinja2 variables. This allows the flow.cylc file to be portable across different users and forecast months, given the core forecast configuration does not change (the paths come from your s2s_config_global_fcast). Those new variables point to your GHI S2S scratch run directory, your LISF GHI S2S python scripts path, and your LISF-based private module path.
+As described in Section 3, when NASA-LIS team runs Cylc, we install the Cylc workflow using a symbolic link to the directory contains the above ghis2s-generated flow.cylc file:
+cylc install --symlink-dirs=run=$E2ESDIR/scratch/YYYYMM/cylc_e2e_YYYYMM/
+and run Cylc commands.
   
 **c) Why is [[dependencies]] → [[[R1]]] necessary?**  
   
