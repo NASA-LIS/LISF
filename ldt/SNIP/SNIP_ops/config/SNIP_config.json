@@ -1,19 +1,11 @@
 {
-  "target_datetime": "201902131800",
-  "project_path": "/discover/nobackup/kyang17/projects/LISF/ldt/SNIP/SNIP_ops/",
+  "target_datetime": "202501200000",
+  "project_path": "/Users/Kyang17/projects/LISF/ldt/SNIP/SNIP_ops/",
 
   "input_SD": "WSF",
   "model_path": "./data/models/model",
   "output_dir": "./data/output",
-
-  "ldt": "./LDT",
-  "mpirun": "mpirun",
-  "ldt_running_mode": "OPL WSF brightness temperature resampling",
-  "ldt_config_template": "./ldt.config.global.noahmp401.7.snip",
-
-  "v522_sdr_base": "./data/input/wsf_sdr_data/v5.2.2/res_sdr_01",
-  "raw_sdr_base": "./data/input/wsf_sdr_data",
-  "resampled_base": "./data/input/output_resampled_wsf_sdr",
+  "resampled_base": "../data/input/output_resampled_wsf_sdr",
 
   "AMSR2_source": "JAXA",
   "_AMSR2_source_comment": "AMSR2_source: JAXA or NOAA",

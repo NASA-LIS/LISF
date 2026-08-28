@@ -3,7 +3,7 @@
   Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 27 Apr 2026
+  Last Modified 17 Aug 2026
 
 		TABLE OF CONTENTS
 		_________________
@@ -62,23 +62,24 @@
     grib configuration settings), and netCDF4.
 
 * For running on Discover, you will load the following module:
-  LISF/env/discover/lisf_7.8_intel_2023.2.1_s2s
+  LISF/env/discover/lisf_7.5_intel_2023.2.1_s2s
 
-* Python 3.11, with the following extra libraries installed:
+   -- This module loads a Python 3.11 version.
+
+* For Python 3.13, includes the installed libraries:
                 NCCS        HPC
-  - Cartopy     0.24.0      0.25.0
-  - cfgrib      0.9.15.0    0.9.15.1
-  - dask        2024.8.1    2024.8.1
-  - dateutil    2.9.0.post0 2.9.0.post0
-  - GDAL/OSGEO  3.9.1       3.9.2
-  - Matplotlib  3.8.4       3.9.4
-  - NetCDF4     1.7.2       1.7.2
-  - numpy       1.26.4      1.26.4
-  - pandas      2.2.3       2.3.3
-  - PyYAML      6.0.2       6.0.3
-  - rasterio    1.3.10      1.4.1
-  - xarray      2025.1.1    2025.6.1
-  - xesmf       0.8.8       0.8.10
+  - Cartopy     0.25.0      0.25.0
+  - cfgrib      0.9.15.1    0.9.15.1
+  - dask        2026.3.0    2026.3.0
+  - GDAL/OSGEO  3.12.3      3.12.3
+  - Matplotlib  3.10.9      3.10.9
+  - NetCDF4     1.7.4       1.7.4
+  - numpy       2.3.5       2.3.5 
+  - pandas      3.0.3       3.0.3
+  - PyYAML      6.0.3       6.0.3
+  - rasterio    1.5.0       1.5.0
+  - xarray      2026.4.0    2026.4.0
+  - xesmf       0.9.2       0.9.2
 
   ** Note:  Updates to the above libraries and modules
         could get updated as frequent as every 3- to
@@ -145,13 +146,12 @@
   nmme_download_dir: [DIRECTORY_PATH_WHERE_NMME_FORECAST_FILES_ARE_DOWNLOADED]
   ... 
 
- ** NEW OPTIONS WITH LISV7.8 RP2 **
+ ** NEW OPTIONS WITH LISV7.8 RP3 **
  
   The Columbia/IRI source for NMME files will be "sunsetted" by late
    summer of 2026, so new NMME data source options are now offered.
-   These include:
+   They include:
 
-  - CCSR (replacement to IRI)   ==> Set precip: ccsr-nmme
   - NOAA (being made available) ==> Set precip: noaa-nmme
 
   Then ensure updates to the "nmme_download_dir" pairs with
@@ -485,7 +485,7 @@
 
   4.1 DOWNLOADING FORECAST INPUT FORCINGS
 
-    * NOTE: Aim to have all forecast files downloaded by the 9th
+    * NOTE: Aim to have all forecast files downloaded by the 8th
             of each month.  More information below.
 
     4.1.1 Downloading CFSv2 forcing files
@@ -523,9 +523,6 @@
 
        Precipitation forecasts are available for only 2 NMME models (GEOS5v2 CESM1). 
        Do you want to continue (Y/N)?
-
-      We recommend the user to wait until all files are available on the IRI/Columbia
-       University server before proceeding with the remaining E2E steps. 
 
 
   4.2 Global USAF Forcing generation ("S2S_Daily")
@@ -603,7 +600,7 @@
   - This step preprocesses CFSv2 (non-precip) and 6 separate NMME
     forecast model precipitation data for driving the models offline in LIS.
     The forecasts are for the 557 WW ~25KM global domain, bias-corrected
-    using the USAF-LIS7.8-S2S (e.g., NAFPA precipitation) dataset, and covers
+    using the USAF-LIS7.5-S2S (e.g., NAFPA precipitation) dataset, and covers
     up to 9 months of forecast as input data to LIS.
 
   - This step occurs now just before the LIS FCST step and runs
@@ -669,14 +666,9 @@
       varies per model as well.  The recommended settings for the
       9-lead months are:
 
-      JOB_SEGMENTS:
-      - CanESM5: 3
-        CESM1: 3
-        GNEMO52: 3
-        GEOSv2: 2
-        CFSv2: 5
-        GFDL: 9
-
+     JOB_SEGMENTS: {CanESM5: 5, CESM1: 5, GNEMO52: 5, GEOSv2: 2, CFSv2: 5,
+                    CCSM4: 5, GFDL: 9}
+   
       Note: Number of segments per model can also vary based on
              compute cluster type and number of lead months.
              For example a 6-lead month run, would require less

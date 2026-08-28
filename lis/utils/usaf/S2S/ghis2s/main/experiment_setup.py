@@ -1874,7 +1874,7 @@ class S2Srun(DownloadForecasts):
         # processing monthlies multi tasks per job
         jobname='s2spost_mon_'
         prev = sorted(glob.glob("s2spost_0*_run.j"))
-        l_sub = 6
+        l_sub = 4 
         slurm_sub = self.split_list(monthly_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
@@ -1894,7 +1894,7 @@ class S2Srun(DownloadForecasts):
 
         # processing dailies multi tasks per job
         jobname='s2spost_weekly_'
-        l_sub = 18
+        l_sub = 12
         slurm_sub = self.split_list(weekly_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)

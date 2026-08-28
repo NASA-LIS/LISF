@@ -20,6 +20,7 @@ REVISION HISTORY:
 15 Aug 2025: Kehan Yang, Initial specification
 18 Aug 2025: Eric Kemp, Code cleanup.
 12 Apr 2025: Kehan Yang, Add WSF workflow
+6 Aug 2026: Kehan Yang, Add WSF resampling 
 """
 
 # Standard modules
@@ -33,7 +34,8 @@ from config.load_config import Config
 from data_processing.amsr2_reader import AMSR2DataProcessor
 from ml_prediction.run_prediction import AMSR2SnowDepthPredictor
 from ml_prediction.run_prediction_WSF import WSFSnowWorkflow
-
+import json
+from pathlib import Path
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -147,10 +149,28 @@ def main():
                         help='Path to JSON configuration file')
     parser.add_argument("--input", choices=["AMSR2", "WSF"],
                         help="Override the input_SD from the config file")
+    parser.add_argument("--target-datetime", dest="target_datetime",
+                        help="Target datetime in YYYYMMDDHHMM. If provided, a temporary config will be created from the given config file with this datetime.")
     args = parser.parse_args()
     try:
+        # If a target datetime was provided, create a temporary config file
+        tmp_cfg_path = None
+        cfg_file = args.config_file
+        if args.target_datetime:
+            import tempfile
+            base = Path(cfg_file).resolve()
+            # Read original JSON, inject target_datetime
+            cfg_json = json.loads(base.read_text(encoding='utf-8'))
+            cfg_json['target_datetime'] = args.target_datetime
+            # Create temp file in same directory as original config
+            tmp = tempfile.NamedTemporaryFile(mode='w', delete=False, dir=base.parent, prefix=f"tmp_snip_config_{args.target_datetime}_", suffix='.json', encoding='utf-8')
+            json.dump(cfg_json, tmp, indent=2)
+            tmp.close()
+            tmp_cfg_path = tmp.name
+            cfg_file = tmp_cfg_path
+
         # Load configuration
-        config = Config(args.config_file)
+        config = Config(cfg_file)
 
         if args.input:
             config.input_SD = args.input
@@ -159,6 +179,13 @@ def main():
 
         # Process the single config
         process_single_config(config)
+
+        # Clean up temporary config file if created
+        if tmp_cfg_path:
+            try:
+                Path(tmp_cfg_path).unlink()
+            except Exception:
+                logging.warning("Could not remove temporary config %s", tmp_cfg_path)
 
     except Exception as e:
         logger.error("Failed to process config %s", e)

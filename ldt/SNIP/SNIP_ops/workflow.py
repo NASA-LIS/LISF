@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.8
+#
+# Copyright (c) 2026 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 submit_job.py  –  Unified SNIP Pipeline Manager for AMSR2 & WSF
 
@@ -254,7 +265,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Write the script but do not call sbatch")
 
     # Mode 2: Worker Arguments (WSF Only)
-    parser.add_argument("--resample", nargs=2, metavar=("START_DT", "END_DT"), help="Worker mode: Run OPL resampling (WSF only)")
+    parser.add_argument("--resample", nargs='+', metavar=("START_DT", "END_DT"), help="Worker mode: Run OPL resampling (WSF only). Provide either two args (START_DT END_DT) or a single END_DT; when a single END_DT is given the start will be computed from the config's start_offset_hours (default 6).")
     parser.add_argument("--config", default="./SNIP_ops/config/SNIP_config.json", help="Path to config (for WSF resampling)")
     parser.add_argument("--batch-size", type=int, default=int(os.environ.get("MAX_PARALLEL", max(10, (os.cpu_count() or 10) // 10 * 10))), help="Max parallel LDT jobs")
     parser.add_argument("--force", action="store_true", help="Ignore checkpoint during resampling")
@@ -272,8 +283,29 @@ def main() -> None:
         if not config_path.exists():
             sys.exit(f"ERROR: Configuration file '{args.config}' not found.")
 
-        start_dt, end_dt = args.resample
-        cfg = json.loads(config_path.read_text(encoding='utf-8'))
+        # Allow either: --resample START END  OR  --resample END
+        if len(args.resample) == 2:
+            start_dt, end_dt = args.resample
+            cfg = json.loads(config_path.read_text(encoding='utf-8'))
+        elif len(args.resample) == 1:
+            end_dt = args.resample[0]
+            # Load config to determine offset and other paths
+            cfg = json.loads(config_path.read_text(encoding='utf-8'))
+            # Determine start offset (hours) from config; fall back to 6
+            try:
+                offset = int(cfg.get("start_offset_hours", 6))
+            except Exception:
+                offset = 6
+            # Compute start datetime by subtracting offset hours from end_dt
+            from datetime import datetime, timedelta
+            try:
+                dt_end = datetime.strptime(end_dt, "%Y%m%d%H%M")
+            except Exception as exc:
+                sys.exit(f"ERROR: invalid end datetime '{end_dt}': {exc}")
+            start_dt = (dt_end - timedelta(hours=offset)).strftime("%Y%m%d%H%M")
+        else:
+            parser.error("--resample requires 1 or 2 datetime arguments")
+
         program = Path(cfg["ldt"]).resolve()
         template = Path(cfg["ldt_config_template"]).resolve()
         out_base = Path(cfg["resampled_base"])
