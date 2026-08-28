@@ -197,7 +197,7 @@ Each month requires customized LIS input/configuration files, job script argumen
   
 **b) Can the same flow.cylc file be reused each month?**  
   
-**Yes**, ghis2s-generated flow.cylc file can be used by different across different users and forecast months but with a few caveats !
+**Yes**, ghis2s-generated flow.cylc file can be used across different users and forecast months but with a few caveats !
 1.	The core forecast configuration **must remain unchanged** (the paths and **Cylc graph** depend on s2s_config_global_fcast)
 2.	The three paths in the first three lines ([flow.cylc example](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/docs/flow.cylc_example)) of the flow.cylc file **must be updated** for the current forecast:
 The ghis2s-generated flow.cylc file defines three paths as jinja2 variables at the top. This allows the flow.cylc file to be portable across different users and forecast months, given the core forecast configuration does not change (the paths come from your s2s_config_global_fcast). Those paths point to your GHI S2S scratch run directory, your LISF GHI S2S python scripts path, and your LISF-based private module path.
