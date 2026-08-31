@@ -22,6 +22,7 @@ module LIS_metforcing_pluginMod
 ! !REVISION HISTORY: 
 !  11 Dec 2003   Sujay Kumar:  Initial Specification
 !  11 Oct 2014   K. Arsenault: Reorganzed for syncing with LDT
+!  08 July 2026  J Nattala: Updated for unified CHIRPS
 ! 
 !EOP  
   implicit none
@@ -236,8 +237,8 @@ subroutine LIS_metforcing_plugin
    use petusgs_forcingMod
 #endif
 
-#if ( defined MF_CHIRPS2 )
-   use chirps2_forcingMod
+#if ( defined MF_CHIRPS )
+   use chirps_forcingMod
 #endif
 
 #if ( defined MF_SCAN )
@@ -552,11 +553,11 @@ subroutine LIS_metforcing_plugin
    external finalize_petusgs
 #endif
 
-#if ( defined MF_CHIRPS2 )
-   external get_chirps2
-   external timeinterp_chirps2
-   external finalize_chirps2
-   external reset_chirps2
+#if ( defined MF_CHIRPS )
+   external get_chirps
+   external timeinterp_chirps
+   external finalize_chirps
+   external reset_chirps
 #endif
 
 #if ( defined MF_SCAN )
@@ -1057,14 +1058,14 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_USGSPETforcId)//char(0),finalize_petusgs)
 #endif
 
-#if ( defined MF_CHIRPS2 )
+#if ( defined MF_CHIRPS )
 ! - CHIRPS 2.0 Precipitation Data 
-   call registerinitmetforc(trim(LIS_chirps2Id)//char(0),init_chirps2)
-   call registerretrievemetforc(trim(LIS_chirps2Id)//char(0),get_chirps2)
-   call registertimeinterpmetforc(trim(LIS_chirps2Id)//char(0), &
-                                  timeinterp_chirps2)
-   call registerfinalmetforc(trim(LIS_chirps2Id)//char(0),finalize_chirps2)
-   call registerresetmetforc(trim(LIS_chirps2Id)//char(0),reset_chirps2)
+   call registerinitmetforc(trim(LIS_chirpsId)//char(0),init_chirps)
+   call registerretrievemetforc(trim(LIS_chirpsId)//char(0),get_chirps)
+   call registertimeinterpmetforc(trim(LIS_chirpsId)//char(0), &
+                                  timeinterp_chirps)
+   call registerfinalmetforc(trim(LIS_chirpsId)//char(0),finalize_chirps)
+   call registerresetmetforc(trim(LIS_chirpsId)//char(0),reset_chirps)
 #endif
 
 #if ( defined MF_SCAN )

@@ -8,22 +8,24 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: timeinterp_chirps2
-! \label{timeinterp_chirps2}
+! !ROUTINE: timeinterp_chirps
+! \label{timeinterp_chirps}
 !
 ! !REVISION HISTORY:
 !
 ! 16 July 2015: K. Arsenault Hall; Initial LIS version
+! 28 June 2026: J. Nattala; Updated to support both CHIRPS v2.0 and v3.0;
+!                           use generic chirps_struc
 !
 ! !INTERFACE:
-subroutine timeinterp_chirps2(n,findex)
+subroutine timeinterp_chirps(n,findex)
 ! !USES:
   use ESMF
-  use LIS_coreMod,      only : LIS_rc,LIS_domain
-  use LIS_metforcingMod,only :  LIS_FORC_Base_State, LIS_forc
+  use LIS_coreMod,      only : LIS_rc, LIS_domain
+  use LIS_metforcingMod,only : LIS_FORC_Base_State, LIS_forc
   use LIS_FORC_AttributesMod
   use LIS_logMod,       only : LIS_verify
-  use chirps2_forcingMod, only : chirps2_struc
+  use chirps_forcingMod, only : chirps_struc
   use LIS_forecastMod, only : LIS_get_iteration_index
 
   implicit none
@@ -35,7 +37,7 @@ subroutine timeinterp_chirps2(n,findex)
 !
 ! !DESCRIPTION:
 !  Temporally interpolates the forcing data to the current model
-!  timestep (evenly distributed over sub-daily timesteps for now). 
+!  timestep (evenly distributed over sub-daily timesteps for now).
 !
 !  The arguments are:
 !  \begin{description}
@@ -51,33 +53,32 @@ subroutine timeinterp_chirps2(n,findex)
     integer            :: t, index1
     integer            :: mfactor, m, k, kk
     integer            :: status
-    type(ESMF_Field)   :: pcpField, cpcpField
-    real, pointer      :: pcp(:), cpcp(:)
+    type(ESMF_Field)   :: pcpField
+    real, pointer      :: pcp(:)
 ! ________________________________________________________
 
-   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),trim(LIS_FORC_Rainf%varname(1)),pcpField,&
-        rc=status)
+   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
+     trim(LIS_FORC_Rainf%varname(1)),pcpField, rc=status)
    call LIS_verify(status, 'Error: enable Rainf in forcing variables list')
 
    call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
    call LIS_verify(status)
 
    ! Convert precipitation sum to rate:
-   mfactor = LIS_rc%nensem(n)/chirps2_struc(n)%nIter
+   mfactor = LIS_rc%nensem(n)/chirps_struc(n)%nIter
 
    do k=1,LIS_rc%ntiles(n)/mfactor
      do m=1,mfactor
        t = m + (k-1)*mfactor
        index1 = LIS_domain(n)%tile(t)%index
        kk = LIS_get_iteration_index(n, k, index1, mfactor)
-
        ! Leave out undefined and NODATA value grid cells if after upscaling:
-       if( chirps2_struc(n)%metdata2(kk,1,index1) .ge. 0.0 ) then
-          pcp(t) = chirps2_struc(n)%metdata2(kk,1,index1) / 86400.0  ! mm/s for entire day
+       if( chirps_struc(n)%metdata2(kk,1,index1) .ge. 0.0 ) then
+          pcp(t) = chirps_struc(n)%metdata2(kk,1,index1) / 86400.0  ! mm/s for entire day
        else
           pcp(t) = LIS_rc%udef
        endif
      enddo
    enddo
 
-end subroutine timeinterp_chirps2
+end subroutine timeinterp_chirps

@@ -15,3 +15,5 @@ LDT_misc.h
 LIS_NetCDF_inc.h
 LDT_NetCDF_inc.h
 LIS_plugins.h
+lis/make/Filepath
+lis/make/user.cfg

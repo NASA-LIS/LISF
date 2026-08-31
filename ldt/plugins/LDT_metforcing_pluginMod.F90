@@ -21,6 +21,7 @@ module LDT_metforcing_pluginMod
 ! !REVISION HISTORY: 
 !  11 Dec 2003   Sujay Kumar:  Initial Specification
 !  11 Oct 2014   K. Arsenault: Reorganzing for syncing with LDT  
+!  02 July 2026  J Nattala: Updated for unified CHIRPS
 ! 
 !EOP  
   implicit none
@@ -126,7 +127,7 @@ contains
 !    use vic_forcingMod
     use RFE2Daily_forcingMod
     use RFE2gdas_forcingMod
-    use chirps2_forcingMod
+    use chirps_forcingMod
 !    use petusgs_forcingMod
 
 !    use scan_forcingMod
@@ -141,6 +142,12 @@ contains
 !    use pildas_forcingMod
 !    use capa_forcingMod
 !    use WRFout_forcingMod
+
+    external :: registerinitmetforc
+    external :: registerretrievemetforc
+    external :: registertimeinterpmetforc
+    external :: registerresetmetforc
+    external :: registerfinalmetforc
 
 !    external get_metForcTemplate
 !    external timeinterp_metForcTemplate
@@ -271,10 +278,10 @@ contains
     external finalize_RFE2Daily
     external reset_RFE2Daily
 
-    external get_chirps2
-    external timeinterp_chirps2
-    external finalize_chirps2
-    external reset_chirps2
+    external get_chirps
+    external timeinterp_chirps
+    external finalize_chirps
+    external reset_chirps
 
 !    external get_petusgs
 !    external timeinterp_petusgs
@@ -510,12 +517,12 @@ contains
     call registerfinalmetforc(trim(LDT_RFE2gdasId)//char(0),finalize_RFE2gdas)
     call registerresetmetforc(trim(LDT_RFE2gdasId)//char(0),reset_RFE2gdas)
 
-! - CHIRPS 2.0 Precipitation Data 
-    call registerinitmetforc(trim(LDT_chirps2Id)//char(0),init_chirps2)
-    call registerretrievemetforc(trim(LDT_chirps2Id)//char(0),get_chirps2)
-    call registertimeinterpmetforc(trim(LDT_chirps2Id)//char(0),timeinterp_chirps2)
-    call registerfinalmetforc(trim(LDT_chirps2Id)//char(0),finalize_chirps2)
-    call registerresetmetforc(trim(LDT_chirps2Id)//char(0),reset_chirps2)
+! - CHIRPS Precipitation Data 
+    call registerinitmetforc(trim(LDT_chirpsId)//char(0),init_chirps)
+    call registerretrievemetforc(trim(LDT_chirpsId)//char(0),get_chirps)
+    call registertimeinterpmetforc(trim(LDT_chirpsId)//char(0),timeinterp_chirps)
+    call registerfinalmetforc(trim(LDT_chirpsId)//char(0),finalize_chirps)
+    call registerresetmetforc(trim(LDT_chirpsId)//char(0),reset_chirps)
 
 !! - END OF PRECIPITATION-ONLY DATASETS - !!
 

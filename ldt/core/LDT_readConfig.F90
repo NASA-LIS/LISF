@@ -15,6 +15,10 @@
 ! !REVISION HISTORY:
 !
 !  02 Oct 2008: Sujay Kumar; Initial Specification
+!  16 Apr 2026: J Nattala;   Relaxed metforc_blend_alg enforcement per user guide:
+!                            fatal if absent in "Metforce processing"; warn and
+!                            override to "none" if label present in downscaling
+!                            modes where parameter is not applicable.
 !
 ! !INTERFACE:
 subroutine LDT_readConfig(configfile)
@@ -54,6 +58,7 @@ subroutine LDT_readConfig(configfile)
   character(len=LDT_CONST_PATH_LEN) :: diag_dir
   integer, external :: LDT_create_subdirs
 
+  external :: LDT_mapSurfaceModelType
 !____________________________________________________________
 
   LDT_config = ESMF_ConfigCreate(rc=rc)
@@ -359,10 +364,28 @@ subroutine LDT_readConfig(configfile)
          trim(LDT_rc%runmode) == "Statistical downscaling of met forcing"  ) then
 
         LDT_rc%metforc_blend_alg = "none"
-        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%metforc_blend_alg,&
-             label="Blending method for forcings:",rc=rc)
-        call LDT_verify(rc,'Blending method for forcings: not specified')
- 
+        ! Check if the label actually exists in the config
+        call ESMF_ConfigFindLabel(LDT_config, "Blending method for forcings:", &
+          rc=rc)
+        if (rc == ESMF_SUCCESS) then
+           ! Label present in config
+           if (trim(LDT_rc%runmode) == "Metforce processing") then
+              call ESMF_ConfigGetAttribute(LDT_config, LDT_rc%metforc_blend_alg, &
+                rc=rc)
+           else
+              ! Present, but in downscaling modes (warn and ignore)
+              write(unit=LDT_logunit,fmt=*) &
+                 'Blending method for forcings: not applicable in ' // &
+                 trim(LDT_rc%runmode) // ', ignoring and defaulting to none.'
+           endif
+        else
+           ! Label missing from config, stays "none" for downscaling
+           if (trim(LDT_rc%runmode) == "Metforce processing") then
+              ! Fatal
+              call LDT_verify(rc, 'Blending method for forcings: not specified')
+           endif
+        endif
+
         LDT_rc%met_tinterp = "none"
         call ESMF_ConfigFindLabel(LDT_config,&
             "Temporal interpolation method (met forcing):",rc=rc)

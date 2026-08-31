@@ -9,32 +9,33 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
-! !MODULE: reset_chirps2
-! \label{reset_chirps2}
-! 
-! !REVISION HISTORY: 
+! !MODULE: reset_chirps
+! \label{reset_chirps}
+!
+! !REVISION HISTORY:
 ! 25Oct2005; Sujay Kumar, Initial Code
 ! 09Oct2015; Kristi Arsenault, Added to CHIRPS2 reader
-! 
+! 28June2026; J Nattala, Updated to support both CHIRPS v2.0 and v3.0
+!
 ! !INTERFACE:
-subroutine reset_chirps2
+subroutine reset_chirps
 ! !USES:
   use LIS_coreMod,    only : LIS_rc
   use LIS_timeMgrMod, only : LIS_date2time
-  use chirps2_forcingMod
+  use chirps_forcingMod
 !
 ! !DESCRIPTION:
-!  Routine to cleanup allocated structures for CHIRPS v2 forcing. 
+!  Routine to cleanup allocated structures for CHIRPS forcing.
 !
-!EOP  
+!EOP
   implicit none
 
   integer :: n
 
   do n=1,LIS_rc%nnest
-     chirps2_struc(:)%chirpstime1 = 0.
-     chirps2_struc(:)%chirpstime2 = 0.
-     chirps2_struc(:)%reset_flag = .true.
+     chirps_struc(:)%chirpstime1 = 0.
+     chirps_struc(:)%chirpstime2 = 0.
+     chirps_struc(:)%reset_flag = .true.
   enddo
 
-end subroutine reset_chirps2
+end subroutine reset_chirps

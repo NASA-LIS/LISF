@@ -8,23 +8,25 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: timeinterp_chirps2
-! \label{timeinterp_chirps2}
+! !ROUTINE: timeinterp_chirps
+! \label{timeinterp_chirps}
 !
 ! !REVISION HISTORY:
 !
 ! 16 July 2015: K. Arsenault Hall; Initial LDT version
 ! 16 June 2016: K. Arsenault Hall; Fix to time interp
+! 29 Oct 2025: J Nattala; Updated to support both CHIRPS v2.0 and v3.0;
+!                         use generic chirps_struc
 !
 ! !INTERFACE:
-subroutine timeinterp_chirps2(n,findex)
+subroutine timeinterp_chirps(n,findex)
 ! !USES:
   use ESMF
   use LDT_coreMod,      only : LDT_rc,LDT_domain
   use LDT_metforcingMod,only :  LDT_FORC_Base_State, LDT_forc
   use LDT_FORC_AttributesMod
   use LDT_logMod,       only : LDT_verify
-  use chirps2_forcingMod, only : chirps2_struc
+  use chirps_forcingMod, only : chirps_struc
 
   implicit none
 
@@ -50,13 +52,12 @@ subroutine timeinterp_chirps2(n,findex)
 !EOP
     integer            :: t, index1
     integer            :: status
-    type(ESMF_Field)   :: pcpField, cpcpField
-    real, pointer      :: pcp(:), cpcp(:)
-    real,  allocatable :: ratio(:)
+    type(ESMF_Field)   :: pcpField
+    real, pointer      :: pcp(:)
 ! ________________________________________________________
 
-    call ESMF_StateGet(LDT_FORC_Base_State(n,findex),trim(LDT_FORC_Rainf%varname(1)),pcpField,&
-         rc=status)
+    call ESMF_StateGet(LDT_FORC_Base_State(n,findex), &
+      trim(LDT_FORC_Rainf%varname(1)),pcpField, rc=status)
     call LDT_verify(status, 'Error: enable Rainf in forcing variables list')
 
     call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
@@ -64,7 +65,7 @@ subroutine timeinterp_chirps2(n,findex)
 
     call ESMF_AttributeSet(pcpField,"Enabled",1,rc=status)
     call LDT_verify(status,&
-         'error in ESMF_AttributeSet in timeinterp_chirps2')
+         'error in ESMF_AttributeSet in timeinterp_chirps')
 
 !-- Convert precipitation sum to rate:
     do t=1,LDT_rc%ntiles(n)
@@ -80,11 +81,11 @@ subroutine timeinterp_chirps2(n,findex)
 #if 0
 !-- Applying a convective rainfall amount to observed precip field: 
     if( LDT_FORC_CRainf%selectOpt .eq. 1 ) then
- 
+
       allocate(ratio(LDT_rc%ntiles(n)))
 
-      call ESMF_StateGet(LDT_FORC_Base_State(n,findex),trim(LDT_FORC_CRainf%varname(1)),cpcpField,&
-           rc=status)
+      call ESMF_StateGet(LDT_FORC_Base_State(n,findex),&
+        trim(LDT_FORC_CRainf%varname(1)),cpcpField, rc=status)
       call LDT_verify(status, 'Error: enable CRainf in forcing variables list')
 
       call ESMF_FieldGet(cpcpField,localDE=0,farrayPtr=cpcp,rc=status)
@@ -92,7 +93,7 @@ subroutine timeinterp_chirps2(n,findex)
 
       call ESMF_AttributeSet(cpcpField,"Enabled",1,rc=status)
       call LDT_verify(status,&
-           'error in ESMF_AttributeSet in timeinterp_chirps2')
+           'error in ESMF_AttributeSet in timeinterp_chirps')
 
 !------------------------------------------------------------------------
 ! Compute ratio between convective model precip and total model precip
@@ -113,4 +114,4 @@ subroutine timeinterp_chirps2(n,findex)
     endif
 #endif
 
-end subroutine timeinterp_chirps2
+end subroutine timeinterp_chirps
