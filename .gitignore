@@ -7,7 +7,6 @@ lis/runmodes/nuopc_cpl_mode/liblis_nuopc.a
 *.o
 *.mod
 LIS
-LDT
 configure.lis
 configure.ldt
 LIS_misc.h
@@ -15,3 +14,9 @@ LDT_misc.h
 LIS_NetCDF_inc.h
 LDT_NetCDF_inc.h
 LIS_plugins.h
+ldt/*
+!ldt/SNIP/
+ldt/SNIP/SNIP_ops/data
+__pycache__/
+*.py[cod]
+*$py.class
