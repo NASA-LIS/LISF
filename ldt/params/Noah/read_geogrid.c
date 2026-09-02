@@ -50,7 +50,7 @@ int read_geogrid_(
    /* Attempt to open file for reading */
    if (!(bfile = fopen(local_fname,"rb")))
    {
-     printf("ERROR opening %s\n",local_fname);
+      printf("ERROR opening %s\n",local_fname);
       *status = 1;
       return 1;
    }
@@ -63,7 +63,8 @@ int read_geogrid_(
 
    if (cnt == 0) 
    {
-     printf("ERROR reading %s\n",local_fname);
+      free(c)
+      printf("ERROR reading %s\n",local_fname);
       *status = 1;
       return 1;
    }
