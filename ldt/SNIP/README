@@ -56,7 +56,8 @@ A number of directories with input data are used by the SNIP workflow.
   - data/input/viirs # Latest GeoTIFF files with VIIRS snow age and snow maps
   - data/input/wsf_sdr_data # Latest WSF-M brightness temperature files
   - data/03_ldt_snip_analysis # Contains recent final SNIP files (some will
-                              # be used as first-guess fields). This should
-                              # also be where new SNIP netCDF files are
-                              # written.
+                              # be used as first-guess fields). This folder
+                              # needs to be generated and populated manually
+                              # before software is run.  This should also be
+                              # where new SNIP netCDF files are written.
 
