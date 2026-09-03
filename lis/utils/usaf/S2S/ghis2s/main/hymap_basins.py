@@ -59,7 +59,7 @@ class HyMAPDomains():
             domain_masks = domain_masks.sel(time=0)['HyMAP_sub-domains']
         return domain_masks
 
-    def lis_darun(self, setup, prev=None):
+    def lis_darun(self, setup):
         '''lis_darun on subdomains'''
         # previous month
         date_obj = datetime.strptime(f"{setup.yyyy}-{setup.mm}-01", "%Y-%m-%d")
