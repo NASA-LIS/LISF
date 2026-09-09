@@ -109,7 +109,7 @@ This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/cylc_{S2S_
 
 As shown in the figure above, the end-to-end S2S forecast involves more than 150 tasks, each generating a very large number log files, given that the multiple processors write concurrent output within loops. Additionally, Cylc's native log files do not contain enough meaningful information about the underlying tasks being performed. 
 
-To address this, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file found at **SCRATCH/YYYYMM/ghis2s_main.log** [see example here](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/docs/ghis2s_main.log_example). This centralized log file can be easily integrated with monitoring dashboards like **enterprise log analysis and monitoring dashboards** to track the forecast run progression in real-time.
+To address this, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file found at **SCRATCH/YYYYMM/ghis2s_main.log**. This centralized log file can be easily integrated with monitoring dashboards like **enterprise log analysis and monitoring dashboards** to track the forecast run progression in real-time.
 
 ## Log Monitoring Workflow
 
