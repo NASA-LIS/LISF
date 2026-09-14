@@ -65,6 +65,11 @@ subroutine NoahMP50_setup()
     integer           :: col, row
     real, allocatable :: placeholder(:,:)
     integer           :: soilcolor, vegtyp, soiltyp(4), slopetyp, croptype    
+
+    external :: NoahMP50_read_MULTILEVEL_param
+    external :: TRANSFER_MP_PARAMETERS_NEW
+    external :: NoahMP50_read_OPT_parameters
+
     mtype = LIS_rc%lsm_index
     
     do n=1, LIS_rc%nnest
