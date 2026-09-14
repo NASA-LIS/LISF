@@ -32,8 +32,6 @@ subroutine noahmp50_getCROCUSexport(n, LSM2SUBLSM_State)
 ! 
 !EOP
 
-
-
   type(ESMF_Field)   :: gtField
   type(ESMF_Field)   :: XWGIField
   type(ESMF_Field)   :: XWGField
@@ -61,7 +59,6 @@ subroutine noahmp50_getCROCUSexport(n, LSM2SUBLSM_State)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      gt(t) = NoahMP50_struc(n)%noahmp50(t)%tslb(1)
-     !gt(t) = NoahMP50_struc(n)%noahmp50(t)%tgb
      XWGI(t) = NoahMP50_struc(n)%noahmp50(t)%smc(1) - NoahMP50_struc(n)%noahmp50(t)%sh2o(1) ! volumetric frozen soil moisture [m3/m3]
      XWG(t)  = NoahMP50_struc(n)%noahmp50(t)%sh2o(1) ! volumetric liquid soil moisture [m3/m3]
   enddo
