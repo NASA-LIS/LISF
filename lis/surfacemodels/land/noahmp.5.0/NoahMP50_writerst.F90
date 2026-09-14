@@ -58,7 +58,9 @@ subroutine NoahMP50_writerst(n)
     integer       :: ftn
     integer       :: status
     character*3   :: fnest
- 
+
+    external :: NoahMP50_dump_restart
+
     ! set restart alarm
     write(fnest,'(i3.3)') n
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP50 restart alarm "//trim(fnest))
