@@ -117,7 +117,8 @@ subroutine NoahMP50_readrst()
     real*8            :: time
     real              :: gmt
 
- 
+    external :: NoahMP50_coldstart
+
     do n=1, LIS_rc%nnest
         wformat = trim(NoahMP50_struc(n)%rformat)
         ! coldstart
