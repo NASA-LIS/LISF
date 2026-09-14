@@ -32,14 +32,15 @@ subroutine noahmp_driver_50(n, LISparam)
 
   ! local variables 
   character(len=12)   :: nowdate
-  integer :: k 
 
   ! Added by David Mocko on 11/19/2018
   logical :: Bondvillecheck
-  integer :: i,local_hour
+  integer :: i
   integer :: locyr,locmo,locda,lochr,locmn,locss,locdoy
   real*8  :: loctime
   real    :: locgmt,change
+
+  external :: calc_declin
 
   ! ---------------------------------------
    NoahmpIO%xland(1,1) = 1
