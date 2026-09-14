@@ -96,7 +96,7 @@ subroutine NoahMP50_setwrfexport(n)
   ! snow water equivalent
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%snow_t,&
        NoahMP50_struc(n)%noahmp50%sneqv*1000.0)
-  ! snow height NUWRF EMK 
+  ! snow height
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%snowh_t,&
        NoahMP50_struc(n)%noahmp50%snowh)
   ! volumetric liquid soil moisture layers 1:4
