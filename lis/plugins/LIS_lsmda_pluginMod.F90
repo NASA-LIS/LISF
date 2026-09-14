@@ -578,7 +578,7 @@ subroutine LIS_lsmda_plugin
 
 #endif
 
-#if ( defined SM_NOAHMP_5_0 ) 
+#if ( defined SM_NOAHMP_5_0 )
 ! NoahMP.5 Soil moisture DA
    external NoahMP50_getsoilm
    external NoahMP50_setsoilm
@@ -1958,7 +1958,7 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_NOAH_3_9 )
 
-! Noah-3.9 RT SMOPS ASCAT soil moisture! MN
+! Noah-3.9 RT SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),noah39_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
@@ -1978,7 +1978,7 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),noah39_updatesoilm)
 
-! Noah-3.9 SMAP(NRT) soil moisture !MN
+! Noah-3.9 SMAP(NRT) soil moisture
    call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),noah39_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
@@ -1998,7 +1998,7 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noah39Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),noah39_updatesoilm)
 
-! Noah-3.9 SMAP(NASA) soil moisture!MN
+! Noah-3.9 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_noah39Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),noah39_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_noah39Id)//"+"//&
@@ -2183,7 +2183,7 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noahmp36Id)//"+"//&
         trim(LIS_synsmId)//char(0),noahmp36_updatesoilm)
 
-!MN: Noahmp-3.6 PILDAS soil moisture
+! Noahmp-3.6 PILDAS soil moisture
    call registerlsmdainit(trim(LIS_noahmp36Id)//"+"//&
         trim(LIS_pildassmobsId)//char(0),noahmp36_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp36Id)//"+"//&
