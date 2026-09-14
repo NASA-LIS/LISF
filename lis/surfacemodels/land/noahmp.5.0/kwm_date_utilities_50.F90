@@ -10,9 +10,13 @@
 module kwm_date_utilities_50
 contains
   subroutine geth_newdate (ndate, odate, idt)
+
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+    use LIS_logMod, only: LIS_logunit, LIS_abort
+
     implicit none
 
-!  From old date ('YYYY-MM-DD HH:MM:SS.ffff') and 
+!  From old date ('YYYY-MM-DD HH:MM:SS.ffff') and
 !  delta-time, compute the new date.
 
 !  on entry     -  odate  -  the old hdate.
@@ -63,8 +67,10 @@ contains
     logical :: punctuated
     logical :: idtdy, idthr, idtmin, idtsec, idtfrac
 
-    external :: abort
+    character(len=LIS_CONST_PATH_LEN) :: abort_message(20)
 
+    abort_message = ''
+    
 !  Assign the number of days in a months
 
     mday( 1) = 31
@@ -164,35 +170,35 @@ contains
 !  Check that the month of ODATE makes sense.
 
     if ((moold.gt.12).or.(moold.lt.1)) then
-       write(*,*) 'GETH_NEWDATE:  Month of ODATE = ', moold
+       write(LIS_logunit,*) '[ERR] GETH_NEWDATE:  Month of ODATE = ', moold
        opass = .FALSE.
     end if
 
 !  Check that the day of ODATE makes sense.
 
     if ((dyold.gt.mday(moold)).or.(dyold.lt.1)) then
-       write(*,*) 'GETH_NEWDATE:  Day of ODATE = ', dyold
+       write(LIS_logunit,*) '[ERR] GETH_NEWDATE:  Day of ODATE = ', dyold
        opass = .FALSE.
     end if
 
 !  Check that the hour of ODATE makes sense.
 
     if ((hrold.gt.23).or.(hrold.lt.0)) then
-       write(*,*) 'GETH_NEWDATE:  Hour of ODATE = ', hrold
+       write(LIS_logunit,*) '[ERR] GETH_NEWDATE:  Hour of ODATE = ', hrold
        opass = .FALSE.
     end if
 
 !  Check that the minute of ODATE makes sense.
 
     if ((miold.gt.59).or.(miold.lt.0)) then
-       write(*,*) 'GETH_NEWDATE:  Minute of ODATE = ', miold
+       write(LIS_logunit,*) '[ERR] GETH_NEWDATE:  Minute of ODATE = ', miold
        opass = .FALSE.
     end if
 
 !  Check that the second of ODATE makes sense.
 
     if ((scold.gt.59).or.(scold.lt.0)) then
-       write(*,*) 'GETH_NEWDATE:  Second of ODATE = ', scold
+       write(LIS_logunit,*) '[ERR] GETH_NEWDATE:  Second of ODATE = ', scold
        opass = .FALSE.
     end if
 
@@ -204,8 +210,10 @@ contains
 !KWM      END IF
 
     if (.not.opass) then
-       write(*,*) 'Crazy ODATE: ', odate(1:olen), olen
-       call abort()
+       write(LIS_logunit,*) '[ERR] Crazy ODATE: ', odate(1:olen), olen
+       !call abort()
+       write(abort_message(1),*) '[ERR] Crazy ODATE: ', odate(1:olen), olen
+       call LIS_abort(abort_message)
     end if
 
 !  Date Checks are completed.  Continue.
@@ -254,10 +262,14 @@ contains
        nsec   = 0
        nfrac  = 0
     else
-       write(*,'(''GETH_NEWDATE: Strange length for ODATE: '', i3)') &
+       write(LIS_logunit,'(''[ERR] GETH_NEWDATE: Strange length for ODATE: '', i3)') &
             olen
-       write(*,*) odate(1:olen)
-       call abort()
+       write(LIS_logunit,*) odate(1:olen)
+       !call abort()
+       write(abort_message(1), &
+            '(''[ERR] GETH_NEWDATE: Strange length for ODATE: '',i3)') olen
+       abort_message(1) = abort_message(1) // odate(1:olen)
+       call LIS_abort(abort_message)
     end if
 
     if (idt.ge.0) then
@@ -370,7 +382,7 @@ contains
        else if (nlen.eq.13) then
           write(ndate,13) yrnew, monew, dynew, hrnew
 13        format(i4,'-',i2.2,'-',i2.2,'_',i2.2)
-          
+
        else if (nlen.eq.10) then
           write(ndate,10) yrnew, monew, dynew
 10        format(i4,'-',i2.2,'-',i2.2)
@@ -378,7 +390,7 @@ contains
        end if
 
        if (olen.ge.11) ndate(11:11) = sp
-       
+
     else
 
        if (nlen.gt.20) then
@@ -397,22 +409,29 @@ contains
        else if (nlen.eq.10) then
           write(ndate,210) yrnew, monew, dynew, hrnew
 210       format(i4,i2.2,i2.2,i2.2)
-          
+
        else if (nlen.eq.8) then
           write(ndate,8) yrnew, monew, dynew
 8         format(i4,i2.2,i2.2)
 
        else
-          stop "DATELEN PROBLEM"
+          !stop "DATELEN PROBLEM"
+          write(LIS_logunit,*) '[ERR] DATELEN PROBLEM'
+          write(abort_message(1),*) '[ERR] DATELEN PROBLEM'
+          call LIS_abort(abort_message)
        end if
     endif
 
   end subroutine geth_newdate
 
   subroutine geth_idts (newdate, olddate, idt)
+
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+    use LIS_logMod, only: LIS_logunit, LIS_abort
+
     implicit none
 
-!  From 2 input mdates ('YYYY-MM-DD HH:MM:SS.ffff'), 
+!  From 2 input mdates ('YYYY-MM-DD HH:MM:SS.ffff'),
 !  compute the time difference.
 
 !  on entry     -  newdate  -  the new hdate.
@@ -454,11 +473,20 @@ contains
 
     logical :: punctuated
 
+    character(len=LIS_CONST_PATH_LEN) :: abort_message(20)
+
+    abort_message = ''
+
     olen = len(olddate)
     nlen = len(newdate)
     if (nlen.ne.olen) then
-       write(*,'("GETH_IDTS: NLEN /= OLEN: ", A, 3x, A)') newdate(1:nlen), olddate(1:olen)
-       call abort
+       !write(*,'("GETH_IDTS: NLEN /= OLEN: ", A, 3x, A)') newdate(1:nlen), olddate(1:olen)
+       write(LIS_logunit,'("[ERR] GETH_IDTS: NLEN /= OLEN: ", A, 3x, A)') &
+            newdate(1:nlen), olddate(1:olen)
+       !call abort
+       write(abort_message(1),'("[ERR] GETH_IDTS: NLEN /= OLEN: ",A,3x,A)') &
+            newdate(1:nlen), olddate(1:olen)
+       call LIS_abort(abort_message)
     endif
 
     if (olddate.gt.newdate) then
@@ -541,7 +569,7 @@ contains
              end if
           end if
        end if
-       
+
 !  Break down new hdate into parts
 
        read(ndate(6:7),  '(i2)') monew
@@ -576,7 +604,7 @@ contains
              end if
           end if
        end if
-       
+
 !  Break down new hdate into parts
 
        read(ndate(5:6),  '(i2)') monew
@@ -603,14 +631,16 @@ contains
 !  Check that the month of NDATE makes sense.
 
     if ((monew.gt.12).or.(monew.lt.1)) then
-       print*, 'GETH_IDTS:  Month of NDATE = ', monew
+       !print*, 'GETH_IDTS:  Month of NDATE = ', monew
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  Month of NDATE = ', monew
        npass = .false.
     end if
 
 !  Check that the month of ODATE makes sense.
 
     if ((moold.gt.12).or.(moold.lt.1)) then
-       print*, 'GETH_IDTS:  Month of ODATE = ', moold
+       !print*, 'GETH_IDTS:  Month of ODATE = ', moold
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  Month of ODATE = ', moold
        opass = .false.
     end if
 
@@ -619,13 +649,15 @@ contains
     if (monew.ne.2) then
        ! ...... For all months but February
        if ((dynew.gt.mday(monew)).or.(dynew.lt.1)) then
-          print*, 'GETH_IDTS:  Day of NDATE = ', dynew
+          !print*, 'GETH_IDTS:  Day of NDATE = ', dynew
+          write(LIS_logunit,*) '[ERR] GETH_IDTS:  Day of NDATE = ', dynew
           npass = .false.
        end if
     else if (monew.eq.2) then
        ! ...... For February
        if ((dynew > nfeb(yrnew)).or.(dynew < 1)) then
-          print*, 'GETH_IDTS:  Day of NDATE = ', dynew
+          !print*, 'GETH_IDTS:  Day of NDATE = ', dynew
+          write(LIS_logunit,*) '[ERR] GETH_IDTS:  Day of NDATE = ', dynew
           npass = .false.
        end if
     endif
@@ -635,13 +667,15 @@ contains
     if (moold.ne.2) then
        ! ...... For all months but February
        if ((dyold.gt.mday(moold)).or.(dyold.lt.1)) then
-          print*, 'GETH_IDTS:  Day of ODATE = ', dyold
+          !print*, 'GETH_IDTS:  Day of ODATE = ', dyold
+          write(LIS_logunit,*) '[ERR] GETH_IDTS:  Day of ODATE = ', dyold
           opass = .false.
        end if
     else if (moold.eq.2) then
        ! ....... For February
        if ((dyold > nfeb(yrold)).or.(dyold < 1)) then
-          print*, 'GETH_IDTS:  Day of ODATE = ', dyold
+          !print*, 'GETH_IDTS:  Day of ODATE = ', dyold
+          write(LIS_logunit,*) '[ERR] GETH_IDTS:  Day of ODATE = ', dyold
           opass = .false.
        end if
     end if
@@ -649,53 +683,65 @@ contains
 !  Check that the hour of NDATE makes sense.
 
     if ((hrnew.gt.23).or.(hrnew.lt.0)) then
-       print*, 'GETH_IDTS:  Hour of NDATE = ', hrnew
+       !print*, 'GETH_IDTS:  Hour of NDATE = ', hrnew
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  Hour of NDATE = ', hrnew
        npass = .false.
     end if
 
 !  Check that the hour of ODATE makes sense.
 
     if ((hrold.gt.23).or.(hrold.lt.0)) then
-       print*, 'GETH_IDTS:  Hour of ODATE = ', hrold
+       !print*, 'GETH_IDTS:  Hour of ODATE = ', hrold
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  Hour of ODATE = ', hrold
        opass = .false.
     end if
 
 !  Check that the minute of NDATE makes sense.
 
     if ((minew.gt.59).or.(minew.lt.0)) then
-       print*, 'GETH_IDTS:  Minute of NDATE = ', minew
+       !print*, 'GETH_IDTS:  Minute of NDATE = ', minew
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  Minute of NDATE = ', minew
        npass = .false.
     end if
 
 !  Check that the minute of ODATE makes sense.
 
     if ((miold.gt.59).or.(miold.lt.0)) then
-       print*, 'GETH_IDTS:  Minute of ODATE = ', miold
+       !print*, 'GETH_IDTS:  Minute of ODATE = ', miold
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  Minute of ODATE = ', miold
        opass = .false.
     end if
 
 !  Check that the second of NDATE makes sense.
 
     if ((scnew.gt.59).or.(scnew.lt.0)) then
-       print*, 'GETH_IDTS:  SECOND of NDATE = ', scnew
+       !print*, 'GETH_IDTS:  SECOND of NDATE = ', scnew
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  SECOND of NDATE = ', scnew
        npass = .false.
     end if
 
 !  Check that the second of ODATE makes sense.
 
     if ((scold.gt.59).or.(scold.lt.0)) then
-       print*, 'GETH_IDTS:  Second of ODATE = ', scold
+       !print*, 'GETH_IDTS:  Second of ODATE = ', scold
+       write(LIS_logunit,*) '[ERR] GETH_IDTS:  Second of ODATE = ', scold
        opass = .false.
     end if
 
     if (.not. npass) then
-       print*, 'Screwy NDATE: ', ndate(1:nlen)
-       call abort()
+       !print*, 'Screwy NDATE: ', ndate(1:nlen)
+       write(LIS_logunit,*) '[ERR] Screwy NDATE: ', ndate(1:nlen)
+       !call abort()
+       write(abort_message(1),*) '[ERR] Screwy NDATE: ', ndate(1:nlen)
+       call LIS_abort(abort_message)
     end if
 
     if (.not. opass) then
-       print*, 'Screwy ODATE: ', odate(1:olen)
-       call abort()
+       !print*, 'Screwy ODATE: ', odate(1:olen)
+       write(LIS_logunit,*) '[ERR] Screwy ODATE: ', odate(1:olen)
+       !call abort()
+       write(abort_message(1),*) '[ERR] Screwy ODATE: ', odate(1:olen)
+       call LIS_abort(abort_message)
     end if
 
 !  Date Checks are completed.  Continue.
@@ -784,7 +830,7 @@ contains
     integer, intent(in) :: year ! Four-digit year
 
     nfeb = 28 ! By default, February has 28 days ...
-    if (mod(year,4).eq.0) then  
+    if (mod(year,4).eq.0) then
        nfeb = 29  ! But every four years, it has 29 days ...
        if (mod(year,100).eq.0) then
           nfeb = 28  ! Except every 100 years, when it has 28 days ...
@@ -806,7 +852,8 @@ contains
     character(len=*), intent(in) :: hdate
 
     integer :: year, month
-    integer, dimension(12), parameter :: ndays = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+    integer, dimension(12), parameter :: &
+         ndays = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
 
     if (hdate(5:5) == "-") then
        read(hdate(1:7), '(I4,1x,I2)') year, month
