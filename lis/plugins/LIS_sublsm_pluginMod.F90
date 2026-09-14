@@ -123,155 +123,160 @@ contains
     use LIS_pluginIndices
 
 #if ( defined SM_Crocus_8_1 )
-   use Crocus81_lsmMod, only : Crocus81_ini
+    use Crocus81_lsmMod, only : Crocus81_ini
 #endif
 
 #if ( defined SM_SNOWMODEL )
-   use snowmodel_lsmMod, only : snowmodel_init
+    use snowmodel_lsmMod, only : snowmodel_init
 #endif
 
-   implicit none
+    implicit none
 
 #if ( defined SM_Crocus_8_1 )
-   external Crocus81_main
-   external Crocus81_setup
-   external Crocus81_readrst
-   external Crocus81_f2t
-   external Crocus81_dynsetup
-   external Crocus81_writerst
-   external Crocus81_finalize
+    external Crocus81_main
+    external Crocus81_setup
+    external Crocus81_readrst
+    external Crocus81_f2t
+    external Crocus81_dynsetup
+    external Crocus81_writerst
+    external Crocus81_finalize
 
-   external Crocus81_setLSMimport
-   external Crocus81_getLSMexport
+    external Crocus81_setLSMimport
+    external Crocus81_getLSMexport
 
 #if ( defined SM_LSM_TEMPLATE )
-   external template_getCROCUSexport
-   external template_setCROCUSimport
+    external template_getCROCUSexport
+    external template_setCROCUSimport
 #endif
 
 #if ( defined SM_NOAHMP_4_0_1 )
-   external NoahMP401_getCROCUSexport
-   external NoahMP401_setCROCUSimport
+    external NoahMP401_getCROCUSexport
+    external NoahMP401_setCROCUSimport
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   external NoahMP50_getCROCUSexport
-   external NoahMP50_setCROCUSimport
+    external NoahMP50_getCROCUSexport
+    external NoahMP50_setCROCUSimport
 #endif
 
 #if ( defined SM_NOAH_3_9 )
-   external Noah39_getCROCUSexport
-   external Noah39_setCROCUSimport
+    external Noah39_getCROCUSexport
+    external Noah39_setCROCUSimport
 #endif
 
 #endif
 
 #if ( defined SM_SNOWMODEL )
-   external snowmodel_main
-   external snowmodel_setup
-   external snowmodel_readrst
-   external snowmodel_dynsetup
-   external snowmodel_f2t
-   external snowmodel_writerst
-   external snowmodel_finalize
-   external snowmodel_reset
+    external snowmodel_main
+    external snowmodel_setup
+    external snowmodel_readrst
+    external snowmodel_dynsetup
+    external snowmodel_f2t
+    external snowmodel_writerst
+    external snowmodel_finalize
+    external snowmodel_reset
 
-   external snowmodel_setLSMimport
-   external snowmodel_getLSMexport
+    external snowmodel_setLSMimport
+    external snowmodel_getLSMexport
 
 #if ( defined SM_NOAHMP_4_0_1 )
-   external NoahMP401_getSnowModelexport
-   external NoahMP401_setSnowModelimport
+    external NoahMP401_getSnowModelexport
+    external NoahMP401_setSnowModelimport
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   external NoahMP50_getSnowModelexport
-   external NoahMP50_setSnowModelimport
+    external NoahMP50_getSnowModelexport
+    external NoahMP50_setSnowModelimport
 #endif
 
 #endif
 
 #if ( defined SM_Crocus_8_1 )
-   call registersublsminit(trim(LIS_Crocus81Id)//char(0),Crocus81_ini)
-   call registersublsmsetup(trim(LIS_Crocus81Id)//char(0),Crocus81_setup)
-   call registersublsmf2t(trim(LIS_Crocus81Id)//"+"//&
-        trim(LIS_retroId)//char(0),Crocus81_f2t)
-   call registersublsmf2t(trim(LIS_Crocus81Id)//"+"//&
-        trim(LIS_agrmetrunId)//char(0),Crocus81_f2t)
-   call registersublsmrun(trim(LIS_Crocus81Id)//char(0),Crocus81_main)
-   call registersublsmrestart(trim(LIS_Crocus81Id)//char(0),Crocus81_readrst)
-   call registersublsmdynsetup(trim(LIS_Crocus81Id)//char(0),Crocus81_dynsetup)
-   call registersublsmwrst(trim(LIS_Crocus81Id)//char(0),Crocus81_writerst)
-   call registersublsmfinalize(trim(LIS_Crocus81Id)//char(0),Crocus81_finalize)
+    call registersublsminit(trim(LIS_Crocus81Id)//char(0),Crocus81_ini)
+    call registersublsmsetup(trim(LIS_Crocus81Id)//char(0),Crocus81_setup)
+    call registersublsmf2t(trim(LIS_Crocus81Id)//"+"//&
+         trim(LIS_retroId)//char(0),Crocus81_f2t)
+    call registersublsmf2t(trim(LIS_Crocus81Id)//"+"//&
+         trim(LIS_agrmetrunId)//char(0),Crocus81_f2t)
+    call registersublsmrun(trim(LIS_Crocus81Id)//char(0),Crocus81_main)
+    call registersublsmrestart(trim(LIS_Crocus81Id)//char(0),Crocus81_readrst)
+    call registersublsmdynsetup(trim(LIS_Crocus81Id)//char(0), &
+         Crocus81_dynsetup)
+    call registersublsmwrst(trim(LIS_Crocus81Id)//char(0),Crocus81_writerst)
+    call registersublsmfinalize(trim(LIS_Crocus81Id)//char(0), &
+         Crocus81_finalize)
 
    !wirings between NoahMP and CROCUS
-   call registersublsmsetLSMimport(trim(LIS_Crocus81Id)//char(0),&
-        Crocus81_setLSMimport)
+    call registersublsmsetLSMimport(trim(LIS_Crocus81Id)//char(0),&
+         Crocus81_setLSMimport)
 
 #if ( defined SM_NOAHMP_4_0_1 )
-   call registerlsm2sublsmgetexport(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_Crocus81Id)//char(0),NoahMP401_getCROCUSexport)
-   call registerlsmsetsublsmimport(trim(LIS_noahmp401Id)//char(0),&
-        NoahMP401_setCROCUSimport)
-   call registersublsm2lsmgetexport(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
+    call registerlsm2sublsmgetexport(trim(LIS_noahmp401Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),NoahMP401_getCROCUSexport)
+    call registerlsmsetsublsmimport(trim(LIS_noahmp401Id)//char(0),&
+         NoahMP401_setCROCUSimport)
+    call registersublsm2lsmgetexport(trim(LIS_noahmp401Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   call registerlsm2sublsmgetexport(trim(LIS_noahmp50Id)//"+"//&
-        trim(LIS_Crocus81Id)//char(0),NoahMP50_getCROCUSexport)
-   call registerlsmsetsublsmimport(trim(LIS_noahmp50Id)//char(0),&
-        NoahMP50_setCROCUSimport)
-   call registersublsm2lsmgetexport(trim(LIS_noahmp50Id)//"+"//&
-        trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
+    call registerlsm2sublsmgetexport(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),NoahMP50_getCROCUSexport)
+    call registerlsmsetsublsmimport(trim(LIS_noahmp50Id)//char(0),&
+         NoahMP50_setCROCUSimport)
+    call registersublsm2lsmgetexport(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
 
 #if ( defined SM_NOAH_3_9 )
-   call registerlsm2sublsmgetexport(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_Crocus81Id)//char(0),Noah39_getCROCUSexport)
-   call registerlsmsetsublsmimport(trim(LIS_noah39Id)//char(0),&
-        Noah39_setCROCUSimport)
-   call registersublsm2lsmgetexport(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
+    call registerlsm2sublsmgetexport(trim(LIS_noah39Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),Noah39_getCROCUSexport)
+    call registerlsmsetsublsmimport(trim(LIS_noah39Id)//char(0),&
+         Noah39_setCROCUSimport)
+    call registersublsm2lsmgetexport(trim(LIS_noah39Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
 
 #endif
 
 
 #if ( defined SM_SNOWMODEL )
-   call registersublsminit(trim(LIS_snowmodelId)//char(0),snowmodel_init)
-   call registersublsmsetup(trim(LIS_snowmodelId)//char(0),snowmodel_setup)
-   call registersublsmf2t(trim(LIS_snowmodelId)//"+"&
-        //trim(LIS_retroId)//char(0),snowmodel_f2t)
-   call registersublsmf2t(trim(LIS_snowmodelId)//"+"//&
-        trim(LIS_agrmetrunId)//char(0),snowmodel_f2t)
-   call registersublsmrun(trim(LIS_snowmodelId)//char(0),snowmodel_main)
-   call registersublsmrestart(trim(LIS_snowmodelId)//char(0),snowmodel_readrst)
-   call registersublsmdynsetup(trim(LIS_snowmodelId)//char(0),snowmodel_dynsetup)
-   call registersublsmwrst(trim(LIS_snowmodelId)//char(0),snowmodel_writerst)
-   call registersublsmfinalize(trim(LIS_snowmodelId)//char(0),snowmodel_finalize)
-   call registersublsmreset(trim(LIS_snowmodelId)//char(0),snowmodel_reset)
+    call registersublsminit(trim(LIS_snowmodelId)//char(0),snowmodel_init)
+    call registersublsmsetup(trim(LIS_snowmodelId)//char(0),snowmodel_setup)
+    call registersublsmf2t(trim(LIS_snowmodelId)//"+"&
+         //trim(LIS_retroId)//char(0),snowmodel_f2t)
+    call registersublsmf2t(trim(LIS_snowmodelId)//"+"//&
+         trim(LIS_agrmetrunId)//char(0),snowmodel_f2t)
+    call registersublsmrun(trim(LIS_snowmodelId)//char(0),snowmodel_main)
+    call registersublsmrestart(trim(LIS_snowmodelId)//char(0), &
+         snowmodel_readrst)
+    call registersublsmdynsetup(trim(LIS_snowmodelId)//char(0), &
+         snowmodel_dynsetup)
+    call registersublsmwrst(trim(LIS_snowmodelId)//char(0),snowmodel_writerst)
+    call registersublsmfinalize(trim(LIS_snowmodelId)//char(0), &
+         snowmodel_finalize)
+    call registersublsmreset(trim(LIS_snowmodelId)//char(0),snowmodel_reset)
 
-   ! Wirings between NoahMP and SnowModel
-   call registersublsmsetLSMimport(trim(LIS_snowmodelId)//char(0),&
-        Snowmodel_setLSMimport)
+    ! Wirings between NoahMP and SnowModel
+    call registersublsmsetLSMimport(trim(LIS_snowmodelId)//char(0),&
+         Snowmodel_setLSMimport)
 
 #if ( defined SM_NOAHMP_4_0_1 )
-   call registerlsm2sublsmgetexport(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_snowmodelId)//char(0),NoahMP401_getSnowModelexport)
-   call registerlsmsetsublsmimport(trim(LIS_noahmp401Id)//char(0),&
-        NoahMP401_setSnowModelimport)
-   call registersublsm2lsmgetexport(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
+    call registerlsm2sublsmgetexport(trim(LIS_noahmp401Id)//"+"//&
+         trim(LIS_snowmodelId)//char(0),NoahMP401_getSnowModelexport)
+    call registerlsmsetsublsmimport(trim(LIS_noahmp401Id)//char(0),&
+         NoahMP401_setSnowModelimport)
+    call registersublsm2lsmgetexport(trim(LIS_noahmp401Id)//"+"//&
+         trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   call registerlsm2sublsmgetexport(trim(LIS_noahmp50Id)//"+"//&
-        trim(LIS_snowmodelId)//char(0),NoahMP50_getSnowModelexport)
-   call registerlsmsetsublsmimport(trim(LIS_noahmp50Id)//char(0),&
-        NoahMP50_setSnowModelimport)
-   call registersublsm2lsmgetexport(trim(LIS_noahmp50Id)//"+"//&
-        trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
+    call registerlsm2sublsmgetexport(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_snowmodelId)//char(0),NoahMP50_getSnowModelexport)
+    call registerlsmsetsublsmimport(trim(LIS_noahmp50Id)//char(0),&
+         NoahMP50_setSnowModelimport)
+    call registersublsm2lsmgetexport(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
 #endif
 #endif
 
