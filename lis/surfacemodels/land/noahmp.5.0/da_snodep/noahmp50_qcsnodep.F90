@@ -92,7 +92,8 @@ subroutine noahmp50_qcsnodep(n, LSM_State)
 !Use the model's snow density from the previous timestep
      sndens = 0.0
      if(NoahMP50_struc(n)%noahmp50(t)%snowh.gt.0) then
-       sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv/NoahMP50_struc(n)%noahmp50(t)%snowh
+        sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv / &
+             NoahMP50_struc(n)%noahmp50(t)%snowh
      endif
 
 !If the update is unphysical, do not update.
