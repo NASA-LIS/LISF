@@ -54,11 +54,6 @@ subroutine noahmp50_setSnowModelimport(n, SubLSM2LSM_State)
      dsneqv = (swe(t)*1000.) - NoahMP50_struc(n)%noahmp50(t)%sneqv   !in mm
      dsnowh = snwd(t) - NoahMP50_struc(n)%noahmp50(t)%snowh  !in m
 
-!     if( dsneqv > 0. .or. dsnowh > 0. ) then
-!        write(501,*) t, swe(t), noahmp50_struc(n)%noahmp50(t)%sneqv, &
-!                        snwd(t), noahmp50_struc(n)%noahmp50(t)%snowh 
-!     endif
-
      ! Update NoahMP's Snow states:
      call noahmp50_snow_update(n, t, dsneqv, dsnowh)
 
