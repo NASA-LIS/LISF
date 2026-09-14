@@ -120,7 +120,7 @@ subroutine noahmp50_map_snodep(n,k,OBS_State,LSM_Incr_State)
         snodincr(t) = 0 
      endif
   enddo
-!  stop
+
   deallocate(obs_state_objs)
   deallocate(noahmp50_swe)
   deallocate(noahmp50_snod)
