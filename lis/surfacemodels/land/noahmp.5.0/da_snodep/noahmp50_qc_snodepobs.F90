@@ -63,7 +63,6 @@ subroutine noahmp50_qc_snodepobs(n,k,OBS_State)
        "ESMF_FieldGet failed in noahmp50_qc_snodepobs")
   
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
-     !stc1(t) = NoahMP50_struc(n)%noahmp50(t)%sstc(1) ! get snow/veg temp.
      stc1(t) = NoahMP50_struc(n)%noahmp50(t)%tslb(1) ! get snow/veg temp.
      vegt(t) = LIS_surface(n,1)%tile(t)%vegt
   enddo
@@ -77,21 +76,6 @@ subroutine noahmp50_qc_snodepobs(n,k,OBS_State)
        LIS_rc%lsm_index,stc1,stc1_obs)
   call LIS_convertPatchSpaceToObsSpace(n,k,&
        LIS_rc%lsm_index,vegt,vegt_obs)
-
-!  do t=1,LIS_rc%obs_ngrid(k)
-!     if(snowobs(t).ne.LIS_rc%udef) then 
-!        if(fveg_obs(t).gt.0.7) then 
-!           snowobs(t) = LIS_rc%udef        
-!       ! elseif(vegt_obs(t).le.4) then !forest types
-!       !    snowobs(t) = LIS_rc%udef
-!       !assume that snow will not form at 5 deg. celcius or higher ground temp. 
-!       elseif(tv_obs(t).ge.278.15) then 
-!           snowobs(t) = LIS_rc%udef
-!       elseif(stc1_obs(t).ge.278.15) then 
-!           snowobs(t) = LIS_rc%udef
-!        endif
-!     endif
-!  enddo
 
 end subroutine noahmp50_qc_snodepobs
 
