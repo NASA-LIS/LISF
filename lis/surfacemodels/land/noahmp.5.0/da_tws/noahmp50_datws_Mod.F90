@@ -18,7 +18,7 @@ module noahmp50_datws_Mod
 ! !REVISION HISTORY:
 !  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
-! !USES:        
+! !USES:
   use LIS_coreMod
 
   implicit none
@@ -34,7 +34,7 @@ module noahmp50_datws_Mod
   public :: noahmp50_dasm_struc
 !EOP
 
- type, public :: dasm_dec
+  type, public :: dasm_dec
      real,    allocatable       :: model_xrange(:,:,:)
      real,    allocatable       :: model_cdf(:,:,:)
      real,    allocatable       :: model_mu(:)
@@ -44,31 +44,28 @@ module noahmp50_datws_Mod
      integer                :: scal
 
   end type dasm_dec
-  
+
   type(dasm_dec), allocatable :: noahmp50_dasm_struc(:)
 
 contains
 !BOP
-! 
+!
 ! !ROUTINE: noahmp50_datws_init
 ! \label{noahmp50_datws_init}
-! 
+!
 ! !INTERFACE:
   subroutine noahmp50_datws_init(k)
 ! !USES:
-! !DESCRIPTION:        
+! !DESCRIPTION:
 !
 !EOP
-    
+
     implicit none
     integer                :: k
-    !integer                :: n 
-    !integer                :: status
-    !integer                :: ngrid
 
-    if(.not.allocated(noahmp50_dasm_struc)) then 
+    if(.not.allocated(noahmp50_dasm_struc)) then
        allocate(noahmp50_dasm_struc(LIS_rc%nnest))
     endif
-    
+
   end subroutine noahmp50_datws_init
 end module noahmp50_datws_Mod
