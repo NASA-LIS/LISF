@@ -14,8 +14,6 @@
 ! !REVISION HISTORY:
 !  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
-
-
 ! !INTERFACE:
 subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
 ! !USES:
@@ -26,14 +24,14 @@ subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
   use NoahMP50_peMod,  only : NoahMP50_pe_struc
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   type(ESMF_State)       :: DEC_State
   type(ESMF_State)       :: Feas_State
 !
 ! !DESCRIPTION:
-!  
-!  This routine assigns the decision space to NoahMP model variables. 
-! 
+!
+!  This routine assigns the decision space to NoahMP model variables.
+!
 !EOP
   integer                :: n
   real, pointer          :: vdata(:)
@@ -47,7 +45,7 @@ subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
   allocate(mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index)))
 
   mod_flag_NoahMP50 = 0
-    
+
   !set modflag based on bounds
   allocate(vdata(LIS_rc%npatch(n,LIS_rc%lsm_index)))
   do i=1,NoahMP50_pe_struc(n)%nparams
@@ -58,7 +56,7 @@ subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
         call NoahMP50_checkBounds(n,DEC_State,vname, vdata, mod_flag_NoahMP50)
      endif
   enddo
-  deallocate(vdata) 
+  deallocate(vdata)
 
   !update modflags based on constraints
   call NoahMP50_checkConstraints(n,DEC_State, mod_flag_NoahMP50)
@@ -71,11 +69,11 @@ subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
 end subroutine NoahMP50_set_pedecvars
 
 !BOP
-! 
-! !ROUTINE: randArray
-! \label{randArray}
 !
-! !INTERFACE: 
+! !ROUTINE: NoahMP50_getvardata
+! \label{NoahMP50_getvardata}
+!
+! !INTERFACE:
 subroutine NoahMP50_getvardata(n,DEC_State,vname, vdata, statusStateGet)
 ! !USES:
   use ESMF
@@ -83,31 +81,30 @@ subroutine NoahMP50_getvardata(n,DEC_State,vname, vdata, statusStateGet)
   use LIS_logMod,    only : LIS_verify
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer                :: n
   type(ESMF_State)       :: DEC_State
   character*100          :: vname
   real                   :: vdata(LIS_rc%npatch(n,LIS_rc%lsm_index))
 !
 ! !DESCRIPTION:
-!  
-!  This routine assigns the decision space to NoahMP model variables. 
-! 
+!
+!  This routine assigns the decision space to NoahMP model variables.
+!
 !EOP
   real, pointer          :: vardata(:)
   type(ESMF_Field)       :: varField
   integer                :: statusStateGet, statusFieldGet
-  
+
   call ESMF_StateGet(DEC_State,vname,varField,rc=statusStateGet)
-!  call LIS_verify(status)
-  
+
   if(statusStateGet.eq.0) then
      call ESMF_FieldGet(varField,localDE=0,farrayPtr=vardata,&
           rc=statusFieldGet)
      call LIS_verify(statusFieldGet)
      vdata=vardata
   endif
-  
+
 end subroutine NoahMP50_getvardata
 
 subroutine NoahMP50_checkBounds(n,DEC_State,vname, vardata, mod_flag_NoahMP50)
@@ -117,17 +114,17 @@ subroutine NoahMP50_checkBounds(n,DEC_State,vname, vardata, mod_flag_NoahMP50)
   use LIS_logMod,    only : LIS_verify
 
   implicit none
-! !ARGUMENTS: 
-  integer                :: n
-  type(ESMF_State)       :: DEC_State
-  character*100          :: vname
-  real                   :: vardata(LIS_rc%npatch(n,LIS_rc%lsm_index))
-  integer                :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
+! !ARGUMENTS:
+  integer               :: n
+  type(ESMF_State)      :: DEC_State
+  character*100         :: vname
+  real                  :: vardata(LIS_rc%npatch(n,LIS_rc%lsm_index))
+  integer               :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
 !
 ! !DESCRIPTION:
-!  
-!  This routine assigns the decision space to NoahMP model variables. 
-! 
+!
+!  This routine assigns the decision space to NoahMP model variables.
+!
 !EOP
   type(ESMF_Field)       :: varField
   real                   :: vardata_min, vardata_max
@@ -136,17 +133,17 @@ subroutine NoahMP50_checkBounds(n,DEC_State,vname, vardata, mod_flag_NoahMP50)
 
   call ESMF_StateGet(DEC_State,vname,varField,rc=status)
   call LIS_verify(status)
-  
+
   call ESMF_AttributeGet(varField,'MinRange',vardata_min,rc=status)
   call LIS_verify(status)
   call ESMF_AttributeGet(varField,'MaxRange',vardata_max,rc=status)
   call LIS_verify(status)
-  
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     if(vardata(t).lt.vardata_min) then 
+     if(vardata(t).lt.vardata_min) then
         mod_flag_NoahMP50(t) = 1
      endif
-     if(vardata(t).gt.vardata_max) then 
+     if(vardata(t).gt.vardata_max) then
         mod_flag_NoahMP50(t) = 1
      endif
   enddo
@@ -159,17 +156,16 @@ subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
   use NoahMP50_lsmMod, only : NoahMP50_struc
 
   implicit none
-! !ARGUMENTS: 
-  integer                :: n
-  type(ESMF_State)       :: DEC_State
-  integer                :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
+! !ARGUMENTS:
+  integer               :: n
+  type(ESMF_State)      :: DEC_State
+  integer               :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
 !
 ! !DESCRIPTION:
-!  
-!  This routine assigns the decision space to NoahMP model variables. 
-! 
+!
+!  This routine assigns the decision space to NoahMP model variables.
+!
 !EOP
-
 
   character*100          :: vname
   integer                :: t
@@ -227,7 +223,7 @@ subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
   if(status1.ne.0) vardata1=NoahMP50_struc(n)%noahmp50(:)%param%HVT
   if(status2.ne.0) vardata2=NoahMP50_struc(n)%noahmp50(:)%param%HVB
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     if(vardata1(t).lt.vardata2(t)) then ! SY: Note .lt. instead of .le., following some entries with HVT=HVB in MPTABLE_UMD.TBL
+     if(vardata1(t).lt.vardata2(t)) then
         mod_flag_NoahMP50(t) = 1
      endif
   enddo
@@ -240,11 +236,10 @@ subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
   if(status1.ne.0) vardata1=NoahMP50_struc(n)%noahmp50(:)%param%HVT
   if(status2.ne.0) vardata2=NoahMP50_struc(n)%noahmp50(:)%param%Z0MVT
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     if(vardata1(t).le.vardata2(t)) then 
+     if(vardata1(t).le.vardata2(t)) then
         mod_flag_NoahMP50(t) = 1
      endif
   enddo
-
 
   !HVT > Z0MVT
   vname='MNSNALB'
@@ -254,7 +249,7 @@ subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
   if(status1.ne.0) vardata1=NoahMP50_struc(n)%noahmp50(:)%param%MNSNALB
   if(status2.ne.0) vardata2=NoahMP50_struc(n)%noahmp50(:)%param%MXSNALB
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     if(vardata1(t).ge.vardata2(t)) then 
+     if(vardata1(t).ge.vardata2(t)) then
         mod_flag_NoahMP50(t) = 1
      endif
   enddo
@@ -272,7 +267,7 @@ subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      if((vardata3(t).gt.vardata2(t)).or.&
           (vardata2(t).gt.vardata1(t)).or.&
-          (vardata3(t).gt.vardata1(t))) then 
+          (vardata3(t).gt.vardata1(t))) then
         mod_flag_NoahMP50(t) = 1
      endif
   enddo
@@ -292,62 +287,63 @@ subroutine NoahMP50_setVars(n,DEC_State,mod_flag_NoahMP50)
   use NoahMP50_peMod,  only : NoahMP50_pe_struc
 
   implicit none
-! !ARGUMENTS: 
-  integer                :: n
-  integer                :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
-  type(ESMF_State)       :: DEC_State
+! !ARGUMENTS:
+  integer               :: n
+  integer               :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
+  type(ESMF_State)      :: DEC_State
 !
 ! !DESCRIPTION:
-!  
-!  This routine assigns the decision space to NoahMP model variables. 
-!  Only does so if the proposed parameter set is feasible (meets bounds and constraints)
-! 
+!
+!  This routine assigns the decision space to NoahMP model variables.
+!  Only does so if the proposed parameter set is feasible (meets bounds and
+!  constraints)
+!
 !EOP
   real                   :: vardata(LIS_rc%npatch(n,LIS_rc%lsm_index))
   character*100          :: vname
   integer                :: i,t, status
 
   do i=1,NoahMP50_pe_struc(n)%nparams
-     if(NoahMP50_pe_struc(n)%param_select(i).eq.1) then 
+     if(NoahMP50_pe_struc(n)%param_select(i).eq.1) then
         vname=trim(NoahMP50_pe_struc(n)%param_name(i))
         call NoahMP50_getvardata(n,DEC_State,vname,vardata, status)
         call LIS_verify(status)
         do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-           if(mod_flag_NoahMP50(t).eq.0) then 
+           if(mod_flag_NoahMP50(t).eq.0) then
               if(vname.eq."TOPT") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%topt   = vardata(t) 
-              if(vname.eq."RGL") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%rgl    = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%topt   = vardata(t)
+              if(vname.eq."RGL") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%rgl    = vardata(t)
               if(vname.eq."RSMAX") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%rsmax  = vardata(t) 
-              if(vname.eq."RSMIN") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%rsmin  = vardata(t) 
-              if(vname.eq."HS") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%hs     = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%rsmax  = vardata(t)
+              if(vname.eq."RSMIN") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%rsmin  = vardata(t)
+              if(vname.eq."HS") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%hs     = vardata(t)
               if(vname.eq."NROOT") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%nroot  = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%nroot  = vardata(t)
               if(vname.eq."CSOIL") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%csoil  = vardata(t) 
-              if(vname.eq."BEXP") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%bexp   = vardata(t) 
-              if(vname.eq."DKSAT") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%dksat  = vardata(t) 
-              if(vname.eq."DWSAT") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%dwsat  = vardata(t) 
-              if(vname.eq."PSISAT") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%psisat = vardata(t) 
-              if(vname.eq."QUARTZ") & 
-                   NoahMP50_struc(n)%noahmp50(t)%param%quartz = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%csoil  = vardata(t)
+              if(vname.eq."BEXP") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%bexp   = vardata(t)
+              if(vname.eq."DKSAT") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%dksat  = vardata(t)
+              if(vname.eq."DWSAT") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%dwsat  = vardata(t)
+              if(vname.eq."PSISAT") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%psisat = vardata(t)
+              if(vname.eq."QUARTZ") &
+                   NoahMP50_struc(n)%noahmp50(t)%param%quartz = vardata(t)
               if(vname.eq."SMCMAX") &
                    NoahMP50_struc(n)%noahmp50(t)%param%smcmax = vardata(t)
               if(vname.eq."SMCREF") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%smcref = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%smcref = vardata(t)
               if(vname.eq."SMCWLT") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%smcwlt = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%smcwlt = vardata(t)
               if(vname.eq."CZIL") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%czil   = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%czil   = vardata(t)
               if(vname.eq."SLOPE") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%slope  = vardata(t) 
+                   NoahMP50_struc(n)%noahmp50(t)%param%slope  = vardata(t)
               if(vname.eq."CH2OP") &
                    NoahMP50_struc(n)%noahmp50(t)%param%CH2OP  = vardata(t)
               if(vname.eq."DLEAF") &
@@ -407,7 +403,8 @@ subroutine NoahMP50_setVars(n,DEC_State,mod_flag_NoahMP50)
               if(vname.eq."T_LLIMIT") &
                    NoahMP50_struc(n)%noahmp50(t)%param%T_LLIMIT   = vardata(t)
               if(vname.eq."SNOWF_SCALEF") &
-                   NoahMP50_struc(n)%noahmp50(t)%param%snowf_scalef = vardata(t)              
+                   NoahMP50_struc(n)%noahmp50(t)%param%snowf_scalef = &
+                   vardata(t)
               if(vname.eq."RHOL1") &
                    NoahMP50_struc(n)%noahmp50(t)%param%RHOL(1) = vardata(t)
               if(vname.eq."RHOL2") &
@@ -493,16 +490,16 @@ subroutine NoahMP50_setModFlag(n,DEC_State,Feas_State,mod_flag_NoahMP50)
   use LIS_logMod,    only : LIS_verify
 
   implicit none
-! !ARGUMENTS: 
-  integer                :: n
-  integer                :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
-  type(ESMF_State)       :: DEC_State
-  type(ESMF_State)       :: Feas_State
+! !ARGUMENTS:
+  integer               :: n
+  integer               :: mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index))
+  type(ESMF_State)      :: DEC_State
+  type(ESMF_State)      :: Feas_State
 !
 ! !DESCRIPTION:
-!  
+!
 !  This routine sets the feasibility flag
-! 
+!
 !EOP
   type(ESMF_Field)       :: feasField
   integer                :: t
@@ -515,7 +512,7 @@ subroutine NoahMP50_setModFlag(n,DEC_State,Feas_State,mod_flag_NoahMP50)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     if(mod_flag_NoahMP50(t).eq.1) then 
+     if(mod_flag_NoahMP50(t).eq.1) then
         modflag(t)=1
      endif
   enddo
