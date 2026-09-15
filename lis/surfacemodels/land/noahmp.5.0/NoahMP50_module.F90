@@ -18,7 +18,7 @@ module NoahMP50_module
 !  data structure containing the NoahMP 1-d variables (for v5.0 and later).
 !  The variables specified in the data structure include:
 !
-!  \begin{description}      
+!  \begin{description}
 !   \item[n]
 !     nest id. unit: -
 !   \item[latitude]
@@ -50,7 +50,7 @@ module NoahMP50_module
 !   \item[soiltype]
 !     soil type. unit: -
 !   \item[shdfac\_monthly]
-!     monthly values for green vegetation fraction. unit: 
+!     monthly values for green vegetation fraction. unit:
 !   \item[tbot]
 !     deep soil temperature. unit: K
 !   \item[urban\_vegetype]
@@ -357,216 +357,204 @@ module NoahMP50_module
 !  05/01/23: Cenlin He, update to work with refactored Noah-MP (v5.0 and later)
 
 !EOP
-   USE LisNoahmpParamType
+  USE LisNoahmpParamType
 
-    implicit none
+  implicit none
 
-    INTEGER, PRIVATE, PARAMETER :: MBAND = 2
-    INTEGER, PRIVATE, PARAMETER :: NSOIL = 4
-    INTEGER, PRIVATE, PARAMETER :: NSTAGE = 8
+  INTEGER, PRIVATE, PARAMETER :: MBAND = 2
+  INTEGER, PRIVATE, PARAMETER :: NSOIL = 4
+  INTEGER, PRIVATE, PARAMETER :: NSTAGE = 8
 
-    type, public :: noahmp50dec
-        !------------------------------------------------------
-        ! forcing
-        !------------------------------------------------------
-        real               :: tair
-        real               :: sfctmp    ! for snow DA
-        real               :: psurf
-        real               :: wind_e
-        real               :: wind_n
-        real               :: qair
-        real               :: swdown
-        real               :: lwdown
-        real               :: prcp
-        !--------------------------------------------------------
-        ! spatial parameter
-        !--------------------------------------------------------
-        integer            :: vegetype
-        integer            :: soiltype
-        real               :: tbot
-        real               :: planting
-        real               :: harvest
-        real               :: season_gdd
-        real               :: soilcL1
-        real               :: soilcL2
-        real               :: soilcL3
-        real               :: soilcL4
-        !----------------------------------------------------------
-        ! multilevel spatial parameter
-        !----------------------------------------------------------
-        real, pointer      :: shdfac_monthly(:)
-        real, pointer      :: soilcomp(:)
-        !----------------------------------------------------------
-        ! state
-        !----------------------------------------------------------
-        real               :: sfcrunoff
-        real               :: udrrunoff
-        real, pointer      :: smc(:)
-        real, pointer      :: sh2o(:)
-        real, pointer      :: tslb(:)
-        real               :: sneqv
-        real               :: snowh
-        real               :: canwat
-        real               :: acsnom
-        real               :: acsnow
-        integer            :: isnow
-        real               :: tv
-        real               :: tg
-        real               :: canice
-        real               :: canliq
-        real               :: eah
-        real               :: tah
-        real               :: cm
-        real               :: ch
-        real               :: fwet
-        real               :: sneqvo
-        real               :: albold
-        real               :: qsnow
-        real               :: wslake
-        real               :: zwt
-        real               :: wa
-        real               :: wt
-        real, pointer      :: tsno(:)
-        real, pointer      :: zss(:)
-        real, pointer      :: snowice(:)
-        real, pointer      :: snowliq(:)
-        real               :: lfmass
-        real               :: rtmass
-        real               :: stmass
-        real               :: wood
-        real               :: stblcp
-        real               :: fastcp
-        real               :: lai
-        real               :: sai
-        real               :: tauss
-        real               :: grain
-        real               :: gdd
-        integer            :: pgs
-        ! for mmf groundwater
-        real, pointer      :: smoiseq(:)
-        real               :: smcwtd
-        real               :: deeprech
-        real               :: rech
-        real               :: pexp
-        real               :: area
-        real               :: qrf
-        real               :: qspring
-        real               :: qslat
-        real               :: qrfs
-        real               :: qsprings
-        real               :: fdepth
-        real               :: rivercond
-        real               :: riverbed
-        real               :: eqzwt
-        real               :: rechclim
-        real               :: rivermask
-        real               :: nonriver
-        ! for irrigation
-        integer            :: irnumsi
-        integer            :: irnummi
-        integer            :: irnumfi
-        real               :: irfract
-        real               :: sifract
-        real               :: mifract
-        real               :: fifract
-        real               :: irwatsi
-        real               :: irwatmi
-        real               :: irwatfi
-        real               :: ireloss
-        real               :: irrsplh
-        real               :: irsivol
-        real               :: irmivol
-        real               :: irfivol
-        ! for tile drainage
-        real               :: tdfract
-        real               :: qtdrain
-        real               :: qtdrainflx
-        ! for water budget with different soil time step
-        real               :: accssoil
-        real               :: accqinsur
-        real               :: accqseva
-        real, pointer      :: accetrani(:)
-        real               :: accdwater
-        real               :: accprcp
-        real               :: accecan
-        real               :: accetran
-        real               :: accedir
-        ! 2-way coupling parameters
-        real               :: rivsto
-        real               :: fldsto
-        real               :: fldfrc
+  type, public :: noahmp50dec
+     ! forcing
+     real               :: tair
+     real               :: sfctmp    ! for snow DA
+     real               :: psurf
+     real               :: wind_e
+     real               :: wind_n
+     real               :: qair
+     real               :: swdown
+     real               :: lwdown
+     real               :: prcp
+     ! spatial parameter
+     integer            :: vegetype
+     integer            :: soiltype
+     real               :: tbot
+     real               :: planting
+     real               :: harvest
+     real               :: season_gdd
+     real               :: soilcL1
+     real               :: soilcL2
+     real               :: soilcL3
+     real               :: soilcL4
+     ! multilevel spatial parameter
+     real, pointer      :: shdfac_monthly(:)
+     real, pointer      :: soilcomp(:)
+     ! state
+     real               :: sfcrunoff
+     real               :: udrrunoff
+     real, pointer      :: smc(:)
+     real, pointer      :: sh2o(:)
+     real, pointer      :: tslb(:)
+     real               :: sneqv
+     real               :: snowh
+     real               :: canwat
+     real               :: acsnom
+     real               :: acsnow
+     integer            :: isnow
+     real               :: tv
+     real               :: tg
+     real               :: canice
+     real               :: canliq
+     real               :: eah
+     real               :: tah
+     real               :: cm
+     real               :: ch
+     real               :: fwet
+     real               :: sneqvo
+     real               :: albold
+     real               :: qsnow
+     real               :: wslake
+     real               :: zwt
+     real               :: wa
+     real               :: wt
+     real, pointer      :: tsno(:)
+     real, pointer      :: zss(:)
+     real, pointer      :: snowice(:)
+     real, pointer      :: snowliq(:)
+     real               :: lfmass
+     real               :: rtmass
+     real               :: stmass
+     real               :: wood
+     real               :: stblcp
+     real               :: fastcp
+     real               :: lai
+     real               :: sai
+     real               :: tauss
+     real               :: grain
+     real               :: gdd
+     integer            :: pgs
+     ! for mmf groundwater
+     real, pointer      :: smoiseq(:)
+     real               :: smcwtd
+     real               :: deeprech
+     real               :: rech
+     real               :: pexp
+     real               :: area
+     real               :: qrf
+     real               :: qspring
+     real               :: qslat
+     real               :: qrfs
+     real               :: qsprings
+     real               :: fdepth
+     real               :: rivercond
+     real               :: riverbed
+     real               :: eqzwt
+     real               :: rechclim
+     real               :: rivermask
+     real               :: nonriver
+     ! for irrigation
+     integer            :: irnumsi
+     integer            :: irnummi
+     integer            :: irnumfi
+     real               :: irfract
+     real               :: sifract
+     real               :: mifract
+     real               :: fifract
+     real               :: irwatsi
+     real               :: irwatmi
+     real               :: irwatfi
+     real               :: ireloss
+     real               :: irrsplh
+     real               :: irsivol
+     real               :: irmivol
+     real               :: irfivol
+     ! for tile drainage
+     real               :: tdfract
+     real               :: qtdrain
+     real               :: qtdrainflx
+     ! for water budget with different soil time step
+     real               :: accssoil
+     real               :: accqinsur
+     real               :: accqseva
+     real, pointer      :: accetrani(:)
+     real               :: accdwater
+     real               :: accprcp
+     real               :: accecan
+     real               :: accetran
+     real               :: accedir
+     ! 2-way coupling parameters
+     real               :: rivsto
+     real               :: fldsto
+     real               :: fldfrc
+     ! output
+     real               :: tsk
+     real               :: hfx
+     real               :: qfx
+     real               :: lh
+     real               :: grdflx
+     real               :: albedo
+     real               :: snowc
+     real               :: emiss
+     real               :: rs
+     real               :: t2mv
+     real               :: t2mb
+     real               :: q2mv
+     real               :: q2mb
+     real               :: trad
+     real               :: nee
+     real               :: gpp
+     real               :: npp
+     real               :: fveg
+     real               :: runsf
+     real               :: runsb
+     real               :: ecan
+     real               :: edir
+     real               :: etran
+     real               :: rainf
+     real               :: snowf
+     real               :: fsa
+     real               :: fira
+     real               :: apar
+     real               :: psn
+     real               :: sav
+     real               :: sag
+     real               :: rssun
+     real               :: rssha
+     real               :: bgap
+     real               :: wgap
+     real               :: tgb
+     real               :: tgv
+     real               :: chv
+     real               :: chb
+     real               :: shg
+     real               :: shc
+     real               :: shb
+     real               :: evg
+     real               :: evb
+     real               :: ghv
+     real               :: ghb
+     real               :: irg
+     real               :: irc
+     real               :: irb
+     real               :: tr
+     real               :: evc
+     real               :: chleaf
+     real               :: chuc
+     real               :: chv2
+     real               :: chb2
 
-        !-------------------------------------------------------
-        ! output
-        !-------------------------------------------------------
-        real               :: tsk
-!       real               :: fsh
-        real               :: hfx
-        real               :: qfx
-        real               :: lh
-        real               :: grdflx
-        real               :: albedo
-        real               :: snowc
-        real               :: emiss
-        real               :: rs
-        real               :: t2mv
-        real               :: t2mb
-        real               :: q2mv
-        real               :: q2mb
-        real               :: trad
-        real               :: nee
-        real               :: gpp
-        real               :: npp
-        real               :: fveg
-        real               :: runsf
-        real               :: runsb
-        real               :: ecan
-        real               :: edir
-        real               :: etran
-        real               :: rainf
-        real               :: snowf
-        real               :: fsa
-        real               :: fira
-        real               :: apar
-        real               :: psn
-        real               :: sav
-        real               :: sag
-        real               :: rssun
-        real               :: rssha
-        real               :: bgap
-        real               :: wgap
-        real               :: tgb
-        real               :: tgv
-        real               :: chv
-        real               :: chb
-        real               :: shg
-        real               :: shc
-        real               :: shb
-        real               :: evg
-        real               :: evb
-        real               :: ghv
-        real               :: ghb
-        real               :: irg
-        real               :: irc
-        real               :: irb
-        real               :: tr
-        real               :: evc
-        real               :: chleaf
-        real               :: chuc
-        real               :: chv2
-        real               :: chb2
+     !for 557WW
+     real :: tair_agl_min
+     real :: rhmin
 
-        !for 557WW
-        real :: tair_agl_min
-        real :: rhmin
+     type(LisNoahmpParam_type) :: param
 
-        type(LisNoahmpParam_type) :: param
+     ! For WRF-HYDRO
+     real               :: sfcheadrt
+     real               :: infxs1rt
+     real               :: soldrain1rt
 
-        ! For WRF-HYDRO
-	real               :: sfcheadrt
-	real               :: infxs1rt
-	real               :: soldrain1rt
- 
-    end type noahmp50dec
+  end type noahmp50dec
 
 end module NoahMP50_module
