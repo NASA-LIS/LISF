@@ -1,7 +1,8 @@
 #!jinja2
-{% set SCRATCH_ROOT = '/lustre/typhoon/nwp601/proj-shared/[username]/LISV7.8RP3_test/scratch/202510' %}
-{% set PYTHONPATH_ROOT = '/lustre/typhoon/nwp601/proj-shared/[username]/LISF78p3_src/lis/utils/usaf/S2S/' %}
-{% set MODULEPATH_ROOT = '/lustre/typhoon/nwp601/proj-shared/[username]/LISF78p3_src/env/hpc11/' %}
+{% set SCRATCH_ROOT = '<PROJECT_ROOT>/[username]/LISV7.8RP3_test/scratch/202510' %}
+{% set PYTHONPATH_ROOT = '<PROJECT_ROOT>/[username]/LISF78p3_src/lis/utils/usaf/S2S/' %}
+{% set MODULEPATH_ROOT = '<PROJECT_ROOT>/[username]/LISF78p3_src/env/hpc11/' %}
+{% set USER_CACHE_DIR = '"//<USER_SCRATCH>/[username]//ghis2s_python_cache_$$"' %}
 
 # S2S Forecast Workflow
   
@@ -153,7 +154,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=ldtics_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_regrid_01_run]]
@@ -176,7 +177,7 @@
             SCRIPT_NAME=mf_regrid_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=1
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_regrid_02_run]]
@@ -199,7 +200,7 @@
             SCRIPT_NAME=mf_regrid_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=1
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_regrid_03_run]]
@@ -222,7 +223,7 @@
             SCRIPT_NAME=mf_regrid_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=1
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_regrid_04_run]]
@@ -245,7 +246,7 @@
             SCRIPT_NAME=mf_regrid_04_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=1
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_regrid_05_run]]
@@ -268,7 +269,7 @@
             SCRIPT_NAME=mf_regrid_05_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=1
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_regrid_06_run]]
@@ -291,7 +292,7 @@
             SCRIPT_NAME=mf_regrid_06_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=1
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_regrid_run]]
@@ -313,7 +314,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=pr_regrid_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_biascorr_01_run]]
@@ -336,7 +337,7 @@
             SCRIPT_NAME=mf_biascorr_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_biascorr_02_run]]
@@ -359,7 +360,7 @@
             SCRIPT_NAME=mf_biascorr_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_biascorr_03_run]]
@@ -382,7 +383,7 @@
             SCRIPT_NAME=mf_biascorr_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_biascorr_04_run]]
@@ -405,7 +406,7 @@
             SCRIPT_NAME=mf_biascorr_04_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_biascorr_05_run]]
@@ -428,7 +429,7 @@
             SCRIPT_NAME=mf_biascorr_05_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_biascorr_06_run]]
@@ -451,7 +452,7 @@
             SCRIPT_NAME=mf_biascorr_06_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_biascorr_07_run]]
@@ -474,7 +475,7 @@
             SCRIPT_NAME=mf_biascorr_07_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_tempdis_01_run]]
@@ -497,7 +498,7 @@
             SCRIPT_NAME=mf_tempdis_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=12
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[mf_tempdis_02_run]]
@@ -520,7 +521,7 @@
             SCRIPT_NAME=mf_tempdis_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=12
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_biascorr_01_run]]
@@ -543,7 +544,7 @@
             SCRIPT_NAME=pr_biascorr_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_biascorr_02_run]]
@@ -566,7 +567,7 @@
             SCRIPT_NAME=pr_biascorr_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_biascorr_03_run]]
@@ -589,7 +590,7 @@
             SCRIPT_NAME=pr_biascorr_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_biascorr_04_run]]
@@ -612,7 +613,7 @@
             SCRIPT_NAME=pr_biascorr_04_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_biascorr_05_run]]
@@ -635,7 +636,7 @@
             SCRIPT_NAME=pr_biascorr_05_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=120
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_tempdis_01_run]]
@@ -658,7 +659,7 @@
             SCRIPT_NAME=pr_tempdis_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=15
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_tempdis_02_run]]
@@ -681,7 +682,7 @@
             SCRIPT_NAME=pr_tempdis_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=15
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[pr_tempdis_03_run]]
@@ -704,7 +705,7 @@
             SCRIPT_NAME=pr_tempdis_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=15
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[combine_files_run]]
@@ -727,7 +728,7 @@
             SCRIPT_NAME=combine_files_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=12
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[lis_fcst_CanESM5_00_run]]
@@ -1057,7 +1058,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_02_run]]
@@ -1079,7 +1080,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_01_run]]
@@ -1101,7 +1102,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_02_run]]
@@ -1123,7 +1124,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_03_run]]
@@ -1145,7 +1146,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_04_run]]
@@ -1167,7 +1168,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_04_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_05_run]]
@@ -1189,7 +1190,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_05_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_06_run]]
@@ -1211,7 +1212,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_06_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_07_run]]
@@ -1233,7 +1234,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_07_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_08_run]]
@@ -1255,7 +1256,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_08_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_09_run]]
@@ -1277,7 +1278,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_09_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_10_run]]
@@ -1299,7 +1300,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_10_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_11_run]]
@@ -1321,7 +1322,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_11_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_mon_12_run]]
@@ -1343,7 +1344,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_mon_12_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_weekly_01_run]]
@@ -1365,7 +1366,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_weekly_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_weekly_02_run]]
@@ -1387,7 +1388,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_weekly_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2spost_weekly_03_run]]
@@ -1409,7 +1410,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2spost_weekly_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_01_run]]
@@ -1432,7 +1433,7 @@
             SCRIPT_NAME=s2smetric_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_02_run]]
@@ -1455,7 +1456,7 @@
             SCRIPT_NAME=s2smetric_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_03_run]]
@@ -1478,7 +1479,7 @@
             SCRIPT_NAME=s2smetric_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_04_run]]
@@ -1501,7 +1502,7 @@
             SCRIPT_NAME=s2smetric_04_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_05_run]]
@@ -1524,7 +1525,7 @@
             SCRIPT_NAME=s2smetric_05_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_weekly_01_run]]
@@ -1547,7 +1548,7 @@
             SCRIPT_NAME=s2smetric_weekly_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_weekly_02_run]]
@@ -1570,7 +1571,7 @@
             SCRIPT_NAME=s2smetric_weekly_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_weekly_03_run]]
@@ -1593,7 +1594,7 @@
             SCRIPT_NAME=s2smetric_weekly_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_weekly_04_run]]
@@ -1616,7 +1617,7 @@
             SCRIPT_NAME=s2smetric_weekly_04_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_weekly_05_run]]
@@ -1639,7 +1640,7 @@
             SCRIPT_NAME=s2smetric_weekly_05_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_tiff_run]]
@@ -1662,7 +1663,7 @@
             SCRIPT_NAME=s2smetric_tiff_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2smetric_weekly_tiff_run]]
@@ -1685,7 +1686,7 @@
             SCRIPT_NAME=s2smetric_weekly_tiff_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=16
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2splots_01_run]]
@@ -1707,7 +1708,7 @@
             PYTHONPATH={{ PYTHONPATH_ROOT }}
             SCRIPT_NAME=s2splots_01_run.j
             HDF5_USE_FILE_LOCKING=FALSE
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2splots_02_run]]
@@ -1730,7 +1731,7 @@
             SCRIPT_NAME=s2splots_02_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=7
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2splots_03_run]]
@@ -1753,7 +1754,7 @@
             SCRIPT_NAME=s2splots_03_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=7
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2splots_04_run]]
@@ -1776,7 +1777,7 @@
             SCRIPT_NAME=s2splots_04_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=5
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"
     [[s2splots_05_run]]
@@ -1799,6 +1800,6 @@
             SCRIPT_NAME=s2splots_05_run.j
             HDF5_USE_FILE_LOCKING=FALSE
             NUM_WORKERS=7
-            USER_CACHE_DIR="//lustre/typhoon/nwp601/scratch/[username]//ghis2s_python_cache_$$"
+            USER_CACHE_DIR={{ USER_CACHE_DIR }}
             MPLCONFIGDIR="$USER_CACHE_DIR"
             XDG_CACHE_HOME="$USER_CACHE_DIR"

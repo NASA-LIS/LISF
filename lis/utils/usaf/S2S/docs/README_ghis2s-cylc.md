@@ -4,14 +4,14 @@
 
 **E2ESDIR**: The GHI-S2S forecast directory where S2S forecasts reside and are run  
 **GHIS2S**: GHI-S2S software system developed by the LIS team  
-**GHIREPOS**: Operational software developed by 16 WS  
+**OPERATIONAL_FRAMEWORK**: Operational software developed by downstream users  
 **LISFDIR**: The path to LISF installation  
 
 ![GHI-S2S Workflow Diagram](https://github.com/NASA-LIS/LISF/blob/support/lisf-557ww-7.8/lis/utils/usaf/S2S/docs/workflow.png)
-**Figure Caption**: This figure depicts the information flow in GHIREPOS/ghis2s_program.py coupled with GHI-S2S, along with the output E2ES directory tree. The embedded Cylc-generated workflow graph illustrates the complexity of the end-to-end (E2E) GHI-S2S forecast system, which involves 7 main steps (LISDA, LDT-ICS, BCSD, FCST, S2SPOST, S2SMETRICS, and S2SPLOTS) executed on a predefined schedule. To maintain organization, each month's forecast-related scripts and links are created in the scratch/YYYYMM/ directory (see lower-right part of the flowchart), keeping the main E2ESDIR clean and tidy.
+**Figure Caption**: This figure depicts the information flow in OPERATIONAL_FRAMEWORK/ghis2s_program.py coupled with GHI-S2S, along with the output E2ES directory tree. The embedded Cylc-generated workflow graph illustrates the complexity of the end-to-end (E2E) GHI-S2S forecast system, which involves 7 main steps (LISDA, LDT-ICS, BCSD, FCST, S2SPOST, S2SMETRICS, and S2SPLOTS) executed on a predefined schedule. To maintain organization, each month's forecast-related scripts and links are created in the scratch/YYYYMM/ directory (see lower-right part of the flowchart), keeping the main E2ESDIR clean and tidy.
 
 # (1) The ghis2s Python Package
-We present `ghis2s` as a Python package that can be efficiently coupled with the GHIREPOS operational software at the 16 WS. The core component is the [*s2s_run.py*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py) Python module -- the main script containing `S2Srun` class.
+We present `ghis2s` as a Python package that can be efficiently coupled with the OPERATIONAL_FRAMEWORK operational software of downstream users. The core component is the [*s2s_run.py*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py) Python module -- the main script containing `S2Srun` class.
 
 ## Configuration
 
@@ -49,7 +49,7 @@ These methods correspond to the 7 main steps of the end-to-end forecast process.
 
 ## Integration
 
-The `ghis2s` Python package includes a supplementary program, [**ghis2s_program.py**](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/cylc_script/ghis2s_program.py), designed to couple GHI-S2S with the GHIREPOS systems and scripts. This program is provided by the LIS team as a foundation for GHIREPOS integration, with 16 WS personnel free to edit, update, and customize it according to their operational requirements.
+The `ghis2s` Python package includes a supplementary program, [**ghis2s_program.py**](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/cylc_script/ghis2s_program.py), designed to couple GHI-S2S with the OPERATIONAL_FRAMEWORK systems and scripts. This program is provided by the LIS team as a foundation for OPERATIONAL_FRAMEWORK integration, with downstream users free to edit, update, and customize it according to their operational requirements.
 
 ## Command Line Usage
 
@@ -63,7 +63,7 @@ s2s_run.py -y YYYY -m M -c CONFIG_FILE
 ```
 s2s_run.py -y YYYY -m M -c CONFIG_FILE -j
 ```
-# (2) GHIREPOS-GHIS2S coupler: ghis2s_program.py 
+# (2) OPERATIONAL_FRAMEWORK-GHIS2S coupler: ghis2s_program.py 
 
 ## Program input environment variables
 
@@ -75,8 +75,8 @@ s2s_run.py -y YYYY -m M -c CONFIG_FILE -j
 - **"USER_EMAIL"**: (str, email_address)
 - **"S2S_STEP"**: (str, "E2E", )
 - **"ONE_STEP"**: (bool, False)
-- **"PF_SLURM"**: (str, "slurm-ghi") name of the slurm platform in global.cylc
-- **"PF_LHOST"**: (str, "localhost-ghi") name of the localhost platform in global.cylc
+- **"PF_SLURM"**: (str, "<SLURM_PLATFORM_PROFILE>”) name of the slurm platform in global.cylc
+- **"PF_LHOST"**: (str, "<LOCALHOST_PLATFORM_PROFILE>") name of the localhost platform in global.cylc
 
 ### Acceptable keys for S2S_STEP:
 - `E2E`: end-to-end S2S forecast
@@ -109,7 +109,7 @@ This redirects the Cylc workflow logs to the **E2ESDIR/scratch/YYYYMM/cylc_{S2S_
 
 As shown in the figure above, the end-to-end S2S forecast involves more than 150 tasks, each generating a very large number log files, given that the multiple processors write concurrent output within loops. Additionally, Cylc's native log files do not contain enough meaningful information about the underlying tasks being performed. 
 
-To address this, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file found at **SCRATCH/YYYYMM/ghis2s_main.log** [see example here](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/docs/ghis2s_main.log_example). This centralized log file can be easily integrated with monitoring dashboards like **SPLUNK** to track the forecast run progression in real-time.
+To address this, a dedicated Cylc monitoring stream is configured to run every 15 minutes, scanning all log files generated up to that point and consolidating them into an organized main log file found at **SCRATCH/YYYYMM/ghis2s_main.log**. This centralized log file can be easily integrated with monitoring dashboards like **enterprise log analysis and monitoring dashboards** to track the forecast run progression in real-time.
 
 ## Log Monitoring Workflow
 
@@ -127,7 +127,7 @@ The robust design of the ghis2s package enables recovery from workflow failures 
 
 ## Scenario: CESM1 Timeout Recovery
 
-During the October 2025 forecast, the LIS_FCST step for CESM1 exceeded its allocated 6-hour walltime limit. By this point, the LISDA, LDTICS, and BCSD steps had completed successfully, along with the LIS_FCST step for the other 5 NMME models. The following recovery procedure allows resuming the forecast from the point of failure.
+For example: Suppose during October 2025 forecast, the LIS_FCST step for CESM1 exceeded its allocated 6-hour walltime limit. By this point, the LISDA, LDTICS, and BCSD steps had completed successfully, along with the LIS_FCST step for the other 5 NMME models. The following recovery procedure allows resuming the forecast from the point of failure.
 
 ### Step 1: Reconfigure for Failed Model
 Modify the configuration to isolate and optimize the failed model:
@@ -223,14 +223,12 @@ Note that the **ghis2s Cylc** implementation does **NOT** utilize Cylc’s built
 Yes and no.  
   
 While the shell scripts (*.sh) avoid hardcoded SLURM directives, certain tasks benefit significantly from using SLURM’s **srun** for resource allocation. For example, Python tasks that use multiprocessing perform better when invoked as:  
-```srun --exclusive --cpus-per-task=5 --ntasks 1 python script.py```  
+```srun .... python script.py```  
 
 This approach has been more effective than using Cylc’s native mechanisms in such cases.  
 That said, ghis2s includes a feature to generate fully system-agnostic shell scripts (i.e., no **srun**), although this feature is currently disabled for performance reasons.
 
-**e) How does ghis2s differ from other GHI subsystems (GHI-NRT, GHI-MR)?**  
+**e) How does ghis2s differ from other subsystems?**  
   
 Although the GHI-S2S workflow includes hundreds of tasks and is more complex than other subsystems, **the main script of the ghis2s software tool, [*s2s_run.py*](https://github.com/NASA-LIS/LISF/tree/support/lisf-557ww-7.8/lis/utils/usaf/S2S/ghis2s/s2s_app/s2s_run.py)**, simplifies execution by consolidating all tasks into a single command driven by a unified configuration file.  
 The script automates the execution of all tasks based on their dependencies, effectively eliminating the need for manual intervention.
-  
-

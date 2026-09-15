@@ -368,10 +368,21 @@ if __name__ == "__main__":
         for model in cfg["EXP"]["NMME_models"]:
             ncfile = f"{s2smdir}PS.557WW_SC.U_DI.C_GP.LIS-S2S-{model.upper()}_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD." \
                 f"{year:04d}{month:02d}01_FP.{year:04d}{month:02d}01-{end_date.strftime('%Y%m%d')}_DF.NC"
+
+            # check if file exists
+            if not os.path.exists(ncfile):
+                logger.error(f"Missing file: {ncfile}", subtask=f"Lag {lag}")
+                continue
+
             logger.info(f"Reading: {ncfile}", subtask=f"Lag {lag}")
             ncdata = load_ncdata(ncfile, [logger, f"Lag {lag}"])
             anoms.append(ncdata[var + '_ANOM'])
             del ncdata
+
+        # If no models were loaded, log it and skip to the next variable
+        if len(anoms) == 0:
+            logger.error(f"No valid model files found for {var}. Skipping plot.", subtask=f"Lag {lag}")
+            continue
 
         nc_med = compute_median (anoms, lead)
         plot_arr[0,:] = nc_med.values *convf

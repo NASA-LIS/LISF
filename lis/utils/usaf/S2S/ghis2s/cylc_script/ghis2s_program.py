@@ -305,11 +305,18 @@ class Ghis2sProgram():
             if "MODULEPATH" in line and ":$MODULEPATH" in line:
                 modulepath_root = line.split("=")[1].split(":$MODULEPATH")[0].strip()
                 break
+        user_cache_dir = ""
+        for line in filedata.splitlines():
+            if "USER_CACHE_DIR" in line:
+                user_cache_dir = line.split("=")[1].strip()
+                break
 
         # Replace hardcoded paths with Jinja2 variables in flow.cylc
         filedata = filedata.replace(scr_root, '{{ SCRATCH_ROOT }}')
         filedata = filedata.replace(pythonpath_root, '{{ PYTHONPATH_ROOT }}')
         filedata = filedata.replace(modulepath_root, '{{ MODULEPATH_ROOT }}')
+        if user_cache_dir != "":
+            filedata = filedata.replace(user_cache_dir, '{{ USER_CACHE_DIR }}')
 
         # Replace placeholders
         filedata = filedata.replace('USEREMAIL', self.env["USER_EMAIL"])
@@ -329,6 +336,9 @@ class Ghis2sProgram():
             f"{{% set PYTHONPATH_ROOT = '{pythonpath_root}' %}}\n"
             f"{{% set MODULEPATH_ROOT = '{modulepath_root}' %}}\n"
         )
+        if user_cache_dir != "":
+            jinja_injection += f"{{% set USER_CACHE_DIR = '{user_cache_dir}' %}}\n"
+
         filedata = filedata.replace("#!jinja2", jinja_injection, 1)
 
         with config_file.open('w', encoding="utf-8") as file:

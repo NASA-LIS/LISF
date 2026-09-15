@@ -13,7 +13,6 @@ import os
 import sys
 from time import ctime as t_ctime
 from time import time as t_time
-import calendar
 from datetime import datetime
 import numpy as np
 import xarray as xr
@@ -121,7 +120,7 @@ class NMMEParams():
                                             nmme_path_[0], nmme_path_[1], MON[month], cyr, yy2)
         elif pforce == 'ccsr-nmme':
             # CCSR-NMME
-            infile_temp = '{}/{}/{}/{}_{}_prcp_{:04d}_{:02d}.nc'
+            infile_temp = '{}/{}/{}/{}_{}_pr_{:04d}_{:02d}.nc'
             if dtype == 'forecast':
                 infile = infile_temp.format(conf['BCSD']['nmme_download_dir'],
                                             nmme_path_[0], 'forecast',
@@ -157,7 +156,7 @@ class NMMEParams():
                 else:
                     prec_da = nmme_xr['prec']
             elif pforce == 'ccsr-nmme':
-                prec_da = nmme_xr['prcp'].transpose('L', 'M', 'Y', 'X')
+                prec_da = nmme_xr['pr'].transpose('L', 'M', 'Y', 'X')
             elif pforce == 'noaa-nmme':
                 nmme_xr = nmme_xr.rename({'lat': 'Y','lon': 'X','target': 'L',
                                           'ensmem': 'M'})
@@ -199,9 +198,7 @@ class NMMEParams():
                     issues.append(layer_info)
 
             # CHECK 3: Physically unreasonable values
-            precip_max = 3000.0  # mm/day
-            if pforce == 'ccsr-nmme':
-                precip_max = 90000.0
+            precip_max = 3000.0  # mm/
             precip_min = -1e-6
             has_crazy_high = (prec_da > precip_max).any(dim=['Y', 'X'])
             has_crazy_low  = (prec_da < precip_min).any(dim=['Y', 'X'])
@@ -267,7 +264,7 @@ if __name__ == "__main__":
     PFORCE = config['BCSD']['source']['precip']
     VAR_NAME = 'prec'
     if PFORCE == 'ccsr-nmme':
-        VAR_NAME = 'prcp'
+        VAR_NAME = 'pr'
     if PFORCE == 'noaa-nmme':
         VAR_NAME = 'fcst'
 
@@ -358,11 +355,11 @@ if __name__ == "__main__":
                 XPREC = np.array(nmme_da.values[0:LEAD_MONS,20:30,:,:])
             else:
                 XPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
-            # convert mm/mon to kg/m^2/s
+            # convert mm/day to kg/m^2/s
             for l in range(LEAD_MONS):
                 jy = CYR + LDYR[MM, l]
                 l1 = LEADS1[MM, l]
-                XPREC[l,:] = XPREC[l,:]/calendar.monthrange(jy, l1)[1]/86400.
+                XPREC[l,:] = XPREC[l,:]/86400.
 
         elif PFORCE == 'noaa-nmme':
             nmme_da = nmme_da.rename({'lat': 'Y','lon': 'X','target': 'L',
@@ -479,11 +476,11 @@ if __name__ == "__main__":
                     YPREC = np.array(nmme_da.values[0:LEAD_MONS,20:30,:,:])
                 else:
                     YPREC = np.array(nmme_da.values[0:LEAD_MONS,ens_index[0]:ens_index[1],:,:])
-                # convert mm/mon to kg/m^2/s
+                # convert mm/day to kg/m^2/s
                 for l in range(LEAD_MONS):
                     jy = YR + LDYR[MM, l]
                     l1 = LEADS1[MM, l]
-                    XPREC[y,l,:] = YPREC[l,:]/calendar.monthrange(jy, l1)[1]/86400.
+                    XPREC[y,l,:] = YPREC[l,:]/86400.
         elif PFORCE == 'noaa-nmme':
             YR = YEAR_BEGIN - 1
             for y in range(YEAR_END - YEAR_BEGIN + 1):

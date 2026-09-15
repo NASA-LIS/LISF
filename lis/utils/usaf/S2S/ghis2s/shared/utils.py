@@ -136,6 +136,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd,
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('source /etc/profile.d/modules.sh' + '\n')
             _f.write('module purge' + '\n')
+        #else:
+        #    _f.write('source /etc/profile' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
             _f.write('unset LD_LIBRARY_PATH' + '\n')
             _f.write('unset PROJ_DATA' + '\n')
@@ -374,6 +376,8 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('source /etc/profile.d/modules.sh' + '\n')
             _f.write('module purge' + '\n')
+        #else:
+        #    _f.write('source /etc/profile' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
             _f.write('unset LD_LIBRARY_PATH' + '\n')
             _f.write('module use --append ' + lisf + '/env/discover/' + '\n')
