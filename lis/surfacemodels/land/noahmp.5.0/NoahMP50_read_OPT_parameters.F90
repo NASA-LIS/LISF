@@ -39,24 +39,23 @@ subroutine NoahMP50_read_OPT_parameters()
      allocate(placeholder(LIS_rc%lnc(n), LIS_rc%lnr(n)))
 
      call NoahMP50_read_OPT_param(n, "ALBDRY1",  placeholder, var_found)
-
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%albdry(1) =&
                    placeholder(col, row)
            endif
         enddo
      endif
-     
+
      call NoahMP50_read_OPT_param(n, "ALBDRY2",  placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%albdry(2) =&
                    placeholder(col, row)
            endif
@@ -64,11 +63,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "ALBICE1", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%albice(1) =&
                    placeholder(col, row)
            endif
@@ -76,11 +75,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "ALBICE2", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%albice(2) =&
                    placeholder(col, row)
            endif
@@ -88,11 +87,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "ALBSAT1", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%albsat(1) =&
                    placeholder(col, row)
            endif
@@ -100,11 +99,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "ALBSAT2", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%albsat(2) =&
                    placeholder(col, row)
            endif
@@ -112,23 +111,23 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "BETADS", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%betads =&
                    placeholder(col, row)
            endif
         enddo
      endif
-     
+
      call NoahMP50_read_OPT_param(n, "BETAIS", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%betais =&
                    placeholder(col, row)
            endif
@@ -136,11 +135,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "EG1", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%eg(1) =&
                    placeholder(col, row)
            endif
@@ -148,11 +147,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "EG2", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%eg(2) =&
                    placeholder(col, row)
            endif
@@ -160,11 +159,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "MFSNO", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%mfsno =&
                    placeholder(col, row)
            endif
@@ -172,11 +171,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "OMEGAS1", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%omegas(1) =&
                    placeholder(col, row)
            endif
@@ -184,11 +183,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "OMGEAS2", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%omegas(2) =&
                    placeholder(col, row)
            endif
@@ -196,11 +195,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "RSURF_SNOW", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%rsurf_snow =&
                    placeholder(col, row)
            endif
@@ -208,11 +207,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "SSI", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%ssi =&
                    placeholder(col, row)
            endif
@@ -220,11 +219,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "Z0SNO", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%z0sno =&
                    placeholder(col, row)
            endif
@@ -232,37 +231,35 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "MXSNALB", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%mxsnalb =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-
      call NoahMP50_read_OPT_param(n, "MNSNALB", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%mnsnalb =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-
      call NoahMP50_read_OPT_param(n, "SNDECAYEXP", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%sndecayexp =&
                    placeholder(col, row)
            endif
@@ -270,11 +267,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "T_ULIMIT", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%t_ulimit =&
                    placeholder(col, row)
            endif
@@ -282,24 +279,23 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "T_MLIMIT", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%t_mlimit =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-
      call NoahMP50_read_OPT_param(n, "T_LLIMIT", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%t_llimit =&
                    placeholder(col, row)
            endif
@@ -307,11 +303,11 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      call NoahMP50_read_OPT_param(n, "SNOWF_SCALEF", placeholder, var_found)
-     if(var_found) then 
+     if(var_found) then
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
+           if(placeholder(col,row).ne.LIS_rc%udef) then
               NoahMP50_struc(n)%noahmp50(t)%param%snowf_scalef =&
                    placeholder(col, row)
            endif
@@ -319,7 +315,7 @@ subroutine NoahMP50_read_OPT_parameters()
      endif
 
      deallocate(placeholder)
-    
+
   end do
 end subroutine NoahMP50_read_OPT_parameters
 
