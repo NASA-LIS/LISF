@@ -14,11 +14,11 @@ module NoahMP50_dasoilm_Mod
 ! !MODULE: NoahMP50_dasoilm_Mod
 !
 ! !DESCRIPTION:
-!  
+!
 ! !REVISION HISTORY:
 !  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 
-! !USES:        
+! !USES:
   use LIS_coreMod
 
   implicit none
@@ -34,7 +34,7 @@ module NoahMP50_dasoilm_Mod
   public :: noahmp50_dasm_struc
 !EOP
 
- type, public :: dasm_dec
+  type, public :: dasm_dec
      real,    allocatable       :: model_xrange(:,:,:)
      real,    allocatable       :: model_cdf(:,:,:)
      real,    allocatable       :: model_mu(:)
@@ -44,27 +44,27 @@ module NoahMP50_dasoilm_Mod
      integer                :: scal
 
   end type dasm_dec
-  
+
   type(dasm_dec), allocatable :: noahmp50_dasm_struc(:)
 
 contains
 !BOP
-! 
+!
 ! !ROUTINE: NoahMP50_dasoilm_init
 ! \label{NoahMP50_dasoilm_init}
-! 
+!
 ! !INTERFACE:
   subroutine NoahMP50_dasoilm_init(k)
 ! !USES:
-! !DESCRIPTION:        
+! !DESCRIPTION:
 !
 !EOP
     implicit none
     integer                :: k
 
-    if(.not.allocated(noahmp50_dasm_struc)) then 
+    if(.not.allocated(noahmp50_dasm_struc)) then
        allocate(noahmp50_dasm_struc(LIS_rc%nnest))
     endif
-    
+
   end subroutine NoahMP50_dasoilm_init
 end module NoahMP50_dasoilm_Mod
