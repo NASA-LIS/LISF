@@ -24,24 +24,22 @@ subroutine noahmp50_settws(n, LSM_State)
   use NoahMP50_lsmMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
 ! !DESCRIPTION:
-!  
+!
 !  This routine assigns the soil moisture and groundwater prognostic variables
 !  to NoahMP's model space.
-! 
+!
 !EOP
   real, parameter        :: MIN_GWS_THRESHOLD = 0.00
   real, parameter        :: MAX_GWS_THRESHOLD = 7000.0
   real, parameter        :: MAX_WA = 7000.0
   real, parameter        :: ZSOIL = 2 !mm
   real, parameter        :: ROUS = 0.2 ! specific yield
-  !Bailing changed this to be WLTSMC
-!  real, parameter        :: MIN_THRESHOLD = 0.02 
-  real                   :: MIN_THRESHOLD 
+  real                   :: MIN_THRESHOLD
   real                   :: MAX_THRESHOLD
   real                   :: sm_threshold
   type(ESMF_Field)       :: sm1Field
@@ -70,10 +68,10 @@ subroutine noahmp50_settws(n, LSM_State)
   integer                :: status
   logical                :: update_flag(LIS_rc%ngrid(n))
   logical                :: rc1,rc2,rc3,rc4,rc5
-  
+
   external :: noahmp50_tws_reorderEnsForOutliers
   external :: noahmp50_snow_update
-  
+
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: Soil Moisture Layer 1 failed in noahmp50_settws")
@@ -92,7 +90,6 @@ subroutine noahmp50_settws(n, LSM_State)
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: SWE failed in noahmp50_settws")
-
 
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,&
@@ -113,24 +110,23 @@ subroutine noahmp50_settws(n, LSM_State)
   call LIS_verify(status,&
        "ESMF_FieldGet: SWE failed in noahmp50_settws")
 
-
   ensCheck = .true.
   diffCheck = .false.
   largeSM  = .false.
-  
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     
+
      c = LIS_domain(n)%tile(t)%col
      r = LIS_domain(n)%tile(t)%row
      i = LIS_domain(n)%gindex(c,r)
 
-     SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype        
-     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP) 
+     SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
+     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP)
 
      !locations with large soil moisture values are ice points.
      !we turn off the increments in such locations.
      if(NoahMP50_struc(n)%noahmp50(t)%smc(1).gt.MAX_THRESHOLD.or.&
-        NoahMP50_struc(n)%noahmp50(t)%smc(1).gt.0.50) then 
+        NoahMP50_struc(n)%noahmp50(t)%smc(1).gt.0.50) then
         largeSM(i) = .true.
      endif
 
@@ -144,11 +140,11 @@ subroutine noahmp50_settws(n, LSM_State)
   enddo
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     
+
      c = LIS_domain(n)%tile(t)%col
      r = LIS_domain(n)%tile(t)%row
      i = LIS_domain(n)%gindex(c,r)
-     if(largeSM(i)) then 
+     if(largeSM(i)) then
         soilm1(t) = NoahMP50_struc(n)%noahmp50(t)%smc(1)
         soilm2(t) = NoahMP50_struc(n)%noahmp50(t)%smc(2)
         soilm3(t) = NoahMP50_struc(n)%noahmp50(t)%smc(3)
@@ -157,19 +153,18 @@ subroutine noahmp50_settws(n, LSM_State)
         swe(t)    = NoahMP50_struc(n)%noahmp50(t)%sneqv
      endif
   enddo
-  
-  
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      c = LIS_domain(n)%tile(t)%col
      r = LIS_domain(n)%tile(t)%row
      i = LIS_domain(n)%gindex(c,r)
-     
-     SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype        
-     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP) 
+
+     SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
+     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP)
      MIN_THRESHOLD = 0.02 !SMCWLT_TABLE(SOILTYP)
      sm_threshold  = MAX_THRESHOLD - 0.02
-     
+
      if((soilm1(t).lt.MIN_THRESHOLD.or.&
           soilm1(t).gt.MAX_THRESHOLD).or.&
           (soilm2(t).lt.MIN_THRESHOLD.or.&
@@ -186,7 +181,7 @@ subroutine noahmp50_settws(n, LSM_State)
           (soilm2(t).ne.soilm2(i*LIS_rc%nensem(n))).and.&
           (soilm3(t).ne.soilm3(i*LIS_rc%nensem(n))).and.&
           (soilm4(t).ne.soilm4(i*LIS_rc%nensem(n))).and.&
-          (gws(t).ne.gws(i*LIS_rc%nensem(n)))) then 
+          (gws(t).ne.gws(i*LIS_rc%nensem(n)))) then
         diffCheck(i) = .true.
      endif
   enddo
@@ -196,7 +191,7 @@ subroutine noahmp50_settws(n, LSM_State)
      rc2 = .true.
      rc3 = .true.
      rc4 = .true.
-     rc5 = .true. 
+     rc5 = .true.
      if(.not.ensCheck(i).and.diffCheck(i).and.(.not.largeSM(i))) then
         call noahmp50_tws_reorderEnsForOutliers(i,&
              LIS_rc%nensem(n),&
@@ -236,9 +231,9 @@ subroutine noahmp50_settws(n, LSM_State)
         enddo
      endif
   enddo
-        
+
   update_flag = .true.
- 
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
@@ -290,16 +285,6 @@ subroutine noahmp50_settws(n, LSM_State)
 
   enddo
 
-!  if(LIS_localPet.eq.387) then
-!     gid = LIS_domain(n)%gindex(&
-!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%col,&
-!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%row)
-!     print*, 'tw1 ',NoahMP50_struc(n)%noahmp50(16068)%smc,&
-!          NoahMP50_struc(n)%noahmp50(16068)%sh2o,&
-!          NoahMP50_struc(n)%noahmp50(16068)%sneqv,&
-!          update_flag(gid)
-!  endif
-  
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      gid = LIS_domain(n)%gindex(&
@@ -335,7 +320,6 @@ subroutine noahmp50_settws(n, LSM_State)
              soilm4(t)*NoahMP50_struc(n)%sldpth(4))*&
              LIS_CONST_RHOFW
 
-
         TWS1 =(NoahMP50_struc(n)%noahmp50(t)%smc(1)*&
              NoahMP50_struc(n)%sldpth(1)*&
              NoahMP50_struc(n)%noahmp50(t)%smc(2)*&
@@ -358,26 +342,11 @@ subroutine noahmp50_settws(n, LSM_State)
            swe(t) = 0.0
         endif
 
-!        if(LIS_localPet.eq.387.and.t.eq.16068) then
-!           print*, 'swe ',LIS_localPet, t, swe(t), TWSd
-!           !since soil moisture update is not accepted, add this to snow
-!        endif
-
      endif
 
      NoahMP50_struc(n)%noahmp50(t)%wa=gws(t)
 
   enddo
-
-!  if(LIS_localPet.eq.387) then
-!     gid = LIS_domain(n)%gindex(&
-!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%col,&
-!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%row)
-!     print*, 'tw2 ',NoahMP50_struc(n)%noahmp50(16068)%smc,&
-!          NoahMP50_struc(n)%noahmp50(16068)%sh2o,&
-!          NoahMP50_struc(n)%noahmp50(16068)%sneqv,&
-!          update_flag(gid)
-!  endif
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      if(snodens(t).eq.0) then
@@ -395,72 +364,66 @@ subroutine noahmp50_settws(n, LSM_State)
      call noahmp50_snow_update(n, t, dsneqv, dsnowh)
   enddo
 
-
-
-!  write(101,fmt='(I4.4, 1x, I2.2, 1x, I2.2, 1x, I2.2, 1x, I2.2,1x,10E14.6)') &
-!       LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,LIS_rc%mn,&
-!       NoahMP50_struc(n)%noahmp50(991:1000)%sneqv
-
 end subroutine noahmp50_settws
 
 
 subroutine noahmp50_tws_reorderEnsForOutliers(i,nensem, statevec, &
      minvalue,maxvalue, status)
-  
+
   implicit none
   integer              :: i
   integer              :: nensem
   real                 :: statevec(nensem)
   real                 :: minvalue,maxvalue
   logical              :: status
-  
+
   real                 :: minvT, maxvT, minvG, maxvG
   integer              :: k
   real                 :: spread_total, spread_good, spread_ratio
-  
+
   !Ensemble spread (total and with 'good' ensemble members
   minvT = 1E10
   maxvT = -1E10
   minvG = 1E10
   maxvG = -1E10
-  status = .true. 
-  
+  status = .true.
+
   do k=1,nensem
 
-     if(statevec(k).lt.minvT) then 
+     if(statevec(k).lt.minvT) then
         minvT = statevec(k)
      endif
-     if(statevec(k).gt.maxvT) then 
+     if(statevec(k).gt.maxvT) then
         maxvT = statevec(k)
      endif
 
-     if(statevec(k).gt.minvalue.and.statevec(k).lt.maxvalue) then 
-        if(statevec(k).lt.minvG) then 
+     if(statevec(k).gt.minvalue.and.statevec(k).lt.maxvalue) then
+        if(statevec(k).lt.minvG) then
            minvG = statevec(k)
         endif
-        if(statevec(k).gt.maxvG) then 
+        if(statevec(k).gt.maxvG) then
            maxvG = statevec(k)
         endif
      endif
   enddo
-  
+
   if(minvG.eq.1E10.and.maxvG.eq.-1E10) then
      !all members are unphysical.
 
      statevec = minvalue
      status = .false.
-     
+
   else
      spread_total = (maxvT - minvT)
      spread_good  = (maxvG - minvG)
-     
+
      spread_ratio = spread_good/spread_total
-     
-     !rescale the ensemble 
-     
+
+     !rescale the ensemble
+
      do k=1,nensem-1
         statevec(k) = statevec(nensem) + &
-             (statevec(k) - statevec(nensem))*spread_ratio 
+             (statevec(k) - statevec(nensem))*spread_ratio
      enddo
   endif
 
