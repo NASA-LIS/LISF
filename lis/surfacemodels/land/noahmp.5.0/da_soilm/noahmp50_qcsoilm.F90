@@ -23,7 +23,7 @@ subroutine NoahMP50_qcsoilm(n, LSM_State)
   use LIS_logMod,  only  : LIS_verify
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
@@ -31,30 +31,24 @@ subroutine NoahMP50_qcsoilm(n, LSM_State)
 !
 !  Returns the soilmoisture related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
 !  \end{description}
 !EOP
   type(ESMF_Field)       :: sm1Field
-!  type(ESMF_Field)       :: sm2Field
-!  type(ESMF_Field)       :: sm3Field
-!  type(ESMF_Field)       :: sm4Field
   integer                :: t
   integer                :: status
   real, pointer          :: soilm1(:)
-!  real, pointer          :: soilm2(:)
-!  real, pointer          :: soilm3(:)
-!  real, pointer          :: soilm4(:)
-  real                   :: smmax1!,smmax2,smmax3,smmax4
-  real                   :: smmin1!,smmin2,smmin3,smmin4
- 
+  real                   :: smmax1
+  real                   :: smmin1
+
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet for Soil Moisture Layer 1 failed in NoahMP50_qcsoilm")
- 
+
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet for Soil Moisture Layer 1 failed in NoahMP50_qcsoilm")
