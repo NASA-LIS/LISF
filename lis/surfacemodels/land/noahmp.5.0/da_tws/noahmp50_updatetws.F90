@@ -22,16 +22,16 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   use LIS_logMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
   type(ESMF_State)       :: LSM_Incr_State
 !
 ! !DESCRIPTION:
-!  
+!
 !  This routine assigns the soil moisture and grounwater prognostic variables
 !  to NoahMP's model space.
-! 
+!
 !EOP
 
   type(ESMF_Field)       :: sm1Field
@@ -44,11 +44,10 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   type(ESMF_Field)       :: sm4IncrField
   type(ESMF_Field)       :: sweField, sweIncrField
 
-  !Wanshu
   type(ESMF_Field)     :: gwField
   type(ESMF_Field)     :: gwIncrField
   real, pointer        :: gws(:)
-  real, pointer        :: gwsIncr(:)  
+  real, pointer        :: gwsIncr(:)
 
   real, pointer          :: soilm1(:)
   real, pointer          :: soilm2(:)
@@ -61,7 +60,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   real, pointer          :: swe(:), sweincr(:)
   integer                :: t
   integer                :: status
-
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
@@ -79,10 +77,9 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: Groundwater Storage failed in noahmp50_updatetws")
- 
+
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
-
 
   call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 1",sm1IncrField,rc=status)
   call LIS_verify(status,&
@@ -103,7 +100,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   call ESMF_StateGet(LSM_Incr_State,"SWE",sweIncrField,rc=status)
   call LIS_verify(status)
 
-
   !-------------------
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,&
@@ -123,7 +119,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status)
 
-
   call ESMF_FieldGet(sm1IncrField,localDE=0,farrayPtr=soilmIncr1,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet: Soil Moisture Layer 1 failed in noahmp50_updatetws")
@@ -141,7 +136,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
        "ESMF_StateSet: Groundwater Storage failed in noahmp50_updatetws")
   call ESMF_FieldGet(sweIncrField,localDE=0,farrayPtr=sweincr,rc=status)
   call LIS_verify(status)
-
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
