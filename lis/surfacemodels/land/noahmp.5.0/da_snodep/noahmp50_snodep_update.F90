@@ -200,7 +200,7 @@ subroutine noahmp50_snodep_update(n, t, dsneqv, dsnowh)
   enddo
 
   sice(:) = max(0.0, NoahMP50_struc(n)%noahmp50(t)%smc(:)&
-       - NoahMP50_struc(n)%noahmp50(t)%sh2o(:)
+       - NoahMP50_struc(n)%noahmp50(t)%sh2o(:))
 
   !imelt
   do j = -nsnow+1, nsoil
