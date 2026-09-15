@@ -19,11 +19,8 @@
 ! !INTERFACE:
 
 subroutine NoahMP50_coldstart(mtype)
-! !USES:
-!   use LIS_coreMod, only: LIS_rc
-!   use LIS_logMod, only: LIS_logunit
-!   use LIS_timeMgrMod, only: LIS_date2time
 
+! !USES:
   use LIS_coreMod
   use LIS_logMod
   use LIS_histDataMod
