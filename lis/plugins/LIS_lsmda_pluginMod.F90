@@ -34,6 +34,7 @@ module LIS_lsmda_pluginMod
 !  17 Feb 2020: Yeosang Yoon, added SNODEP & USAFSI Assimilation for Jules 5.x
 !  06 Jun 2022: Yonghwan Kwon, added SMAP_E_OPL soil moisture Assimilation
 !                              added GVF data assimilation
+!  19 Sep 2026: Cenlin He: Added NoahMP.5.0
 !
 !EOP
   implicit none
@@ -936,7 +937,6 @@ contains
            trim(LIS_LPRM_AMSREsmobsId)//char(0),noah33_updatesoilm)
 
 ! Noah-3.3 + SMOS NESDIS soil moisture
-
       call registerlsmdainit(trim(LIS_noah33Id)//"+"//&
            trim(LIS_SMOSNESDISsmobsId)//char(0),noah33_dasoilm_init)
       call registerlsmdagetstatevar(trim(LIS_noah33Id)//"+"//&
@@ -1095,7 +1095,7 @@ contains
            trim(LIS_SMOSNRTNNL2smobsId)//char(0),noah33_descale_soilm)
       call registerlsmdaupdatestate(trim(LIS_noah33Id)//"+"//&
            trim(LIS_SMOSNRTNNL2smobsId)//char(0),noah33_updatesoilm)
-      
+
 ! Noah-3.3 SMAP_E_OPL sm obs
       call registerlsmdainit(trim(LIS_noah33Id)//"+"//&
            trim(LIS_SMAPEOPLsmobsId)//char(0),noah33_dasoilm_init)
@@ -2818,7 +2818,6 @@ contains
 
 #endif
 
-
 #if ( defined SM_NOAHMP_4_0_1 )
 ! Noah-MP.4.0.1 RT SMOPS ASCAT soil moisture
       call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
@@ -3507,7 +3506,7 @@ contains
       call registerlsmdaqcobsstate(trim(LIS_noahmp50Id)//"+"//&
            trim(LIS_wusUCLAobsId)//char(0),noahmp50_qc_snowobs)
 
-! Noahmp.5 TWS 
+! Noahmp.5 TWS
       call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
            trim(LIS_GRACEtwsobsId)//char(0),noahmp50_datws_init)
       call registerlsmdagetstatevar(trim(LIS_noahmp50Id)//"+"//&
