@@ -22,7 +22,8 @@ module LIS_sublsm_pluginMod
 ! !REVISION HISTORY:
 !  09 Oct 2003    Sujay Kumar  Initial Specification
 !  04 Jun 2021    Mahdi Navari Modified for Naoh.3.9
-!  12 Aug 2021    Kristi Arsenault  Added SnowModel 
+!  12 Aug 2021    Kristi Arsenault  Added SnowModel
+!  16 Sep 2026    Cenlin He  Added NoahMP 5.0
 !
 !EOP
   implicit none
