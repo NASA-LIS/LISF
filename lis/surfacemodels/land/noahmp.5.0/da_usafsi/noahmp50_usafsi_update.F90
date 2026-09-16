@@ -155,7 +155,8 @@ subroutine noahmp50_usafsi_update(n, t, dsneqv, dsnowh)
      NEWNODE  =  1
      DZSNSO(0)= SNOWH
      SNOWH    = 0.
-     STC(0)   = MIN(273.16, Noahmp50_struc(n)%noahmp50(t)%sfctmp)   ! temporary setup
+     STC(0)   = &
+          MIN(273.16, Noahmp50_struc(n)%noahmp50(t)%sfctmp)   ! temporary setup
      SNICE(0) = SNEQV
      SNLIQ(0) = 0.
   END IF
@@ -191,13 +192,14 @@ subroutine noahmp50_usafsi_update(n, t, dsneqv, dsnowh)
      endif
   endif
 
-  ! ice fraction at the last timestep, add check for both snice and snliq are 0.0
+  ! ice fraction at the last timestep, add check for both snice and snliq
+  ! are 0.0
   do snl_idx=isnow+1,0
-    if(snice(snl_idx)+snliq(snl_idx)>0.0) then
-      ficeold(snl_idx)  = snice(snl_idx) / (snice(snl_idx)+snliq(snl_idx))
-    else
-      ficeold(snl_idx)  = 0.0
-    endif
+     if(snice(snl_idx)+snliq(snl_idx)>0.0) then
+        ficeold(snl_idx)  = snice(snl_idx) / (snice(snl_idx)+snliq(snl_idx))
+     else
+        ficeold(snl_idx)  = 0.0
+     endif
   enddo
 
   sice(:) = max(0.0, Noahmp50_struc(n)%noahmp50(t)%smc(:)&
