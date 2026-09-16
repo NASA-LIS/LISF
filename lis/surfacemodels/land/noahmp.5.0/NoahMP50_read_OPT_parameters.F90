@@ -331,21 +331,21 @@ end subroutine NoahMP50_read_OPT_parameters
 subroutine NoahMP50_read_OPT_param(n, ncvar_name, placeholder,var_found)
 ! !USES:
   use netcdf
-  use LIS_coreMod, only : LIS_rc, LIS_localPet,   &   
+  use LIS_coreMod, only : LIS_rc, LIS_localPet,   &
        LIS_ews_halo_ind, LIS_ewe_halo_ind, &
-       LIS_nss_halo_ind, LIS_nse_halo_ind   
+       LIS_nss_halo_ind, LIS_nse_halo_ind
   use LIS_logMod,  only : LIS_logunit, LIS_verify, LIS_endrun
   use LIS_fileIOMod, only: LIS_read_param
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)          :: n
-  character(len=*), intent(in) :: ncvar_name 
+  character(len=*), intent(in) :: ncvar_name
   real, intent(out)            :: placeholder(LIS_rc%lnc(n), LIS_rc%lnr(n))
   logical                      :: var_found
 ! !DESCRIPTION:
 !  This subroutine reads OPT parameters from the LIS
 !  NetCDF parameter data file
-!  
+!
 !  The arguments are:
 !  \begin{description}
 !   \item[n]
@@ -354,82 +354,86 @@ subroutine NoahMP50_read_OPT_param(n, ncvar_name, placeholder,var_found)
 !    array containing returned values
 !   \end{description}
 !
-!EOP      
+!EOP
 
   integer       :: ios, nid, param_ID, nc_ID, nr_ID, dimids(3)
   integer       :: nc, nr
   real, pointer :: level_data(:, :)
   logical       :: file_exists
-  
+
   placeholder = LIS_rc%udef
-  var_found  = .false. 
+  var_found  = .false.
 
   inquire(file=LIS_rc%paramfile(n), exist=file_exists)
   if(file_exists) then
      write(LIS_logunit, *) '[INFO] Reading '//trim(ncvar_name)//&
           ' map '
-     
+
      ! open NetCDF parameter file
      ios = nf90_open(path=trim(LIS_rc%paramfile(n)), &
           mode=NF90_NOWRITE, ncid=nid)
      call LIS_verify(ios, 'Error in nf90_open in NoahMP50_read_OPT_param')
-     
+
      ! inquire the ID of east-west dimension
      ios = nf90_inq_dimid(nid, 'east_west', nc_ID)
      call LIS_verify(ios, &
           'Error in nf90_inq_dimid in NoahMP50_read_OPT_param')
-     
+
      ! inquire the ID of north-south dimension
      ios = nf90_inq_dimid(nid, 'north_south', nr_ID)
      call LIS_verify(ios, &
           'Error in nf90_inq_dimid in NoahMP50_read_OPT_param')
-     
+
      ! inquire the length of east-west dimension
      ios = nf90_inquire_dimension(nid, nc_ID, len=nc)
      call LIS_verify(ios, &
           'Error in nf90_inquire_dimension in NoahMP50_read_OPT_param')
-     
+
      ! inquire the length of north-south dimension
      ios = nf90_inquire_dimension(nid, nr_ID, len=nr)
      call LIS_verify(ios, &
           'Error in nf90_inquire_dimension in NoahMP50_read_OPT_param')
-     
-     ! inquire the ID of parameter. 
+
+     ! inquire the ID of parameter.
      ios = nf90_inq_varid(nid, Trim(ncvar_name), param_ID)
-     if(ios.eq.0) then 
-        ! inquire the IDs of all dimensions. The third dimension is the level dimension
+     if(ios.eq.0) then
+        ! inquire the IDs of all dimensions. The third dimension is the
+        ! level dimension
         ios = nf90_inquire_variable(nid, param_ID, dimids = dimids)
         call LIS_verify(ios, trim(ncvar_name)//' failed to inquire dimensions')
-        
+
         ! allocate memory
         allocate(level_data (LIS_rc%gnc(n), LIS_rc%gnr(n)))
-        
-        ! inquire the variable ID of parameter 
+
+        ! inquire the variable ID of parameter
         ios = nf90_inq_varid(nid, trim(ncvar_name), param_ID)
         call LIS_verify(ios, trim(ncvar_name)//&
              ' field not found in the LIS param file')
-        
-        ! read parameter 
+
+        ! read parameter
         ios = nf90_get_var(nid, param_ID, level_data)
-        call LIS_verify(ios, 'Error in nf90_get_var in NoahMP50_read_OPT_param')
-        
+        call LIS_verify(ios, &
+             'Error in nf90_get_var in NoahMP50_read_OPT_param')
+
         ! grab parameter at specific level
-        placeholder(:, :) = & 
-             level_data(LIS_ews_halo_ind(n, LIS_localPet+1):LIS_ewe_halo_ind(n, LIS_localPet+1), &
-             LIS_nss_halo_ind(n, LIS_localPet+1):LIS_nse_halo_ind(n, LIS_localPet+1))
-        
+        placeholder(:, :) = &
+             level_data(LIS_ews_halo_ind(n, LIS_localPet+1): &
+             LIS_ewe_halo_ind(n, LIS_localPet+1), &
+             LIS_nss_halo_ind(n, LIS_localPet+1): &
+             LIS_nse_halo_ind(n, LIS_localPet+1))
+
         deallocate(level_data)
 
-        var_found = .true. 
+        var_found = .true.
      else
         write(LIS_logunit,*) '[WARN] ', trim(ncvar_name)//&
              ' field not found in the LIS param file'
      endif
 
-        ! close netcdf file 
+     ! close netcdf file
      ios = nf90_close(nid)
      call LIS_verify(ios, 'Error in nf90_close in NoahMP50_read_OPT_param')
-     
+
   endif
 
-end subroutine NoahMP50_read_OPT_param             
+end subroutine NoahMP50_read_OPT_param
