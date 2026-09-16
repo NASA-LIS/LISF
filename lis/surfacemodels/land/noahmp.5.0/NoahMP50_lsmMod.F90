@@ -262,9 +262,9 @@ contains
     use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
 ! !DESCRIPTION:
 !
-!  This routine creates the datatypes and allocates memory for NoahMP50-specific
-!  variables. It also invokes the routine to read the runtime specific options
-!  for NoahMP50 from the configuration file.
+!  This routine creates the datatypes and allocates memory for
+!  NoahMP50-specific variables. It also invokes the routine to read the
+!  runtime specific options for NoahMP50 from the configuration file.
 !
 !  The routines invoked are:
 !  \begin{description}
