@@ -14,10 +14,11 @@ module noahmp50_dasnow_Mod
 ! !MODULE: noahmp50_dasnow_Mod
 !
 ! !DESCRIPTION:
-!  
-! !REVISION HISTORY:
 !
-! !USES:        
+! !REVISION HISTORY:
+!   16 Sep 2026 Cenlin He, initial implementation
+!
+! !USES:
 
   implicit none
 
@@ -34,14 +35,14 @@ module noahmp50_dasnow_Mod
   SAVE
 contains
 !BOP
-! 
+!
 ! !ROUTINE: noahmp50_dasnow_init
 ! \label{noahmp50_dasnow_init}
-! 
+!
 ! !INTERFACE:
   subroutine noahmp50_dasnow_init()
 ! !USES:
-! !DESCRIPTION:        
+! !DESCRIPTION:
 !
 !EOP
     implicit none
