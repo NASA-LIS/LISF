@@ -55,8 +55,8 @@ subroutine NoahMP50_main(n)
 
 ! define variables for NoahMP50
 
-  real                 :: AvgSurfT_out           ! average surface temperature [K]
-  real                 :: TWS_out                ! terrestrial water storage [mm]
+  real                 :: AvgSurfT_out       ! average surface temperature [K]
+  real                 :: TWS_out            ! terrestrial water storage [mm]
   real                 :: startsm, startswe, startint, startgw, endsm
 
   ! for 557WW
