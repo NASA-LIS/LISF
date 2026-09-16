@@ -115,10 +115,11 @@ subroutine NoahMP50_qc_soilmobs(n,k,OBS_State)
 
      vegt(t) = NoahMP50_struc(n)%noahmp50(t)%vegetype
 
-
      SOILTYP   = NoahMP50_struc(n)%noahmp50(t)%soiltype
-     SMCMAX(t) = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) !SMCMAX_TABLE(SOILTYP)
-     SMCWLT(t) = NoahMP50_struc(n)%noahmp50(t)%param%SMCWLT(1) !SMCWLT_TABLE(SOILTYP)
+     SMCMAX(t) = &
+          NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) !SMCMAX_TABLE(SOILTYP)
+     SMCWLT(t) = &
+          NoahMP50_struc(n)%noahmp50(t)%param%SMCWLT(1) !SMCWLT_TABLE(SOILTYP)
   enddo
 
   call LIS_convertPatchSpaceToObsSpace(n,k,&
