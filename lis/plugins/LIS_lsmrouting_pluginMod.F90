@@ -20,7 +20,7 @@ module LIS_lsmrouting_pluginMod
 !  01 Jun 17    Augusto Getirana: Add HyMAP2
 !  12 Sep 19    Augusto Getirana: Add 2-way coupling
 !  17 Mar 21    Yeosang Yoon: Add RAPID
-!  16 Sep 26    Cenlin He:  Added NoahMP 5.0 
+!  16 Sep 26    Cenlin He:  Added NoahMP 5.0
 !
   implicit none
 
@@ -51,10 +51,10 @@ contains
     external :: registerlsmroutinggetrunoff
     external :: registerlsmroutinggetsws
 
-#if ( ( defined ROUTE_HYMAP_ROUTER ) ||
-    ( defined ROUTE_HYMAP2_ROUTER ) ||
-    ( defined ROUTE_HYMAP3_ROUTER ) ||
-    ( defined ROUTE_NLDAS_ROUTER ) ||
+#if ( ( defined ROUTE_HYMAP_ROUTER ) || \
+    ( defined ROUTE_HYMAP2_ROUTER ) || \
+    ( defined ROUTE_HYMAP3_ROUTER ) || \
+    ( defined ROUTE_NLDAS_ROUTER ) || \
     ( defined ROUTE_RAPID_ROUTER ))
 
 #if ( defined SM_LSM_TEMPLATE )

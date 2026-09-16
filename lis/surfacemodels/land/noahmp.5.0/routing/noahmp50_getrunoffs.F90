@@ -122,13 +122,13 @@ subroutine noahmp50_getrunoffs(n)
         call ESMF_StateGet(LIS_runoff_state(n),"Total Evapotranspiration", &
              evapotranspiration_Field, rc=status)
         call LIS_verify(status, &
-             "noahmp50_getrunoffs: ESMF_StateGet failed for Total " \\ &
+             "noahmp50_getrunoffs: ESMF_StateGet failed for Total " // &
              "Evapotranspiration")
 
         call ESMF_FieldGet(evapotranspiration_Field,localDE=0, &
              farrayPtr=evapotranspiration,rc=status)
         call LIS_verify(status, &
-             "noahmp50_getrunoffs: ESMF_FieldGet failed for Total " \\ &
+             "noahmp50_getrunoffs: ESMF_FieldGet failed for Total " // &
              "Evapotranspiration")
 
      endif

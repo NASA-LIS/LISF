@@ -40,17 +40,17 @@ subroutine noahmp50_setSnowModelimport(n, SubLSM2LSM_State)
   external :: noahmp50_snow_update
 
   call ESMF_StateGet(SubLSM2LSM_State,"Total SWE",sweField,rc=status)
-  call LIS_verify(status,"noahmp50_setSnowModelimport: error in swe " \\ &
+  call LIS_verify(status,"noahmp50_setSnowModelimport: error in swe " // &
        "state get from SnowModel")
   call ESMF_StateGet(SubLSM2LSM_State,"Total snowdepth",snwdField,rc=status)
-  call LIS_verify(status,"noahmp50_setSnowModelimport: error in snwd " \\ &
+  call LIS_verify(status,"noahmp50_setSnowModelimport: error in snwd " // &
        "state get from SnowModel")
 
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
-  call LIS_verify(status,"noahmp50_setSnowModelimport: error in swe " \\ &
+  call LIS_verify(status,"noahmp50_setSnowModelimport: error in swe " // &
        "data values")
   call ESMF_FieldGet(snwdField,localDE=0,farrayPtr=snwd,rc=status)
-  call LIS_verify(status,"noahmp50_setSnowModelimport: error in snwd " \\ &
+  call LIS_verify(status,"noahmp50_setSnowModelimport: error in snwd " // &
        "data values")
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)

@@ -107,12 +107,12 @@ subroutine noahmp50_getrunoffs_hymap2(n)
 
      call ESMF_StateGet(LIS_runoff_state(n),"Total Evapotranspiration",&
           evapotranspiration_Field, rc=status)
-     call LIS_verify(status, "noahmp50_getrunoffs_hymap2: ESMF_StateGet " \\ &
+     call LIS_verify(status, "noahmp50_getrunoffs_hymap2: ESMF_StateGet " // &
           "failed for Total Evapotranspiration")
 
      call ESMF_FieldGet(evapotranspiration_Field,localDE=0,&
           farrayPtr=evapotranspiration,rc=status)
-     call LIS_verify(status, "noahmp50_getrunoffs_hymap2: ESMF_FieldGet " \\ &
+     call LIS_verify(status, "noahmp50_getrunoffs_hymap2: ESMF_FieldGet " // &
           "failed for Total Evapotranspiration")
 
      do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
