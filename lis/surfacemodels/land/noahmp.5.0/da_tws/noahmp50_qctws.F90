@@ -24,16 +24,16 @@ subroutine noahmp50_qctws(n, LSM_State)
   use noahmp50_lsmMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
 ! !DESCRIPTION:
 !
-!  Returns the soilmoisture and groundwater related state prognostic variables for
-!  data assimilation
-! 
-!  The arguments are: 
+!  Returns the soilmoisture and groundwater related state prognostic variables
+!  for data assimilation
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
@@ -45,7 +45,7 @@ subroutine noahmp50_qctws(n, LSM_State)
   real, pointer          :: soilm2(:)
   real, pointer          :: soilm3(:)
   real, pointer          :: soilm4(:)
-  
+
   type(ESMF_Field)       :: sm1Field
   type(ESMF_Field)       :: sm2Field
   type(ESMF_Field)       :: sm3Field
@@ -62,7 +62,7 @@ subroutine noahmp50_qctws(n, LSM_State)
   real                   :: swemax
   real                   :: swemin
 
-!------- 
+!-------
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
@@ -87,7 +87,7 @@ subroutine noahmp50_qctws(n, LSM_State)
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm3,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet for Soil Moisture Layer 3 failed in noahmp50_qctws")
-  
+
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 4",sm4Field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet for Soil Moisture Layer 4 failed in noahmp50_qctws")
@@ -98,7 +98,7 @@ subroutine noahmp50_qctws(n, LSM_State)
 
   call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for gw in noahmp50_qctws')
-  
+
   call ESMF_FieldGet(gwField,localDE=0,farrayPtr=gws,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for gw in noahmp50_qctws')
 
@@ -120,22 +120,22 @@ subroutine noahmp50_qctws(n, LSM_State)
   call LIS_verify(status)
   call ESMF_AttributeGet(sweField,"Min Value",swemin,rc=status)
   call LIS_verify(status)
-  
-  !-------
 
+  !-------
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
   ! max min soil moisture should be retrieved based on soil type
      SOILTYP       = NoahMP50_struc(n)%noahmp50(t)%soiltype
-     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP) 
-     MIN_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCWLT(1)  !SMCWLT_TABLE(SOILTYP) 
+     !SMCMAX_TABLE(SOILTYP)
+     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)
+     !SMCWLT_TABLE(SOILTYP)
+     MIN_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCWLT(1)
      sm_threshold  = MAX_THRESHOLD - 0.02
-
 
      if(soilm1(t).gt.sm_threshold) then
         soilm1(t) = sm_threshold
      endif
-     
+
      if(soilm1(t).lt.MIN_THRESHOLD) then
         soilm1(t) = MIN_THRESHOLD
      endif
