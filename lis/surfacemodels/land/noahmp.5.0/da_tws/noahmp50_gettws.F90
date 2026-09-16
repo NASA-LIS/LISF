@@ -24,16 +24,16 @@ subroutine noahmp50_gettws(n, LSM_State)
   use noahmp50_lsmMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
 ! !DESCRIPTION:
 !
-!  Returns the soilmoisture and groundwater related state prognostic variables for
-!  data assimilation
-! 
-!  The arguments are: 
+!  Returns the soilmoisture and groundwater related state prognostic
+!  variables for data assimilation
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
@@ -79,7 +79,6 @@ subroutine noahmp50_gettws(n, LSM_State)
   call LIS_verify(status,'ESMF_FieldGet failed for gw in noahmp50_gettws')
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for SWE in noahmp50_gettws')
-
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index) !to mm
      soilm1(t) = NoahMP50_struc(n)%noahmp50(t)%smc(1)
