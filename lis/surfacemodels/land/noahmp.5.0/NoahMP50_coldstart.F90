@@ -241,8 +241,10 @@ subroutine NoahMP50_coldstart(mtype)
                 NoahmpIO%snicexy(1,-Noahmp50_struc(n)%nsnow+1:0,1)
            Noahmp50_struc(n)%noahmp50(t)%snowliq(1:Noahmp50_struc(n)%nsnow) = &
                 NoahmpIO%snliqxy(1,-Noahmp50_struc(n)%nsnow+1:0,1)
-           Noahmp50_struc(n)%noahmp50(t)%zss(1:Noahmp50_struc(n)%nsnow+Noahmp50_struc(n)%nsoil) = &
-                NoahmpIO%zsnsoxy(1,-Noahmp50_struc(n)%nsnow+1:Noahmp50_struc(n)%nsoil,1)
+           Noahmp50_struc(n)%noahmp50(t)%zss(1:Noahmp50_struc(n)%nsnow+ &
+                Noahmp50_struc(n)%nsoil) = &
+                NoahmpIO%zsnsoxy(1,-Noahmp50_struc(n)%nsnow+1: &
+                Noahmp50_struc(n)%nsoil,1)
            Noahmp50_struc(n)%noahmp50(t)%isnow = NoahmpIO%isnowxy(1,1)
            Noahmp50_struc(n)%noahmp50(t)%tsno(1:Noahmp50_struc(n)%nsnow) = &
                 NoahmpIO%tsnoxy(1,-Noahmp50_struc(n)%nsnow+1:0,1)
