@@ -20,6 +20,7 @@ module LIS_lsmoptue_pluginMod
 !
 ! !REVISION HISTORY:
 !  16 Jul 09    Sujay Kumar  Initial Specification
+!  16 Sep 26    Cenlin He    Added NoahMP 5.0 
 !
   implicit none
 
@@ -59,7 +60,8 @@ contains
       use LIS_coreMod,  only : LIS_rc
 
 #if ( defined PE_OBS_EMPTYOBS )
-      use Empty_obsMod, only: Empty_getpeobspred, Empty_setupobspred  ! used for MCSIM as does not rely on obs
+      ! used for MCSIM as does not rely on obs
+      use Empty_obsMod, only: Empty_getpeobspred, Empty_setupobspred
 #endif
 
 !    use noah271_peMod, only : noah271_setup_pedecvars
