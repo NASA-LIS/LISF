@@ -81,20 +81,25 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
 
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 1",sm1IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 1",sm1IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 1 failed in noahmp50_updatetws")
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 2",sm2IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 2",sm2IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 2 failed in noahmp50_updatetws")
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 3",sm3IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 3",sm3IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 3 failed in noahmp50_updatetws")
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 4",sm4IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 4",sm4IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 4 failed in noahmp50_updatetws")
 
-  call ESMF_StateGet(LSM_Incr_State, "Groundwater Storage",gwIncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State, "Groundwater Storage",gwIncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: Groundwater Storage failed in noahmp50_updatetws")
   call ESMF_StateGet(LSM_Incr_State,"SWE",sweIncrField,rc=status)
@@ -138,7 +143,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   call LIS_verify(status)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
      soilm1(t) = soilm1(t) + soilmIncr1(t)
      soilm2(t) = soilm2(t) + soilmIncr2(t)
      soilm3(t) = soilm3(t) + soilmIncr3(t)
