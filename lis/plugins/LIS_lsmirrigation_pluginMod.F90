@@ -17,6 +17,7 @@ module LIS_lsmirrigation_pluginMod
 !
 ! !REVISION HISTORY:
 !  13 Nov 2012    Sujay Kumar  Initial Specification
+!  16 Sep 2026    Cenlin He  Added NoahMP 5.0
 !
   implicit none
 
@@ -87,7 +88,8 @@ contains
 
 #if ( defined SM_NOAHMP_4_0_1 )
     call registerlsmirrigationgetstates(trim(LIS_noahmp401Id)//"+"//&
-         trim(LIS_sprinklerIrrigationId)//char(0),NoahMP401_getirrigationstates)
+         trim(LIS_sprinklerIrrigationId)//char(0), &
+         NoahMP401_getirrigationstates)
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
