@@ -149,7 +149,7 @@ subroutine noahmp50_snow_update(n, t, dsneqv, dsnowh)
   newnode = 0
 
   if(isnow == 0 .and. snowh >= 0.025.and.&
-       (dsneqv.gt.0.and.dsnowh.gt.0))  then !mb: change limit
+       (dsneqv.gt.0.and.dsnowh.gt.0))  then
      isnow    = -1
      newnode  =  1
      dzsnso(0)= snowh
@@ -190,7 +190,8 @@ subroutine noahmp50_snow_update(n, t, dsneqv, dsnowh)
      endif
   endif
 
-  ! ice fraction at the last timestep, add check for both snice and snliq are 0.0
+  ! ice fraction at the last timestep, add check for both snice and snliq
+  ! are 0.0
   do snl_idx=isnow+1,0
      if(snice(snl_idx)+snliq(snl_idx)>0.0) then
         ficeold(snl_idx)  = snice(snl_idx) / (snice(snl_idx)+snliq(snl_idx))
