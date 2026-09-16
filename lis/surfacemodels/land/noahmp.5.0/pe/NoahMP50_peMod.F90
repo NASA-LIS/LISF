@@ -645,21 +645,22 @@ contains
                      .and. &
                      ((vardata(gid) .lt. NoahMP50_pe_struc(n)%param_min(i)) &
                      .or. &
-                     (vardata(gid) .gt. NoahMP50_pe_struc(n)%param_max(i))) ) then
+                     (vardata(gid) .gt. &
+                     NoahMP50_pe_struc(n)%param_max(i))) ) then
                    count=count+1
                    write(LIS_logunit,*) &
-                        '*****************************************************************', '  ', &
-                        'WARNING: noah default value is out of LIS-OPT/UE bounds '                , '  ', &
-                        'for ', vname                                                             , '  ', &
-                        'at '                                                                     , '  ', &
-                        'col: ', LIS_surface(n,LIS_rc%lsm_index)%tile(gid)%col                    , '  ', &
-                        'row: ', LIS_surface(n,LIS_rc%lsm_index)%tile(gid)%row                    , '  ', &
-                        'vegt class: ', NoahMP50_struc(n)%noahmp50(gid)%vegetype                            , '  ', &
-                        'soiltype: ', NoahMP50_struc(n)%noahmp50(gid)%soiltype                          , '  ', &
-                        'default value: ', vardata(gid)                                           , '  ', &
-                        'parameter min: ', NoahMP50_pe_struc(n)%param_min(i)                        , '  ', &
-                        'parameter max: ', NoahMP50_pe_struc(n)%param_max(i)                        , '  ', &
-                        '*****************************************************************'
+   '*****************************************************************', '  ', &
+   'WARNING: noah default value is out of LIS-OPT/UE bounds ' , '  ', &
+   'for ', vname , '  ', &
+   'at ' , '  ', &
+   'col: ', LIS_surface(n,LIS_rc%lsm_index)%tile(gid)%col, '  ', &
+   'row: ', LIS_surface(n,LIS_rc%lsm_index)%tile(gid)%row, '  ', &
+   'vegt class: ', NoahMP50_struc(n)%noahmp50(gid)%vegetype, '  ', &
+   'soiltype: ', NoahMP50_struc(n)%noahmp50(gid)%soiltype, '  ', &
+   'default value: ', vardata(gid), '  ', &
+   'parameter min: ', NoahMP50_pe_struc(n)%param_min(i), '  ', &
+   'parameter max: ', NoahMP50_pe_struc(n)%param_max(i), '  ', &
+   '*****************************************************************'
 
                 endif
              enddo
@@ -670,8 +671,8 @@ contains
     !random initialization
     if(LIS_rc%decSpaceInitMode.eq.1) then  !random initialization
        seed=seed_base-LIS_localPet !seed must be negative number
-       call LIS_rand_func(seed,rand) !initialize random seed with negative number
-
+       !initialize random seed with negative number
+       call LIS_rand_func(seed,rand)
        do i=1,NoahMP50_pe_struc(n)%nparams
           if(NoahMP50_pe_struc(n)%param_select(i).eq.1) then
              vname=trim(NoahMP50_pe_struc(n)%param_name(i))
