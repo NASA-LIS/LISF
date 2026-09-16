@@ -21,6 +21,7 @@ module LIS_lsm_pluginMod
 !
 ! !REVISION HISTORY:
 !  09 Oct 03    Sujay Kumar  Initial Specification
+!  16 Sep 26    Cenlin He  Updated for NoahMP5.0.
 !
 !EOP
   implicit none
@@ -718,9 +719,11 @@ contains
 #if ( defined SM_NOAHMP_3_6 )
     call registerlsminit(trim(LIS_noahmp36Id)//char(0),noahmp36_ini)
     call registerlsmsetup(trim(LIS_noahmp36Id)//char(0),noahmp36_setup)
-    call registerlsmf2t(trim(LIS_noahmp36Id)//"+"//trim(LIS_retroId)//char(0),&
+    call registerlsmf2t(trim(LIS_noahmp36Id)//"+"//trim(LIS_retroId) &
+         //char(0),&
          noahmp36_f2t)
-    call registerlsmf2t(trim(LIS_noahmp36Id)//"+"//trim(LIS_nuopccplId)//char(0),&
+    call registerlsmf2t(trim(LIS_noahmp36Id)//"+"//trim(LIS_nuopccplId)// &
+         char(0),&
          noahmp36_f2t)
     call registerlsmf2t(trim(LIS_noahmp36Id)//"+"//&
          trim(LIS_smootherDAId)//char(0), noahmp36_f2t)
@@ -779,7 +782,8 @@ contains
          ruc37_f2t)
     call registerlsmf2t(trim(LIS_ruc37Id)//"+"//trim(LIS_nuopccplId)//char(0),&
          ruc37_f2t)
-    call registerlsmf2t(trim(LIS_ruc37Id)//"+"//trim(LIS_agrmetrunId)//char(0),&
+    call registerlsmf2t(trim(LIS_ruc37Id)//"+"//trim(LIS_agrmetrunId)// &
+         char(0),&
          ruc37_f2t)
     call registerlsmrun(trim(LIS_ruc37Id)//char(0),ruc37_main)
     call registerlsmrestart(trim(LIS_ruc37Id)//char(0),ruc37_readrst)
@@ -858,7 +862,8 @@ contains
     call registerlsmsetup(trim(LIS_vic411Id)//char(0),vic411_setup)
     call registerlsmf2t(trim(LIS_vic411Id)//"+"//trim(LIS_retroId)//char(0),&
          vic411_f2t)
-    call registerlsmf2t(trim(LIS_vic411Id)//"+"//trim(LIS_nuopccplId)//char(0),&
+    call registerlsmf2t(trim(LIS_vic411Id)//"+"//trim(LIS_nuopccplId)// &
+         char(0),&
          vic411_f2t)
     call registerlsmrun(trim(LIS_vic411Id)//char(0),vic411_main)
     call registerlsmdynsetup(trim(LIS_vic411Id)//char(0),vic411_dynsetup)
@@ -872,7 +877,8 @@ contains
     call registerlsmsetup(trim(LIS_vic412Id)//char(0),vic412_setup)
     call registerlsmf2t(trim(LIS_vic412Id)//"+"//trim(LIS_retroId)//char(0),&
          vic412_f2t)
-    call registerlsmf2t(trim(LIS_vic412Id)//"+"//trim(LIS_nuopccplId)//char(0),&
+    call registerlsmf2t(trim(LIS_vic412Id)//"+"//trim(LIS_nuopccplId)// &
+         char(0),&
          vic412_f2t)
     call registerlsmrun(trim(LIS_vic412Id)//char(0),vic412_main)
     call registerlsmdynsetup(trim(LIS_vic412Id)//char(0),vic412_dynsetup)
@@ -884,7 +890,8 @@ contains
 #if ( defined SM_AWRAL_6_0_0 )
     call registerlsminit(trim(LIS_AWRAL600Id)//char(0),AWRAL600_lsm_ini)
     call registerlsmsetup(trim(LIS_AWRAL600Id)//char(0),AWRAL600_setup)
-    call registerlsmf2t(trim(LIS_AWRAL600Id)//"+"//trim(LIS_retroId)//char(0),&
+    call registerlsmf2t(trim(LIS_AWRAL600Id)//"+"//trim(LIS_retroId)// &
+         char(0),&
          AWRAL600_f2t)
     call registerlsmrun(trim(LIS_AWRAL600Id)//char(0),AWRAL600_main)
     call registerlsmdynsetup(trim(LIS_AWRAL600Id)//char(0),AWRAL600_dynsetup)
@@ -973,7 +980,8 @@ contains
     call registerlsmdynsetup(trim(LIS_clsmf25Id)//char(0),clsmf25_dynsetup)
     call registerlsmf2t(trim(LIS_clsmf25Id)//"+"//trim(LIS_retroId)//char(0),&
          clsmf25_f2t)
-    call registerlsmf2t(trim(LIS_clsmf25Id)//"+"//trim(LIS_nuopccplId)//char(0),&
+    call registerlsmf2t(trim(LIS_clsmf25Id)//"+"//trim(LIS_nuopccplId)// &
+         char(0),&
          clsmf25_f2t)
     call registerlsmf2t(trim(LIS_clsmf25Id)//"+"//&
          trim(LIS_smootherDAId)//char(0), clsmf25_f2t)
