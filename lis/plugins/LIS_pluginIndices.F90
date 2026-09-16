@@ -31,6 +31,7 @@ module LIS_pluginIndices
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF
 !               for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS
+!  16 Sep 2026: Cenlin He, added NoahMP 5.0
 !
 !EOP
 
