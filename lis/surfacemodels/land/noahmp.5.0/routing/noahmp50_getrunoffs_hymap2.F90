@@ -61,7 +61,7 @@ subroutine noahmp50_getrunoffs_hymap2(n)
   call ESMF_AttributeGet(LIS_runoff_state(n), &
        "Routing model evaporation option",&
        evapflag, rc=status)
-!if option is not defined, then assume that no evap calculations will be done
+  !if option is not defined, then assume that no evap calculations will be done
   if(status.ne.0)then
      evapflag = 0
   endif
