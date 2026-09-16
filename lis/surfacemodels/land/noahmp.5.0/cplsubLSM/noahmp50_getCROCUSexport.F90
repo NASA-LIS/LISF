@@ -23,13 +23,13 @@ subroutine noahmp50_getCROCUSexport(n, LSM2SUBLSM_State)
   use noahmp50_lsmMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM2SUBLSM_State
-! 
+!
 ! !DESCRIPTION:
-! 
-! 
+!
+!
 !EOP
 
   type(ESMF_Field)   :: gtField
@@ -43,9 +43,11 @@ subroutine noahmp50_getCROCUSexport(n, LSM2SUBLSM_State)
 
   call ESMF_StateGet(LSM2SUBLSM_State,"Ground temperature",gtField,rc=status)
   call LIS_verify(status)
-  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric liquid water content",XWGField,rc=status)
+  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric liquid water content",&
+       XWGField,rc=status)
   call LIS_verify(status)
-  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric frozen water content",XWGIField,rc=status)
+  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric frozen water content",&
+       XWGIField,rc=status)
   call LIS_verify(status)
 
   call ESMF_FieldGet(gtField,localDE=0,farrayPtr=gt,rc=status)
@@ -55,13 +57,13 @@ subroutine noahmp50_getCROCUSexport(n, LSM2SUBLSM_State)
   call ESMF_FieldGet(XWGIField,localDE=0,farrayPtr=XWGI,rc=status)
   call LIS_verify(status)
 
-
-
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      gt(t) = NoahMP50_struc(n)%noahmp50(t)%tslb(1)
-     XWGI(t) = NoahMP50_struc(n)%noahmp50(t)%smc(1) - NoahMP50_struc(n)%noahmp50(t)%sh2o(1) ! volumetric frozen soil moisture [m3/m3]
-     XWG(t)  = NoahMP50_struc(n)%noahmp50(t)%sh2o(1) ! volumetric liquid soil moisture [m3/m3]
+     ! volumetric frozen soil moisture [m3/m3]
+     XWGI(t) = NoahMP50_struc(n)%noahmp50(t)%smc(1) - &
+          NoahMP50_struc(n)%noahmp50(t)%sh2o(1)
+     ! volumetric liquid soil moisture [m3/m3]
+     XWG(t)  = NoahMP50_struc(n)%noahmp50(t)%sh2o(1)
   enddo
-
 
 end subroutine noahmp50_getCROCUSexport
