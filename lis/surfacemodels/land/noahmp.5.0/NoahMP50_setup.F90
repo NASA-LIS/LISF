@@ -54,7 +54,8 @@ subroutine NoahMP50_setup()
 !  \begin{description}
 !  \item[LIS\_read\_param](\ref{LIS_read_param}) \\
 !    retrieves LIS parameter data from NetCDF file
-!  \item[NoahMP50\_read\_MULTILEVEL\_param](\ref{NoahMP50_read_MULTILEVEL_param}) \\
+!  \item[NoahMP50\_read\_MULTILEVEL\_param]
+!    (\ref{NoahMP50_read_MULTILEVEL_param}) \\
 !    retrieves MULTILEVEL spatial parameter from NetCDF file
 !  \end{description}
 !EOP
@@ -425,7 +426,8 @@ subroutine NoahMP50_setup()
      NoahmpIO%nsoil  = NoahMP50_struc(n)%nsoil
      NoahmpIO%nsnow  = NoahMP50_struc(n)%nsnow
 
-     call NoahmpIOVarInitDefault(NoahmpIO) ! initialize NoahmpIO to undefined/default value
+     ! initialize NoahmpIO to undefined/default value
+     call NoahmpIOVarInitDefault(NoahmpIO)
      !-------- NoahmpIO init complete
 
   enddo
@@ -467,7 +469,8 @@ subroutine NoahMP50_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 !   \item[n]
 !    index of n
 !   \item[level]
-!    level index (month, quarter, soil layer, snow layer) of the data to be read
+!    level index (month, quarter, soil layer, snow layer) of the data to
+!      be read
 !   \item[array]
 !    array containing returned values
 !   \end{description}
@@ -773,7 +776,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS_NEW(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,&
      parameters%GDDS4     =     NoahmpIO%GDDS4_TABLE(CROPTYPE) ! GDD from
                                               ! seeding to initial reproductive
      parameters%GDDS5     =     NoahmpIO%GDDS5_TABLE(CROPTYPE) ! GDD from
-                                                  ! seeding to pysical maturity
+                                                 ! seeding to physical maturity
      parameters%C3PSN     =    NoahmpIO%C3PSNI_TABLE(CROPTYPE)
      parameters%KC25      =     NoahmpIO%KC25I_TABLE(CROPTYPE)
      parameters%AKC       =      NoahmpIO%AKCI_TABLE(CROPTYPE)
@@ -797,7 +800,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS_NEW(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,&
      parameters%TASSIM1   =   NoahmpIO%TASSIM1_TABLE(CROPTYPE) ! CO2
             ! assimilation linearly increasing until temperature reaches T1 [C]
      parameters%TASSIM2   =   NoahmpIO%TASSIM2_TABLE(CROPTYPE) ! CO2
-      !assimilation rate remain at Aref until temperature reaches T2 [C]
+             !assimilation rate remain at Aref until temperature reaches T2 [C]
      parameters%K         =         NoahmpIO%K_TABLE(CROPTYPE) ! light
                                                        ! extinction coefficient
      parameters%EPSI      =      NoahmpIO%EPSI_TABLE(CROPTYPE) ! initial light
