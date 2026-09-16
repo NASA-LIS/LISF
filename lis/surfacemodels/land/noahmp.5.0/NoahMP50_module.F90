@@ -80,21 +80,26 @@ module NoahMP50_module
 !   \item[crs\_opt]
 !     canopt stomatal resistance (1-$>$Ball-Berry; 2-$>$Jarvis). unit: -
 !   \item[btr\_opt]
-!     soil moisture factor for stomatal resistance (1-$>$Noah;2-$>$CLM;3-$>$SSiB). unit: -
+!     soil moisture factor for stomatal resistance
+!       (1-$>$Noah;2-$>$CLM;3-$>$SSiB). unit: -
 !   \item[runsfc\_opt]
-!     surface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF; 6->VIC; 7->XinAnJiang; 8->DynamicVIC)
+!     surface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF;
+!       6 ->VIC; 7->XinAnJiang; 8->DynamicVIC)
 !   \item[runsub\_opt]
-!     subsurface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF; 6->VIC; 7->XinAnJiang; 8->DynamicVIC)
+!     subsurface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF;
+!       6->VIC; 7->XinAnJiang; 8->DynamicVIC)
 !   \item[sfc\_opt]
 !     surface layer drag coeff (CH \& CM) (1-$>$M-O; 2-$>$Chen97). unit: -
 !   \item[frz\_opt]
 !     supercooled liquid water (1-$>$NY06; 2-$>$Koren99). unit: -
 !   \item[tksno\_opt]
-!     snow thermal conductivity (1->Yen1965; 2->Anderson1976; 3->constant; 4->Verseghy1991; 5->Yen1981). unit: -
+!     snow thermal conductivity (1->Yen1965; 2->Anderson1976; 3->constant;
+!       4->Verseghy1991; 5->Yen1981). unit: -
 !   \item[inf\_opt]
 !     frozen soil permeability (1-$>$NY06; 2-$>$Koren99). unit: -
 !   \item[rad\_opt]
-!     radiation transfer (1-$>$gap=F(3D,cosz); 2-$>$gap=0; 3-$>$gap=1-Fveg). unit: -
+!     radiation transfer (1-$>$gap=F(3D,cosz); 2-$>$gap=0; 3-$>$gap=1-Fveg).
+!       unit: -
 !   \item[alb\_opt]
 !     snow surface albedo (1-$>$BATS; 2-$>$CLASS). unit: -
 !   \item[snf\_opt]
@@ -106,7 +111,8 @@ module NoahMP50_module
 !   \item[gla\_opt]
 !     glacier option (1-$>$phase change; 2-$>$simple). unit: -
 !   \item[rsf\_opt]
-!     surface resistance (1-$>$Sakaguchi/Zeng;2-$>$Seller;3-$>$mod Sellers;4-$>$1+snow). unit: -
+!     surface resistance (1-$>$Sakaguchi/Zeng;2-$>$Seller;3-$>$mod Sellers;
+!        4-$>$1+snow). unit: -
 !   \item[soil\_opt]
 !     soil configuration option. unit: -
 !   \item[pedo\_opt]
@@ -114,9 +120,11 @@ module NoahMP50_module
 !   \item[crop\_opt]
 !     crop model option (0-$>$none; 1-$>$Liu et al.2016). unit: -
 !   \item[irr\_opt]
-!     irrigation scheme option (0->none; 1->always on; 2->trigger by planting/harvest dates; 3->trigger by LAI)
+!     irrigation scheme option (0->none; 1->always on; 2->trigger by
+!        planting/harvest dates; 3->trigger by LAI)
 !   \item[irrm\_opt]
-!     irrigation method option (0->fraction from input; 1->sprinkler; 2->micro/drip; 3->flood)
+!     irrigation method option (0->fraction from input; 1->sprinkler;
+!        2->micro/drip; 3->flood)
 !   \item[tdrn\_opt]
 !     tile drainage option (0->none; 1->simple drainage; 2->Hooghoudt's scheme)
 !   \item[urban\_opt]
