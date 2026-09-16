@@ -67,9 +67,11 @@ subroutine noahmp50_qc_usafsiobs(n,k,OBS_State)
      vegt(t) = LIS_surface(n,1)%tile(t)%vegt
   enddo
 
+  !tv: vegetation temperature. unit: K
   call LIS_convertPatchSpaceToObsSpace(n,k,&
-       LIS_rc%lsm_index, Noahmp50_struc(n)%noahmp50(:)%tv,tv_obs) !tv: vegetation temperature. unit: K
-  call LIS_convertPatchSpaceToObsSpace(n,k,LIS_rc%lsm_index, &    !fveg: green vegetation fraction. unit: -
+       LIS_rc%lsm_index, Noahmp50_struc(n)%noahmp50(:)%tv,tv_obs)
+  !fveg: green vegetation fraction. unit: -
+  call LIS_convertPatchSpaceToObsSpace(n,k,LIS_rc%lsm_index, &
        Noahmp50_struc(n)%noahmp50(:)%fveg,fveg_obs)
 
   call LIS_convertPatchSpaceToObsSpace(n,k,&
