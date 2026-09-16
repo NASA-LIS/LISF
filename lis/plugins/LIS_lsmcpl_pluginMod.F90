@@ -21,7 +21,8 @@ module LIS_lsmcpl_pluginMod
 ! !REVISION HISTORY:
 !  09 Oct 07    Sujay Kumar  Initial Specification
 !  14 Dec 15    Eric Kemp    Added Noah 2.7.1, Noah 3.2, Noah 3.6 WRF coupling.
-!  22 Feb 19    Chandana Gangodagamage  Added NoahMP 3.6 for WRFHydro coupling 
+!  22 Feb 19    Chandana Gangodagamage  Added NoahMP 3.6 for WRFHydro coupling
+!  16 Sep 26    Cenlin He  Added NoahMP 5.0
 !EOP
   implicit none
   PRIVATE
