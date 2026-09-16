@@ -14,8 +14,8 @@
 ! !REVISION HISTORY:
 !  May 2023: Cenlin He; copied from NoahMP v4.5 (same physics as NoahMP v5.0)
 !
-!  TODO: This is only for snow DA use. May need a better integration with NoahMP
-!        refactored source code directly.
+!  TODO: This is only for snow DA use. May need a better integration with
+!    NoahMP refactored source code directly.
 
 module NoahMP50_snowphys_updateMod
 
@@ -419,7 +419,7 @@ contains
                ZWLIQ, ZWICE, TSNO(1))
 
           ! subdivide a new layer
-          IF (MSNO <= 2 .AND. DZ(2) > 0.20) THEN  ! Change limit
+          IF (MSNO <= 2 .AND. DZ(2) > 0.20) THEN
              MSNO = 3
              DTDZ = (TSNO(1) - TSNO(2))/((DZ(1)+DZ(2))/2.0)
              DZ(2)    = DZ(2)/2.0
