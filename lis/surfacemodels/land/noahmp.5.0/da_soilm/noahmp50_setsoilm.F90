@@ -115,8 +115,11 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      SOILTYP       = NoahMP50_struc(n)%noahmp50(t)%soiltype
-     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)   ! MAXSMC (SOILTYP)
-     sm_threshold  = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) - 0.02  ! MAXSMC (SOILTYP) - 0.02
+     MAX_THRESHOLD = &
+          NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)   ! MAXSMC (SOILTYP)
+     sm_threshold  = &
+          NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) &
+          - 0.02  ! MAXSMC (SOILTYP) - 0.02
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
@@ -179,7 +182,7 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
       if (pcount.lt.LIS_rc%nensem(n)*0.5) then   ! 50%
          update_flag_ens(gid)= .False.
       endif
-      update_flag_new(gid)= update_flag(gid).or.update_flag_ens(gid)  ! new flag
+      update_flag_new(gid)= update_flag(gid).or.update_flag_ens(gid) ! new flag
   enddo
 
   ! update step
@@ -267,9 +270,12 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
                  write(abort_message(1),*) 'setsoilm1 ',t,soilm1(t)
                  call LIS_abort(abort_message)
               endif
-              if(NoahMP50_struc(n)%noahmp50(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-                   NoahMP50_struc(n)%noahmp50(t)%sh2o(2)+delta2.lt.sm_threshold) then
-                 NoahMP50_struc(n)%noahmp50(t)%sh2o(2) = NoahMP50_struc(n)%noahmp50(t)%sh2o(2)+&
+              if(NoahMP50_struc(n)%noahmp50(t)%sh2o(2)+delta2.gt. &
+                   MIN_THRESHOLD .and.&
+                   NoahMP50_struc(n)%noahmp50(t)%sh2o(2)+delta2.lt. &
+                   sm_threshold) then
+                 NoahMP50_struc(n)%noahmp50(t)%sh2o(2) = &
+                      NoahMP50_struc(n)%noahmp50(t)%sh2o(2) + &
                       soilm2(t)-NoahMP50_struc(n)%noahmp50(t)%smc(2)
                  NoahMP50_struc(n)%noahmp50(t)%smc(2) = soilm2(t)
                  if(soilm2(t).lt.0) then
@@ -279,8 +285,10 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
                  endif
               endif
 
-              if(NoahMP50_struc(n)%noahmp50(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-                   NoahMP50_struc(n)%noahmp50(t)%sh2o(3)+delta3.lt.sm_threshold) then
+              if(NoahMP50_struc(n)%noahmp50(t)%sh2o(3)+delta3.gt. &
+                   MIN_THRESHOLD .and.&
+                   NoahMP50_struc(n)%noahmp50(t)%sh2o(3)+delta3.lt. &
+                   sm_threshold) then
                  NoahMP50_struc(n)%noahmp50(t)%sh2o(3) = &
                       NoahMP50_struc(n)%noahmp50(t)%sh2o(3)+&
                       soilm3(t)-NoahMP50_struc(n)%noahmp50(t)%smc(3)
@@ -292,8 +300,10 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
                  endif
               endif
 
-              if(NoahMP50_struc(n)%noahmp50(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-                   NoahMP50_struc(n)%noahmp50(t)%sh2o(4)+delta4.lt.sm_threshold) then
+              if(NoahMP50_struc(n)%noahmp50(t)%sh2o(4)+delta4.gt. &
+                   MIN_THRESHOLD .and.&
+                   NoahMP50_struc(n)%noahmp50(t)%sh2o(4)+delta4.lt. &
+                   sm_threshold) then
                  NoahMP50_struc(n)%noahmp50(t)%sh2o(4) = &
                       NoahMP50_struc(n)%noahmp50(t)%sh2o(4)+&
                       soilm4(t)-NoahMP50_struc(n)%noahmp50(t)%smc(4)
@@ -373,10 +383,12 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
                      t = i+m-1
                     !t = (i-1)*LIS_rc%nensem(n)+m
                     SOILTYP       = NoahMP50_struc(n)%noahmp50(t)%soiltype
+                    !SMCMAX_TABLE(SOILTYP)
                     MAX_THRESHOLD = &
-                         NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)        !SMCMAX_TABLE(SOILTYP)
+                         NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)
+                    !SMCMAX_TABLE(SOILTYP) - 0.02
                     sm_threshold  = &
-                         NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) - 0.02 !SMCMAX_TABLE(SOILTYP) - 0.02
+                         NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) - 0.02
 
                     tmpval = NoahMP50_struc(n)%noahmp50(t)%sh2o(j) - delta(j)
                     if(tmpval.le.MIN_THRESHOLD) then
@@ -425,8 +437,9 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
                        tmpval = NoahMP50_struc(n)%noahmp50(t)%sh2o(j) - &
                             delta(j)
                        SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
+                       !SMCMAX_TABLE(SOILTYP)
                        MAX_THRESHOLD = &
-                            NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) !SMCMAX_TABLE(SOILTYP)
+                            NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)
 
                        if(.not.(tmpval.le.0.0 .or.&
                             tmpval.gt.(MAX_THRESHOLD))) then
@@ -441,7 +454,9 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
 
                     tmpval = NoahMP50_struc(n)%noahmp50(t)%sh2o(j)
                     SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
-                    MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) !SMCMAX_TABLE(SOILTYP)
+                    !SMCMAX_TABLE(SOILTYP)
+                    MAX_THRESHOLD = &
+                         NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)
 
                     if(tmpval.le.0.0 .or.&
                          tmpval.gt.(MAX_THRESHOLD)) then
@@ -457,8 +472,10 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
                  ! All else fails, set to the bounds
                  !-------------------------------------------------------------
 
-                 write(LIS_logunit,*) '[ERR] Ensemble structure violates physical bounds '
-                 write(LIS_logunit,*) '[ERR] Please adjust the perturbation settings ..'
+                 write(LIS_logunit,*) &
+                      '[ERR] Ensemble structure violates physical bounds '
+                 write(LIS_logunit,*) &
+                      '[ERR] Please adjust the perturbation settings ..'
 
                  do j=1,4
                     do m=1,LIS_rc%nensem(n)
@@ -466,16 +483,22 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
                        !t = (i-1)*LIS_rc%nensem(n)+m
 
                        SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
-                       MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) !SMCMAX_TABLE(SOILTYP)
+                       !SMCMAX_TABLE(SOILTYP)
+                       MAX_THRESHOLD = &
+                            NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)
 
-                       if(NoahMP50_struc(n)%noahmp50(t)%sh2o(j).gt.MAX_THRESHOLD.or.&
-                            NoahMP50_struc(n)%noahmp50(t)%smc(j).gt.MAX_THRESHOLD) then
+                       if(NoahMP50_struc(n)%noahmp50(t)%sh2o(j).gt. &
+                            MAX_THRESHOLD.or.&
+                            NoahMP50_struc(n)%noahmp50(t)%smc(j).gt. &
+                            MAX_THRESHOLD) then
                           NoahMP50_struc(n)%noahmp50(t)%sh2o(j) = MAX_THRESHOLD
                           NoahMP50_struc(n)%noahmp50(t)%smc(j) = MAX_THRESHOLD
                        endif
 
-                       if(NoahMP50_struc(n)%noahmp50(t)%sh2o(j).lt.MIN_THRESHOLD.or.&
-                            NoahMP50_struc(n)%noahmp50(t)%smc(j).lt.MIN_THRESHOLD) then
+                       if(NoahMP50_struc(n)%noahmp50(t)%sh2o(j).lt.&
+                            MIN_THRESHOLD.or.&
+                            NoahMP50_struc(n)%noahmp50(t)%smc(j).lt.&
+                            MIN_THRESHOLD) then
                           NoahMP50_struc(n)%noahmp50(t)%sh2o(j) = MIN_THRESHOLD
                           NoahMP50_struc(n)%noahmp50(t)%smc(j) = MIN_THRESHOLD
                        endif
@@ -486,7 +509,6 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
         endif
      endif
   enddo
-
 
 end subroutine NoahMP50_setsoilm
 
