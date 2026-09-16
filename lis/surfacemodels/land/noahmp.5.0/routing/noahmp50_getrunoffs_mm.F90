@@ -61,9 +61,10 @@ subroutine noahmp50_getrunoffs_mm(n)
   runoff1_t = -9999.0
   runoff2_t = -9999.0
 
-  call ESMF_AttributeGet(LIS_runoff_state(n),"Routing model evaporation option",&
+  call ESMF_AttributeGet(LIS_runoff_state(n), &
+       "Routing model evaporation option",&
        evapflag, rc=status)
-!if option is not defined, then assume that no evap calculations will be done
+  !if option is not defined, then assume that no evap calculations will be done
   if(status.ne.0)then
      evapflag = 0
   endif
@@ -93,7 +94,7 @@ subroutine noahmp50_getrunoffs_mm(n)
   call LIS_patch2tile(n,1,runoff1_t, runoff1)
   call LIS_patch2tile(n,1,runoff2_t, runoff2)
 
-!gather the model tiles before assigning to the global data structure.
+  !gather the model tiles before assigning to the global data structure.
   call LIS_gather_tiled_vector_withhalo_output(n, gvar1, runoff1_t)
   call LIS_gather_tiled_vector_withhalo_output(n, gvar2, runoff2_t)
 
@@ -112,36 +113,44 @@ subroutine noahmp50_getrunoffs_mm(n)
   deallocate(runoff1_t)
   deallocate(runoff2_t)
 
-  !Including meteorological forcings + evapotranspiration for computing evaporation from open waters in HyMAP2)
+  ! Including meteorological forcings + evapotranspiration for computing
+  ! evaporation from open waters in HyMAP2)
   if(evapflag.ne.0)then
-    allocate(evapotranspiration1(LIS_rc%npatch(n,LIS_rc%lsm_index)))
-    allocate(evapotranspiration1_t(LIS_rc%ntiles(n)))
+     allocate(evapotranspiration1(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+     allocate(evapotranspiration1_t(LIS_rc%ntiles(n)))
 
-    if(LIS_masterproc) then
+     if(LIS_masterproc) then
 
-      call ESMF_StateGet(LIS_runoff_state(n),"Total Evapotranspiration",evapotranspiration_Field, rc=status)
-      call LIS_verify(status, "noahmp50_getrunoffs_mm: ESMF_StateGet failed for Total Evapotranspiration")
+        call ESMF_StateGet(LIS_runoff_state(n),"Total Evapotranspiration", &
+             evapotranspiration_Field, rc=status)
+        call LIS_verify(status, "noahmp50_getrunoffs_mm: ESMF_StateGet " // &
+             "failed for Total Evapotranspiration")
 
-      call ESMF_FieldGet(evapotranspiration_Field,localDE=0,farrayPtr=evapotranspiration,rc=status)
-      call LIS_verify(status, "noahmp50_getrunoffs_mm: ESMF_FieldGet failed for Total Evapotranspiration")
+        call ESMF_FieldGet(evapotranspiration_Field,localDE=0, &
+             farrayPtr=evapotranspiration,rc=status)
+        call LIS_verify(status, "noahmp50_getrunoffs_mm: ESMF_FieldGet " // &
+             "failed for Total Evapotranspiration")
 
-    endif
+     endif
 
-    do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
-       evapotranspiration1(t)  =  NoahMP50_struc(n)%noahmp50(t)%ecan + NoahMP50_struc(n)%noahmp50(t)%etran + NoahMP50_struc(n)%noahmp50(t)%edir
-    enddo
+     do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
+        evapotranspiration1(t)  =  NoahMP50_struc(n)%noahmp50(t)%ecan + &
+             NoahMP50_struc(n)%noahmp50(t)%etran + &
+             NoahMP50_struc(n)%noahmp50(t)%edir
+     enddo
 
-    call LIS_patch2tile(n,1,evapotranspiration1_t, evapotranspiration1)
+     call LIS_patch2tile(n,1,evapotranspiration1_t, evapotranspiration1)
 
-    call LIS_gather_tiled_vector_withhalo_output(n, gvar3, evapotranspiration1_t)
+     call LIS_gather_tiled_vector_withhalo_output(n, gvar3, &
+          evapotranspiration1_t)
 
-    if(LIS_masterproc) then
-       evapotranspiration = gvar3
-       deallocate(gvar3)
-    endif
+     if(LIS_masterproc) then
+        evapotranspiration = gvar3
+        deallocate(gvar3)
+     endif
 
-    deallocate(evapotranspiration1)
-    deallocate(evapotranspiration1_t)
+     deallocate(evapotranspiration1)
+     deallocate(evapotranspiration1_t)
   endif
 
 end subroutine noahmp50_getrunoffs_mm
