@@ -24,7 +24,7 @@ subroutine noahmp50_qcsnow(n, LSM_State)
   use LIS_logMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
@@ -33,7 +33,7 @@ subroutine noahmp50_qcsnow(n, LSM_State)
 !  QC's the related state prognostic variable objects for
 !  SNOW data assimilation
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
@@ -51,12 +51,12 @@ subroutine noahmp50_qcsnow(n, LSM_State)
 
   real                   :: sndens
   logical                :: update_flag(LIS_rc%ngrid(n))
- 
+
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
   call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
   call LIS_verify(status)
- 
+
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status)
   call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
@@ -92,7 +92,8 @@ subroutine noahmp50_qcsnow(n, LSM_State)
 !Use the model's snow density from the previous timestep
      sndens = 0.0
      if(NoahMP50_struc(n)%noahmp50(t)%snowh.gt.0) then
-       sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv/NoahMP50_struc(n)%noahmp50(t)%snowh
+        sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv/ &
+             NoahMP50_struc(n)%noahmp50(t)%snowh
      endif
 
 !If the update is unphysical, do not update.
