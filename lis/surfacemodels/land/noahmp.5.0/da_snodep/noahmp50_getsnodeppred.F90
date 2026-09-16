@@ -24,7 +24,7 @@ subroutine noahmp50_getsnodeppred(n, k, obs_pred)
   use LIS_DAobservationsMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   integer, intent(in)    :: k
   real                   :: obs_pred(LIS_rc%ngrid(n),LIS_rc%nensem(n))
@@ -35,8 +35,10 @@ subroutine noahmp50_getsnodeppred(n, k, obs_pred)
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      if (SNODEP_obs_obj(n)%mesh .eq. 8) then
-        snwd(t) = NoahMP50_struc(n)%noahmp50(t)%snowh*39.37 !convert from meter to inch
-     elseif (SNODEP_obs_obj(n)%mesh .eq. 16 .or. SNODEP_obs_obj(n)%mesh .eq. 25) then
+        snwd(t) = &
+             NoahMP50_struc(n)%noahmp50(t)%snowh*39.37 !convert from m to inch
+     elseif (SNODEP_obs_obj(n)%mesh .eq. 16 .or. &
+          SNODEP_obs_obj(n)%mesh .eq. 25) then
         snwd(t) = NoahMP50_struc(n)%noahmp50(t)%snowh
      endif
   enddo
@@ -45,6 +47,6 @@ subroutine noahmp50_getsnodeppred(n, k, obs_pred)
        LIS_rc%lsm_index, &
        snwd,&
        obs_pred)
-  
+
 end subroutine noahmp50_getsnodeppred
 
