@@ -22,16 +22,16 @@ subroutine NoahMP50_updatesoilm(n, LSM_State, LSM_Incr_State)
   use LIS_logMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
   type(ESMF_State)       :: LSM_Incr_State
 !
 ! !DESCRIPTION:
-!  
+!
 !  This routine assigns the soil moisture prognostic variables to noah's
-!  model space. 
-! 
+!  model space.
+!
 !EOP
 
   type(ESMF_Field)       :: sm1Field
@@ -80,16 +80,20 @@ subroutine NoahMP50_updatesoilm(n, LSM_State, LSM_Incr_State)
   call LIS_verify(status,&
        "ESMF_FieldGet: Soil Moisture Layer 4 failed in NoahMP50_updatesoilm")
 
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 1",sm1IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 1",sm1IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 1 failed in NoahMP50_updatesoilm")
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 2",sm2IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 2",sm2IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 2 failed in NoahMP50_updatesoilm")
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 3",sm3IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 3",sm3IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 3 failed in NoahMP50_updatesoilm")
-  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 4",sm4IncrField,rc=status)
+  call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 4",sm4IncrField, &
+       rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet: Soil Moisture Layer 4 failed in NoahMP50_updatesoilm")
 
