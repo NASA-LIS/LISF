@@ -22,7 +22,7 @@ subroutine noahmp50_updatesnowvars(n, LSM_State, LSM_Incr_State)
   use LIS_logMod,   only : LIS_verify
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
   type(ESMF_State)       :: LSM_Incr_State
@@ -31,12 +31,13 @@ subroutine noahmp50_updatesnowvars(n, LSM_State, LSM_Incr_State)
 !
 !  Returns the snow related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
-!  \item[LSM\_Incr\_State] ESMF State container for LSM state increments \newline
+!  \item[LSM\_Incr\_State] ESMF State container for LSM state
+!    increments \newline
 !  \end{description}
 !
 !EOP
@@ -54,7 +55,7 @@ subroutine noahmp50_updatesnowvars(n, LSM_State, LSM_Incr_State)
 
   real                   :: snodmean(LIS_rc%ngrid(n))
   integer                :: nsnodmean(LIS_rc%ngrid(n))
- 
+
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
   call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
@@ -65,7 +66,6 @@ subroutine noahmp50_updatesnowvars(n, LSM_State, LSM_Incr_State)
   call ESMF_StateGet(LSM_Incr_State,"Snowdepth",snodIncrField,rc=status)
   call LIS_verify(status)
 
- 
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status)
   call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
@@ -75,7 +75,6 @@ subroutine noahmp50_updatesnowvars(n, LSM_State, LSM_Incr_State)
   call LIS_verify(status)
   call ESMF_FieldGet(snodIncrField,localDE=0,farrayPtr=snodincr,rc=status)
   call LIS_verify(status)
-
 
   update_flag    = .true.
   perc_violation = 0.0
@@ -102,9 +101,9 @@ subroutine noahmp50_updatesnowvars(n, LSM_State, LSM_Incr_State)
      perc_violation(gid) = perc_violation(gid) / real(LIS_rc%nensem(n))
   enddo
 
-! For ensembles that are unphysical, compute the ensemble average after excluding them. This
-! is done only if the majority of the ensemble members are good (>80%)
-
+  ! For ensembles that are unphysical, compute the ensemble average after
+  ! excluding them. This is done only if the majority of the ensemble members
+  ! are good (>80%)
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      gid = LIS_domain(n)%gindex(&
@@ -144,7 +143,8 @@ subroutine noahmp50_updatesnowvars(n, LSM_State, LSM_Incr_State)
 !Use the model's snow density from the previous timestep
      sndens = 0.0
      if(NoahMP50_struc(n)%noahmp50(t)%snowh.gt.0) then
-       sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv/NoahMP50_struc(n)%noahmp50(t)%snowh
+        sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv / &
+             NoahMP50_struc(n)%noahmp50(t)%snowh
      endif
 
      if(update_flag(gid)) then
