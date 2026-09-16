@@ -121,7 +121,8 @@ subroutine noahmp50_settws(n, LSM_State)
      i = LIS_domain(n)%gindex(c,r)
 
      SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
-     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP)
+     MAX_THRESHOLD = &
+          NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP)
 
      !locations with large soil moisture values are ice points.
      !we turn off the increments in such locations.
@@ -131,7 +132,7 @@ subroutine noahmp50_settws(n, LSM_State)
      endif
 
      if(NoahMP50_struc(n)%noahmp50(t)%snowh.gt.0) then
-        snodens(t) = NoahMP50_struc(n)%noahmp50(t)%sneqv/&
+        snodens(t) = NoahMP50_struc(n)%noahmp50(t)%sneqv / &
              NoahMP50_struc(n)%noahmp50(t)%snowh
      else
         snodens(t) = 0.0
@@ -161,7 +162,8 @@ subroutine noahmp50_settws(n, LSM_State)
      i = LIS_domain(n)%gindex(c,r)
 
      SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
-     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP)
+     MAX_THRESHOLD = &
+          NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP)
      MIN_THRESHOLD = 0.02 !SMCWLT_TABLE(SOILTYP)
      sm_threshold  = MAX_THRESHOLD - 0.02
 
@@ -237,8 +239,10 @@ subroutine noahmp50_settws(n, LSM_State)
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
-     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)   ! MAXSMC (SOILTYP)
-     sm_threshold = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) - 0.02  ! MAXSMC (SOILTYP) - 0.02
+     MAX_THRESHOLD = &
+          NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)   ! MAXSMC (SOILTYP)
+     sm_threshold = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) &
+          - 0.02  ! MAXSMC (SOILTYP) - 0.02
 
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
@@ -365,7 +369,6 @@ subroutine noahmp50_settws(n, LSM_State)
   enddo
 
 end subroutine noahmp50_settws
-
 
 subroutine noahmp50_tws_reorderEnsForOutliers(i,nensem, statevec, &
      minvalue,maxvalue, status)
