@@ -20,6 +20,11 @@ module LIS_mpiMod
 #if (defined SPMD)
 #if (defined USE_INCLUDE_MPI)
   include 'mpif.h' 
+  external :: MPI_ALLGATHER
+  external :: MPI_ALLGATHERV
+  external :: MPI_ALLREDUCE
+  external :: MPI_BCAST
+  external :: MPI_GATHERV
 #else
   use mpi
 #endif
