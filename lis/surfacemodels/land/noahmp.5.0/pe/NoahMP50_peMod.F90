@@ -95,6 +95,8 @@ contains
     integer                     :: count
     integer                     :: gid
 
+    external :: LIS_readPEDecSpaceAttributes
+
     call ESMF_StateGet(Feas_State, "Feasibility Flag", feasField, rc=status)
     call LIS_verify(status)
     call ESMF_FieldGet(feasField,localDE=0,farrayPtr=mod_flag,rc=status)

@@ -40,6 +40,12 @@ subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
   integer                :: i
   integer                :: status
 
+  external :: NoahMP50_getvardata
+  external :: NoahMP50_checkBounds
+  external :: NoahMP50_checkConstraints
+  external :: NoahMP50_setVars
+  external :: NoahMP50_setModFlag
+
   n = 1
 
   allocate(mod_flag_NoahMP50(LIS_rc%npatch(n,LIS_rc%lsm_index)))
@@ -174,6 +180,8 @@ subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
   real, allocatable      :: vardata2(:)
   real, allocatable      :: vardata3(:)
 
+  external :: NoahMP50_getvardata
+
   allocate(vardata1(LIS_rc%npatch(n,LIS_rc%lsm_index)))
   allocate(vardata2(LIS_rc%npatch(n,LIS_rc%lsm_index)))
   allocate(vardata3(LIS_rc%npatch(n,LIS_rc%lsm_index)))
@@ -302,6 +310,8 @@ subroutine NoahMP50_setVars(n,DEC_State,mod_flag_NoahMP50)
   real                   :: vardata(LIS_rc%npatch(n,LIS_rc%lsm_index))
   character*100          :: vname
   integer                :: i,t, status
+
+  external :: NoahMP50_getvardata
 
   do i=1,NoahMP50_pe_struc(n)%nparams
      if(NoahMP50_pe_struc(n)%param_select(i).eq.1) then
