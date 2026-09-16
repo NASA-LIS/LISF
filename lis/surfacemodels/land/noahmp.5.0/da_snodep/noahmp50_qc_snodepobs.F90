@@ -24,19 +24,19 @@ subroutine noahmp50_qc_snodepobs(n,k,OBS_State)
   use noahmp50_lsmMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)      :: n
   integer, intent(in)      :: k
   type(ESMF_State)         :: OBS_State
 !
 ! !DESCRIPTION:
 !
-!  This subroutine performs any model-based QC of the observation 
+!  This subroutine performs any model-based QC of the observation
 !  prior to data assimilation. Here the snow observations
 !  are flagged when LSM indicates that (1) rain is falling (2)
-!  ground is fully or partially covered with snow. 
-!  
-!  The arguments are: 
+!  ground is fully or partially covered with snow.
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[OBS\_State] ESMF state container for observations \newline
@@ -61,15 +61,17 @@ subroutine noahmp50_qc_snodepobs(n,k,OBS_State)
   call ESMF_FieldGet(obs_snow_field,localDE=0,farrayPtr=snowobs,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet failed in noahmp50_qc_snodepobs")
-  
+
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
      stc1(t) = NoahMP50_struc(n)%noahmp50(t)%tslb(1) ! get snow/veg temp.
      vegt(t) = LIS_surface(n,1)%tile(t)%vegt
   enddo
 
-  call LIS_convertPatchSpaceToObsSpace(n,k,&       
-       LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50(:)%tv,tv_obs) !tv: vegetation temperature. unit: K 
-  call LIS_convertPatchSpaceToObsSpace(n,k,LIS_rc%lsm_index, &    !fveg: green vegetation fraction. unit: - 
+  !tv: vegetation temperature. unit: K 
+  call LIS_convertPatchSpaceToObsSpace(n,k,&
+       LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50(:)%tv,tv_obs)
+  !fveg: green vegetation fraction. unit: - 
+  call LIS_convertPatchSpaceToObsSpace(n,k,LIS_rc%lsm_index, &
        NoahMP50_struc(n)%noahmp50(:)%fveg,fveg_obs)
 
   call LIS_convertPatchSpaceToObsSpace(n,k,&
