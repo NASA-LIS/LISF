@@ -48,7 +48,8 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
 !    intensity exceeds total crop fraction
 !
 ! REVISION HISTORY:
-! May 2023: Cenlin He; update to work with Noah-MP refactored code (v5.0 and later)
+! May 2023: Cenlin He; update to work with Noah-MP refactored code (v5.0 and
+!    later)
 
 !EOP
   implicit none
@@ -211,9 +212,12 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
         zdpth(3) = sldpth(1) + sldpth(2) + sldpth(3)
         zdpth(4) = sldpth(1) + sldpth(2) + sldpth(3) + sldpth(4)
 
-        smcmax = Noahmp50_struc(n)%noahmp50(t)%param%SMCMAX(1) !SMCMAX_TABLE(soiltyp)
-        smcref = Noahmp50_struc(n)%noahmp50(t)%param%SMCREF(1) !SMCREF_TABLE(soiltyp)
-        smcwlt = Noahmp50_struc(n)%noahmp50(t)%param%SMCWLT(1) !SMCWLT_TABLE(soiltyp)
+        ! SMCMAX_TABLE(soiltyp)
+        smcmax = Noahmp50_struc(n)%noahmp50(t)%param%SMCMAX(1)
+        ! SMCREF_TABLE(soiltyp)
+        smcref = Noahmp50_struc(n)%noahmp50(t)%param%SMCREF(1)
+        ! SMCWLT_TABLE(soiltyp)
+        smcwlt = Noahmp50_struc(n)%noahmp50(t)%param%SMCWLT(1)
 
         tempcheck = 273.16 + 2.5
 
@@ -486,7 +490,6 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
                  if(irriggwratio(t).gt.0) then
                     Noahmp50_struc(n)%noahmp50(t)%wa = AWS - &
                          irrigRate(t)*Dtime*irriggwratio(t)/100
-
                  end if
               else
                  Noahmp50_struc(n)%noahmp50(t)%wa = AWS - irrigRate(t)*Dtime
