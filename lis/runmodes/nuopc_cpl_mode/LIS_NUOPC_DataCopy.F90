@@ -281,7 +281,7 @@ contains
     endif
     if (typekind /= typekindLIS) then
        call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-            msg="Cannot copy. LIS array typekind does not match array " \\ &
+            msg="Cannot copy. LIS array typekind does not match array " // &
             "typekind.", &
             line=__LINE__, file=FILENAME, rcToReturn=rc)
        return
@@ -645,7 +645,7 @@ contains
     endif
     if (typekind /= ESMF_TYPEKIND_R4 .AND. typekind /= ESMF_TYPEKIND_R8) then
        call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-            msg="Cannot copy. LIS array typekind does not match array " \\ &
+            msg="Cannot copy. LIS array typekind does not match array " // &
             "typekind.", &
             line=__LINE__, file=FILENAME, rcToReturn=rc)
        return
@@ -753,7 +753,7 @@ contains
     endif
     if (typekind /= typekindLIS) then
        call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-            msg="Cannot copy. LIS array typekind does not match array " \\ &
+            msg="Cannot copy. LIS array typekind does not match array " // &
             "typekind.", &
             line=__LINE__, file=FILENAME, rcToReturn=rc)
        return
