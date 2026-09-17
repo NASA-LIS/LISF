@@ -21,24 +21,25 @@ import sys
 import time
 
 _VARS = ['RelSMC_inst', 'SmLiqFrac_inst',
-        'SoilMoist_inst', 'SoilMoist_tavg',
-        'SoilTemp_inst', 'SoilTemp_tavg',
-        'RHMin_inst',
-        'Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg',
-        'CanopInt_inst', 'Elevation_inst', 'Evap_tavg',
-        'Greenness_inst',
-        'LWdown_f_inst', 'LWdown_f_tavg',
-        'Landcover_inst', 'Landmask_inst',
-        'Psurf_f_inst', 'Psurf_f_tavg',
-        'Qair_f_inst', 'Qair_f_tavg',
-        'Qg_tavg', 'Qh_tavg', 'Qle_tavg', 'Qs_acc',
-        'Qsb_acc', 'SWE_inst',
-        'SWdown_f_inst', 'SWdown_f_tavg',
-        'SnowDepth_inst', 'Snowcover_inst',
-        'Soiltype_inst',
-        'Tair_f_inst', 'Tair_f_max',
-        'Tair_f_tavg',
-        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+         'SoilMoist_inst', 'SoilMoist_tavg',
+         'SoilTemp_inst', 'SoilTemp_tavg',
+         'RHMin_inst',
+         'Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg',
+         'CanopInt_inst', 'Elevation_inst', 'Evap_tavg',
+         'Greenness_inst',
+         'LWdown_f_inst', 'LWdown_f_tavg',
+         'Landcover_inst', 'Landmask_inst',
+         'PotEvap_tavg',
+         'Psurf_f_inst', 'Psurf_f_tavg',
+         'Qair_f_inst', 'Qair_f_tavg',
+         'Qg_tavg', 'Qh_tavg', 'Qle_tavg', 'Qs_acc',
+         'Qsb_acc', 'SWE_inst',
+         'SWdown_f_inst', 'SWdown_f_tavg',
+         'SnowDepth_inst', 'Snowcover_inst',
+         'Soiltype_inst',
+         'Tair_f_inst', 'Tair_f_max',
+         'Tair_f_tavg',
+         'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
 
 def _main():
     """Main driver"""
@@ -65,7 +66,7 @@ fi
 
 module purge
 module use --append /home/emkemp/privatemodules/sles15
-module load lisf_7.6_intel_2023.2.1_emk_aiml
+module load lisf_7.8_intel_2023.2.1_emk_aiml
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1

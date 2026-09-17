@@ -18,9 +18,21 @@ Sample script to customize lvt.config files for noahmp401 postprocessing for
 import datetime
 import os
 
-_TEMPLATE = "templates/lvt.config.template.noahmp401.rapid"
+_TEMPLATE = "templates/lvt.config.template.noahmp401"
 
-_STARTDT = datetime.datetime(2025, 1, 20, 12)
+#_STARTDT = datetime.datetime(2025, 1, 20, 12)
+#_ENDDT = datetime.datetime(2025, 1, 21, 0)
+#_STARTDT = datetime.datetime(2025, 1, 20, 18)
+#_ENDDT = datetime.datetime(2025, 1, 21, 6)
+#_STARTDT = datetime.datetime(2025, 1, 21, 0)
+#_ENDDT = datetime.datetime(2025, 1, 21, 12)
+#_STARTDT = datetime.datetime(2025, 1, 21, 6)
+#_ENDDT = datetime.datetime(2025, 1, 21, 18)
+#_STARTDT = datetime.datetime(2025, 1, 21, 12)
+#_ENDDT = datetime.datetime(2025, 1, 22, 0)
+#_STARTDT = datetime.datetime(2025, 1, 21, 18)
+#_ENDDT = datetime.datetime(2025, 1, 22, 6)
+_STARTDT = datetime.datetime(2025, 1, 22, 0)
 _ENDDT = datetime.datetime(2025, 1, 22, 12)
 
 _OUTPUT = "grib2"  # For 557 ops
@@ -50,6 +62,8 @@ _VAR_ATTRIBUTES = {
         "LWdown_f    1  1  W/m2   -  0  1 LWdown_f    1  1  W/m2   -  0  1 ",
     "LWdown_f_tavg":
         "LWdown_f    1  1  W/m2   -  1  1 LWdown_f    1  1  W/m2   -  1  1 ",
+    "PotEvap_tavg":
+        "PotEvap     1  1  W/m2   -  1  1 PotEvap     1  1  W/m2   -  1  1",
     "Psurf_f_inst":
         "Psurf_f     1  1  Pa     -  0  1 Psurf_f     1  1  Pa     -  0  1",
     "Psurf_f_tavg":
