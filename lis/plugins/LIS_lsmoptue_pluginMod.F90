@@ -93,7 +93,6 @@ contains
 !    external noah32_setupobspred_ARMObs
 !    external noah32_getpeobspred_ARMObs
 
-
 #if ( defined SM_NOAH_3_3 )
       external noah33_f2t
       external noah33_set_pedecvars
@@ -154,6 +153,12 @@ contains
       external NoahMP50_setupobspred_UAsnowobs
 
 #endif
+
+      external :: registerlsmf2t
+      external :: registerlsmpesetupdecisionspace
+      external :: registerlsmpesetdecisionspace
+      external :: registerlsmpesetupobspred
+      external :: registerlsmpegetobspred
 
 !    call registerlsmf2t(trim(LIS_noah271Id)//char(0), &
 !                        trim(LIS_paramEstimRunId)//char(0),noah271_f2t)
