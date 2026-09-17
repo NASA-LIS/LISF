@@ -82,6 +82,9 @@ contains
 #if ( defined RM_WRF_COUPLING )
     use LIS_pluginIndices
 
+    external :: registerlsmf2t
+    external :: registerlsmcplsetexport
+
 #if ( defined SM_NOAH_2_7_1 )
     external noah271_wrf_f2t
     external noah271_setwrfexport
