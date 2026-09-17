@@ -1,0 +1,36 @@
+NoahMP-5.0 LSM Testcase
+
+This is a testcase that uses:
+  (a) The "NLDAS grib" forcing
+  (b) Nearest neighbour Interpolation
+  (c) The NoahMP version 5.0 land surface model
+  (e) North American domain at 1/4 degree spatial resolution
+  (f) A time period from 00:00Z 1 Jan 2008 to 00:00Z 2 Jan 2008
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) An "input.ctl" file used to open the LDT parameters in GrADS
+  (d) The "lis.config.nldas" file used for this testcase
+  (e) The "MODEL_OUTPUT_LIST_noahmp5_NLDAS.TBL" file used by the lis.config.nldas file
+     to select the output variables
+  (f) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+
+Note that the "ldt.config" and "lis.config.nldas" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables
+  (b) Run the LDT executable using the "ldt.config" file 
+      with the testcase input data
+  (c) Run the LIS executable using the "lis.config.nldas" file with the
+      testcase input data
+  (d) View the binary output using the testcase GrADS files
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+

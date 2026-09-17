@@ -22,6 +22,7 @@ module LIS_NUOPC_DataCopy
 !
 ! !REVISION HISTORY:
 !  2017Jan06    Dan Rosen  Split from gluecode
+!  2026Sep16    Cenlin He  Added NoahMP 5.0
 !
 ! !USES:
   use ESMF
@@ -33,6 +34,7 @@ module LIS_NUOPC_DataCopy
   use noah33_lsmMod
   use NoahMP36_lsmMod
   use NoahMP401_lsmMod
+  use NoahMP50_lsmMod
 
   IMPLICIT NONE
 
@@ -44,6 +46,7 @@ module LIS_NUOPC_DataCopy
   public :: LIS_CopyToNoah_3_3
   public :: LIS_CopyToNoahMP_3_6
   public :: LIS_CopyToNoahMP_4_0_1
+  public :: LIS_CopyToNoahMP_5_0
   public :: LIS_CopyFromLIS
 
 !-----------------------------------------------------------------------------
@@ -52,56 +55,62 @@ module LIS_NUOPC_DataCopy
 
 !> @cond IGNORE_INTERFACES
   interface LIS_CopyToLIS
-    module procedure LIS_FieldCopyToLisField
-    module procedure LIS_FieldCopyToLisFarray
-    module procedure LIS_ArrayCopyToLisArray
-    module procedure LIS_ArrayCopyToLisFarray
-    module procedure LIS_FarrayI4CopyToLisFarrayI4
-    module procedure LIS_FarrayI8CopyToLisFarrayI8
-    module procedure LIS_FarrayR8CopyToLisFarrayR4
-    module procedure LIS_FarrayR4CopyToLisFarrayR4
-    module procedure LIS_FarrayR8CopyToLisFarrayR8
-    module procedure LIS_EnsFarrayI4CopyToLisFarrayI4
-    module procedure LIS_EnsFarrayI8CopyToLisFarrayI8
-    module procedure LIS_EnsFarrayR8CopyToLisFarrayR4
-    module procedure LIS_EnsFarrayR4CopyToLisFarrayR4
-    module procedure LIS_EnsFarrayR8CopyToLisFarrayR8
-  end interface
+     module procedure LIS_FieldCopyToLisField
+     module procedure LIS_FieldCopyToLisFarray
+     module procedure LIS_ArrayCopyToLisArray
+     module procedure LIS_ArrayCopyToLisFarray
+     module procedure LIS_FarrayI4CopyToLisFarrayI4
+     module procedure LIS_FarrayI8CopyToLisFarrayI8
+     module procedure LIS_FarrayR8CopyToLisFarrayR4
+     module procedure LIS_FarrayR4CopyToLisFarrayR4
+     module procedure LIS_FarrayR8CopyToLisFarrayR8
+     module procedure LIS_EnsFarrayI4CopyToLisFarrayI4
+     module procedure LIS_EnsFarrayI8CopyToLisFarrayI8
+     module procedure LIS_EnsFarrayR8CopyToLisFarrayR4
+     module procedure LIS_EnsFarrayR4CopyToLisFarrayR4
+     module procedure LIS_EnsFarrayR8CopyToLisFarrayR8
+  end interface LIS_CopyToLIS
 
   interface LIS_CopyToNoah_3_3
-    module procedure LIS_FieldCopyToNoah_3_3
-    module procedure LIS_FarrayCopyToNoah_3_3
-    module procedure LIS_EnsFarrayCopyToNoah_3_3
-  end interface
+     module procedure LIS_FieldCopyToNoah_3_3
+     module procedure LIS_FarrayCopyToNoah_3_3
+     module procedure LIS_EnsFarrayCopyToNoah_3_3
+  end interface LIS_CopyToNoah_3_3
 
   interface LIS_CopyToNoahMP_3_6
-    module procedure LIS_FieldCopyToNoahMP_3_6
-    module procedure LIS_FarrayCopyToNoahMP_3_6
-    module procedure LIS_EnsFarrayCopyToNoahMP_3_6
-  end interface
+     module procedure LIS_FieldCopyToNoahMP_3_6
+     module procedure LIS_FarrayCopyToNoahMP_3_6
+     module procedure LIS_EnsFarrayCopyToNoahMP_3_6
+  end interface LIS_CopyToNoahMP_3_6
 
   interface LIS_CopyToNoahMP_4_0_1
-    module procedure LIS_FieldCopyToNoahMP_4_0_1
-    module procedure LIS_FarrayCopyToNoahMP_4_0_1
-    module procedure LIS_EnsFarrayCopyToNoahMP_4_0_1
-  end interface
+     module procedure LIS_FieldCopyToNoahMP_4_0_1
+     module procedure LIS_FarrayCopyToNoahMP_4_0_1
+     module procedure LIS_EnsFarrayCopyToNoahMP_4_0_1
+  end interface LIS_CopyToNoahMP_4_0_1
+
+  interface LIS_CopyToNoahMP_5_0
+     module procedure LIS_FieldCopyToNoahMP_5_0
+     module procedure LIS_FarrayCopyToNoahMP_5_0
+     module procedure LIS_EnsFarrayCopyToNoahMP_5_0
+  end interface LIS_CopyToNoahMP_5_0
 
   interface LIS_CopyFromLIS
-    module procedure LIS_FieldCopyFromLisField
-    module procedure LIS_FieldCopyFromLisFarray
-    module procedure LIS_ArrayCopyFromLisArray
-    module procedure LIS_ArrayCopyFromLisFarray
-    module procedure LIS_FarrayI4CopyFromLisFarrayI4
-    module procedure LIS_FarrayI8CopyFromLisFarrayI8
-    module procedure LIS_FarrayR8CopyFromLisFarrayR4
-    module procedure LIS_FarrayR4CopyFromLisFarrayR4
-    module procedure LIS_FarrayR8CopyFromLisFarrayR8
-    module procedure LIS_EnsFarrayI4CopyFromLisFarrayI4
-    module procedure LIS_EnsFarrayI8CopyFromLisFarrayI8
-    module procedure LIS_EnsFarrayR8CopyFromLisFarrayR4
-    module procedure LIS_EnsFarrayR4CopyFromLisFarrayR4
-    module procedure LIS_EnsFarrayR8CopyFromLisFarrayR8
-  end interface
+     module procedure LIS_FieldCopyFromLisField
+     module procedure LIS_FieldCopyFromLisFarray
+     module procedure LIS_ArrayCopyFromLisArray
+     module procedure LIS_ArrayCopyFromLisFarray
+     module procedure LIS_FarrayI4CopyFromLisFarrayI4
+     module procedure LIS_FarrayI8CopyFromLisFarrayI8
+     module procedure LIS_FarrayR8CopyFromLisFarrayR4
+     module procedure LIS_FarrayR4CopyFromLisFarrayR4
+     module procedure LIS_FarrayR8CopyFromLisFarrayR8
+     module procedure LIS_EnsFarrayI4CopyFromLisFarrayI4
+     module procedure LIS_EnsFarrayI8CopyFromLisFarrayI8
+     module procedure LIS_EnsFarrayR8CopyFromLisFarrayR4
+     module procedure LIS_EnsFarrayR4CopyFromLisFarrayR4
+     module procedure LIS_EnsFarrayR8CopyFromLisFarrayR8
+  end interface LIS_CopyFromLIS
 !> @endcond
 
 !-----------------------------------------------------------------------------
@@ -110,9 +119,9 @@ module LIS_NUOPC_DataCopy
 
 contains
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
   ! Copy Data To/From LIS 1D Array and 2D Array
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FieldCopyToLisField"
@@ -137,7 +146,7 @@ contains
     if(ESMF_STDERRORCHECK(rc)) return
   end subroutine
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FieldCopyToLisFarray"
@@ -159,7 +168,7 @@ contains
     if(ESMF_STDERRORCHECK(rc)) return
   end subroutine
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FieldCopyFromLisField"
@@ -182,11 +191,11 @@ contains
     call ESMF_FieldGet(field=field,array=array,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
     call LIS_CopyFromLIS(arrayLIS=arrayLIS,array=array,nest=nest,&
-      fillVal=fillVal,rc=rc)
+         fillVal=fillVal,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
   end subroutine
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FieldCopyFromLisFarray"
@@ -206,11 +215,11 @@ contains
     call ESMF_FieldGet(field=field,array=array,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
     call LIS_CopyFromLIS(farrayLIS=farrayLIS,array=array,nest=nest,&
-      fillVal=fillVal,rc=rc)
+         fillVal=fillVal,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
-  end subroutine
+  end subroutine LIS_FieldCopyFromLisFarray
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_ArrayCopyToLisArray"
@@ -246,101 +255,110 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(arrayLIS,typekind=typekindLIS,rank=rankLIS, &
-      localDeCount=localDeCountLIS,rc=rc)
+         localDeCount=localDeCountLIS,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
+         localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     if (rank /= 2 .AND. rank /= 3) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D or 3D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (rankLIS /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array is not a 1D tile array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. LIS array is not a 1D tile array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (localDeCount /= localDeCountLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array does not match array decomposition.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. LIS array does not match array decomposition.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (typekind /= typekindLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. LIS array typekind does not match array " // &
+            "typekind.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
     if(typekind==ESMF_TYPEKIND_I4) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray_I4,farrayLIS=farrayLIS_I4,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_I4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray3D_I4,farrayLIS=farrayLIS_I4,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if(rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray_I4,farrayLIS=farrayLIS_I4, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_I4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray3D_I4,farrayLIS=farrayLIS_I4, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     elseif(typekind==ESMF_TYPEKIND_I8) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray_I8,farrayLIS=farrayLIS_I8,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_I8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray3D_I8,farrayLIS=farrayLIS_I8,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if(rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray_I8,farrayLIS=farrayLIS_I8, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_I8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray3D_I8,farrayLIS=farrayLIS_I8, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     elseif(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS_R4,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray3D_R4,farrayLIS=farrayLIS_R4,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if(rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS_R4, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray3D_R4,farrayLIS=farrayLIS_R4, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS_R8,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray3D_R8,farrayLIS=farrayLIS_R8,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if(rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS_R8, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray3D_R8,farrayLIS=farrayLIS_R8, &
+               nest=nest,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+            msg="Typekind copy not implemented.",rcToReturn=rc)
+       return
     endif
-  end subroutine
+  end subroutine LIS_ArrayCopyToLisArray
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FieldCopyToNoah_3_3"
@@ -354,7 +372,7 @@ contains
     type(missingval_flag),intent(in)        :: missing
     integer,intent(out)                     :: rc
 ! !LOCAL VARIABLES:
-   type(ESMF_Array)                 :: array
+    type(ESMF_Array)                 :: array
     integer                         :: localDeCount
     type(ESMF_TypeKind_Flag)        :: typekind
     integer                         :: rank
@@ -370,36 +388,36 @@ contains
     call ESMF_FieldGet(field=field,array=array,rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
+         localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
     if (rank /= 2 .AND. rank /= 3) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D or 3D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (localDeCount /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Local DE count is not 1.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Local DE count is not 1.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if(rank==2) then
-      call ESMF_ArrayGet(array,farrayPtr=farray,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      call LIS_CopyToNoah_3_3(farray=farray,stdName=stdName,nest=nest, &
-        missing=missing,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
+       call ESMF_ArrayGet(array,farrayPtr=farray,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoah_3_3(farray=farray,stdName=stdName,nest=nest, &
+            missing=missing,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
     else
-      call ESMF_ArrayGet(array,farrayPtr=farray3D,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      call LIS_CopyToNoah_3_3(farray=farray3D,stdName=stdName,nest=nest, &
-        missing=missing,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
+       call ESMF_ArrayGet(array,farrayPtr=farray3D,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoah_3_3(farray=farray3D,stdName=stdName,nest=nest, &
+            missing=missing,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
     endif
-  end subroutine
+  end subroutine LIS_FieldCopyToNoah_3_3
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FieldCopyToNoahMP_3_6"
@@ -429,38 +447,38 @@ contains
     if(ESMF_STDERRORCHECK(rc)) return
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
+         localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     if (rank /= 2 .AND. rank /= 3) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D or 3D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (localDeCount /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Local DE count is not 1.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Local DE count is not 1.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
     if(rank==2) then
-      call ESMF_ArrayGet(array,farrayPtr=farray,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      call LIS_CopyToNoahMP_3_6(farray=farray,stdName=stdName,nest=nest, &
-        missing=missing,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
+       call ESMF_ArrayGet(array,farrayPtr=farray,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoahMP_3_6(farray=farray,stdName=stdName,nest=nest, &
+            missing=missing,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
     else
-      call ESMF_ArrayGet(array,farrayPtr=farray3D,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      call LIS_CopyToNoahMP_3_6(farray=farray3D,stdName=stdName,nest=nest, &
-        missing=missing,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
+       call ESMF_ArrayGet(array,farrayPtr=farray3D,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoahMP_3_6(farray=farray3D,stdName=stdName,nest=nest, &
+            missing=missing,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
     endif
-  end subroutine
+  end subroutine LIS_FieldCopyToNoahMP_3_6
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FieldCopyToNoahMP_4_0_1"
@@ -490,38 +508,100 @@ contains
     if(ESMF_STDERRORCHECK(rc)) return
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
+         localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     if (rank /= 2 .AND. rank /= 3) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D or 3D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (localDeCount /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Local DE count is not 1.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Local DE count is not 1.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
     if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToNoahMP_4_0_1(farray=farray,stdName=stdName,nest=nest, &
-          missing=missing, rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
+       call ESMF_ArrayGet(array,farrayPtr=farray,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoahMP_4_0_1(farray=farray,stdName=stdName,nest=nest, &
+            missing=missing, rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
     else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToNoahMP_4_0_1(farray=farray3D,stdName=stdName,nest=nest, &
-          missing=missing, rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
+       call ESMF_ArrayGet(array,farrayPtr=farray3D,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoahMP_4_0_1(farray=farray3D,stdName=stdName,nest=nest, &
+            missing=missing, rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
     endif
-  end subroutine
+  end subroutine LIS_FieldCopyToNoahMP_4_0_1
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_FieldCopyToNoahMP_5_0"
+
+  subroutine LIS_FieldCopyToNoahMP_5_0(field,stdName,nest,missing,rc)
+! !ARGUMENTS:
+    type(ESMF_Field),intent(in)            :: field
+    character(*),intent(in)                :: stdName
+    integer,intent(in)                     :: nest
+    type(missingval_flag),intent(in)       :: missing
+    integer,intent(out)                    :: rc
+! !ARGUMENTS:
+    type(ESMF_Array)                        :: array
+    integer                         :: localDeCount
+    type(ESMF_TypeKind_Flag)        :: typekind
+    integer                         :: rank
+    real(ESMF_KIND_FIELD),pointer   :: farray(:,:)
+    real(ESMF_KIND_FIELD),pointer   :: farray3D(:,:,:)
+!
+! !DESCRIPTION:
+!
+!
+!EOP
+
+    rc = ESMF_SUCCESS
+
+    call ESMF_FieldGet(field=field,array=array,rc=rc)
+    if(ESMF_STDERRORCHECK(rc)) return
+
+    call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
+         localDeCount=localDeCount,rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return
+
+    if (rank /= 2 .AND. rank /= 3) then
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
+    endif
+    if (localDeCount /= 1) then
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Local DE count is not 1.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
+    endif
+
+    if(rank==2) then
+       call ESMF_ArrayGet(array,farrayPtr=farray,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoahMP_5_0(farray=farray,stdName=stdName,nest=nest, &
+            missing=missing, rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+    else
+       call ESMF_ArrayGet(array,farrayPtr=farray3D,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       call LIS_CopyToNoahMP_5_0(farray=farray3D,stdName=stdName,nest=nest, &
+            missing=missing, rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+    endif
+  end subroutine LIS_FieldCopyToNoahMP_5_0
+
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_ArrayCopyToLisFarray"
@@ -548,64 +628,69 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
+         localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     if (rank /= 2 .AND. rank /= 3) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D or 3D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (localDeCount /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array local decomposition count must be 1.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array local decomposition count must be 1.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (typekind /= ESMF_TYPEKIND_R4 .AND. typekind /= ESMF_TYPEKIND_R8) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. LIS array typekind does not match array " // &
+            "typekind.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
     if(rank==2) then
-      if(typekind==ESMF_TYPEKIND_R4) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      elseif(typekind==ESMF_TYPEKIND_R8) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-          msg="Typekind copy not implemented.",rcToReturn=rc)
-        return
-      endif
+       if(typekind==ESMF_TYPEKIND_R4) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray_R4,farrayLIS=farrayLIS,nest=nest, &
+               rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       elseif(typekind==ESMF_TYPEKIND_R8) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray_R8,farrayLIS=farrayLIS,nest=nest, &
+               rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+               msg="Typekind copy not implemented.",rcToReturn=rc)
+          return
+       endif
     else
-      if(typekind==ESMF_TYPEKIND_R4) then
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray3D_R4,farrayLIS=farrayLIS,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      elseif(typekind==ESMF_TYPEKIND_R8) then
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyToLIS(farray=farray3D_R8,farrayLIS=farrayLIS,nest=nest,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-          msg="Typekind copy not implemented.",rcToReturn=rc)
-        return
-      endif
+       if(typekind==ESMF_TYPEKIND_R4) then
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray3D_R4,farrayLIS=farrayLIS,nest=nest,&
+               rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       elseif(typekind==ESMF_TYPEKIND_R8) then
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyToLIS(farray=farray3D_R8,farrayLIS=farrayLIS,nest=nest,&
+               rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+               msg="Typekind copy not implemented.",rcToReturn=rc)
+          return
+       endif
     endif
-  end subroutine
+  end subroutine LIS_ArrayCopyToLisFarray
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_ArrayCopyFromLisArray"
@@ -642,109 +727,118 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(arrayLIS,typekind=typekindLIS,rank=rankLIS, &
-      localDeCount=localDeCountLIS,rc=rc)
+         localDeCount=localDeCountLIS,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
+         localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     if (rank /= 2 .AND. rank /= 3) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D or 3D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (rankLIS /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array is not a 1D tile array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. LIS array is not a 1D tile array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (localDeCount /= localDeCountLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array does not match array decomposition.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. LIS array does not match array decomposition.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (typekind /= typekindLIS) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. LIS array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. LIS array typekind does not match array " // &
+            "typekind.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
     if(typekind==ESMF_TYPEKIND_I4) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray_I4,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_I4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray3D_I4,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I4,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if(rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_I4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray_I4, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_I4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_I4,farray=farray3D_I4, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     elseif(typekind==ESMF_TYPEKIND_I8) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray_I8,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_I8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray3D_I8,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_I8,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if(rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_I8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray_I8, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_I8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_I8,farray=farray3D_I8, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     elseif(typekind==ESMF_TYPEKIND_R4) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if(rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray_R4,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray3D_R4,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R4,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if(rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray_R4, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_R4,farray=farray3D_R4, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     elseif(typekind==ESMF_TYPEKIND_R8) then
-      call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
-      if(ESMF_STDERRORCHECK(rc)) return
-      if (rank==2) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray_R8,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray3D_R8,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      endif
+       call ESMF_ArrayGet(arrayLIS,farrayPtr=farrayLIS_R8,rc=rc)
+       if(ESMF_STDERRORCHECK(rc)) return
+       if (rank==2) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray_R8, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS_R8,farray=farray3D_R8, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       endif
     else
-      call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="Typekind copy not implemented.",rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+            msg="Typekind copy not implemented.",rcToReturn=rc)
+       return
     endif
-  end subroutine
+  end subroutine LIS_ArrayCopyFromLisArray
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_ArrayCopyFromLisFarray"
@@ -772,68 +866,70 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank, &
-      localDeCount=localDeCount,rc=rc)
+         localDeCount=localDeCount,rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     if (rank /= 2 .AND. rank /= 3) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array is not a 2D or 3D array.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array is not a 2D or 3D array.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (localDeCount /= 1) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Local array decomposition count must be 1.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Local array decomposition count must be 1.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
     if (typekind /= ESMF_TYPEKIND_R4 .AND. typekind /= ESMF_TYPEKIND_R8) then
-      call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
-        msg="Cannot copy. Array typekind does not match array typekind.", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_OUTOFRANGE, &
+            msg="Cannot copy. Array typekind does not match array typekind.", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
     if(rank==2) then
-      if(typekind==ESMF_TYPEKIND_R4) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R4,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      elseif(typekind==ESMF_TYPEKIND_R8) then
-        call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R8,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-          msg="Typekind copy not implemented.",rcToReturn=rc)
-        return
-      endif
+       if(typekind==ESMF_TYPEKIND_R4) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R4,nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       elseif(typekind==ESMF_TYPEKIND_R8) then
+          call ESMF_ArrayGet(array,farrayPtr=farray_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray_R8,nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+               msg="Typekind copy not implemented.",rcToReturn=rc)
+          return
+       endif
     else
-      if(typekind==ESMF_TYPEKIND_R4) then
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray3D_R4,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      elseif(typekind==ESMF_TYPEKIND_R8) then
-        call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-        call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray3D_R8,nest=nest,&
-          fillVal=fillVal,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return
-      else
-        call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-          msg="Typekind copy not implemented.",rcToReturn=rc)
-        return
-      endif
+       if(typekind==ESMF_TYPEKIND_R4) then
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R4,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray3D_R4, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       elseif(typekind==ESMF_TYPEKIND_R8) then
+          call ESMF_ArrayGet(array,farrayPtr=farray3D_R8,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+          call LIS_CopyFromLIS(farrayLIS=farrayLIS,farray=farray3D_R8, &
+               nest=nest,&
+               fillVal=fillVal,rc=rc)
+          if(ESMF_STDERRORCHECK(rc)) return
+       else
+          call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
+               msg="Typekind copy not implemented.",rcToReturn=rc)
+          return
+       endif
     endif
-  end subroutine
+  end subroutine LIS_ArrayCopyFromLisFarray
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayI4CopyToLisFarrayI4"
@@ -855,9 +951,9 @@ contains
       row = LIS_domain(nest)%tile(tile)%row
       farrayLIS(tile) = farray(col,row)
     enddo
-  end subroutine
+  end subroutine LIS_FarrayI4CopyToLisFarrayI4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayI8CopyToLisFarrayI8"
@@ -879,9 +975,9 @@ contains
       row = LIS_domain(nest)%tile(tile)%row
       farrayLIS(tile) = farray(col,row)
     enddo
-  end subroutine
+  end subroutine LIS_FarrayI8CopyToLisFarrayI8
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayR8CopyToLisFarrayR4"
@@ -903,9 +999,9 @@ contains
       row = LIS_domain(nest)%tile(tile)%row
       farrayLIS(tile) = farray(col,row)
     enddo
-  end subroutine
+  end subroutine LIS_FarrayR8CopyToLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayR4CopyToLisFarrayR4"
@@ -927,9 +1023,9 @@ contains
       row = LIS_domain(nest)%tile(tile)%row
       farrayLIS(tile) = farray(col,row)
     enddo
-  end subroutine
+  end subroutine LIS_FarrayR4CopyToLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayR8CopyToLisFarrayR8"
@@ -951,9 +1047,9 @@ contains
       row = LIS_domain(nest)%tile(tile)%row
       farrayLIS(tile) = farray(col,row)
     enddo
-  end subroutine
+  end subroutine LIS_FarrayR8CopyToLisFarrayR8
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayCopyToNoah_3_3"
@@ -972,225 +1068,225 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (missing .eq. MISSINGVAL_SKPCPY) then
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row)
+             endif
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row)
+             endif
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to noah33 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to noah33 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
-            (missing .eq. MISSINGVAL_FAIL)) then
-      if ((missing .eq. MISSINGVAL_FAIL) .and. &
-          any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
-        call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
-          msg="Invalid import data "//trim(stdName), &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-      endif
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row)
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row)
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to noah33 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to noah33 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     else
-      call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-        msg="Unknown missing value option", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
-  end subroutine
+  end subroutine LIS_FarrayCopyToNoah_3_3
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayCopyToNoahMP_3_6"
@@ -1209,238 +1305,246 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (missing .eq. MISSINGVAL_SKPCPY) then
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+1) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+2) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+3) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+4) = farray(col,row)
+             endif
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%wa = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%wa = farray(col,row)
+             endif
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row)
+             endif
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
-            (missing .eq. MISSINGVAL_FAIL)) then
-      if ((missing .eq. MISSINGVAL_FAIL) .and. &
-          any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
-        call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
-          msg="Invalid import data "//trim(stdName), &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-      endif
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+1) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+2) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+3) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+4) = farray(col,row)
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%wa = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%wa = farray(col,row)
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row)
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     else
-      call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-        msg="Unknown missing value option", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
-  end subroutine
+  end subroutine LIS_FarrayCopyToNoahMP_3_6
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayCopyToNoahMP_4_0_1"
@@ -1459,238 +1563,489 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (missing .eq. MISSINGVAL_SKPCPY) then
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row)
+             endif
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row)
+             endif
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%wa = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%wa = farray(col,row)
+             endif
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = farray(col,row)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = &
+                     farray(col,row)
+             endif
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
-            (missing .eq. MISSINGVAL_FAIL)) then
-      if ((missing .eq. MISSINGVAL_FAIL) .and. &
-          any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
-        call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
-          msg="Invalid import data "//trim(stdName), &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-      endif
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row)
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row)
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row)
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%wa = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%wa = farray(col,row)
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = farray(col,row)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = farray(col,row)
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     else
-      call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-        msg="Unknown missing value option", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
-  end subroutine
+  end subroutine LIS_FarrayCopyToNoahMP_4_0_1
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_FarrayCopyToNoahMP_5_0"
+
+  subroutine LIS_FarrayCopyToNoahMP_5_0(farray,stdName,nest,missing,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_FIELD),intent(in),pointer    :: farray(:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    type(missingval_flag),intent(in)            :: missing
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    if (missing .eq. MISSINGVAL_SKPCPY) then
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(1) = farray(col,row)
+             endif
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(2) = farray(col,row)
+             endif
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(3) = farray(col,row)
+             endif
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(4) = farray(col,row)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(1) = farray(col,row)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(2) = farray(col,row)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(3) = farray(col,row)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(4) = farray(col,row)
+             endif
+          enddo
+       case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(1) = farray(col,row)
+             endif
+          enddo
+       case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(2) = farray(col,row)
+             endif
+          enddo
+       case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(3) = farray(col,row)
+             endif
+          enddo
+       case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(4) = farray(col,row)
+             endif
+          enddo
+       case ('ground_water_storage')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%wa = farray(col,row)
+             endif
+          enddo
+#ifdef WRF_HYDRO
+       case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             if (farray(col,row) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sfcheadrt = farray(col,row)
+             endif
+          enddo
+#endif
+       case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+               msg="Cannot directly hookup to Noahmp50 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       end select
+    elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(1) = farray(col,row)
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(2) = farray(col,row)
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(3) = farray(col,row)
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(4) = farray(col,row)
+          enddo
+       case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(1) = farray(col,row)
+          enddo
+       case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(2) = farray(col,row)
+          enddo
+       case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(3) = farray(col,row)
+          enddo
+       case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(4) = farray(col,row)
+          enddo
+       case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(1) = farray(col,row)
+          enddo
+       case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(2) = farray(col,row)
+          enddo
+       case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(3) = farray(col,row)
+          enddo
+       case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(4) = farray(col,row)
+          enddo
+       case ('ground_water_storage')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%wa = farray(col,row)
+          enddo
+#ifdef WRF_HYDRO
+       case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             Noahmp50_struc(nest)%noahmp50(tile)%sfcheadrt = farray(col,row)
+          enddo
+#endif
+       case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+               msg="Cannot directly hookup to Noahmp50 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       end select
+    else
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
+    endif
+  end subroutine LIS_FarrayCopyToNoahMP_5_0
+
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayI4CopyFromLisFarrayI4"
@@ -1711,33 +2066,35 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
-    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    allocate(tcount(lbound(farray,1):ubound(farray,1), &
+         lbound(farray,2):ubound(farray,2)))
     farray(:,:) = 0
     tcount(:,:) = 0
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farray(col,row) = farray(col,row) + farrayLIS(tile)
-      tcount(col,row) = tcount(col,row) + 1
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       farray(col,row) = farray(col,row) + farrayLIS(tile)
+       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-        else
-          farray(col,row) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+             farray(col,row) = farray(col,row) / &
+                  real(tcount(col,row), kind=kind(farray))
+          else
+             farray(col,row) = actual_fillVal
+          end if
+       enddo
     enddo
     deallocate(tcount)
-  end subroutine
+  end subroutine LIS_FarrayI4CopyFromLisFarrayI4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayI8CopyFromLisFarrayI8"
@@ -1758,34 +2115,36 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
-    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    allocate(tcount(lbound(farray,1):ubound(farray,1),&
+         lbound(farray,2):ubound(farray,2)))
     farray(:,:) = 0
     tcount(:,:) = 0
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farray(col,row) = farray(col,row) + farrayLIS(tile)
-      tcount(col,row) = tcount(col,row) + 1
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       farray(col,row) = farray(col,row) + farrayLIS(tile)
+       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-        else
-          farray(col,row) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+             farray(col,row) = farray(col,row) / &
+                  real(tcount(col,row), kind=kind(farray))
+          else
+             farray(col,row) = actual_fillVal
+          end if
+       enddo
     enddo
     deallocate(tcount)
 
-  end subroutine
+  end subroutine LIS_FarrayI8CopyFromLisFarrayI8
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayR8CopyFromLisFarrayR4"
@@ -1806,34 +2165,36 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
-    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    allocate(tcount(lbound(farray,1):ubound(farray,1), &
+         lbound(farray,2):ubound(farray,2)))
     farray(:,:) = 0
     tcount(:,:) = 0
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farray(col,row) = farray(col,row) + farrayLIS(tile)
-      tcount(col,row) = tcount(col,row) + 1
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       farray(col,row) = farray(col,row) + farrayLIS(tile)
+       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-        else
-          farray(col,row) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+             farray(col,row) = farray(col,row) / &
+                  real(tcount(col,row), kind=kind(farray))
+          else
+             farray(col,row) = actual_fillVal
+          end if
+       enddo
     enddo
     deallocate(tcount)
 
-  end subroutine
+  end subroutine LIS_FarrayR8CopyFromLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayR4CopyFromLisFarrayR4"
@@ -1854,34 +2215,36 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
-    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    allocate(tcount(lbound(farray,1):ubound(farray,1), &
+         lbound(farray,2):ubound(farray,2)))
     farray(:,:) = 0
     tcount(:,:) = 0
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farray(col,row) = farray(col,row) + farrayLIS(tile)
-      tcount(col,row) = tcount(col,row) + 1
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       farray(col,row) = farray(col,row) + farrayLIS(tile)
+       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-        else
-          farray(col,row) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+             farray(col,row) = farray(col,row) / &
+                  real(tcount(col,row), kind=kind(farray))
+          else
+             farray(col,row) = actual_fillVal
+          end if
+       enddo
     enddo
     deallocate(tcount)
 
-  end subroutine
+  end subroutine LIS_FarrayR4CopyFromLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_FarrayR8CopyFromLisFarrayR8"
@@ -1902,33 +2265,35 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
-    allocate(tcount(lbound(farray,1):ubound(farray,1),lbound(farray,2):ubound(farray,2)))
+    allocate(tcount(lbound(farray,1):ubound(farray,1), &
+         lbound(farray,2):ubound(farray,2)))
     farray(:,:) = 0
     tcount(:,:) = 0
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      farray(col,row) = farray(col,row) + farrayLIS(tile)
-      tcount(col,row) = tcount(col,row) + 1
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       farray(col,row) = farray(col,row) + farrayLIS(tile)
+       tcount(col,row) = tcount(col,row) + 1
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).ne.-1) then
-          farray(col,row) = farray(col,row) / real(tcount(col,row), kind=kind(farray))
-        else
-          farray(col,row) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).ne.-1) then
+             farray(col,row) = farray(col,row) / &
+                  real(tcount(col,row), kind=kind(farray))
+          else
+             farray(col,row) = actual_fillVal
+          end if
+       enddo
     enddo
     deallocate(tcount)
-  end subroutine
+  end subroutine LIS_FarrayR8CopyFromLisFarrayR8
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayI4CopyToLisFarrayI4"
@@ -1951,9 +2316,9 @@ contains
       ens = LIS_domain(nest)%tile(tile)%ensem
       farrayLIS(tile) = farray(col,row,ens)
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayI4CopyToLisFarrayI4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayI8CopyToLisFarrayI8"
@@ -1976,9 +2341,9 @@ contains
       ens = LIS_domain(nest)%tile(tile)%ensem
       farrayLIS(tile) = farray(col,row,ens)
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayI8CopyToLisFarrayI8
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayR8CopyToLisFarrayR4"
@@ -2001,9 +2366,9 @@ contains
       ens = LIS_domain(nest)%tile(tile)%ensem
       farrayLIS(tile) = farray(col,row,ens)
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayR8CopyToLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayR4CopyToLisFarrayR4"
@@ -2026,9 +2391,9 @@ contains
       ens = LIS_domain(nest)%tile(tile)%ensem
       farrayLIS(tile) = farray(col,row,ens)
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayR4CopyToLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayR8CopyToLisFarrayR8"
@@ -2051,9 +2416,9 @@ contains
       ens = LIS_domain(nest)%tile(tile)%ensem
       farrayLIS(tile) = farray(col,row,ens)
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayR8CopyToLisFarrayR8
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayCopyToNoah_3_3"
@@ -2072,251 +2437,264 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (missing .eq. MISSINGVAL_SKPCPY) then
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row,ens)
+             endif
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row,ens)
+             endif
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to noah33 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to noah33 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
-            (missing .eq. MISSINGVAL_FAIL)) then
-      if ((missing .eq. MISSINGVAL_FAIL) .and. &
-          any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
-        call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
-          msg="Invalid import data "//trim(stdName), &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-      endif
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%sh2o(1) = farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%sh2o(2) = farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%sh2o(3) = farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%sh2o(4) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%smc(1) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%smc(2) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%smc(3) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%smc(4) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%stc(1) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%stc(2) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%stc(3) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%stc(4) = farray(col,row,ens)
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             noah33_struc(nest)%noah(tile)%sfhead1rt = farray(col,row,ens)
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to noah33 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to noah33 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     else
-      call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-        msg="Unknown missing value option", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
 
   end subroutine
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayCopyToNoahMP_3_6"
@@ -2335,266 +2713,299 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (missing .eq. MISSINGVAL_SKPCPY) then
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+1) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+2) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+3) = farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                     NOAHMP36_struc(nest)%nsnow+4) = farray(col,row,ens)
+             endif
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%wa = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%wa = &
+                     farray(col,row,ens)
+             endif
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = &
+                     farray(col,row,ens)
+             endif
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
-            (missing .eq. MISSINGVAL_FAIL)) then
-      if ((missing .eq. MISSINGVAL_FAIL) .and. &
-          any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
-        call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
-          msg="Invalid import data "//trim(stdName), &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-      endif
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(1) = farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(2) = farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(3) = farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sh2o(4) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(1) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(2) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(3) = farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%smc(4) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+1) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+2) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+3) = farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sstc(NOAHMP36_struc(nest)%nsnow+4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sstc( &
+                  NOAHMP36_struc(nest)%nsnow+4) = farray(col,row,ens)
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%wa = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%wa = farray(col,row,ens)
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             NoahMP36_struc(nest)%noahmp36(tile)%sfcheadrt = &
+                  farray(col,row,ens)
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to NoahMP36 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     else
-      call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-        msg="Unknown missing value option", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
-  end subroutine
+  end subroutine LIS_EnsFarrayCopyToNoahMP_3_6
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayCopyToNoahMP_4_0_1"
@@ -2613,271 +3024,619 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (missing .eq. MISSINGVAL_SKPCPY) then
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = &
+                     farray(col,row,ens)
+             endif
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%wa = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%wa = &
+                     farray(col,row,ens)
+             endif
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            if (farray(col,row,ens) .ne. real(MISSINGVALUE,ESMF_KIND_FIELD)) then
-              Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = farray(col,row,ens)
-            endif
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = &
+                     farray(col,row,ens)
+             endif
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
-            (missing .eq. MISSINGVAL_FAIL)) then
-      if ((missing .eq. MISSINGVAL_FAIL) .and. &
-          any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
-        call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
-          msg="Invalid import data "//trim(stdName), &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-      endif
-      select case (trim(stdName))
-        case ('liquid_fraction_of_soil_moisture_layer_1')
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(1) = &
+                  farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_2')
+       case ('liquid_fraction_of_soil_moisture_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(2) = &
+                  farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_3')
+       case ('liquid_fraction_of_soil_moisture_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(3) = &
+                  farray(col,row,ens)
           enddo
-        case ('liquid_fraction_of_soil_moisture_layer_4')
+       case ('liquid_fraction_of_soil_moisture_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%sh2o(4) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_1')
+       case ('soil_moisture_fraction_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(1) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_2')
+       case ('soil_moisture_fraction_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(2) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_3')
+       case ('soil_moisture_fraction_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(3) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_moisture_fraction_layer_4')
+       case ('soil_moisture_fraction_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%smc(4) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_1')
+       case ('soil_temperature_layer_1')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(1) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_2')
+       case ('soil_temperature_layer_2')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(2) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_3')
+       case ('soil_temperature_layer_3')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(3) = &
+                  farray(col,row,ens)
           enddo
-        case ('soil_temperature_layer_4')
+       case ('soil_temperature_layer_4')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%tslb(4) = &
+                  farray(col,row,ens)
           enddo
-        case ('ground_water_storage')
+       case ('ground_water_storage')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%wa = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%wa = farray(col,row,ens)
           enddo
 #ifdef WRF_HYDRO
-        case ('surface_water_depth')
+       case ('surface_water_depth')
           do tile=1,LIS_rc%ntiles(nest)
-            col = LIS_domain(nest)%tile(tile)%col
-            row = LIS_domain(nest)%tile(tile)%row
-            ens = LIS_domain(nest)%tile(tile)%ensem
-            Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = farray(col,row,ens)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp401_struc(nest)%noahmp401(tile)%sfcheadrt = &
+                  farray(col,row,ens)
           enddo
 #endif
-        case default
+       case default
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-            msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
-            line=__LINE__, file=FILENAME, rcToReturn=rc)
+               msg="Cannot directly hookup to Noahmp401 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
           return
-      end select
+       end select
     else
-      call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-        msg="Unknown missing value option", &
-        line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
     endif
-  end subroutine
+  end subroutine LIS_EnsFarrayCopyToNoahMP_4_0_1
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
+
+#undef METHOD
+#define METHOD "LIS_EnsFarrayCopyToNoahMP_5_0"
+
+  subroutine LIS_EnsFarrayCopyToNoahMP_5_0(farray,stdName,nest,missing,rc)
+! !ARGUMENTS:
+    real(ESMF_KIND_FIELD),intent(in),pointer    :: farray(:,:,:)
+    character(*),intent(in)                     :: stdName
+    integer,intent(in)                          :: nest
+    type(missingval_flag),intent(in)            :: missing
+    integer,intent(out)                         :: rc
+! !LOCAL VARIABLES:
+    integer                         :: tile, col, row, ens
+! !DESCRIPTION:
+!  This routine copies from a 2D array to an LIS 1D array
+!EOP
+    rc = ESMF_SUCCESS
+    if (missing .eq. MISSINGVAL_SKPCPY) then
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(1) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(2) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(3) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sh2o(4) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(1) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(2) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(3) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%smc(4) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(1) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(2) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(3) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%tslb(4) = &
+                     farray(col,row,ens)
+             endif
+          enddo
+       case ('ground_water_storage')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%wa = farray(col,row,ens)
+             endif
+          enddo
+#ifdef WRF_HYDRO
+       case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             if (farray(col,row,ens) .ne. &
+                  real(MISSINGVALUE,ESMF_KIND_FIELD)) then
+                Noahmp50_struc(nest)%noahmp50(tile)%sfcheadrt = &
+                     farray(col,row,ens)
+             endif
+          enddo
+#endif
+       case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+               msg="Cannot directly hookup to Noahmp50 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       end select
+    elseif ((missing .eq. MISSINGVAL_IGNORE) .or. &
+         (missing .eq. MISSINGVAL_FAIL)) then
+       if ((missing .eq. MISSINGVAL_FAIL) .and. &
+            any(farray .eq. real(MISSINGVALUE,ESMF_KIND_FIELD))) then
+          call ESMF_LogSetError(ESMF_RC_VAL_OUTOFRANGE, &
+               msg="Invalid import data "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       endif
+       select case (trim(stdName))
+       case ('liquid_fraction_of_soil_moisture_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(1) = farray(col,row,ens)
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(2) = farray(col,row,ens)
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(3) = farray(col,row,ens)
+          enddo
+       case ('liquid_fraction_of_soil_moisture_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%sh2o(4) = farray(col,row,ens)
+          enddo
+       case ('soil_moisture_fraction_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(1) = farray(col,row,ens)
+          enddo
+       case ('soil_moisture_fraction_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(2) = farray(col,row,ens)
+          enddo
+       case ('soil_moisture_fraction_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(3) = farray(col,row,ens)
+          enddo
+       case ('soil_moisture_fraction_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%smc(4) = farray(col,row,ens)
+          enddo
+       case ('soil_temperature_layer_1')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(1) = farray(col,row,ens)
+          enddo
+       case ('soil_temperature_layer_2')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(2) = farray(col,row,ens)
+          enddo
+       case ('soil_temperature_layer_3')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(3) = farray(col,row,ens)
+          enddo
+       case ('soil_temperature_layer_4')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%tslb(4) = farray(col,row,ens)
+          enddo
+       case ('ground_water_storage')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%wa = farray(col,row,ens)
+          enddo
+#ifdef WRF_HYDRO
+       case ('surface_water_depth')
+          do tile=1,LIS_rc%ntiles(nest)
+             col = LIS_domain(nest)%tile(tile)%col
+             row = LIS_domain(nest)%tile(tile)%row
+             ens = LIS_domain(nest)%tile(tile)%ensem
+             Noahmp50_struc(nest)%noahmp50(tile)%sfcheadrt = &
+                  farray(col,row,ens)
+          enddo
+#endif
+       case default
+          call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+               msg="Cannot directly hookup to Noahmp50 "//trim(stdName), &
+               line=__LINE__, file=FILENAME, rcToReturn=rc)
+          return
+       end select
+    else
+       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
+            msg="Unknown missing value option", &
+            line=__LINE__, file=FILENAME, rcToReturn=rc)
+       return
+    endif
+  end subroutine LIS_EnsFarrayCopyToNoahMP_5_0
+
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayI4CopyFromLisFarrayI4"
 
-  subroutine LIS_EnsFarrayI4CopyFromLisFarrayI4(farrayLIS,farray,nest,fillVal,rc)
+  subroutine LIS_EnsFarrayI4CopyFromLisFarrayI4(farrayLIS,farray,nest, &
+       fillVal,rc)
 ! !ARGUMENTS:
     integer(ESMF_KIND_I4),intent(in),pointer    :: farrayLIS(:)
     integer(ESMF_KIND_I4),intent(inout),pointer :: farray(:,:,:)
@@ -2892,32 +3651,33 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      ens = LIS_domain(nest)%tile(tile)%ensem
-      farray(col,row,ens) = farrayLIS(tile)
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       ens = LIS_domain(nest)%tile(tile)%ensem
+       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-          farray(col,row,:) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+             farray(col,row,:) = actual_fillVal
+          end if
+       enddo
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayI4CopyFromLisFarrayI4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayI8CopyFromLisFarrayI8"
 
-  subroutine LIS_EnsFarrayI8CopyFromLisFarrayI8(farrayLIS,farray,nest,fillVal,rc)
+  subroutine LIS_EnsFarrayI8CopyFromLisFarrayI8(farrayLIS,farray,nest, &
+       fillVal,rc)
 ! !ARGUMENTS:
     integer(ESMF_KIND_I8),intent(in),pointer    :: farrayLIS(:)
     integer(ESMF_KIND_I8),intent(inout),pointer :: farray(:,:,:)
@@ -2932,32 +3692,33 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      ens = LIS_domain(nest)%tile(tile)%ensem
-      farray(col,row,ens) = farrayLIS(tile)
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       ens = LIS_domain(nest)%tile(tile)%ensem
+       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-          farray(col,row,:) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+             farray(col,row,:) = actual_fillVal
+          end if
+       enddo
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayI8CopyFromLisFarrayI8
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayR8CopyFromLisFarrayR4"
 
-  subroutine LIS_EnsFarrayR8CopyFromLisFarrayR4(farrayLIS,farray,nest,fillVal,rc)
+  subroutine LIS_EnsFarrayR8CopyFromLisFarrayR4(farrayLIS,farray,nest, &
+       fillVal,rc)
 ! !ARGUMENTS:
     real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
     real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:,:)
@@ -2972,32 +3733,33 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      ens = LIS_domain(nest)%tile(tile)%ensem
-      farray(col,row,ens) = farrayLIS(tile)
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       ens = LIS_domain(nest)%tile(tile)%ensem
+       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-          farray(col,row,:) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+             farray(col,row,:) = actual_fillVal
+          end if
+       enddo
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayR8CopyFromLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayR4CopyFromLisFarrayR4"
 
-  subroutine LIS_EnsFarrayR4CopyFromLisFarrayR4(farrayLIS,farray,nest,fillVal,rc)
+  subroutine LIS_EnsFarrayR4CopyFromLisFarrayR4(farrayLIS,farray,nest, &
+       fillVal,rc)
 ! !ARGUMENTS:
     real(ESMF_KIND_R4),intent(in),pointer       :: farrayLIS(:)
     real(ESMF_KIND_R4),intent(inout),pointer    :: farray(:,:,:)
@@ -3012,32 +3774,33 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      ens = LIS_domain(nest)%tile(tile)%ensem
-      farray(col,row,ens) = farrayLIS(tile)
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       ens = LIS_domain(nest)%tile(tile)%ensem
+       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-          farray(col,row,:) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+             farray(col,row,:) = actual_fillVal
+          end if
+       enddo
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayR4CopyFromLisFarrayR4
 
-  !-----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
 
 #undef METHOD
 #define METHOD "LIS_EnsFarrayR8CopyFromLisFarrayR8"
 
-  subroutine LIS_EnsFarrayR8CopyFromLisFarrayR8(farrayLIS,farray,nest,fillVal,rc)
+  subroutine LIS_EnsFarrayR8CopyFromLisFarrayR8(farrayLIS,farray,nest, &
+       fillVal,rc)
 ! !ARGUMENTS:
     real(ESMF_KIND_R8),intent(in),pointer       :: farrayLIS(:)
     real(ESMF_KIND_R8),intent(inout),pointer    :: farray(:,:,:)
@@ -3052,24 +3815,24 @@ contains
 !EOP
     rc = ESMF_SUCCESS
     if (present(fillVal)) then
-      actual_fillVal = fillVal
+       actual_fillVal = fillVal
     else
-      actual_fillVal = MISSINGVALUE
+       actual_fillVal = MISSINGVALUE
     endif
 
     do tile=1,LIS_rc%ntiles(nest)
-      col = LIS_domain(nest)%tile(tile)%col
-      row = LIS_domain(nest)%tile(tile)%row
-      ens = LIS_domain(nest)%tile(tile)%ensem
-      farray(col,row,ens) = farrayLIS(tile)
+       col = LIS_domain(nest)%tile(tile)%col
+       row = LIS_domain(nest)%tile(tile)%row
+       ens = LIS_domain(nest)%tile(tile)%ensem
+       farray(col,row,ens) = farrayLIS(tile)
     enddo
     do row=1,LIS_rc%lnr(nest)
-      do col=1,LIS_rc%lnc(nest)
-        if(LIS_domain(nest)%gindex(col,row).eq.-1) then
-          farray(col,row,:) = actual_fillVal
-        end if
-      enddo
+       do col=1,LIS_rc%lnc(nest)
+          if(LIS_domain(nest)%gindex(col,row).eq.-1) then
+             farray(col,row,:) = actual_fillVal
+          end if
+       enddo
     enddo
-  end subroutine
+  end subroutine LIS_EnsFarrayR8CopyFromLisFarrayR8
 
-end module
+end module LIS_NUOPC_DataCopy

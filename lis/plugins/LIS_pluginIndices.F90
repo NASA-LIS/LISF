@@ -31,6 +31,7 @@ module LIS_pluginIndices
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF
 !               for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS
+!  16 Sep 2026: Cenlin He, added NoahMP 5.0
 !
 !EOP
 
@@ -76,6 +77,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_noah39Id    = "Noah.3.9"
    character*50, public,  parameter :: LIS_noahmp36Id  = "NoahMP.3.6"
    character*50, public,  parameter :: LIS_noahmp401Id = "Noah-MP.4.0.1"
+   character*50, public,  parameter :: LIS_noahmp50Id = "Noah-MP.5.0"
    character*50, public,  parameter :: LIS_ac72Id      = "AquaCrop.7.2"
    character*50, public,  parameter :: LIS_ruc37Id     = "RUC.3.7"
    character*50, public,  parameter :: LIS_clm2Id      = "CLM.2"
