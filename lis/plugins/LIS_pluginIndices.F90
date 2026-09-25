@@ -30,6 +30,7 @@ module LIS_pluginIndices
 !  27 Jan 2014: Shugong Wang, added HRAP projection
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS  
+!  29 Jun 2026: Kristen whitney, added support for MERRA2bias
 !  02 Oct 2025  Fadji Maina, added support for GEOS-ITbias
 !
 !EOP
@@ -137,6 +138,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
    character*50, public,  parameter :: LIS_merra2Id          = "MERRA2"
+   character*50, public,  parameter :: LIS_merra2biasId      = "MERRA2bias"
    character*50, public,  parameter :: LIS_geositId          = "GEOS-IT"
    character*50, public,  parameter :: LIS_geositbiasId      = "GEOS-ITbias"
    character*50, public,  parameter :: LIS_cmapId            = "CMAP"
