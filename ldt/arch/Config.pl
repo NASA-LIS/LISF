@@ -11,7 +11,9 @@
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 # 6 Jan 2012: Sujay Kumar, Initial Specification
 
-#Find the architecture
+#
+# Process environment and configure options
+#
 
 if(defined($ENV{LDT_ARCH})){
    $sys_arch = $ENV{LDT_ARCH};
@@ -616,6 +618,37 @@ if($use_history eq "\n"){
    $use_history=1;
 }
 
+print "Use PIO? (1-yes, 0-no, default=0): ";
+$use_pio=<stdin>;
+$use_pio=~s/ *#.*$//;
+chomp($use_pio);
+if($use_pio eq ""){
+   $use_pio=0;
+}
+
+if($use_pio == 1) {
+   if(defined($ENV{LDT_PIO})){
+      $sys_pio_path = $ENV{LDT_PIO};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_pio=$sys_pio_path.$inc;
+      $lib_pio=$sys_pio_path.$lib;
+   }
+   elsif(defined($ENV{LDT_PIO_IN_ESMF}) && $ENV{LDT_PIO_IN_ESMF} eq "1"){
+      $inc_pio=$sys_esmfmod_path;
+      $lib_pio=$sys_esmflib_path;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the PIO path using\n";
+      print "the LDT_PIO variable or set the\n";
+      print "LDT_PIO_IN_ESMF variable if PIO is\n";
+      print "embedded in ESMF.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
 
 if(defined($ENV{LDT_JPEG})){
    $libjpeg = "-L".$ENV{LDT_JPEG}."/lib"." -ljpeg";
@@ -791,6 +824,13 @@ if($enable_libgeotiff== 1){
     $ldflags = $ldflags." -L\$(LIB_LIBGEOTIFF) ".$tiffpath." -ltiff -lgeotiff -lm -lz ".$libjpeg." ".$tiffdeps;
 }
 
+if($use_pio == 1) {
+   $fflags77 = $fflags77." -I\$(INC_PIO)";
+   $fflags = $fflags." -I\$(INC_PIO)";
+   $ldflags = $ldflags." -L\$(LIB_PIO) -lpioc";
+   $lib_flags= $lib_flags." -lpioc";
+   $lib_paths= $lib_paths." -L\$(LIB_PIO)";
+}
 
 open(conf_file,">configure.ldt");
 printf conf_file "%s%s\n","FC              = $sys_fc";
@@ -826,6 +866,8 @@ printf conf_file "%s%s\n","INC_LIBGEOTIFF  = $inc_libgeotiff";
 printf conf_file "%s%s\n","LIB_LIBGEOTIFF  = $lib_libgeotiff";
 
 printf conf_file "%s%s\n","LIB_GDAL        = $lib_gdal";
+printf conf_file "%s%s\n","INC_PIO         = $inc_pio";
+printf conf_file "%s%s\n","LIB_PIO         = $lib_pio";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";

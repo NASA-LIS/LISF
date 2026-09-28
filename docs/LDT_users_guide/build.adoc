@@ -49,6 +49,7 @@ Set the appropriate LDT environment variables.  These are used to control the co
 | `LDT_LIBJBIG`    | path to JBIG library       | optional (use system libjbig by default)
 | `LDT_LIBLZMA`    | path to LZMA library       | optional (use system liblzma by default)
 | `LDT_RPC`        | path to RPC library        | optional (use system RPC library by default)
+| `LDT_PIO`        | path to PIO library        | optional (only for NASA Land Coupler (NLC) and NASA Water Insight projects)
 |===
 
 Set the `LDT_ARCH` environment variable based on the system you are using. The following commands are written using Bash shell syntax.
@@ -137,6 +138,7 @@ Use HDFEOS? (1-yes, 0-no, default=1):
 Enable GeoTIFF support? (1-yes, 0-no, default=1):
 Enable LIBGEOTIFF support? (1-yes, 0-no, default=1):
 Include date/time stamp history? (1-yes, 0-no, default=1):
+Use PIO? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.ldt file generated successfully
 -----------------------------------------------------
@@ -171,6 +173,8 @@ GeoTIFF means the GeoTIFF support provided by the GDAL library.
 
 * for `Enable LIBGEOTIFF support? (1-yes, 0-no, default=1):`,
 LIBGEOTIFF means GeoTIFF support provided by the GeoTIFF library.
+
+* for `Use PIO? (1-yes, 0-no, default=0):`, if you wish to enable PIO support, then you must either set the `LDT_PIO` environment variable or the `LDT_PIO_IN_ESMF` environment variable.  If you are using the PIO library, then set `LDT_PIO` to the path of the PIO library.  If you are using PIO included in ESMF, then set `LDT_PIO_IN_ESMF=1`.
 
 Note that due to an issue involving multiple definitions within the NetCDF 3 and HDF 4 libraries, you cannot compile LDT with support for both NetCDF 3 and HDF 4 together.
 
