@@ -109,10 +109,10 @@ contains
 
     call LVT_LISoutputInit
 
-! checking for duplicate entries in a given datastream
-! Note that this check is not enabled for three datastrems.
-! The responsibility of ensuring non-duplicate entries is
-! on the user.
+    ! checking for duplicate entries in a given datastream
+    ! Note that this check is not enabled for three datastrems.
+    ! The responsibility of ensuring non-duplicate entries is
+    ! on the user.
 
     LVT_rc%ds1_dup = .false.
     ds1 => LVT_histData%head_ds1_list
@@ -142,10 +142,10 @@ contains
        ds1 => ds1%next
     enddo
 
-!-------------------------------------------------------------------
-! for 557 post, the HYCOM data is processed to include the water
-! temperature fields
-!-------------------------------------------------------------------
+    !-------------------------------------------------------------------
+    ! for 557 post, the HYCOM data is processed to include the water
+    ! temperature fields
+    !-------------------------------------------------------------------
     if (LVT_rc%runmode .eq. "557 post") then
 
 
@@ -365,8 +365,8 @@ contains
     use ESMF
     use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_logMod
-    use LVT_coreMod, only: LVT_LIS_rc ! EMK
-    use LVT_557post_ps41_snowMod ! EMK
+    use LVT_coreMod, only: LVT_LIS_rc
+    use LVT_557post_ps41_snowMod 
 
     implicit none
 !
@@ -378,7 +378,6 @@ contains
 !  grib format. The datastream1 output must be set to 'LIS output'.
 !
 !EOP
-
 
     integer, parameter                   :: nsoillayers = 4
     character(len=LVT_CONST_PATH_LEN)    :: fname_mean,fname_ssdev
@@ -427,7 +426,7 @@ contains
     integer :: count
     real :: mean, m2, stddev, new_value
 
-    ! EMK...Special processing of some JULES PS41 multi-layer snow ensembles.
+    ! Special processing of some JULES PS41 multi-layer snow ensembles.
     integer :: count_jules_ps41_ens_snow_vars
     logical :: jules_ps41_ens_snow
     logical :: is_ps41_snow_var
@@ -440,7 +439,7 @@ contains
     type(LVT_lismetadataEntry), target :: SnowGrain
     type(LVT_lismetadataEntry), target :: SurftSnow
 
-    character*20 :: model_name ! EMK
+    character*20 :: model_name
 
     character(len=10)       :: fres
     character(len=10)       :: fres2
@@ -456,16 +455,10 @@ contains
     integer :: yy, mm, dd, h
     integer :: rc
 
-    ! EMK...This is only used when LVT is run in "557 post" mode.
+    ! This is only used when LVT is run in "557 post" mode.
     if (trim(LVT_rc%runmode) .ne. "557 post") return
 
-!    output_fmt = "grib2"
-
-!    lyrthk(1) = 0.1*100.0
-!    lyrthk(2) = 0.3*100.0
-!    lyrthk(3) = 0.6*100.0
-!    lyrthk(4) = 1.0*100.0
-    ! EMK...Use soil thicknesses read in from file.
+    ! Use soil thicknesses read in from file.
     if (LVT_LIS_rc(1)%nsmlayers .ne. nsoillayers) then
        write(LVT_logunit,*) '[ERR] Internal error, bad value of soil layers!'
        write(LVT_logunit,*) 'Program failed in LVT_writeDataStreams'
@@ -477,7 +470,7 @@ contains
        call LVT_endrun()
     end if
 
-    ! EMK...Soil layers are in centimeters.  Technically GRIB2 requires
+    ! Soil layers are in centimeters.  Technically GRIB2 requires
     ! meters, but in practice we keep as centimeters and just modify
     ! the scale factor by 100.
     if (LVT_rc%lvt_out_format .eq. "grib2") then
@@ -490,7 +483,7 @@ contains
     end do
 
     if (LVT_557post_alarm_is_on()) then
-       ! EMK...We need lat/lon for all grid points, not just for land.
+       ! We need lat/lon for all grid points, not just for land.
        ! So we will recalculate here.
        ! FIXME...Add support for other projections, not just lat/lon.
        lat = LVT_rc%udef
@@ -502,7 +495,7 @@ contains
           enddo
        enddo
 
-       ! EMK...Special handling of JULES PS41 multi-layer snow physics
+       ! Special handling of JULES PS41 multi-layer snow physics
        ! when ensembles are processed.
        ! FIXME...Add LVT flag specifying PS41?
        dataEntry => LVT_histData%head_ds1_list
@@ -570,156 +563,12 @@ contains
           call LVT_set_GrndSnow_metadata(GrndSnow)
           call LVT_set_SurftSnow_metadata(SurftSnow)
        end if
-       ! EMK END JULES PS41 Snow
+       ! END JULES PS41 Snow
 
        if (LVT_rc%lvt_out_format .eq. "grib1") then
 
           write(LVT_logunit,*)'[ERR] grib1 output not supported!'
           call LVT_endrun()
-
-          ! write(unit=cdate2, fmt='(i4.4,i2.2,i2.2)') &
-          !      LVT_rc%yr, LVT_rc%mo, LVT_rc%da
-          ! write(unit=cdate3, fmt='(i2.2,i2.2)') &
-          !      LVT_rc%hr, LVT_rc%mn
-
-          ! ! EMK...Include LSM in GP section
-          ! if (trim(LVT_LIS_rc(1)%model_name) == "NOAH.3.9") then
-          !    model_name = "LIS-NOAH"
-          ! else if (trim(LVT_LIS_rc(1)%model_name) == "NOAHMP.4.0.1") then
-          !    model_name = "LIS-NOAHMP"
-          ! else if (trim(LVT_LIS_rc(1)%model_name) == "JULES.5.0") then
-          !    model_name = "LIS-JULES"
-          ! else
-          !    write(LVT_logunit,*)'[ERR] Unknown LSM selected'
-          !    write(LVT_logunit,*)&
-          !         '[ERR] Must be NOAH.3.9, NOAHMP.4.0.1, or JULES.5.0'
-          !    write(LVT_logunit,*) &
-          !         "[ERR] Update 'LIS output model name:' in lis.config" // &
-          !         " and try again!"
-          !    call LVT_endrun()
-          ! end if
-
-          ! ! EMK...Different file name convention for 24-hr data
-          ! if (LVT_rc%tavgInterval == 86400) then
-
-          !    fname_mean = trim(LVT_rc%statsodir) &
-          !         //'/PS.557WW' &
-          !         //'_SC.'//trim(LVT_rc%security_class) &
-          !         //'_DI.'//trim(LVT_rc%data_category) &
-          !         //'_GP.'//trim(model_name) &
-          !         //'_GR.C0P09DEG' &
-          !         //'_AR.'//trim(LVT_rc%area_of_data) &
-          !         //'_PA.LIS24' &
-          !         //'_DD.'//trim(cdate2) &
-          !         //'_DT.'//trim(cdate3) &
-          !         //'_DF.GR1'
-
-          !    fname_ssdev = trim(LVT_rc%statsodir) &
-          !         //'/PS.557WW' &
-          !         //'_SC.'//trim(LVT_rc%security_class) &
-          !         //'_DI.'//trim(LVT_rc%data_category) &
-          !         //'_GP.'//trim(model_name) &
-          !         //'_GR.C0P09DEG' &
-          !         //'_AR.'//trim(LVT_rc%area_of_data) &
-          !         //'_PA.LIS24-SSDEV' &
-          !         //'_DD.'//trim(cdate2) &
-          !         //'_DT.'//trim(cdate3) &
-          !         //'_DF.GR1'
-          ! else
-
-          !    fname_mean = trim(LVT_rc%statsodir) &
-          !         //'/PS.557WW' &
-          !         //'_SC.'//trim(LVT_rc%security_class) &
-          !         //'_DI.'//trim(LVT_rc%data_category) &
-          !         //'_GP.'//trim(model_name) &
-          !         //'_GR.C0P09DEG' &
-          !         //'_AR.'//trim(LVT_rc%area_of_data) &
-          !         //'_PA.LIS' &
-          !         //'_DD.'//trim(cdate2) &
-          !         //'_DT.'//trim(cdate3) &
-          !         //'_DF.GR1'
-
-          !    fname_ssdev = trim(LVT_rc%statsodir) &
-          !         //'/PS.557WW' &
-          !         //'_SC.'//trim(LVT_rc%security_class) &
-          !         //'_DI.'//trim(LVT_rc%data_category) &
-          !         //'_GP.'//trim(model_name) &
-          !         //'_GR.C0P09DEG' &
-          !         //'_AR.'//trim(LVT_rc%area_of_data) &
-          !         //'_PA.SSDEV' &
-          !         //'_DD.'//trim(cdate2) &
-          !         //'_DT.'//trim(cdate3) &
-          !         //'_DF.GR1'
-
-          ! end if
-
-          ! ! Setup of GRIB-1 and GRIB-2 Metadata Section
-
-          ! ! toplev is the depth of the top of each soil layer
-          ! ! botlev is the depth of the bottom of each soil layer
-          ! toplev(1) = 0.0
-          ! botlev(1) = lyrthk(1)
-
-          ! ! determine bounding levels for each soil moisture layer
-          ! do i = 2, nsoillayers
-          !    toplev(i) = toplev(i-1) + lyrthk(i-1)
-          !    botlev(i) = botlev(i-1) + lyrthk(i)
-          ! enddo
-          ! !hardcoded to zero for now
-          ! !depscale = 0
-
-          ! ! Set values for non layered fields (Fluxes, Sfc Fields, etc.)
-          ! toplev0 = 0
-          ! botlev0 = 0
-
-          ! yr = LVT_rc%yr
-          ! mo = LVT_rc%mo
-          ! da = LVT_rc%da
-          ! hr = LVT_rc%hr
-          ! mn = LVT_rc%mn
-          ! ss = LVT_rc%ss
-
-          ! call LVT_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,-1*LVT_rc%statswriteint)
-
-          ! if(LVT_rc%statswriteint .GT. 0) then
-          !    time_unit = 254     ! seconds
-          !    time_curr = 0
-          !    time_past = LVT_rc%statswriteint
-          ! endif
-          ! if(LVT_rc%statswriteint .GE. 60) then
-          !    time_unit = 0      ! minutes
-          !    time_curr = 0
-          !    time_past = (LVT_rc%statswriteint / 60)
-          ! endif
-          ! if(LVT_rc%statswriteint .GE. 3600) then
-          !    time_unit = 1    ! hours
-          !    time_curr = 0
-          !    time_past = (LVT_rc%statswriteint / 3600)
-          ! endif
-          ! if(LVT_rc%statswriteint .GE. 86400) then
-          !    time_unit = 2   ! days
-          !    time_curr = 0
-          !    time_past = (LVT_rc%statswriteint / 86400)
-          ! endif
-
-          ! !time_past: from LVT_grib1_finalize
-          ! !time_P1 (Negative Time Unit for avg, or 0 for analysis)
-          ! !According to the in-line comments, time_past must be negative or 0.
-          ! !Here we are setting it to a positive value.  This produces bad output.
-          ! !Setting it to a negative value also produces bad output.
-          ! !So I am resetting it to zero.  This produces output that matches
-          ! !the binary output.
-          ! !    time_past=0
-
-          ! call grib_open_file(ftn_mean, fname_mean, 'w', iret)
-          ! call LVT_verify(iret, 'failed to open grib file '//trim(fname_mean))
-
-          ! if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
-          !      LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow) then
-          !    call grib_open_file(ftn_ssdev, fname_ssdev, 'w', iret)
-          !    call LVT_verify(iret, &
-          !         'failed to open grib file '//trim(fname_ssdev))
-          ! end if
 
        elseif (LVT_rc%lvt_out_format .eq. "grib2") then
           write(unit=cdate2, fmt='(i4.4,i2.2,i2.2)') &
@@ -727,7 +576,7 @@ contains
           write(unit=cdate3, fmt='(i2.2,i2.2)') &
                LVT_rc%hr, LVT_rc%mn
 
-          ! EMK...Include LSM in GP section
+          ! Include LSM in GP section
           if (trim(LVT_LIS_rc(1)%model_name) == "NOAH.3.9") then
              model_name = "LIS-NOAH"
           else if (trim(LVT_LIS_rc(1)%model_name) == "NOAHMP.4.0.1") then
@@ -770,7 +619,7 @@ contains
              do i=1,10
                 if(fres1(i).ne.' '.and.c==0) c = i
              enddo
-             ! EMK...Make code consistent with LIS
+             ! Make code consistent with LIS
              if (LVT_LIS_rc(1)%gridDesc(10) .lt. 0.1) then
                 fres2 = '0P0'
              else
@@ -782,7 +631,7 @@ contains
              fres2 = trim(fres2)//'DEG'
           endif
 
-          ! EMK...Different file name convention for 24-hr data
+          ! Different file name convention for 24-hr data
           if (LVT_rc%tavgInterval == 86400) then
 
              ! We need to specify the LIS run that will provide output for
@@ -866,7 +715,6 @@ contains
              end if
              write(unit=fhr, fmt='(i3.3)') hr
 
-             
              fname_mean = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
@@ -946,15 +794,6 @@ contains
              time_past = (LVT_rc%statswriteint / 86400)
           endif
 
-          !time_past: from LVT_grib1_finalize
-          !time_P1 (Negative Time Unit for avg, or 0 for analysis)
-          !According to the in-line comments, time_past must be negative or 0.
-          !Here we are setting it to a positive value.  This produces bad
-          !output. Setting it to a negative value also produces bad output.
-          !So I am resetting it to zero.  This produces output that matches
-          !the binary output.
-          !    time_past=0
-
           call grib_open_file(ftn_mean,fname_mean, 'w', iret)
           call LVT_verify(iret, 'failed to open grib file '//trim(fname_mean))
 
@@ -974,7 +813,7 @@ contains
           write(unit=cdate3, fmt='(i2.2,i2.2)') &
                LVT_rc%hr, LVT_rc%mn
 
-          ! EMK...Include LSM in GP section
+          ! Include LSM in GP section
           if (trim(LVT_LIS_rc(1)%model_name) == "NOAH.3.9") then
              model_name = "LIS-NOAH"
           else if (trim(LVT_LIS_rc(1)%model_name) == "NOAHMP.4.0.1") then
@@ -1028,7 +867,7 @@ contains
              fres2 = trim(fres2)//'DEG'
           endif
 
-          ! EMK...Different file name convention for 24-hr data
+          ! Different file name convention for 24-hr data
           if (LVT_rc%tavgInterval == 86400) then
 
              ! We need to specify the LIS run that will provide output for
@@ -1241,15 +1080,6 @@ contains
              time_past = (LVT_rc%statswriteint / 86400)
           endif
 
-          !time_past: from LVT_grib1_finalize
-          !time_P1 (Negative Time Unit for avg, or 0 for analysis)
-          !According to the in-line comments, time_past must be negative or 0.
-          !Here we are setting it to a positive value.  This produces bad
-          !output. Setting it to a negative value also produces bad output.
-          !So I am resetting it to zero.  This produces output that matches
-          !the binary output.
-          !    time_past=0
-
           shuffle = NETCDF_shuffle
           deflate = NETCDF_deflate
           deflate_level =NETCDF_deflate_level
@@ -1302,7 +1132,8 @@ contains
 #if (defined USE_NETCDF3)
           iret = nf90_create(path=trim(fname_mean), cmode=nf90_clobber, &
                ncid=ftn_mean)
-          call LVT_verify(iret, 'failed to open netcdf file '//trim(fname_mean))
+          call LVT_verify(iret, 'failed to open netcdf file '// &
+               trim(fname_mean))
 
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
                LVT_rc%nensem > 1 .and. .not. jules_ps41_ens_snow &
@@ -1608,7 +1439,8 @@ contains
                      LVT_rc%gridDesc(8)))
                 call LVT_verify(nf90_put_att(ftn_ssdev, NF90_GLOBAL, "DY", &
                      LVT_rc%gridDesc(9)))
-             elseif (trim(LVT_rc%domain) .eq. "lambert") then !lambert conformal
+             elseif (trim(LVT_rc%domain) .eq. "lambert") then
+                !lambert conformal
                 call LVT_verify(nf90_put_att(ftn_ssdev, NF90_GLOBAL, &
                      "MAP_PROJECTION", &
                      "LAMBERT CONFORMAL"))
@@ -1632,7 +1464,8 @@ contains
                 call LVT_verify(nf90_put_att(ftn_ssdev, NF90_GLOBAL, "DY", &
                      LVT_rc%gridDesc(9)))
 
-             elseif (trim(LVT_rc%domain) .eq. "polar") then ! polar stereographic
+             elseif (trim(LVT_rc%domain) .eq. "polar") then
+                ! polar stereographic
                 call LVT_verify(nf90_put_att(ftn_ssdev, NF90_GLOBAL, &
                      "MAP_PROJECTION", &
                      "POLAR STEREOGRAPHIC"))
@@ -1690,7 +1523,7 @@ contains
              dataEntry => dataEntry%next
           enddo
 
-          ! EMK:  Include number of soil layers and soil layer thicknesses
+          ! Include number of soil layers and soil layer thicknesses
           call LVT_verify(nf90_put_att(ftn_mean, NF90_GLOBAL, &
                "NUM_SOIL_LAYERS", &
                nsoillayers), &
@@ -1713,7 +1546,7 @@ contains
                   'nf90_put_att for title failed in LVT_DataStreamsMod')
           end if
 
-          ! EMK FIXME...Replace HYCOM with NAVGEM
+          ! FIXME...Replace HYCOM with NAVGEM
           if (LVT_rc%processHYCOM .eq. 1) then
 
              ! First, handle water_temp
@@ -1734,7 +1567,7 @@ contains
                   trim(LVT_histData%watertemp%short_name)// &
                   'failed in defineNETCDFheadervar')
 #endif
-             !EMK...Add variable attributes
+             ! Add variable attributes
              call LVT_verify(nf90_put_att(ftn_mean, &
                   LVT_histData%watertemp%varId_def, &
                   "units", &
@@ -1863,7 +1696,7 @@ contains
                   "vmax", LVT_rc%udef))
           endif
 
-          ! EMK...Add additional PS41 snow variable headers.
+          ! Add additional PS41 snow variable headers.
           if (jules_ps41_ens_snow) then
 
              lisdataEntry => SWE
@@ -1888,7 +1721,7 @@ contains
              call defineNETCDFheaderVar(ftn_mean, dimID, lisdataEntry)
 
           end if
-          ! EMK END PS41 snow headers
+          ! END PS41 snow headers
 
           call LVT_verify(nf90_enddef(ftn_mean))
           call LVT_verify(nf90_put_var(ftn_mean, xtimeID, 0.0))
@@ -1900,7 +1733,7 @@ contains
              call LVT_verify(nf90_put_var(ftn_ssdev, xtime_ss_ID, 0.0))
           end if
 
-          ! EMK...lat/lon calculated above for all output file types.
+          ! lat/lon calculated above for all output file types.
           call LVT_verify(nf90_put_var(ftn_mean, xlatID, &
                lat, (/1, 1/), &
                (/LVT_rc%gnc, LVT_rc%gnr/)), &
@@ -1925,7 +1758,7 @@ contains
           end if
        endif
 
-       ! EMK Output updated PS41 snow variables not read in from LIS file
+       ! Output updated PS41 snow variables not read in from LIS file
        if (jules_ps41_ens_snow) then
           if (LVT_rc%lvt_out_format .eq. "netcdf") then
 
@@ -2014,7 +1847,7 @@ contains
        dataEntry => LVT_histData%head_ds1_list
 
        do while (associated(dataEntry))
-!reset the pointers to the head of the linked list
+          !reset the pointers to the head of the linked list
           if (LVT_LIS_rc(1)%anlys_data_class .eq. "LSM") then
              lisdataEntry => LVT_LISoutput(1)%head_lsm_list
           elseif (LVT_LIS_rc(1)%anlys_data_class .eq. "Routing") then
@@ -2033,29 +1866,33 @@ contains
                 ! precipitation to make the LIS-7 output match the LIS-6
                 ! style. - dmm
 
-                ! EMK...Revised settings based on name of variable
+                ! Revised settings based on name of variable
                 if (index(trim(dataEntry%short_name), "_max") .gt. 0) then
                    stepType = "max"
                    timeRange = 7
-                   pdTemplate = 12 ! Derived fcsts from ensemble over time interval
+                   ! Derived fcsts from ensemble over time interval
+                   pdTemplate = 12
                 else if (index(trim(dataEntry%short_name), "_min") .gt. 0) then
                    stepType = "min"
                    timeRange = 7
-                   pdTemplate = 12 ! Derived fcsts from ensemble over time interval
+                   ! Derived fcsts from ensemble over time interval
+                   pdTemplate = 12
                 else if (dataEntry%timeAvgOpt .eq. 0) then
                    stepType = "instant"
                    timeRange = 1
-                   pdTemplate = 2 ! Derived fcst from ensemble at point in time
-
+                   ! Derived fcst from ensemble at point in time
+                   pdTemplate = 2
                 else if (dataEntry%timeAvgOpt .eq. 1 .or. &
                      dataEntry%timeAvgOpt .eq. 2) then
                    stepType = "avg"
                    timeRange = 7
-                   pdTemplate = 12 ! Derived fcsts from ensemble over time interval
+                   ! Derived fcsts from ensemble over time interval
+                   pdTemplate = 12
                 else if (dataEntry%timeAvgOpt .eq. 3) then
                    stepType = "accum"
                    timeRange = 7 ! "between first and second"
-                   pdTemplate = 12 ! Derived fcsts from ensemble over time interval
+                   ! Derived fcsts from ensemble over time interval
+                   pdTemplate = 12
                 else
                    write(LVT_logunit,*)'[ERR] Cannot handle ', &
                         trim(dataEntry%short_name)
@@ -2065,13 +1902,13 @@ contains
                 if ((lisdataEntry%index .eq. LVT_LIS_MOC_QS(1)) .or.   &
                      (lisdataEntry%index .eq. LVT_LIS_MOC_QSB(1)) .or.   &
                      (lisdataEntry%index .eq. LVT_LIS_MOC_TOTALPRECIP(1))) then
-                   ! EMK...GRIB1 only
+                   ! GRIB1 only
                    if(LVT_rc%lvt_out_format .ne. "grib2") then
                       timeRange = 133
                    end if
                 endif
 
-                !EMK...Special handling for RHMin, which is an extreme
+                ! Special handling for RHMin, which is an extreme
                 ! (minimum) value.
                 if (trim(dataEntry%short_name) == "RHMin") then
                    stepType = "min"
@@ -2079,7 +1916,7 @@ contains
                    pdTemplate = 12
                 end if
 
-                ! EMK...Reworked ensemble statistics code.  Allow application
+                ! Reworked ensemble statistics code.  Allow application
                 ! of noises smoother to each ensemble member *before*
                 ! calculating ensemble mean and spread.
                 do k = 1, dataEntry%vlevels
@@ -2087,7 +1924,7 @@ contains
                    ngtmp1_1d(:) = 0
                    gtmp1_ss(:) = 0.0
 
-                   ! EMK...Special handling for JULES PS41 snow variables.
+                   ! Special handling for JULES PS41 snow variables.
                    ! In this case, we do not take raw ensemble means, but
                    ! instead apply a JULES-based relayering.  This calculation
                    ! was done higher up; here we pull the requested variable
@@ -2162,7 +1999,7 @@ contains
                       end if ! if PS41 snow variable
                    end if ! If processing JULES PS41 snow ensembles.
 
-                   ! EMK...Special processing of qsb_tavg or qs_tavg rate.  We
+                   ! Special processing of qsb_tavg or qs_tavg rate.  We
                    ! need to also provide 3-hrly accumulation, and
                    ! LIS can't write both.  So, we will calculate
                    ! qsb_acc from qsb_tavg, or qs_acc from qs_tavg
@@ -2241,7 +2078,8 @@ contains
                                else
                                   mean = gtmp1_1d(c + (r-1)*LVT_rc%lnc)
                                   m2 = gtmp1_ss(c + (r-1)*LVT_rc%lnc)
-                                  call welford_finalize(count, mean, m2, stddev)
+                                  call welford_finalize(count, mean, m2, &
+                                       stddev)
                                   gtmp1_1d(c + (r-1)*LVT_rc%lnc) = mean
                                   gtmp1_ss(c + (r-1)*LVT_rc%lnc) = stddev
                                end if
@@ -2307,7 +2145,7 @@ contains
                               typeOfProcessedData=4)
                       end if
 
-                   end if ! EMK Calculate qsb_acc from qsb_tavg
+                   end if ! Calculate qsb_acc from qsb_tavg
 
                    ! Normal ensemble postprocessing starts here.
                    do m = 1, LVT_rc%nensem
@@ -2326,11 +2164,11 @@ contains
                       enddo ! r
 
                       ! Apply the smoother
-                      ! EMK...Removed the hardwired exceptions to
+                      ! Removed the hardwired exceptions to
                       ! smoothing.  The original exception list did not
                       ! consider forcing perturbations.  It seams best
                       ! to just trust the setting in the lvt.config file.
-                      ! EMK...Restored exception list for categorical
+                      ! Restored exception list for categorical
                       ! variables, since smoothing makes no physical sense
                       if (.not. ( &
                            (dataEntry%short_name .eq. "Landcover") .or. &
@@ -2403,7 +2241,7 @@ contains
                          end if
                       enddo ! c
                    enddo ! r
-                   ! EMK END...k loop ends further down
+                   ! END...k loop ends further down
 
                    if (LVT_rc%lvt_out_format .eq. "grib2") then
 
@@ -2526,8 +2364,8 @@ contains
           call LVT_cleanup_jules_ps41_ens_snow()
        end if
 
-       ! EMK...Use HYCOM for sea ice, and NAVGEM for SST.
-       ! EMK 20220519...Reinstate HYCOM SST.
+       ! Use HYCOM for sea ice, and NAVGEM for SST.
+       ! Reinstate HYCOM SST.
        call LVT_append_HYCOM_fields(ftn_mean, &
           time_unit, &
           time_past, &
@@ -2536,21 +2374,6 @@ contains
           toplev(1), &
           botlev(1), &
           lat, lon)
-       ! call LVT_append_HYCOM_cice_fields(ftn_mean, &
-       !    time_unit, &
-       !    time_past, &
-       !    time_curr, &
-       !    timeRange, &
-       !    toplev(1), &
-       !    botlev(1), &
-       !    lat, lon)
-       ! call LVT_append_navgem_sst_field(ftn_mean, &
-       !       time_unit, &
-       !       time_past, &
-       !       time_curr, &
-       !       timeRange, &
-       !       toplev(1), &
-       !       botlev(1))
        if (LVT_rc%lvt_out_format .eq. "grib1") then
           call grib_close_file(ftn_mean, iret)
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
@@ -2580,7 +2403,7 @@ contains
 
   end subroutine LVT_writeDataStreams
 
-  ! EMK...Return logical indicating if alarm should ring.
+  ! Return logical indicating if alarm should ring.
   ! Used by "557 post" runmode.
   logical function alarm_is_on() result(alarmCheck)
      use LVT_timeMgrMod,      only : LVT_get_julhr
@@ -2618,7 +2441,7 @@ contains
 
     ! Imports
     use LVT_constantsMod, only: LVT_CONST_PATH_LEN
-    
+
     ! Defaults
     implicit none
 
@@ -2670,8 +2493,6 @@ contains
     ! simplicity.)
     call LVT_get_navgem_sst_gr1_filename(navgem_sst_fname, &
          year, month, day, hour, fcst_hr)
-    !call LVT_get_navgem_sst_bin_filename(navgem_sst_fname, &
-    !     year, month, day, hour)
     if (trim(navgem_sst_fname) .eq. "NONE") then
        file_exists = .false.
     else
@@ -2684,7 +2505,6 @@ contains
 
     ! Fetch SST from the NAVGEM file.
     call LVT_fetch_navgem_sst_gr1_field(navgem_sst_fname, sst, gridDesci)
-    !call LVT_fetch_navgem_sst_bin_field(navgem_sst_fname, sst, gridDesci)
 
     ! Prepare to interpolate.
     npts = LVT_rc%lnc*LVT_rc%lnr
@@ -2775,9 +2595,7 @@ contains
 ! \label{LVT_append_HYCOM_cice_fields}
 !
 ! !INTERFACE:
-  !EMK 20220519...Reinstated HYCOM SST.
-  !subroutine LVT_append_HYCOM_cice_fields(ftn_mean, time_unit, time_past, &
-  !     time_curr, timeRange, toplev, botlev, lat, lon)
+
   subroutine LVT_append_HYCOM_fields(ftn_mean, time_unit, time_past, &
        time_curr, timeRange, toplev, botlev, lat, lon)
 
@@ -2824,7 +2642,7 @@ contains
     real                    :: &
          aice_arc_1d(LVT_rc%HYCOM_aice_arc_nc*LVT_rc%HYCOM_aice_arc_nr)
 
-    ! EMK...Support aice_ant
+    ! Support aice_ant
     integer                 :: aice_ant_id
     real                    :: aice_ant_ip(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: &
@@ -2836,7 +2654,7 @@ contains
 
     real                    :: aice_ip(LVT_rc%lnc*LVT_rc%lnr)
 
-    ! EMK...Support hi_arc
+    ! Support hi_arc
     integer                 :: hi_arc_id
     real                    :: hi_arc_ip(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: &
@@ -2846,7 +2664,7 @@ contains
     real                    :: &
          hi_arc_1d(LVT_rc%HYCOM_hi_arc_nc*LVT_rc%HYCOM_hi_arc_nr)
 
-    ! EMK...Support hi_ant
+    ! Support hi_ant
     integer                 :: hi_ant_id
     real                    :: hi_ant_ip(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: &
@@ -3039,11 +2857,11 @@ contains
           ios = nf90_open(path=trim(hycom_fname), mode=NF90_NOWRITE, ncid=nid)
           call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
 
-!variable ids
+          !variable ids
           ios = nf90_inq_varid(nid, 'aice', aice_arc_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: aice')
 
-!values
+          !values
           ios = nf90_get_var(nid,aice_arc_id, aice_arc,&
                start=(/1, 1, 1, 1/), &
                count=(/LVT_rc%HYCOM_aice_arc_nc, LVT_rc%HYCOM_aice_arc_nr, &
@@ -3098,11 +2916,11 @@ contains
           ios = nf90_open(path=trim(hycom_fname), mode=NF90_NOWRITE, ncid=nid)
           call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
 
-!variable ids
+          !variable ids
           ios = nf90_inq_varid(nid, 'aice', aice_ant_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: aice')
 
-!values
+          !values
           ios = nf90_get_var(nid, aice_ant_id, aice_ant,&
                start=(/1, 1, 1, 1/), &
                count=(/LVT_rc%HYCOM_aice_ant_nc, LVT_rc%HYCOM_aice_ant_nr, &
@@ -3232,7 +3050,6 @@ contains
        endif
 
        ! *** HANDLE HI_ARC ***
-
        hi_arc = LVT_rc%udef
        call get_hycom_cice_filename('ARC', hycom_fname, &
             hi_arc_year, hi_arc_month, hi_arc_day, &
@@ -3254,11 +3071,11 @@ contains
           ios = nf90_open(path=trim(hycom_fname), mode=NF90_NOWRITE, ncid=nid)
           call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
 
-!variable ids
+          !variable ids
           ios = nf90_inq_varid(nid, 'hi', hi_arc_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: hi')
 
-!values
+          !values
           ios = nf90_get_var(nid,hi_arc_id, hi_arc,&
                start=(/1, 1, 1, 1/), &
                count=(/LVT_rc%HYCOM_hi_arc_nc, LVT_rc%HYCOM_hi_arc_nr, 1, 1/))
@@ -3314,11 +3131,11 @@ contains
           ios = nf90_open(path=trim(hycom_fname), mode=NF90_NOWRITE, ncid=nid)
           call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
 
-!variable ids
+          !variable ids
           ios = nf90_inq_varid(nid, 'hi', hi_ant_id)
           call LVT_verify(ios, 'Error nf90_inq_varid: hi')
 
-!values
+          !values
           ios = nf90_get_var(nid, hi_ant_id, hi_ant,&
                start=(/1, 1, 1, 1/), &
                count=(/LVT_rc%HYCOM_hi_ant_nc, LVT_rc%HYCOM_hi_ant_nr, 1, 1/))
@@ -3606,9 +3423,6 @@ contains
     call LVT_verify(iret, &
          'grib_set:indicatorOfParameter failed in LVT_DataStreamsMod')
 
-    !    call grib_set(igrib,'paramId',gribid, iret)
-    !    call LVT_verify(iret,'grib_set:paramId failed in LVT_DataStreamsMod')
-
     call grib_set(igrib, 'indicatorOfTypeOfLevel', gribSfc, iret)
     call LVT_verify(iret, &
          'grib_set:indicatorOfTypeOfLevel failed in LVT_DataStreamsMod')
@@ -3677,13 +3491,8 @@ contains
     call LVT_verify(iret, &
          'grib_set:missingValue failed in LVT_DataStreamsMod')
 
-! Should not need to fix the "num bits" value for each parameter
-! if the "decimalPrecision" (aka, "DecScale") is set properly. - dmm
-!     call grib_set(igrib, 'bitsPerValue',12,iret)
-!     call LVT_verify(iret, 'grib_set:bitsPerValue failed in LVT_DataStreamsMod')
-
-! Set the "decimalPrecision" (aka, "DecScale") based on the
-! gribSF (grib scale factor) set in the MODEL OUTPUT TBL. - dmm
+    ! Set the "decimalPrecision" (aka, "DecScale") based on the
+    ! gribSF (grib scale factor) set in the MODEL OUTPUT TBL.
     gribSFtemp = gribSF
     decimalPrecision = 0
     do while (gribSFtemp.ge.10)
@@ -3748,7 +3557,7 @@ contains
     call LVT_verify(iret, 'grib_set:values failed in LVT_DataStreamsMod')
 
     ! Move setting of centre and subCentre to the end of the settings.
-    ! The order these are written is important and will affect output. - dmm
+    ! The order these are written is important and will affect output.
     call grib_set(igrib, 'centre', LVT_rc%grib_center_id, iret)
     call LVT_verify(iret, 'grib_set:centre failed in LVT_DataStreamsMod')
 
@@ -3760,7 +3569,6 @@ contains
 
     call grib_release(igrib, iret)
     call LVT_verify(iret, 'grib_release failed in LVT_DataStreamsMod')
-
 
   end subroutine writeSingleGrib1Var
 
@@ -3828,19 +3636,19 @@ contains
     type(ESMF_Time) :: time1, time2
     type(ESMF_TimeInterval) :: timeinterval,timeinterval12
 
-    ! EMK...Handle optional ensemble spread flag
+    ! Handle optional ensemble spread flag
     ensembleSpread_local = .false.
     if (present(ensembleSpread)) then
        ensembleSpread_local = ensembleSpread
     end if
 
-    ! EMK...Handle optional typeOfGeneratingProcess
+    ! Handle optional typeOfGeneratingProcess
     typeOfGeneratingProcess_local = 0 ! Analysis
     if (present(typeOfGeneratingProcess)) then
        typeOfGeneratingProcess_local = typeOfGeneratingProcess
     end if
 
-    ! EMK...Handle optional typeOfProcessedData
+    ! Handle optional typeOfProcessedData
     typeOfProcessedData_local = 0
     if (present(typeOfProcessedData)) then
        typeOfProcessedData_local = typeOfProcessedData
@@ -3878,7 +3686,7 @@ contains
     call LVT_verify(iret, &
          'grib_set:localTablesVersion failed in LVT_DataStreamsMod')
     ! Octet 12
-    ! EMK 8 May 2018...Reference time will always be start of forecast.
+    ! Reference time will always be start of forecast.
     ! Since this is not available in the LIS history file, we will use
     ! the start day/time specified in the lvt.config file.
     ! Exception is for GOFS analyses.
@@ -3931,11 +3739,6 @@ contains
     call grib_set(igrib,'typeOfProcessedData', typeOfProcessedData_local, iret)
     call LVT_verify(iret, &
          'grib_set:typeOfProcessedData failed in LVT_DataStreamsMod')
-
-!    ! ????
-!    call grib_set(igrib,'stepType',sType, iret)
-!    call LVT_verify(iret,'grib_set:stepType failed in LVT_DataStreamsMod')
-
 
     ! Section 2: Local Use Section (Optional) --none for now
 
@@ -4166,7 +3969,7 @@ contains
                'grib_set:scaledValueOfSecondFixedSurface failed in '// &
                'LVT_DataStreamsMod')
 
-       else if ( gribSfc .eq. 103 ) then   ! EMK...Meters AGL
+       else if ( gribSfc .eq. 103 ) then   ! Meters AGL
           call grib_set(igrib, 'scaleFactorOfFirstFixedSurface', &
                depscale(1), iret)
           call LVT_verify(iret, &
@@ -4326,13 +4129,8 @@ contains
     call grib_set(igrib, 'missingValue', LVT_rc%udef, iret)
     call LVT_verify(iret, 'grib_set:missingValue failed in LVT_DataStreamsMod')
 
-    ! Should not need to fix the "num bits" value for each parameter
-    ! if the "decimalPrecision" (aka, "DecScale") is set properly. - dmm
-    !     call grib_set(igrib, 'bitsPerValue',12,iret)
-    !     call LVT_verify(iret, 'grib_set:bitsPerValue failed in LVT_DataStreamsMod')
-
     ! Set the "decimalPrecision" (aka, "DecScale") based on the
-    ! gribSF (grib scale factor) set in the MODEL OUTPUT TBL. - dmm
+    ! gribSF (grib scale factor) set in the MODEL OUTPUT TBL.
      gribSFtemp = gribSF
      decimalPrecision = 0
      do while (gribSFtemp .ge. 10)
@@ -4419,7 +4217,7 @@ contains
                'nf90_def_dim failed (2d gridspace) in LVT_DataStreamsMod')
        endif
 
-       !EMK...Added suffix to clarify if field is instantaneous, time averaged,
+       !Added suffix to clarify if field is instantaneous, time averaged,
        !or an accumulation.
        if (index(trim(dataEntry%short_name),"_max") .gt. 0) then
           short_name = trim(dataEntry%short_name)
@@ -4509,7 +4307,6 @@ contains
 
   end subroutine defineNETCDFheaderVar
 
-
 !BOP
 ! !ROUTINE: defineNETCDFheaderVar_SS
 ! \label{defineNETCDFheaderVar_SS}
@@ -4570,7 +4367,7 @@ contains
                'nf90_def_dim failed (2d gridspace) in LVT_DataStreamsMod')
        endif
 
-       !EMK...Added suffix to clarify if field is instantaneous, time averaged,
+       !Added suffix to clarify if field is instantaneous, time averaged,
        !or an accumulation.
        if (index(trim(dataEntry%short_name),"_max") .gt. 0) then
           short_name = trim(dataEntry%short_name)
@@ -4731,7 +4528,7 @@ contains
     type(LVT_metadataEntry), pointer :: ds1, ds2
     logical :: local_computeFlag
 
-    ! EMK...557 post runmode has different requirements for when to set
+    ! 557 post runmode has different requirements for when to set
     ! the computeFlag than the normal applications of LVT.  To prevent
     ! surprises for normal LVT users, we will use a local computeFlag
     ! variable here.
@@ -4739,10 +4536,9 @@ contains
     if (LVT_rc%runmode.eq."557 post") then
        local_computeFlag = LVT_557post_alarm_is_on()
     end if
-    !if(LVT_rc%computeFlag) then
-    if (local_computeFlag) then
 
-!data stream 1
+    if (local_computeFlag) then
+       !data stream 1
        do kk = 1, LVT_rc%nDataStreams
           if (kk .eq. 1) then
              dataEntry => LVT_histData%head_ds1_list
@@ -4757,10 +4553,10 @@ contains
              dataEntry => dataEntry%next
           enddo
 
-! copy duplicate entries
-! Note that this check is not enabled for three datastrems.
-! The responsibility of ensuring non-duplicate entries is
-! on the user.
+          ! copy duplicate entries
+          ! Note that this check is not enabled for three datastrems.
+          ! The responsibility of ensuring non-duplicate entries is
+          ! on the user.
           if (LVT_rc%ds1_dup) then
              ds1 => LVT_histData%head_ds1_list
              do while (associated(ds1))
@@ -4835,14 +4631,10 @@ contains
 !EOP
     integer :: k,t,c,r,m,gid
 
-    ! EMK...Special rules for accumulations, max, and min values are now
+    ! Special rules for accumulations, max, and min values are now
     ! handled by incrementing count variable.
-!    ! EMK Do not average the data if the raw input are accumulations.
-!    ! This is indicated in the lvt.config file
-!    if (dataEntry%timeAvgOpt .eq. 3) return
-!    ! EMK....Do not average data if Tair_f_max or Tair_f_min
-!    if (trim(dataEntry%short_name) == "Tair_f_max") return
-!    if (trim(dataEntry%short_name) == "Tair_f_min") return
+    ! Do not average the data if the raw input are accumulations.
+    ! This is indicated in the lvt.config file
 
     if (dataEntry%selectNlevs .ge. 1) then
        if (LVT_rc%computeEnsMetrics .eq. 1) then
@@ -4921,7 +4713,7 @@ contains
     type(LVT_metadataEntry), pointer :: ds3
     logical :: local_computeFlag
 
-    ! EMK..."557 post" runmode has different requirements for setting the
+    ! "557 post" runmode has different requirements for setting the
     ! compute flag compared to normal LVT users.  So we use a local variable
     ! to accomodate both.
     local_computeFlag = LVT_rc%computeFlag
@@ -4929,9 +4721,8 @@ contains
        local_computeFlag = LVT_557post_alarm_is_on()
     end if
 
-!    if(LVT_rc%computeFlag) then
     if (local_computeFlag) then
-!data stream 1
+       !data stream 1
        ds1 => LVT_histData%head_ds1_list
 
        do while (associated(ds1))
@@ -4939,7 +4730,7 @@ contains
           ds1 => ds1%next
        enddo
 
-!data stream 2
+       !data stream 2
        ds2 => LVT_histData%head_ds2_list
 
        do while (associated(ds2))
@@ -4949,7 +4740,7 @@ contains
 
        if (LVT_rc%nDataStreams .gt. 2) then
 
-!data stream 3
+          !data stream 3
           ds3 => LVT_histData%head_ds3_list
 
           do while (associated(ds3))
@@ -4957,7 +4748,7 @@ contains
              ds3 => ds3%next
           enddo
        endif
-!need special handler for LIS output
+       !need special handler for LIS output
        if (LVT_rc%lis_output_obs) then
           if (LVT_rc%obssource(1) .eq. "LIS output") then
              call LVT_resetLISoutputContainers(1)
@@ -4973,7 +4764,6 @@ contains
        endif
     endif
   end subroutine LVT_resetDataStreams
-
 
 !BOP
 !
@@ -5021,7 +4811,7 @@ contains
     endif
   end subroutine resetSingleDataStream
 
-  ! EMK...Construct filename for HYCOM SST.  Targets GOFS 93.0
+  ! Construct filename for HYCOM SST.  Targets GOFS 93.0
   subroutine get_hycom_sst_filename(sst_filename, sst_year, sst_month, &
        sst_day, sst_hour, sst_fcst_hr)
 
@@ -5105,7 +4895,6 @@ contains
      return
   end subroutine get_hycom_sst_filename
 
-  ! EMK
   subroutine construct_hycom_sst_filename(rootdir, &
        yr, mo, da, hr, fcst_hr, sst_filename)
 
@@ -5132,7 +4921,7 @@ contains
      return
   end subroutine construct_hycom_sst_filename
 
-  ! EMK...Construct filename for HYCOM sea ice.  Targets GOFS 93.0
+  ! Construct filename for HYCOM sea ice.  Targets GOFS 93.0
   subroutine get_hycom_cice_filename(region, cice_filename, &
        cice_year, cice_month, cice_day, cice_hour, cice_fcst_hr)
 
@@ -5213,7 +5002,6 @@ contains
      return
   end subroutine get_hycom_cice_filename
 
-  ! EMK
   subroutine construct_hycom_cice_filename(rootdir, &
        region, yr, mo, da, hr, fcst_hr, cice_filename)
 
@@ -5241,7 +5029,7 @@ contains
      return
   end subroutine construct_hycom_cice_filename
 
-  ! EMK...Calculate mean and standard deviation using Welford algorithm.
+  ! Calculate mean and standard deviation using Welford algorithm.
   ! See https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
   ! Intent is to avoid catastrophic cancellation when calculating variance,
   ! which can result in negative variance and imaginary standard deviation.
