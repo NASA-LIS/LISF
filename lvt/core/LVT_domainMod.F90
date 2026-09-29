@@ -101,8 +101,9 @@ contains
 
     integer :: c,r
     real    :: locallat, locallon
-    integer :: status
-    
+
+    external :: readinput
+
     call LVT_domain_plugin
     call readinput(trim(LVT_rc%domain)//char(0))   
     call create_LVT_gridspace()
@@ -181,7 +182,10 @@ contains
     integer              :: ips, ipe, jps, jpe
     integer              :: Px, Py, P
     integer              :: mytask_x, mytask_y
-    integer              :: i, j,ierr
+    integer              :: i, j
+
+    external :: LVT_mpDecomp
+    external :: neighbor_interp
 
      mytask_x = mod( LVT_localPet , LVT_rc%npesx)
      mytask_y = LVT_localPet / LVT_rc%npesx
@@ -309,7 +313,9 @@ contains
     integer              :: ips, ipe, jps, jpe
     integer              :: Px, Py, P
     integer              :: mytask_x, mytask_y
-    integer              :: i, j,ierr
+    integer              :: i, j
+
+    external :: LVT_mpDecomp
 
      mytask_x = mod( LVT_localPet , LVT_rc%npesx)
      mytask_y = LVT_localPet / LVT_rc%npesx
@@ -409,31 +415,7 @@ contains
 !  the 2-d domain) 
 !EOP
     real          :: locallat, locallon
-    integer       :: c, r, t, m
-    integer       :: iv, it, ie, is, ia
-    integer       :: vegt
-    integer       :: soilt
-    real          :: sand, clay, silt
-    real          :: elev, slope, aspect
-    integer       :: sf_index
-    integer       :: gnc, gnr
-    integer       :: kk
-    integer       :: kk_sf(LVT_rc%max_model_types)
-    real, allocatable :: sumv(:)
-    integer       :: ntiles_surface
-    integer       :: npatch_surface
-    integer       :: ntiles_soilt
-    integer       :: ntiles_soilf
-    integer       :: ntiles_soil
-    integer       :: ntiles_elev
-    integer       :: ntiles_slope
-    integer       :: ntiles_aspect
-    integer       :: gid
-    real          :: temp
-    integer       :: soilf_index
-    integer       :: elev_index
-    integer       :: slope_index
-    integer       :: aspect_index
+    integer       :: c, r
     real          :: mask(LVT_rc%input_lnc,LVT_rc%input_lnr)
     real          :: mask_in(LVT_rc%input_lnc*LVT_rc%input_lnr)
     real          :: mask_out(LVT_rc%lnc*LVT_rc%lnr)
@@ -443,6 +425,11 @@ contains
     integer       :: ios, ftn,maskid
     logical       :: file_exists, interp_flag
 
+    external :: bilinear_interp_input
+    external :: upscaleByAveraging_input
+    external :: upscaleByAveraging
+    external :: neighbor_interp_input
+    external :: neighbor_interp
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     
@@ -614,9 +601,7 @@ contains
 !EOP
 
     integer :: i 
-    integer :: k
-    integer :: status
-    
+
     LVT_ngrids(LVT_localPet) = LVT_rc%ngrid
     LVT_gdeltas(LVT_localPet) = LVT_rc%ngrid
 
@@ -689,7 +674,7 @@ contains
     integer, allocatable :: gtmp(:,:)
     integer, allocatable :: gtmp1(:)
     integer              :: count, index
-    integer              :: t, gid, gid_red, ierr
+    integer              :: t, gid, gid_red
     integer              :: c,r, l,m, c1,c2, r1,r2
     integer              :: ntiles, npatch,stid
 
@@ -971,7 +956,7 @@ contains
 
     integer              :: source
     integer              :: k
-    integer              :: i,j
+    integer              :: i
     integer              :: rc
     integer              :: ios
     integer              :: ftn
@@ -985,6 +970,10 @@ contains
 !    character*100        :: vic_d3file(2)
 !    real, allocatable    :: vic_depth(:,:)
 !    integer              :: c,r,lis_gid
+
+    external :: LVT_mapSurfaceModelType
+    external :: bilinear_interp_input
+    external :: upscaleByAveraging_input
 
     if(LVT_rc%obs_duplicate) then 
        source =2 
@@ -1064,7 +1053,6 @@ contains
        call LVT_verify(rc,'LIS output model name: not defined')
     enddo
 
-
     call ESMF_ConfigFindLabel(LVT_config, &
          label="LIS output maximum number of surface type tiles per grid:",rc=rc)   
     do k=1,source
@@ -1143,7 +1131,6 @@ contains
        call LVT_verify(rc,'LIS output minimum cutoff percentage (aspect bands): not defined')
     enddo
 
-    
     call ESMF_ConfigFindLabel(LVT_config, &
          label="LIS output domain and parameter file:",rc=rc)
     do k=1,source
@@ -1883,7 +1870,6 @@ contains
     implicit none
     integer :: source
 
-    integer :: c,r
     logical :: soilt_selected
     logical :: soilf_selected
     logical :: elev_selected
@@ -2326,7 +2312,6 @@ contains
     integer       :: gnc, gnr
     integer       :: kk
     integer       :: kk_sf(LVT_rc%max_model_types)
-    real, allocatable :: sumv(:)
     integer       :: ntiles_surface
     integer       :: npatch_surface
     integer       :: ntiles_soilt
@@ -2335,17 +2320,10 @@ contains
     integer       :: ntiles_elev
     integer       :: ntiles_slope
     integer       :: ntiles_aspect
-    integer       :: gid
-    real          :: temp
     integer       :: soilf_index
     integer       :: elev_index
     integer       :: slope_index
     integer       :: aspect_index
-    real          :: mask_in(LVT_LIS_rc(source)%gnc*LVT_LIS_rc(source)%gnr)
-    real          :: mask_out(LVT_rc%lnc*LVT_rc%lnr)
-    logical*1     :: li(LVT_LIS_rc(source)%gnc*LVT_LIS_rc(source)%gnr)
-    logical*1     :: lo(LVT_rc%lnc*LVT_rc%lnr)
-    integer       :: count1
 
     gnc = LVT_LIS_rc(source)%gnc
     gnr = LVT_LIS_rc(source)%gnr
@@ -2736,7 +2714,6 @@ contains
 ! !INTERFACE: 
   function compute_ntiles_surface(source,c,r)
 ! !ARGUMENTS: 
-    integer :: n 
     integer :: source
     integer :: c
     integer :: r
@@ -2767,7 +2744,6 @@ contains
 ! !INTERFACE: 
   function compute_npatches_surface(source,c,r,t,sf_index)
 ! !ARGUMENTS: 
-    integer :: n 
     integer :: source
     integer :: c
     integer :: r
@@ -2797,7 +2773,6 @@ contains
 ! !INTERFACE: 
   function compute_ntiles_soilt(source,c,r,flag)
 ! !ARGUMENTS: 
-    integer :: n 
     integer :: source
     integer :: c
     integer :: r
@@ -2831,7 +2806,6 @@ contains
   function compute_ntiles_soilf(source,c,r,flag)
 ! !ARGUMENTS: 
     integer :: source
-    integer :: n 
     integer :: c
     integer :: r
     logical :: flag
@@ -2864,7 +2838,6 @@ contains
 ! !INTERFACE: 
   function compute_ntiles_elev(source,c,r,flag)
 ! !ARGUMENTS: 
-    integer :: n 
     integer :: source
     integer :: c
     integer :: r
@@ -2899,7 +2872,6 @@ contains
 ! !INTERFACE: 
   function compute_ntiles_slope(source,c,r,flag)
 ! !ARGUMENTS: 
-    integer :: n 
     integer :: source
     integer :: c
     integer :: r
@@ -2935,7 +2907,6 @@ contains
 ! !INTERFACE: 
   function compute_ntiles_aspect(source,c,r,flag)
 ! !ARGUMENTS: 
-    integer :: n 
     integer :: source
     integer :: c
     integer :: r
@@ -2970,7 +2941,6 @@ contains
 ! !INTERFACE: 
   subroutine get_vegt_value(source,c,r,i,vegt)
 ! !ARGUMENTS: 
-    integer  :: n 
     integer :: source
     integer  :: c
     integer  :: r
@@ -3005,7 +2975,6 @@ contains
 ! !INTERFACE:
   subroutine get_surface_value(source,c,r,i,sf_index)
     integer  :: source
-    integer  :: n 
     integer  :: c
     integer  :: r
     integer  :: i
@@ -3038,7 +3007,6 @@ contains
 !
 ! !INTERFACE:
   subroutine get_soilt_value(source,c,r,i,soilt_selected,soilt)
-    integer  :: n 
     integer :: source
     integer  :: c
     integer  :: r
@@ -3075,7 +3043,6 @@ contains
 !
 ! !INTERFACE:
   subroutine get_soilf_value(source,c,r,i,soilf_selected,sand,clay,silt,soilf_index)
-    integer  :: n 
     integer :: source
     integer  :: c
     integer  :: r
@@ -3121,9 +3088,7 @@ contains
 !
 ! !INTERFACE:
   subroutine get_elev_value(source,c,r,i,elev_selected,elev,elev_index)
-     use LVT_logMod, only: LVT_logunit ! EMK
 
-    integer  :: n 
     integer :: source
     integer  :: c
     integer  :: r
@@ -3171,7 +3136,6 @@ contains
 !
 ! !INTERFACE:
   subroutine get_slope_value(source,c,r,i,slope_selected,slope,slope_index)
-    integer  :: n
     integer :: source 
     integer  :: c
     integer  :: r
@@ -3212,7 +3176,6 @@ contains
 ! !INTERFACE: 
   subroutine get_aspect_value(source,c,r,i,aspect_selected,aspect,aspect_index)
 ! !ARGUMENTS: 
-    integer  :: n 
     integer :: source
     integer  :: c
     integer  :: r
@@ -3287,7 +3250,6 @@ contains
     real          :: datamask(LVT_rc%lnc, LVT_rc%lnr)
     integer       :: ftn
     integer       :: c,r
-
 
 !read the external mask, timestamped file      
     if(LVT_rc%datamask.eq.0) then 
