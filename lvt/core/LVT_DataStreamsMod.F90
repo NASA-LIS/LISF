@@ -92,9 +92,11 @@ contains
 !      data is one of the datastreams)
 !   \end{description}
 !EOP
-    integer                          :: kk
     type(LVT_metadataEntry), pointer :: ds1, ds2
     real                             :: gridDesci(50)
+
+    external :: observationsetup
+    external :: upscaleByAveraging_input
 
     call LVT_datastream_plugin
 
@@ -147,8 +149,7 @@ contains
     if (LVT_rc%runmode .eq. "557 post") then
 
 
-       ! EMK FIXME...Replace HYCOM with NAVGEM
-       ! EMK 20220519...Reinstate HYCOM SST processing.
+       ! Reinstate HYCOM SST processing.
        if (LVT_rc%processHYCOM .eq. 1) then
 
           LVT_rc%HYCOM_proc_start = .true.
@@ -342,6 +343,8 @@ contains
 !
 !EOP
 
+    external :: readObservationSource
+
     call readObservationSource(trim(LVT_rc%obssource(1))//char(0),1)
     call readObservationSource(trim(LVT_rc%obssource(2))//char(0),2)
 
@@ -349,7 +352,6 @@ contains
        call readObservationSource(trim(LVT_rc%obssource(3))//char(0),3)
     endif
   end subroutine LVT_readDataStreams
-
 
 !BOP
 !
@@ -395,7 +397,7 @@ contains
     real, dimension(nsoillayers)         :: toplev, botlev, depscale
     real, dimension(1)                   :: toplev0, botlev0
     real                                 :: lyrthk(nsoillayers)
-    integer                              :: i,k,t,m
+    integer                              :: i,k,m
     real*8                               :: time
     real                                 :: gmt
     integer                              :: doy
@@ -405,10 +407,8 @@ contains
     real                                 :: gtmp1_1d(LVT_rc%lnc*LVT_rc%lnr)
     real                                 :: gtmp1_ss(LVT_rc%lnc*LVT_rc%lnr)
     integer                              :: ngtmp1_1d(LVT_rc%lnc*LVT_rc%lnr)
-    real                                 :: variance
     real                                 :: lat(LVT_rc%lnc,LVT_rc%lnr)
     real                                 :: lon(LVT_rc%lnc,LVT_rc%lnr)
-    character*20                         :: output_fmt
     integer                              :: shuffle, deflate, deflate_level
     integer                              :: xlatID,xlonID,xtimeID
     integer                              :: xlat_ss_ID,xlon_ss_ID,xtime_ss_ID
@@ -422,10 +422,8 @@ contains
     character(len=5)                     :: zone
     integer, dimension(8)                :: values
     type(LVT_metadataEntry)              :: xlat,xlon
-    character*10                         :: stepType_mean
-    character*10                         :: stepType_ssdev
 
-    ! EMK...For Welford algorithm
+    ! For Welford algorithm
     integer :: count
     real :: mean, m2, stddev, new_value
 
@@ -2636,11 +2634,8 @@ contains
     ! Locals
     character(len=LVT_CONST_PATH_LEN) :: navgem_sst_fname
     real :: gridDesci(50) ! Full NAVGEM grid
-    character(10) :: cdate
     logical :: file_exists
     real, allocatable :: sst(:)
-    real, allocatable :: cice(:)
-    real, allocatable :: icethick(:)
     integer :: npts
     real :: rlat(LVT_rc%lnc * LVT_rc%lnr)
     real :: rlon(LVT_rc%lnc * LVT_rc%lnr)
@@ -2655,17 +2650,15 @@ contains
     real :: interp_var(LVT_rc%lnc * LVT_rc%lnr)
     logical*1, allocatable :: li(:)
     logical*1 :: lo(LVT_rc%lnc * LVT_rc%lnr)
-    integer :: mi, mo
+    integer :: mo
     integer :: year, month, day, hour, fcst_hr
     real :: udef
-    integer :: ivar
     integer :: iret
     integer :: gribSF, gribSfc, gribLvl, gribCat, gribDis
     character*10 :: stepType
     integer :: pdTemplate
     integer :: varid_def
     real :: depscale(1)
-    real, allocatable :: thin_latitudes(:,:)
 
     external :: bilinear_interp_input
     external :: bilinear_interp
@@ -2811,10 +2804,9 @@ contains
     real, intent(in) :: lon(LVT_rc%lnc,LVT_rc%lnr)
 
     character(len=LVT_CONST_PATH_LEN) :: hycom_fname
-    character*10            :: cdate
     logical                 :: file_exists
     integer                 :: nid,ios
-    integer                 :: c,r,c1,r1,k,cindex,rindex
+    integer                 :: c,r,c1,r1
     integer                 :: watertid
     real                    :: watert_ip(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: lo(LVT_rc%lnc*LVT_rc%lnr)
@@ -2822,7 +2814,7 @@ contains
     real                    :: watert(LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1)
     real                    :: watert_1d(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr)
 
-    ! EMK...Support aice_arc
+    ! Support aice_arc
     integer                 :: aice_arc_id
     real                    :: aice_arc_ip(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: &
@@ -2884,23 +2876,11 @@ contains
 
     integer :: gid
 
+    external :: upscaleByAveraging
+
     ! find the filename, open the file, read the field
 
     if (LVT_rc%processHYCOM .eq. 1) then
-
-       ! *** HANDLE SST ***
-      ! write(unit=cdate,fmt='(i4.4,i2.2,i2.2,i2.2)') &
-      !      LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr
-      ! ! FIXME...Update HYCOM file name convention
-      ! hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
-      !     'hycom_glb_928_'//trim(cdate)//'_t000_ts3z.nc'
-
-      ! watert  = LVT_rc%udef
-      ! inquire(file=hycom_fname,exist=file_exists)
-
-      ! if (.not. file_exists) then
-      !    write(LVT_logunit,*)'[WARN], missing file ',trim(hycom_fname)
-      ! end if
 
        watert  = LVT_rc%udef
        call get_hycom_sst_filename(hycom_fname, &
@@ -2924,7 +2904,8 @@ contains
 
           !values
           ios = nf90_get_var(nid,watertid, watert,&
-               start=(/1,1,1,1/), count=(/LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1/))
+               start=(/1,1,1,1/), &
+               count=(/LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1/))
           call LVT_verify(ios, 'Error nf90_get_var: water_temp')
 
           ios = nf90_close(nid)
@@ -2943,9 +2924,9 @@ contains
                       c1 = c+2250
                       r1 = r
                    endif
-                   !EMK...Change from Celsius to Kelvin
-                   !watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0
-                   watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0+273.15
+                   ! Change from Celsius to Kelvin
+                   watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = &
+                        watert(c,r,1,1)*0.001+20.0+273.15
 
                    lb(c1+(r1-1)*LVT_rc%HYCOM_nc) = .true.
 
@@ -2959,7 +2940,7 @@ contains
                LVT_rc%HYCOM_n11, lb, &
                watert_1d, lo, watert_ip)
 
-          !EMK: Since SST is missing north of 80N, we need to set water points
+          !Since SST is missing north of 80N, we need to set water points
           !in this region to a reasonable value.  We follow the typical
           !UKMET SURF value of 271.35K.
           do r = 1, LVT_rc%gnr
@@ -2974,10 +2955,10 @@ contains
              end do ! c
           end do ! r
 
-          ! GRIB2 settings...Updated by EMK
+          ! GRIB2 settings
           gribDis   = 10
           stepType  = "avg"
-          stepType = "instant" ! EMK
+          stepType = "instant"
           pdTemplate = 0
           gribCat   = 3
           varid_def = 0
@@ -3038,16 +3019,6 @@ contains
        endif
 
        ! *** HANDLE AICE_ARC ***
-
-       ! FIXME...Update HYCOM file name convention
-!       hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
-!           'hycom-cice_inst_ARCu0.08_928_'//trim(cdate)//'_t000.nc'
-!
-!       aice_arc  = LVT_rc%udef
-!       inquire(file=hycom_fname,exist=file_exists)
-!
-!       watert  = LVT_rc%udef
-
        aice_arc  = LVT_rc%udef
        call get_hycom_cice_filename('ARC', hycom_fname, &
             cice_arc_year, cice_arc_month, cice_arc_day, cice_arc_hour, &
@@ -3106,17 +3077,6 @@ contains
                aice_arc_1d, lo, aice_arc_ip)
 
        end if
-
-       ! FIXME...Update HYCOM file name convention
-!       hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
-!           'hycom-cice_inst_ANTu0.08_928_'//trim(cdate)//'_t000.nc'
-!
-!       aice_ant  = LVT_rc%udef
-!       inquire(file=hycom_fname,exist=file_exists)
-!
-!       if (.not. file_exists) then
-!          write(LVT_logunit,*)'[WARN], missing file ',trim(hycom_fname)
-!       end if
 
        aice_ant = LVT_rc%udef
        call get_hycom_cice_filename('ANT', hycom_fname, &
@@ -3186,7 +3146,7 @@ contains
           end if
        end do ! c
 
-       ! EMK: Since sea ice is missing north of -49.5N and south of 40N, we
+       ! Since sea ice is missing north of -49.5N and south of 40N, we
        ! need to set water points in this region to a reasonable value.  We
        ! assume sea ice fraction is zero in this region.
        do r = 1, LVT_rc%gnr
@@ -3200,10 +3160,9 @@ contains
           end do ! c
        end do ! r
 
-       ! GRIB2 Settings...updated by EMK
+       ! GRIB2 Settings
        gribDis   = 10
-       !stepType  = "avg"
-       stepType = "instant" ! EMK
+       stepType = "instant"
        pdTemplate = 0
        gribCat   = 2
        varid_def = 0
@@ -3212,7 +3171,7 @@ contains
        gribLvl   = 1
 
        if (LVT_rc%lvt_out_format .eq. "grib2" ) then
-          ! EMK...Use older cice date/time
+          ! Use older cice date/time
           if (cice_ant_year .lt. cice_arc_year .or. &
                cice_ant_month .lt. cice_arc_month .or. &
                cice_ant_day .lt. cice_arc_day .or. &
@@ -3274,17 +3233,6 @@ contains
 
        ! *** HANDLE HI_ARC ***
 
-!        ! FIXME...Update HYCOM file name convention
-!        hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
-!            'hycom-cice_inst_ARCu0.08_928_'//trim(cdate)//'_t000.nc'
-
-!        hi_arc  = LVT_rc%udef
-!        inquire(file=hycom_fname,exist=file_exists)
-
-!        if (.not. file_exists) then
-!           write(LVT_logunit,*)'[WARN], missing file ',trim(hycom_fname)
-!        end if
-
        hi_arc = LVT_rc%udef
        call get_hycom_cice_filename('ARC', hycom_fname, &
             hi_arc_year, hi_arc_month, hi_arc_day, &
@@ -3345,16 +3293,6 @@ contains
        end if
 
        ! FIXME...Update HYCOM file name convention
-!        hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
-!            'hycom-cice_inst_ANTu0.08_928_'//trim(cdate)//'_t000.nc'
-
-!        hi_ant  = LVT_rc%udef
-!        inquire(file=hycom_fname,exist=file_exists)
-
-!        if (.not. file_exists) then
-!           write(LVT_logunit,*)'[WARN], missing file ',trim(hycom_fname)
-!        end if
-
        hi_ant  = LVT_rc%udef
        call get_hycom_cice_filename('ANT', hycom_fname, &
             hi_ant_year, hi_ant_month, hi_ant_day, &
@@ -3423,7 +3361,7 @@ contains
           end if
        end do ! c
 
-       ! EMK: Since sea ice is missing north of -49.5N and south of 40N, we
+       ! Since sea ice is missing north of -49.5N and south of 40N, we
        ! need to set water points in this region to a reasonable value.  We
        ! assume sea ice thickness is zero in this region.
        do r = 1, LVT_rc%gnr
@@ -3437,10 +3375,9 @@ contains
           end do ! c
        end do ! r
 
-       ! GRIB2 Settings...updated by EMK
+       ! GRIB2 Settings
        gribDis   = 10
-       !stepType  = "avg"
-       stepType = "instant" ! EMK
+       stepType = "instant"
        pdTemplate = 0
        gribCat   = 2
        varid_def = 1
@@ -3450,7 +3387,7 @@ contains
 
        if (LVT_rc%lvt_out_format .eq. "grib2") then
 
-          ! EMK...Use older hi date/time
+          ! Use older hi date/time
           if (hi_ant_year .lt. hi_arc_year .or. &
                hi_ant_month .lt. hi_arc_month .or. &
                hi_ant_day .lt. hi_arc_day .or. &
@@ -3515,7 +3452,6 @@ contains
     endif
 
   end subroutine LVT_append_HYCOM_fields
-
 
   subroutine applyNoiseReductionFilter(gvar)
 
@@ -4461,7 +4397,6 @@ contains
 !     call to check if the return value is valid or not.
 !   \end{description}
 !EOP
-    logical       :: nmodel_status
     integer       :: data_index
     integer       :: shuffle, deflate, deflate_level
     integer       :: fill_value
@@ -4613,7 +4548,6 @@ contains
 !     call to check if the return value is valid or not.
 !   \end{description}
 !EOP
-    logical       :: nmodel_status
     integer       :: data_index
     integer       :: shuffle, deflate, deflate_level
     integer       :: fill_value
