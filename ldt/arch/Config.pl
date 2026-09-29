@@ -15,6 +15,8 @@
 # Process environment and configure options
 #
 
+$sanitize = " ";
+
 if(defined($ENV{LDT_ARCH})){
    $sys_arch = $ENV{LDT_ARCH};
    # The Cray/Intel environment is almost identical to the Linux/Intel
@@ -102,12 +104,14 @@ if($opt_lev == -3) {
     $sys_opt = "-g -O0"; # Default flags for Fortran.
     $sys_c_opt = "-g -O0"; # Default flags for C.
     if($sys_arch eq "linux_ifc"){
+        $sanitize = " -fsanitize=memory";
         # Fortran flags
 	$sys_opt = "-g -O0 -warn";
 	$sys_opt .= " -check bounds,format,output_conversion,pointers,";
         $sys_opt .= "stack,uninit";
-	$sys_opt .= " -fp-stack-check -ftrapuv";
-        $sys_opt .= " -mcmodel=medium ";
+	$sys_opt .= " -ftrapuv";
+        $sys_opt .= " -mcmodel=medium";
+        $sys_opt .= " -fsanitize=memory ";
 
         # C flags
 	$sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wdeprecated";
@@ -118,10 +122,11 @@ if($opt_lev == -3) {
 	$sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
 	$sys_c_opt .= " -Wunused-function -Wunused-parameter";
 	$sys_c_opt .= " -Wunused-variable -Wwrite-strings";
-	$sys_c_opt .= " -fp-stack-check -fp-trap=common";
+	$sys_c_opt .= " -fp-trap=common";
         $sys_c_opt .= " -fp-trap-all=common";
 	$sys_c_opt .= " -ftrapv";
-        $sys_c_opt .= " -mcmodel=medium ";
+        $sys_c_opt .= " -mcmodel=medium";
+        $sys_c_opt .= " -fsanitize=memory ";
     }
     elsif($sys_arch eq "linux_pgi") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
@@ -669,25 +674,25 @@ if($sys_arch eq "linux_ifc") {
       if($use_endian == 1) {
          $fflags77= "-c -openmp ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $fflags =" -c -openmp ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $ldflags= " -openmp -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
+         $ldflags= $sanitize." -openmp -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
       }
       else {
          $fflags77= "-c -openmp ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $fflags =" -c -openmp ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $ldflags= " -openmp -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
+         $ldflags= $sanitize." -openmp -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
       }
    }
    else {
       if($use_endian == 1) {
          $fflags77= "-c ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $ldflags  = " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
+         $ldflags  = $sanitize." -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
          $ldflags .= " -mcmodel=medium ";
       }
       else {
          $fflags77= "-c ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
+         $ldflags= $sanitize." -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
          $ldflags .= " -mcmodel=medium ";
       }
    }
