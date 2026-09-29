@@ -457,8 +457,8 @@ contains
 !for percentile calculations, they are handled differently
           ftn = LVT_getNextUnitNumber()
           open(ftn,file=(LVT_rc%rstfile),form='unformatted')
-          write(LVT_logunit,*) '[INFO] Reading restart file ',(LVT_rc%rstfile)
-          
+          write(LVT_logunit,*) '[INFO] Reading restart file ', &
+               trim(LVT_rc%rstfile)
 !          read(ftn) LVT_rc%curr_pass
           do m=LVT_rc%metric_sindex,LVT_rc%metric_eindex
              if(LVT_metricsPtr(m)%metricEntryPtr%selectOpt.gt.0) then
