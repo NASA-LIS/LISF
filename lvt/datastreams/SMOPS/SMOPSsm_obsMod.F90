@@ -213,16 +213,12 @@ contains
 ! 
 !EOP
 
-    integer               :: npts
-    type(ESMF_TimeInterval) :: alarmInterval
-    type(ESMF_Time)         :: alarmTime
-    integer                 :: status, rc
+    integer                 :: status
     real                    :: gridDesci(50) ! real                  :: gridDesci(50)
-    integer                 :: n 
     integer                 :: updoy,yr1,mo1,da1,hr1,mn1,ss1
     real                    :: upgmt
     
-
+    external :: neighbor_interp_input
 
     if(.not.allocated(SMOPSsmobs)) then 
        allocate(SMOPSsmobs(LVT_rc%nDataStreams))
