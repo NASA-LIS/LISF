@@ -143,7 +143,9 @@ subroutine LVT_create_output_directory(mname,dir_name,style)
    character(len=8) :: cdate1
    character(len=LVT_CONST_PATH_LEN) :: out_dname
    character(len=50)  :: style_temp
-   
+
+   external :: system
+
    if(PRESENT(style)) then 
       style_temp = style
    else
@@ -279,11 +281,6 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
    character(len=*), intent(in), optional :: odir
 ! 
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=12)       :: cdate1
    character(len=2)        :: fint
@@ -292,7 +289,6 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
    character(len=10)       :: fres3
    character*1             :: fres1(10)
    character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LVT_CONST_PATH_LEN)       :: dname
    character(len=LVT_CONST_PATH_LEN), save :: out_fname
    character(len=50)        :: style_temp
@@ -841,11 +837,6 @@ subroutine create_output_filename_with_timestamp(&
 
 ! 
 !EOP
-   character(len=8)        :: date
-   character(len=10)       :: time
-   character(len=5)        :: zone
-   integer, dimension(8)   :: values
- 
    character(len=10)       :: cdate
    character(len=12)       :: cdate1
    character(len=2)        :: fint
@@ -854,7 +845,6 @@ subroutine create_output_filename_with_timestamp(&
    character(len=10)       :: fres3
    character*1             :: fres1(10)
    character(len=1)        :: fproj
-   integer                 :: curr_mo = 0
    character(len=LVT_CONST_PATH_LEN)       :: dname
    character(len=LVT_CONST_PATH_LEN), save :: out_fname
    character(len=50)        :: style_temp
