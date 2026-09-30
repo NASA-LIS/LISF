@@ -9,37 +9,37 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
-! 
+!
 ! !MODULE: LVT_fileIOMod
 ! \label(LVT_fileIOMod)
 !
 ! !INTERFACE:
 module LVT_fileIOMod
-! 
-! !USES:   
-  implicit none 
+!
+! !USES:
+  implicit none
   PRIVATE
 !
-! !INPUT PARAMETERS: 
-! 
+! !INPUT PARAMETERS:
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !   This module contains a number of routines useful for various file I/O
-!   operations in LIS. The module 
-!   provides routines to create output directories, filenames, that are 
-!   be used in the model output routines. 
-! 
+!   operations in LIS. The module
+!   provides routines to create output directories, filenames, that are
+!   be used in the model output routines.
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 !  02 Oct 2008  Sujay Kumar;  Initial Specification
-! 
+!  30 Sep 2026  Eric Kemp; Revisions for 557 post runmode
 !EOP
 !------------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !------------------------------------------------------------------------------
-  public :: LVT_create_output_filename   ! create an output filename  
+  public :: LVT_create_output_filename   ! create an output filename
   public :: LVT_create_output_directory  ! create the output directory
   public :: LVT_create_daobs_filename
   public :: LVT_convertParamDataToLocalDomain
@@ -48,212 +48,214 @@ module LVT_fileIOMod
 
 
 !BOP
-! 
+!
 ! !ROUTINE: LVT_create_output_filename
 ! \label{LVT_create_output_filename}
 !
 ! !INTERFACE:
-  interface LVT_create_output_filename 
-! !PRIVATE MEMBER FUNCTIONS: 
-     module procedure create_output_filename 
+  interface LVT_create_output_filename
+! !PRIVATE MEMBER FUNCTIONS:
+     module procedure create_output_filename
      module procedure create_output_filename_with_timestamp
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
 !EOP
-  end interface
+  end interface LVT_create_output_filename
 
 !BOP
-! 
+!
 ! !ROUTINE: LVT_convertParamDataToLocalDomain
 ! \label{LVT_convertParamDataToLocalDomain}
 !
 ! !INTERFACE:
   interface LVT_convertParamDataToLocalDomain
-! !PRIVATE MEMBER FUNCTIONS: 
+! !PRIVATE MEMBER FUNCTIONS:
      module procedure convertParam_int
      module procedure convertParam_real
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  Routine to subset the data read from the parameter attributes
 !  file supplied by LDT to the LVT domain being run. It is assumed
-!  that the parameter data domain is at the same spatial resolution 
-!  and map projection as that of the LVT domain. 
+!  that the parameter data domain is at the same spatial resolution
+!  and map projection as that of the LVT domain.
 !
 !EOP
-  end interface
+  end interface LVT_convertParamDataToLocalDomain
 
 contains
 
 !BOP
-! 
+!
 ! !ROUTINE: LVT_create_output_directory
 ! \label{LVT_create_output_directory}
 !
 ! !INTERFACE:
-subroutine LVT_create_output_directory(mname,dir_name,style)
-! 
-  ! !USES:
-   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
-   use LVT_coreMod, only : LVT_rc
-   use LVT_logMod,  only : LVT_log_msg, LVT_endrun
-   implicit none 
+  subroutine LVT_create_output_directory(mname,dir_name,style)
 !
-! !INPUT PARAMETERS: 
-! 
+! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+    use LVT_coreMod, only : LVT_rc
+    use LVT_logMod,  only : LVT_log_msg, LVT_endrun
+    implicit none
+!
+! !INPUT PARAMETERS:
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION:  
+! !DESCRIPTION:
 !  Create the output directory for the output data files. The call creates
-!  a hierarchy of directories in the following format, if the directory 
-!  name is not specified. 
+!  a hierarchy of directories in the following format, if the directory
+!  name is not specified.
 !
-!  style option 1: 
+!  style option 1:
 !  \begin{verbatim}
 !  <output directory>/EXP<expno>/<model name>/<yr>/<yrmoda>
 !  \end{verbatim}
-!  style option 2: 
+!  style option 2:
 !  \begin{verbatim}
 !   <output directory>/EXP<expno>/<model name>
 !  \end{verbatim}
-!  
-!  Once the directory name is created, the subroutine issues a 
-!  system call to create the structure. 
-! 
-!  The arguments are: 
+!
+!  Once the directory name is created, the subroutine issues a
+!  system call to create the structure.
+!
+!  The arguments are:
 !  \begin{description}
 !   \item [mname]
 !     a string describing the name of the model
 !   \item [dir\_name]
 !     name of the directory to override the above format
 !  \end{description}
-! 
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
-! 
+! !REVISION HISTORY:
+!
 !EOP
 !BOP
 ! !ARGUMENTS:
-   character(len=*)  :: mname
-   character(len=*), optional   :: dir_name
-   character(len=*), intent(IN), optional :: style
+    character(len=*)  :: mname
+    character(len=*), optional   :: dir_name
+    character(len=*), intent(IN), optional :: style
 !EOP
-   character(len=4) :: cdate
-   character(len=8) :: cdate1
-   character(len=LVT_CONST_PATH_LEN) :: out_dname
-   character(len=50)  :: style_temp
+    character(len=4) :: cdate
+    character(len=8) :: cdate1
+    character(len=LVT_CONST_PATH_LEN) :: out_dname
+    character(len=50)  :: style_temp
 
-   external :: system
+    external :: system
 
-   if(PRESENT(style)) then 
-      style_temp = style
-   else
-      style_temp = "4 level hierarchy"
-   endif
-   
-   if(style_temp.eq."4 level hierarchy") then
+    if(PRESENT(style)) then
+       style_temp = style
+    else
+       style_temp = "4 level hierarchy"
+    endif
 
-      out_dname = trim(LVT_rc%odir)//'/'
-      
-      out_dname = trim(out_dname)//trim(mname)//'/'
-      
-      write(unit=cdate, fmt='(i4.4)') LVT_rc%yr
-      out_dname = trim(out_dname)//trim(cdate)//'/'
-      
-      write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') LVT_rc%yr, LVT_rc%mo, LVT_rc%da
-      out_dname = trim(out_dname)//trim(cdate1)
-      
-      if ( present(dir_name) ) then
-         dir_name = trim(out_dname)
-      else
-         call system("mkdir -p "//trim(out_dname))
-      endif
-   elseif(style_temp.eq."3 level hierarchy") then 
-      out_dname = trim(LVT_rc%odir)//'/'
-      
-      out_dname = trim(out_dname)//trim(mname)//'/'
+    if(style_temp.eq."4 level hierarchy") then
 
-      write(unit=cdate1, fmt='(i4.4, i2.2)') LVT_rc%yr, LVT_rc%mo
-      out_dname = trim(out_dname)//trim(cdate1)
+       out_dname = trim(LVT_rc%odir)//'/'
 
-      if ( present(dir_name) ) then
-         dir_name = trim(out_dname)
-      else
-         call system("mkdir -p "//trim(out_dname))
-      endif      
-   elseif(style_temp.eq."2 level hierarchy") then 
-      out_dname = trim(LVT_rc%odir)//'/'
-      
-      out_dname = trim(out_dname)//trim(mname)//'/'
+       out_dname = trim(out_dname)//trim(mname)//'/'
 
-      if ( present(dir_name) ) then
-         dir_name = trim(out_dname)
-      else
-         call system("mkdir -p "//trim(out_dname))
-      endif      
-   elseif((style_temp.eq."WMO convention").or.  &
-        (style_temp.eq."WMO convention (AFW OPS)").or. &
-        (style_temp.eq."557WW NRT forecast convention")) then 
-      out_dname = trim(LVT_rc%odir)
+       write(unit=cdate, fmt='(i4.4)') LVT_rc%yr
+       out_dname = trim(out_dname)//trim(cdate)//'/'
 
-      if ( present(dir_name) ) then
-         dir_name = trim(out_dname)
-      else
-         call system("mkdir -p "//trim(out_dname))
-      endif
-   else
-      call lvt_log_msg('ERR: LVT_create_output_directory --')
-      call lvt_log_msg('  Unrecognized LIS output naming style:')
-      call lvt_log_msg('      '//style_temp)
-      call LVT_endrun 
-   endif
+       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') LVT_rc%yr, LVT_rc%mo, &
+            LVT_rc%da
+       out_dname = trim(out_dname)//trim(cdate1)
 
- end subroutine LVT_create_output_directory
+       if ( present(dir_name) ) then
+          dir_name = trim(out_dname)
+       else
+          call system("mkdir -p "//trim(out_dname))
+       endif
+    elseif(style_temp.eq."3 level hierarchy") then
+       out_dname = trim(LVT_rc%odir)//'/'
+
+       out_dname = trim(out_dname)//trim(mname)//'/'
+
+       write(unit=cdate1, fmt='(i4.4, i2.2)') LVT_rc%yr, LVT_rc%mo
+       out_dname = trim(out_dname)//trim(cdate1)
+
+       if ( present(dir_name) ) then
+          dir_name = trim(out_dname)
+       else
+          call system("mkdir -p "//trim(out_dname))
+       endif
+    elseif(style_temp.eq."2 level hierarchy") then
+       out_dname = trim(LVT_rc%odir)//'/'
+
+       out_dname = trim(out_dname)//trim(mname)//'/'
+
+       if ( present(dir_name) ) then
+          dir_name = trim(out_dname)
+       else
+          call system("mkdir -p "//trim(out_dname))
+       endif
+    elseif((style_temp.eq."WMO convention").or.  &
+         (style_temp.eq."WMO convention (AFW OPS)").or. &
+         (style_temp.eq."557WW NRT forecast convention")) then
+       out_dname = trim(LVT_rc%odir)
+
+       if ( present(dir_name) ) then
+          dir_name = trim(out_dname)
+       else
+          call system("mkdir -p "//trim(out_dname))
+       endif
+    else
+       call lvt_log_msg('ERR: LVT_create_output_directory --')
+       call lvt_log_msg('  Unrecognized LIS output naming style:')
+       call lvt_log_msg('      '//style_temp)
+       call LVT_endrun
+    endif
+
+  end subroutine LVT_create_output_directory
 
 !BOP
-! 
+!
 ! !ROUTINE: create_output_filename
 ! \label{create_output_filename}
 !
 ! !INTERFACE:
-subroutine create_output_filename(n, source, fname, model_name, writeint, &
-     wout, style,odir)
-! 
-  ! !USES:
-   use ESMF
-   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
-   use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
-   use LVT_logMod,   only : LVT_log_msg, LVT_endrun, LVT_logunit
-
-   implicit none 
+  subroutine create_output_filename(n, source, fname, model_name, writeint, &
+       wout, style,odir)
 !
-! !INPUT PARAMETERS: 
-! 
+  ! !USES:
+    use ESMF
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+    use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
+    use LVT_logMod,   only : LVT_log_msg, LVT_endrun, LVT_logunit
+
+    implicit none
+!
+! !INPUT PARAMETERS:
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION:  
+! !DESCRIPTION:
 !  Create the file name for LIS output data files. It creates both the GSWP
 !  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in the following default format (style==1) 
+!  in LIS creates a filename in the following default format (style==1)
 !
-!   <output directory>/EXP<expno>/<model name>/<yr>/<yrmoda>/<yrmodahrmn>.<extension>
-!  Style option ==2 corresponds to the following style: 
-!  
+!   <output directory>/EXP<expno>/<model name>/<yr>/<yrmoda>/
+!      <yrmodahrmn>.<extension>
+!  Style option ==2 corresponds to the following style:
+!
 !   <output directory>/EXP<expno>/<model name>.<yrmodahrmn>.<extension>
 !  Style option ==3 :
 !   <output directory>/EXP<expno>/<model name>.<extension>
 ! Style option ==4 :
 !   <output directory>/<AFWA Weather product style>
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !   \item [n]
 !     index of the domain or nest
 !   \item [fname]
-!     the created file name. 
+!     the created file name.
 !   \item [model\_name]
-!    string describing the name of the model 
+!    string describing the name of the model
 !   \item [writeint]
 !    output writing interval  of the model
 !   \item [wout]
@@ -261,553 +263,565 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
 !   \item [style]
 !    style option as described above
 !  \end{description}
-! 
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
-! 
+! !REVISION HISTORY:
+!
 !EOP
 !BOP
 !
 !
 ! !ARGUMENTS:
-   integer, intent(in) :: n
-   integer, intent(in) :: source
-   character(len=*), intent(out)          :: fname
-   character(len=*), intent(in), optional :: model_name ! needed for gswp run
-   integer, intent(in), optional          :: writeint ! output writing interval
-   character(len=*), intent(in), optional :: wout ! output format
-   character(len=*), intent(in), optional :: style ! output directory style
-   character(len=*), intent(in), optional :: odir
-! 
+    integer, intent(in) :: n
+    integer, intent(in) :: source
+    character(len=*), intent(out)          :: fname
+    character(len=*), intent(in), optional :: model_name ! needed for gswp run
+    integer, intent(in), optional         :: writeint ! output writing interval
+    character(len=*), intent(in), optional :: wout ! output format
+    character(len=*), intent(in), optional :: style ! output directory style
+    character(len=*), intent(in), optional :: odir
+!
 !EOP
-   character(len=10)       :: cdate
-   character(len=12)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   character(len=LVT_CONST_PATH_LEN)       :: dname
-   character(len=LVT_CONST_PATH_LEN), save :: out_fname
-   character(len=50)        :: style_temp
-   character(len=LVT_CONST_PATH_LEN)       :: odir_temp
-   integer                  :: i, c
-   type(ESMF_Time) :: starttime, starttime6, starttime12, endtime, curtime
-   type(ESMF_TimeInterval) :: deltatime
-   character(len=8) :: initdate
-   character(len=2) :: inithr
-   character(len=3) :: fhr
-   integer :: rc
-   integer :: hr
-   integer :: yy, mm, dd, h
+    character(len=10)       :: cdate
+    character(len=12)       :: cdate1
+    character(len=2)        :: fint
+    character(len=10)       :: fres
+    character(len=10)       :: fres2
+    character(len=10)       :: fres3
+    character*1             :: fres1(10)
+    character(len=1)        :: fproj
+    character(len=LVT_CONST_PATH_LEN)       :: dname
+    character(len=LVT_CONST_PATH_LEN), save :: out_fname
+    character(len=50)        :: style_temp
+    character(len=LVT_CONST_PATH_LEN)       :: odir_temp
+    integer                  :: i, c
+    type(ESMF_Time) :: starttime, starttime6, starttime12, endtime, curtime
+    type(ESMF_TimeInterval) :: deltatime
+    character(len=8) :: initdate
+    character(len=2) :: inithr
+    character(len=3) :: fhr
+    integer :: rc
+    integer :: hr
+    integer :: yy, mm, dd, h
 
-   if(.not.PRESENT(odir)) then 
-      odir_temp = LVT_rc%odir
-   else
-      odir_temp = odir
-   endif
+    if(.not.PRESENT(odir)) then
+       odir_temp = LVT_rc%odir
+    else
+       odir_temp = odir
+    endif
 
-   if(.not. PRESENT(style)) then 
-      style_temp = "4 level hierarchy"
-   else
-      style_temp = style
-   endif
-   ! added by Shugong
-   if(LVT_rc%lis_version == 6) then
-     write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          LVT_rc%dyr(source), LVT_rc%dmo(source), &
-          LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
-     
-     dname = trim(LVT_rc%odir)//'/EXP'//trim(adjustl(LVT_rc%expcode))//'/'
-     dname = trim(dname)//trim(LVT_rc%lsm)//'/'
-     
-     write(unit=cdate, fmt='(i4.4)') LVT_rc%dyr(source)
-     dname = trim(dname)//trim(cdate)//'/'
-     
-     write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') LVT_rc%dyr(source), &
-          LVT_rc%dmo(source), LVT_rc%dda(source)
-     dname = trim(dname)//trim(cdate)
-     
-     out_fname = trim(dname)//'/'//cdate1
-     
-     write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-     out_fname = trim(out_fname)//trim(cdate)
-     out_fname = trim(out_fname)//'.gs4r'
-     fname = trim(out_fname) 
-  else ! LIS version is 7 or even higher number
-     if(style_temp.eq."4 level hierarchy") then 
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-             LVT_rc%dyr(source), LVT_rc%dmo(source), &
-             LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
+    if(.not. PRESENT(style)) then
+       style_temp = "4 level hierarchy"
+    else
+       style_temp = style
+    endif
 
-        dname = trim(odir_temp)//'/'
-        dname = trim(dname)//trim(model_name)//'/'
+    if(LVT_rc%lis_version == 6) then
+       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+            LVT_rc%dyr(source), LVT_rc%dmo(source), &
+            LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
 
-        write(unit=cdate, fmt='(i4.4)') LVT_rc%dyr(source)
-        dname = trim(dname)//trim(cdate)//'/'
+       dname = trim(LVT_rc%odir)//'/EXP'//trim(adjustl(LVT_rc%expcode))//'/'
+       dname = trim(dname)//trim(LVT_rc%lsm)//'/'
 
-        write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') &
-             LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
-        dname = trim(dname)//trim(cdate)
+       write(unit=cdate, fmt='(i4.4)') LVT_rc%dyr(source)
+       dname = trim(dname)//trim(cdate)//'/'
 
-        out_fname = trim(dname)//'/LIS_HIST_'//cdate1
+       write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') LVT_rc%dyr(source), &
+            LVT_rc%dmo(source), LVT_rc%dda(source)
+       dname = trim(dname)//trim(cdate)
 
-        write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-        out_fname = trim(out_fname)//trim(cdate)
+       out_fname = trim(dname)//'/'//cdate1
 
-        if(present(wout)) then 
-           select case ( wout )
-           case ( "binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif
-           case ( "distributed binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif
-           case ( "grib1" )
-              out_fname = trim(out_fname)//'.grb'
-           case ( "netcdf")
-              out_fname = trim(out_fname)//'.nc'
-           case ( "ascii" )
-              out_fname = trim(out_fname)//'.txt'
-           case default
-              call lvt_log_msg('ERR: create_output_filename -- '// &
-                   'Unrecognized output format')
-              call LVT_endrun 
-           endselect
-        endif
-     elseif(style_temp.eq."3 level hierarchy") then 
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-             LVT_rc%dyr(source), LVT_rc%dmo(source), &
-             LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
+       write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+       out_fname = trim(out_fname)//trim(cdate)
+       out_fname = trim(out_fname)//'.gs4r'
+       fname = trim(out_fname)
+    else ! LIS version is 7 or even higher number
+       if(style_temp.eq."4 level hierarchy") then
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+               LVT_rc%dyr(source), LVT_rc%dmo(source), &
+               LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
 
-        dname = trim(odir_temp)//'/'
-        dname = trim(dname)//trim(model_name)//'/'
+          dname = trim(odir_temp)//'/'
+          dname = trim(dname)//trim(model_name)//'/'
 
-        write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') LVT_rc%dyr(source), &
-             LVT_rc%dmo(source)
-        dname = trim(dname)//trim(cdate)
+          write(unit=cdate, fmt='(i4.4)') LVT_rc%dyr(source)
+          dname = trim(dname)//trim(cdate)//'/'
 
-        out_fname = trim(dname)//'/LIS_HIST_'//cdate1
+          write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') &
+               LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
+          dname = trim(dname)//trim(cdate)
 
-        write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-        out_fname = trim(out_fname)//trim(cdate)
+          out_fname = trim(dname)//'/LIS_HIST_'//cdate1
 
-        if(present(wout)) then 
-           select case ( wout )
-           case ( "binary" )
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif
-           case ( "distributed binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif              
-           case ( "grib1" )
-              out_fname = trim(out_fname)//'.grb'
-           case ( "netcdf" )
-              out_fname = trim(out_fname)//'.nc'
-           case ( "grib2" )
-              out_fname = trim(out_fname)//'.gr2'
-           case default
-              call lvt_log_msg('ERR: create_output_filename -- '// &
-                   'Unrecognized output format')
-              call LVT_endrun 
-           endselect
-        endif
-     elseif(style_temp.eq."2 level hierarchy") then 
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-             LVT_rc%dyr(source), LVT_rc%dmo(source), &
-             LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
+          write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+          out_fname = trim(out_fname)//trim(cdate)
 
-        dname = trim(odir_temp)//'/'
-        dname = trim(dname)//trim(model_name)//'/'
+          if(present(wout)) then
+             select case ( wout )
+             case ( "binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "distributed binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "grib1" )
+                out_fname = trim(out_fname)//'.grb'
+             case ( "netcdf")
+                out_fname = trim(out_fname)//'.nc'
+             case ( "ascii" )
+                out_fname = trim(out_fname)//'.txt'
+             case default
+                call lvt_log_msg('ERR: create_output_filename -- '// &
+                     'Unrecognized output format')
+                call LVT_endrun
+             endselect
+          endif
+       elseif(style_temp.eq."3 level hierarchy") then
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+               LVT_rc%dyr(source), LVT_rc%dmo(source), &
+               LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
 
-        out_fname = trim(dname)//'LIS_HIST_'//trim(cdate1)
+          dname = trim(odir_temp)//'/'
+          dname = trim(dname)//trim(model_name)//'/'
 
-        write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-        out_fname = trim(out_fname)//trim(cdate)
+          write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') LVT_rc%dyr(source), &
+               LVT_rc%dmo(source)
+          dname = trim(dname)//trim(cdate)
 
-        if(present(wout)) then 
-           select case ( wout )
-           case ( "binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif
-           case ( "distributed binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif                            
-           case ( "grib1" )
-              out_fname = trim(out_fname)//'.grb'
-           case ( "netcdf" )
-              out_fname = trim(out_fname)//'.nc'
-           case ( "grib2" )
-              out_fname = trim(out_fname)//'.gr2'
-           case default
-              call lvt_log_msg('ERR: create_output_filename -- '// &
-                   'Unrecognized output format')
-              call LVT_endrun 
-           endselect
-        endif
-     elseif(style_temp.eq."WMO convention" .or. &
-          style_temp .eq. "557WW NRT forecast convention") then 
-        write(unit=fint,fmt='(i2.2)') writeint/3600
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
-             LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
+          out_fname = trim(dname)//'/LIS_HIST_'//cdate1
 
-        write(unit=cdate, fmt='(i2.2, i2.2)') LVT_rc%dhr(source), LVT_rc%dmn(source)
+          write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+          out_fname = trim(out_fname)//trim(cdate)
 
-        if(LVT_rc%domain.eq."polar") then 
-           fproj = 'P'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."lambert") then 
-           fproj = 'L'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."polar") then 
-           fproj = 'M'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."gaussian") then 
-           fproj = 'G'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)*100        
-           fres = '0P'//trim(fres)//'DEG'
-        else
-           fproj = 'C'
-           write(unit=fres, fmt='(i10)') nint(LVT_LIS_rc(source)%gridDesc(10)*100)
-           read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
-           c = 0
-           do i=1,10
-              if(fres1(i).ne.' '.and.c==0) c = i
-           enddo
-           ! EMK...Make code consistent with LIS
-           if (LVT_LIS_rc(source)%gridDesc(10) .lt. 0.1) then
-              fres3 = '0P0'
-           else
-              fres3 = '0P'
-           end if
-           fres2 = trim(fres3)
-           do i=c,10
-              fres2 = trim(fres2)//trim(fres1(i))
-           enddo
-           fres2 = trim(fres2)//'DEG'
-        endif
+          if(present(wout)) then
+             select case ( wout )
+             case ( "binary" )
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "distributed binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "grib1" )
+                out_fname = trim(out_fname)//'.grb'
+             case ( "netcdf" )
+                out_fname = trim(out_fname)//'.nc'
+             case ( "grib2" )
+                out_fname = trim(out_fname)//'.gr2'
+             case default
+                call lvt_log_msg('ERR: create_output_filename -- '// &
+                     'Unrecognized output format')
+                call LVT_endrun
+             endselect
+          endif
+       elseif(style_temp.eq."2 level hierarchy") then
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+               LVT_rc%dyr(source), LVT_rc%dmo(source), &
+               LVT_rc%dda(source), LVT_rc%dhr(source),LVT_rc%dmn(source)
 
-        ! EMK TEST...Remove date directory
-        if(style_temp.eq."WMO convention") then
+          dname = trim(odir_temp)//'/'
+          dname = trim(dname)//trim(model_name)//'/'
 
-           dname = trim(odir_temp)//'/'//&
-                '/PS.AFWA_SC.' &
-                //trim(LVT_rc%security_class)//'_DI.' &
-                //trim(LVT_rc%distribution_class)//'_DC.' &
-                //'ANLYS'//'_GP.LIS_GR.' &
-                //trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
-                '_PA.'//trim(fint)//'-HR-SUM_DD.'// &
-                trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
-        else if (style_temp .eq. "557WW NRT forecast convention") then
+          out_fname = trim(dname)//'LIS_HIST_'//trim(cdate1)
 
-           ! We need special logic here to handle 24-hr calculations versus
-           ! 3-hrly.
+          write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+          out_fname = trim(out_fname)//trim(cdate)
 
-           write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
-                LVT_rc%syr, LVT_rc%smo, LVT_rc%sda
-           write(unit=inithr, fmt='(i2.2)') LVT_rc%shr
+          if(present(wout)) then
+             select case ( wout )
+             case ( "binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "distributed binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "grib1" )
+                out_fname = trim(out_fname)//'.grb'
+             case ( "netcdf" )
+                out_fname = trim(out_fname)//'.nc'
+             case ( "grib2" )
+                out_fname = trim(out_fname)//'.gr2'
+             case default
+                call lvt_log_msg('ERR: create_output_filename -- '// &
+                     'Unrecognized output format')
+                call LVT_endrun
+             endselect
+          endif
+       elseif(style_temp.eq."WMO convention" .or. &
+            style_temp .eq. "557WW NRT forecast convention") then
+          write(unit=fint,fmt='(i2.2)') writeint/3600
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
+               LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
 
-           call ESMF_TimeSet(starttime, &
-                yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
-                h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
-           if (rc .ne. ESMF_SUCCESS) then
-              write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
-              call LVT_endrun()
-           end if
+          write(unit=cdate, fmt='(i2.2, i2.2)') LVT_rc%dhr(source), &
+               LVT_rc%dmn(source)
 
-           call ESMF_TimeSet(curtime, &
-                yy=LVT_rc%yr, mm=LVT_rc%mo, dd=LVT_rc%da, &
-                h=LVT_rc%hr, m=LVT_rc%mn, s=LVT_rc%ss, rc=rc)
-           if (rc .ne. ESMF_SUCCESS) then
-              write(LVT_logunit,*)'[ERR] Cannot set curtime object!'
-              call LVT_endrun()
-           end if
+          if(LVT_rc%domain.eq."polar") then
+             fproj = 'P'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."lambert") then
+             fproj = 'L'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."polar") then
+             fproj = 'M'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."gaussian") then
+             fproj = 'G'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)*100
+             fres = '0P'//trim(fres)//'DEG'
+          else
+             fproj = 'C'
+             write(unit=fres, fmt='(i10)') &
+                  nint(LVT_LIS_rc(source)%gridDesc(10)*100)
+             read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
+             c = 0
+             do i=1,10
+                if(fres1(i).ne.' '.and.c==0) c = i
+             enddo
+             ! Make code consistent with LIS
+             if (LVT_LIS_rc(source)%gridDesc(10) .lt. 0.1) then
+                fres3 = '0P0'
+             else
+                fres3 = '0P'
+             end if
+             fres2 = trim(fres3)
+             do i=c,10
+                fres2 = trim(fres2)//trim(fres1(i))
+             enddo
+             fres2 = trim(fres2)//'DEG'
+          endif
 
-           call ESMF_TimeSet(endtime, &
-                yy=LVT_rc%eyr, mm=LVT_rc%emo, dd=LVT_rc%eda, &
-                h=LVT_rc%ehr, m=LVT_rc%emn, s=LVT_rc%ess, rc=rc)
-           if (rc .ne. ESMF_SUCCESS) then
-              write(LVT_logunit,*)'[ERR] Cannot set endtime object!'
-              call LVT_endrun()
-           end if
+          ! Remove date directory
+          if(style_temp.eq."WMO convention") then
 
-           deltatime = endtime - starttime
-           call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
-           if (rc .ne. ESMF_SUCCESS) then
-              write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
-              call LVT_endrun()
-           end if
+             dname = trim(odir_temp)//'/'//&
+                  '/PS.AFWA_SC.' &
+                  //trim(LVT_rc%security_class)//'_DI.' &
+                  //trim(LVT_rc%distribution_class)//'_DC.' &
+                  //'ANLYS'//'_GP.LIS_GR.' &
+                  //trim(fproj)//trim(fres2)//'_AR.'// &
+                  trim(LVT_rc%area_of_data)//&
+                  '_PA.'//trim(fint)//'-HR-SUM_DD.'// &
+                  trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+          else if (style_temp .eq. "557WW NRT forecast convention") then
 
-           if (hr == 24) then
+             ! We need special logic here to handle 24-hr calculations versus
+             ! 3-hrly.
 
-              call ESMF_TimeIntervalSet(deltatime, h=6, rc=rc)
-              if (rc .ne. ESMF_SUCCESS) then
-                 write(LVT_logunit,*)'[ERR] Cannot set deltatime!'
-                 call LVT_endrun()
-              end if
-              starttime6 = starttime + deltatime
+             write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                  LVT_rc%syr, LVT_rc%smo, LVT_rc%sda
+             write(unit=inithr, fmt='(i2.2)') LVT_rc%shr
 
-              call ESMF_TimeIntervalSet(deltatime, h=12, rc=rc)
-              if (rc .ne. ESMF_SUCCESS) then
-                 write(LVT_logunit,*)'[ERR] Cannot set deltatime!'
-                 call LVT_endrun()
-              end if
-              starttime12 = starttime + deltatime
+             call ESMF_TimeSet(starttime, &
+                  yy=LVT_rc%syr, mm=LVT_rc%smo, dd=LVT_rc%sda, &
+                  h=LVT_rc%shr, m=LVT_rc%smn, s=LVT_rc%sss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set starttime object!'
+                call LVT_endrun()
+             end if
 
-              if (curtime <= starttime6) then
-                 call ESMF_TimeGet(starttime, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
-                 if (rc .ne. ESMF_SUCCESS) then
-                    write(LVT_logunit,*) &
-                         '[ERR] Cannot get time value from starttime!'
-                    call LVT_endrun()
-                 end if
+             call ESMF_TimeSet(curtime, &
+                  yy=LVT_rc%yr, mm=LVT_rc%mo, dd=LVT_rc%da, &
+                  h=LVT_rc%hr, m=LVT_rc%mn, s=LVT_rc%ss, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set curtime object!'
+                call LVT_endrun()
+             end if
 
-                 deltatime = curtime - starttime
-                 call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
-                 if (rc .ne. ESMF_SUCCESS) then
-                    write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
-                    call LVT_endrun()
-                 end if
+             call ESMF_TimeSet(endtime, &
+                  yy=LVT_rc%eyr, mm=LVT_rc%emo, dd=LVT_rc%eda, &
+                  h=LVT_rc%ehr, m=LVT_rc%emn, s=LVT_rc%ess, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot set endtime object!'
+                call LVT_endrun()
+             end if
 
-              else if (curtime <= starttime12) then
-                 call ESMF_TimeGet(starttime6, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
-                 if (rc .ne. ESMF_SUCCESS) then
-                    write(LVT_logunit,*) &
-                         '[ERR] Cannot get time value from starttime6!'
-                    call LVT_endrun()
-                 end if
+             deltatime = endtime - starttime
+             call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+             if (rc .ne. ESMF_SUCCESS) then
+                write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                call LVT_endrun()
+             end if
 
-                 deltatime = curtime - starttime6
-                 call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
-                 if (rc .ne. ESMF_SUCCESS) then
-                    write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
-                    call LVT_endrun()
-                 end if
+             if (hr == 24) then
 
-              else
-                 call ESMF_TimeGet(starttime12, yy=yy, mm=mm, dd=dd, h=h, &
-                      rc=rc)
-                 if (rc .ne. ESMF_SUCCESS) then
-                    write(LVT_logunit,*) &
-                         '[ERR] Cannot get time value from starttime12!'
-                    call LVT_endrun()
-                 end if
+                call ESMF_TimeIntervalSet(deltatime, h=6, rc=rc)
+                if (rc .ne. ESMF_SUCCESS) then
+                   write(LVT_logunit,*)'[ERR] Cannot set deltatime!'
+                   call LVT_endrun()
+                end if
+                starttime6 = starttime + deltatime
 
-                 deltatime = curtime - starttime12
-                 call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
-                 if (rc .ne. ESMF_SUCCESS) then
-                    write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
-                    call LVT_endrun()
-                 end if
-              end if
-           else
-              call ESMF_TimeGet(starttime, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
-              if (rc .ne. ESMF_SUCCESS) then
-                 write(LVT_logunit,*) &
-                      '[ERR] Cannot get time value from starttime!'
-                 call LVT_endrun()
-              end if
+                call ESMF_TimeIntervalSet(deltatime, h=12, rc=rc)
+                if (rc .ne. ESMF_SUCCESS) then
+                   write(LVT_logunit,*)'[ERR] Cannot set deltatime!'
+                   call LVT_endrun()
+                end if
+                starttime12 = starttime + deltatime
 
-              deltatime = curtime - starttime
-              call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
-              if (rc .ne. ESMF_SUCCESS) then
-                 write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
-                 call LVT_endrun()
-              end if
+                if (curtime <= starttime6) then
+                   call ESMF_TimeGet(starttime, yy=yy, mm=mm, dd=dd, h=h, &
+                        rc=rc)
+                   if (rc .ne. ESMF_SUCCESS) then
+                      write(LVT_logunit,*) &
+                           '[ERR] Cannot get time value from starttime!'
+                      call LVT_endrun()
+                   end if
 
-           end if
+                   deltatime = curtime - starttime
+                   call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+                   if (rc .ne. ESMF_SUCCESS) then
+                      write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                      call LVT_endrun()
+                   end if
 
-           write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
-                yy, mm, dd
-           write(unit=inithr, fmt='(i2.2)') h
-           write(unit=fhr, fmt='(i3.3)') hr
-           dname = trim(odir_temp)//'/'//&
-                '/PS.557WW' // &
-                '_SC.'//trim(LVT_rc%security_class)// &
-                '_DI.'//trim(LVT_rc%distribution_class)// &
-                '_GP.'//trim(LVT_rc%generating_process)// &
-                '_GR.'//trim(fproj)//trim(fres2)// &
-                '_AR.'//trim(LVT_rc%area_of_data)// &
-                '_PA.'//'SURFACEMODEL'// &
-                '_DD.'//trim(initdate)// &
-                '_CY.'//trim(inithr)// &
-                '_FH.'//trim(fhr)// &
-                '_DF.'
-        end if
+                else if (curtime <= starttime12) then
+                   call ESMF_TimeGet(starttime6, yy=yy, mm=mm, dd=dd, h=h, &
+                        rc=rc)
+                   if (rc .ne. ESMF_SUCCESS) then
+                      write(LVT_logunit,*) &
+                           '[ERR] Cannot get time value from starttime6!'
+                      call LVT_endrun()
+                   end if
 
-        select case (LVT_LIS_rc(source)%format)
-        case ( "binary" )
-           out_fname = trim(dname)//'DAT'
-        case ( "grib1" )
-           out_fname = trim(dname)//'GR1'
-        case ( "netcdf" )
-           out_fname = trim(dname)//'nc'
-           if (style_temp .eq. "557WW NRT forecast convention") then
-              out_fname = trim(dname)//'NC'
-           endif
-        case ( "grib2" )
-           out_fname = trim(dname)//'GR2'
-        case default
-        end select
-     elseif(style_temp.eq."WMO convention (AFW OPS)") then 
-        write(unit=fint,fmt='(i2.2)') writeint/3600
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
-             LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
+                   deltatime = curtime - starttime6
+                   call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+                   if (rc .ne. ESMF_SUCCESS) then
+                      write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                      call LVT_endrun()
+                   end if
 
-        write(unit=cdate, fmt='(i2.2, i2.2)') LVT_rc%dhr(source), LVT_rc%dmn(source)
+                else
+                   call ESMF_TimeGet(starttime12, yy=yy, mm=mm, dd=dd, h=h, &
+                        rc=rc)
+                   if (rc .ne. ESMF_SUCCESS) then
+                      write(LVT_logunit,*) &
+                           '[ERR] Cannot get time value from starttime12!'
+                      call LVT_endrun()
+                   end if
 
-        if(LVT_rc%domain.eq."polar") then 
-           fproj = 'P'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."lambert") then 
-           fproj = 'L'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."polar") then 
-           fproj = 'M'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."gaussian") then 
-           fproj = 'G'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)*100        
-           fres = '0P'//trim(fres)//'DEG'
-        else
-           fproj = 'C'
-           write(unit=fres, fmt='(i10)') nint(LVT_LIS_rc(source)%gridDesc(10)*100)
-           read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
-           c = 0 
-           do i=1,10
-              if(fres1(i).ne.' '.and.c==0) c = i
-           enddo
-           fres3 = '0P'
-           fres2 = trim(fres3)
-           do i=c,10
-              fres2 = trim(fres2)//trim(fres1(i))
-           enddo
-           fres2 = trim(fres2)//'DEG'
-        endif
+                   deltatime = curtime - starttime12
+                   call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+                   if (rc .ne. ESMF_SUCCESS) then
+                      write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                      call LVT_endrun()
+                   end if
+                end if
+             else
+                call ESMF_TimeGet(starttime, yy=yy, mm=mm, dd=dd, h=h, rc=rc)
+                if (rc .ne. ESMF_SUCCESS) then
+                   write(LVT_logunit,*) &
+                        '[ERR] Cannot get time value from starttime!'
+                   call LVT_endrun()
+                end if
 
-        dname = trim(odir_temp)//'/'//trim(cdate1)//&
-!        dname = trim(odir_temp)//&
-             '/PS.AFWA_SC.'//trim(LVT_rc%security_class)//&
-             '_DI.'//trim(LVT_rc%distribution_class)//& 
-             '_GP.LIS_GR.'//&
-             trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
-             '_PA.LIS_DD.'// &
-             trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
-        select case (LVT_LIS_rc(source)%format)
-        case ( "binary" )
-           out_fname = trim(dname)//'.DAT'
-        case ( "grib1" )
-           out_fname = trim(dname)//'.GR1'
-        case ( "netcdf" )
-           out_fname = trim(dname)//'.nc'
-        case ( "grib2" )
-           out_fname = trim(dname)//'.GR2'
-        case default            
-        end select
-     else
-        call lvt_log_msg('ERR: LVT_create_output_filename --')
-        call lvt_log_msg('  Unrecognized LIS output naming style:')
-        call lvt_log_msg('      '//style_temp)
-        call LVT_endrun 
-     endif
-     fname = trim(out_fname)
-   endif 
- end subroutine Create_output_filename
+                deltatime = curtime - starttime
+                call ESMF_TimeIntervalGet(deltatime, h=hr, rc=rc)
+                if (rc .ne. ESMF_SUCCESS) then
+                   write(LVT_logunit,*)'[ERR] Cannot get hr from deltatime!'
+                   call LVT_endrun()
+                end if
+
+             end if
+
+             write(unit=initdate, fmt='(i4.4, i2.2, i2.2)') &
+                  yy, mm, dd
+             write(unit=inithr, fmt='(i2.2)') h
+             write(unit=fhr, fmt='(i3.3)') hr
+             dname = trim(odir_temp)//'/'//&
+                  '/PS.557WW' // &
+                  '_SC.'//trim(LVT_rc%security_class)// &
+                  '_DI.'//trim(LVT_rc%distribution_class)// &
+                  '_GP.'//trim(LVT_rc%generating_process)// &
+                  '_GR.'//trim(fproj)//trim(fres2)// &
+                  '_AR.'//trim(LVT_rc%area_of_data)// &
+                  '_PA.'//'SURFACEMODEL'// &
+                  '_DD.'//trim(initdate)// &
+                  '_CY.'//trim(inithr)// &
+                  '_FH.'//trim(fhr)// &
+                  '_DF.'
+          end if
+
+          select case (LVT_LIS_rc(source)%format)
+          case ( "binary" )
+             out_fname = trim(dname)//'DAT'
+          case ( "grib1" )
+             out_fname = trim(dname)//'GR1'
+          case ( "netcdf" )
+             out_fname = trim(dname)//'nc'
+             if (style_temp .eq. "557WW NRT forecast convention") then
+                out_fname = trim(dname)//'NC'
+             endif
+          case ( "grib2" )
+             out_fname = trim(dname)//'GR2'
+          case default
+          end select
+       elseif(style_temp.eq."WMO convention (AFW OPS)") then
+          write(unit=fint,fmt='(i2.2)') writeint/3600
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
+               LVT_rc%dyr(source), LVT_rc%dmo(source), LVT_rc%dda(source)
+
+          write(unit=cdate, fmt='(i2.2, i2.2)') LVT_rc%dhr(source), &
+               LVT_rc%dmn(source)
+
+          if(LVT_rc%domain.eq."polar") then
+             fproj = 'P'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."lambert") then
+             fproj = 'L'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."polar") then
+             fproj = 'M'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."gaussian") then
+             fproj = 'G'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)*100
+             fres = '0P'//trim(fres)//'DEG'
+          else
+             fproj = 'C'
+             write(unit=fres, fmt='(i10)') &
+                  nint(LVT_LIS_rc(source)%gridDesc(10)*100)
+             read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
+             c = 0
+             do i=1,10
+                if(fres1(i).ne.' '.and.c==0) c = i
+             enddo
+             fres3 = '0P'
+             fres2 = trim(fres3)
+             do i=c,10
+                fres2 = trim(fres2)//trim(fres1(i))
+             enddo
+             fres2 = trim(fres2)//'DEG'
+          endif
+
+          dname = trim(odir_temp)//'/'//trim(cdate1)//&
+               '/PS.AFWA_SC.'//trim(LVT_rc%security_class)//&
+               '_DI.'//trim(LVT_rc%distribution_class)//&
+               '_GP.LIS_GR.'//&
+               trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
+               '_PA.LIS_DD.'// &
+               trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+          select case (LVT_LIS_rc(source)%format)
+          case ( "binary" )
+             out_fname = trim(dname)//'.DAT'
+          case ( "grib1" )
+             out_fname = trim(dname)//'.GR1'
+          case ( "netcdf" )
+             out_fname = trim(dname)//'.nc'
+          case ( "grib2" )
+             out_fname = trim(dname)//'.GR2'
+          case default
+          end select
+       else
+          call lvt_log_msg('ERR: LVT_create_output_filename --')
+          call lvt_log_msg('  Unrecognized LIS output naming style:')
+          call lvt_log_msg('      '//style_temp)
+          call LVT_endrun
+       endif
+       fname = trim(out_fname)
+    endif
+  end subroutine Create_output_filename
 
 !BOP
-! 
+!
 ! !ROUTINE: create_output_filename_with_timestamp
 ! \label{create_output_filename_with_timestamp}
 !
 ! !INTERFACE:
-subroutine create_output_filename_with_timestamp(&
-     n, source, fname, yr,mo,da,hr,mn,ss,&
-     model_name, writeint, &
-     wout, style,odir)
-! 
-  ! !USES:
-   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
-   use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
-   use LVT_logMod,   only : LVT_log_msg, LVT_endrun
-
-   implicit none 
+  subroutine create_output_filename_with_timestamp(&
+       n, source, fname, yr,mo,da,hr,mn,ss,&
+       model_name, writeint, &
+       wout, style,odir)
 !
-! !INPUT PARAMETERS: 
-! 
+  ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+    use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
+    use LVT_logMod,   only : LVT_log_msg, LVT_endrun
+
+    implicit none
+!
+! !INPUT PARAMETERS:
+!
 ! !OUTPUT PARAMETERS:
 !
-! !DESCRIPTION:  
+! !DESCRIPTION:
 !  Create the file name for LIS output data files. It creates both the GSWP
 !  style of output filenames and the standard LIS style. The convention used
-!  in LIS creates a filename in the following default format (style==1) 
+!  in LIS creates a filename in the following default format (style==1)
 !
-!   <output directory>/EXP<expno>/<model name>/<yr>/<yrmoda>/<yrmodahrmn>.<extension>
-!  Style option ==2 corresponds to the following style: 
-!  
+!   <output directory>/EXP<expno>/<model name>/<yr>/<yrmoda>/
+!      <yrmodahrmn>.<extension>
+!  Style option ==2 corresponds to the following style:
+!
 !   <output directory>/EXP<expno>/<model name>.<yrmodahrmn>.<extension>
 !  Style option ==3 :
 !   <output directory>/EXP<expno>/<model name>.<extension>
 ! Style option ==4 :
 !   <output directory>/<AFWA Weather product style>
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !   \item [n]
 !     index of the domain or nest
 !   \item [fname]
-!     the created file name. 
+!     the created file name.
 !   \item [model\_name]
-!    string describing the name of the model 
+!    string describing the name of the model
 !   \item [writeint]
 !    output writing interval  of the model
 !   \item [wout]
@@ -815,493 +829,499 @@ subroutine create_output_filename_with_timestamp(&
 !   \item [style]
 !    style option as described above
 !  \end{description}
-! 
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
-! 
+! !REVISION HISTORY:
+!
 !EOP
 !BOP
 !
 !
 ! !ARGUMENTS:
-   integer, intent(in) :: n
-   integer, intent(in) :: source
-   character(len=*), intent(out)          :: fname
-   integer,  intent(in) :: yr, mo,da,hr,mn,ss
-   character(len=*), intent(in), optional :: model_name ! needed for gswp run
-   integer, intent(in), optional          :: writeint ! output writing interval
-   character(len=*), intent(in), optional :: wout ! output format
-   character(len=*), intent(in), optional :: style ! output directory style
-   character(len=*), intent(in), optional :: odir
+    integer, intent(in) :: n
+    integer, intent(in) :: source
+    character(len=*), intent(out)          :: fname
+    integer,  intent(in) :: yr, mo,da,hr,mn,ss
+    character(len=*), intent(in), optional :: model_name ! needed for gswp run
+    integer, intent(in), optional         :: writeint ! output writing interval
+    character(len=*), intent(in), optional :: wout ! output format
+    character(len=*), intent(in), optional :: style ! output directory style
+    character(len=*), intent(in), optional :: odir
 
-! 
+!
 !EOP
-   character(len=10)       :: cdate
-   character(len=12)       :: cdate1
-   character(len=2)        :: fint
-   character(len=10)       :: fres
-   character(len=10)       :: fres2
-   character(len=10)       :: fres3
-   character*1             :: fres1(10)
-   character(len=1)        :: fproj
-   character(len=LVT_CONST_PATH_LEN)       :: dname
-   character(len=LVT_CONST_PATH_LEN), save :: out_fname
-   character(len=50)        :: style_temp
-   character(len=LVT_CONST_PATH_LEN)       :: odir_temp
-   integer                  :: i, c
+    character(len=10)       :: cdate
+    character(len=12)       :: cdate1
+    character(len=2)        :: fint
+    character(len=10)       :: fres
+    character(len=10)       :: fres2
+    character(len=10)       :: fres3
+    character*1             :: fres1(10)
+    character(len=1)        :: fproj
+    character(len=LVT_CONST_PATH_LEN)       :: dname
+    character(len=LVT_CONST_PATH_LEN), save :: out_fname
+    character(len=50)        :: style_temp
+    character(len=LVT_CONST_PATH_LEN)       :: odir_temp
+    integer                  :: i, c
 
-   if(.not.PRESENT(odir)) then 
-      odir_temp = LVT_rc%odir
-   else
-      odir_temp = odir
-   endif
+    if(.not.PRESENT(odir)) then
+       odir_temp = LVT_rc%odir
+    else
+       odir_temp = odir
+    endif
 
-   if(.not. PRESENT(style)) then 
-      style_temp = "4 level hierarchy"
-   else
-      style_temp = style
-   endif
-   ! added by Shugong
-   if(LVT_rc%lis_version == 6) then
-     write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-          yr, mo, da, hr, mn
-     
-     dname = trim(LVT_rc%odir)//'/EXP'//trim(adjustl(LVT_rc%expcode))//'/'
-     dname = trim(dname)//trim(LVT_rc%lsm)//'/'
-     
-     write(unit=cdate, fmt='(i4.4)') yr
-     dname = trim(dname)//trim(cdate)//'/'
-     
-     write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') yr,mo,da
-     dname = trim(dname)//trim(cdate)
-     
-     out_fname = trim(dname)//'/'//cdate1
-     
-     write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-     out_fname = trim(out_fname)//trim(cdate)
-     out_fname = trim(out_fname)//'.gs4r'
-     fname = trim(out_fname) 
-  else ! LIS version is 7 or even higher number
-     if(style_temp.eq."4 level hierarchy") then 
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-             yr,mo,da,hr,mn
+    if(.not. PRESENT(style)) then
+       style_temp = "4 level hierarchy"
+    else
+       style_temp = style
+    endif
 
-        dname = trim(odir_temp)//'/'
-        dname = trim(dname)//trim(model_name)//'/'
+    if(LVT_rc%lis_version == 6) then
+       write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+            yr, mo, da, hr, mn
 
-        write(unit=cdate, fmt='(i4.4)') yr
-        dname = trim(dname)//trim(cdate)//'/'
+       dname = trim(LVT_rc%odir)//'/EXP'//trim(adjustl(LVT_rc%expcode))//'/'
+       dname = trim(dname)//trim(LVT_rc%lsm)//'/'
 
-        write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') &
-             yr,mo,da
-        dname = trim(dname)//trim(cdate)
+       write(unit=cdate, fmt='(i4.4)') yr
+       dname = trim(dname)//trim(cdate)//'/'
 
-        out_fname = trim(dname)//'/LIS_HIST_'//cdate1
+       write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') yr,mo,da
+       dname = trim(dname)//trim(cdate)
 
-        write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-        out_fname = trim(out_fname)//trim(cdate)
+       out_fname = trim(dname)//'/'//cdate1
 
-        if(present(wout)) then 
-           select case ( wout )
-           case ( "binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif
-           case ( "distributed binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif                            
-           case ( "grib1" )
-              out_fname = trim(out_fname)//'.grb'
-           case ( "netcdf")
-              out_fname = trim(out_fname)//'.nc'
-           case ( "ascii" )
-              out_fname = trim(out_fname)//'.txt'
-           case default
-              call lvt_log_msg('ERR: create_output_filename -- '// &
-                   'Unrecognized output format')
-              call LVT_endrun 
-           endselect
-        endif
-     elseif(style_temp.eq."3 level hierarchy") then 
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-             yr,mo,da,hr,mn
+       write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+       out_fname = trim(out_fname)//trim(cdate)
+       out_fname = trim(out_fname)//'.gs4r'
+       fname = trim(out_fname)
+    else ! LIS version is 7 or even higher number
+       if(style_temp.eq."4 level hierarchy") then
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+               yr,mo,da,hr,mn
 
-        dname = trim(odir_temp)//'/'
-        dname = trim(dname)//trim(model_name)//'/'
+          dname = trim(odir_temp)//'/'
+          dname = trim(dname)//trim(model_name)//'/'
 
-        write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') yr,mo
-        dname = trim(dname)//trim(cdate)
+          write(unit=cdate, fmt='(i4.4)') yr
+          dname = trim(dname)//trim(cdate)//'/'
 
-        out_fname = trim(dname)//'/LIS_HIST_'//cdate1
+          write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') &
+               yr,mo,da
+          dname = trim(dname)//trim(cdate)
 
-        write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-        out_fname = trim(out_fname)//trim(cdate)
+          out_fname = trim(dname)//'/LIS_HIST_'//cdate1
 
-        if(present(wout)) then 
-           select case ( wout )
-           case ( "binary" )
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif
-           case ( "distributed binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif                            
-           case ( "grib1" )
-              out_fname = trim(out_fname)//'.grb'
-           case ( "netcdf" )
-              out_fname = trim(out_fname)//'.nc'
-           case ( "grib2" )
-              out_fname = trim(out_fname)//'.gr2'
-           case default
-              call lvt_log_msg('ERR: create_output_filename -- '// &
-                   'Unrecognized output format')
-              call LVT_endrun 
-           endselect
-        endif
-     elseif(style_temp.eq."2 level hierarchy") then 
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-             yr,mo,da,hr,mn
+          write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+          out_fname = trim(out_fname)//trim(cdate)
 
-        dname = trim(odir_temp)//'/'
-        dname = trim(dname)//trim(model_name)//'/'
+          if(present(wout)) then
+             select case ( wout )
+             case ( "binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "distributed binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "grib1" )
+                out_fname = trim(out_fname)//'.grb'
+             case ( "netcdf")
+                out_fname = trim(out_fname)//'.nc'
+             case ( "ascii" )
+                out_fname = trim(out_fname)//'.txt'
+             case default
+                call lvt_log_msg('ERR: create_output_filename -- '// &
+                     'Unrecognized output format')
+                call LVT_endrun
+             endselect
+          endif
+       elseif(style_temp.eq."3 level hierarchy") then
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+               yr,mo,da,hr,mn
 
-        out_fname = trim(dname)//'LIS_HIST_'//trim(cdate1)
+          dname = trim(odir_temp)//'/'
+          dname = trim(dname)//trim(model_name)//'/'
 
-        write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
-        out_fname = trim(out_fname)//trim(cdate)
+          write(unit=cdate, fmt='(i4.4, i2.2, i2.2)') yr,mo
+          dname = trim(dname)//trim(cdate)
 
-        if(present(wout)) then 
-           select case ( wout )
-           case ( "binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif
-           case ( "distributed binary")
-              if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then 
-                 out_fname = trim(out_fname)//'.ts4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'                 
-              elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then 
-                 out_fname = trim(out_fname)//'.gs4r'
-              endif                            
-           case ( "grib1" )
-              out_fname = trim(out_fname)//'.grb'
-           case ( "netcdf" )
-              out_fname = trim(out_fname)//'.nc'
-           case ( "grib2" )
-              out_fname = trim(out_fname)//'.gr2'
-           case default
-              call lvt_log_msg('ERR: create_output_filename -- '// &
-                   'Unrecognized output format')
-              call LVT_endrun 
-           endselect
-        endif
-     elseif(style_temp.eq."WMO convention") then 
-        write(unit=fint,fmt='(i2.2)') writeint/3600
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)')        &
-             yr,mo,da
+          out_fname = trim(dname)//'/LIS_HIST_'//cdate1
 
-        write(unit=cdate, fmt='(i2.2, i2.2)') hr, mn
+          write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+          out_fname = trim(out_fname)//trim(cdate)
 
-        if(LVT_rc%domain.eq."polar") then 
-           fproj = 'P'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."lambert") then 
-           fproj = 'L'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."polar") then 
-           fproj = 'M'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."gaussian") then 
-           fproj = 'G'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)*100        
-           fres = '0P'//trim(fres)//'DEG'
-        else
-           fproj = 'C'
-           write(unit=fres, fmt='(i10)') nint(LVT_LIS_rc(source)%gridDesc(10)*100)
-           read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
-           c = 0 
-           do i=1,10
-              if(fres1(i).ne.' '.and.c==0) c = i
-           enddo
-           fres3 = '0P'
-           fres2 = trim(fres3)
-           do i=c,10
-              fres2 = trim(fres2)//trim(fres1(i))
-           enddo
-           fres2 = trim(fres2)//'DEG'
-        endif
+          if(present(wout)) then
+             select case ( wout )
+             case ( "binary" )
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "distributed binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "grib1" )
+                out_fname = trim(out_fname)//'.grb'
+             case ( "netcdf" )
+                out_fname = trim(out_fname)//'.nc'
+             case ( "grib2" )
+                out_fname = trim(out_fname)//'.gr2'
+             case default
+                call lvt_log_msg('ERR: create_output_filename -- '// &
+                     'Unrecognized output format')
+                call LVT_endrun
+             endselect
+          endif
+       elseif(style_temp.eq."2 level hierarchy") then
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+               yr,mo,da,hr,mn
 
-        dname = trim(odir_temp)//'/'//trim(cdate1)//&
-!        dname = trim(odir_temp)//&
-             '/PS.AFWA_SC.'//trim(LVT_rc%security_class)//&
-             '_DI.'//trim(LVT_rc%distribution_class)//& 
-             '_DC.'//&
-             trim(LVT_rc%data_category)//'_GP.LIS_GR.'//&
-             trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
-             '_PA.'//trim(fint)//'-HR-SUM_DD.'// &
-             trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
-        select case (LVT_LIS_rc(source)%format)
-        case ( "binary" )
-           out_fname = trim(dname)//'.DAT'
-        case ( "grib1" )
-           out_fname = trim(dname)//'.GR1'
-        case ( "netcdf" )
-           out_fname = trim(dname)//'.nc'
-        case ( "grib2" )
-           out_fname = trim(dname)//'.GR2'
-        case default            
-        end select
-     elseif(style_temp.eq."WMO convention (AFW OPS)") then 
-        write(unit=fint,fmt='(i2.2)') writeint/3600
-        write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
-             yr, mo, da
+          dname = trim(odir_temp)//'/'
+          dname = trim(dname)//trim(model_name)//'/'
 
-        write(unit=cdate, fmt='(i2.2, i2.2)') hr, mn
+          out_fname = trim(dname)//'LIS_HIST_'//trim(cdate1)
 
-        if(LVT_rc%domain.eq."polar") then 
-           fproj = 'P'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."lambert") then 
-           fproj = 'L'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."polar") then 
-           fproj = 'M'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
-           fres = trim(fres)//'KM'
-        elseif(LVT_rc%domain.eq."gaussian") then 
-           fproj = 'G'
-           write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)*100        
-           fres = '0P'//trim(fres)//'DEG'
-        else
-           fproj = 'C'
-           write(unit=fres, fmt='(i10)') nint(LVT_LIS_rc(source)%gridDesc(10)*100)
-           read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
-           c = 0 
-           do i=1,10
-              if(fres1(i).ne.' '.and.c==0) c = i
-           enddo
-           fres3 = '0P'
-           fres2 = trim(fres3)
-           do i=c,10
-              fres2 = trim(fres2)//trim(fres1(i))
-           enddo
-           fres2 = trim(fres2)//'DEG'
-        endif
+          write(unit=cdate, fmt='(a2,i2.2)') '.d',n
+          out_fname = trim(out_fname)//trim(cdate)
 
-        dname = trim(odir_temp)//'/'//trim(cdate1)//&
-!        dname = trim(odir_temp)//&
-             '/PS.AFWA_SC.'//trim(LVT_rc%security_class)//&
-             '_DI.'//trim(LVT_rc%distribution_class)//& 
-             '_GP.LIS_GR.'//&
-             trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
-             '_PA.LIS_DD.'// &
-             trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
-        select case (LVT_LIS_rc(source)%format)
-        case ( "binary" )
-           out_fname = trim(dname)//'.DAT'
-        case ( "grib1" )
-           out_fname = trim(dname)//'.GR1'
-        case ( "netcdf" )
-           out_fname = trim(dname)//'.nc'
-        case ( "grib2" )
-           out_fname = trim(dname)//'.GR2'
-        case default            
-        end select
-     else
-        call lvt_log_msg('ERR: LVT_create_output_filename --')
-        call lvt_log_msg('  Unrecognized LIS output naming style:')
-        call lvt_log_msg('      '//style_temp)
-        call LVT_endrun 
-     endif
-     fname = trim(out_fname)
-   endif 
- end subroutine Create_output_filename_with_timestamp
+          if(present(wout)) then
+             select case ( wout )
+             case ( "binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "distributed binary")
+                if(LVT_LIS_rc(source)%wopt.eq."1d tilespace") then
+                   out_fname = trim(out_fname)//'.ts4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."2d ensemble gridspace") &
+                     then
+                   out_fname = trim(out_fname)//'.gs4r'
+                elseif(LVT_LIS_rc(source)%wopt.eq."1d gridspace") then
+                   out_fname = trim(out_fname)//'.gs4r'
+                endif
+             case ( "grib1" )
+                out_fname = trim(out_fname)//'.grb'
+             case ( "netcdf" )
+                out_fname = trim(out_fname)//'.nc'
+             case ( "grib2" )
+                out_fname = trim(out_fname)//'.gr2'
+             case default
+                call lvt_log_msg('ERR: create_output_filename -- '// &
+                     'Unrecognized output format')
+                call LVT_endrun
+             endselect
+          endif
+       elseif(style_temp.eq."WMO convention") then
+          write(unit=fint,fmt='(i2.2)') writeint/3600
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)')        &
+               yr,mo,da
+
+          write(unit=cdate, fmt='(i2.2, i2.2)') hr, mn
+
+          if(LVT_rc%domain.eq."polar") then
+             fproj = 'P'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."lambert") then
+             fproj = 'L'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."polar") then
+             fproj = 'M'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."gaussian") then
+             fproj = 'G'
+             write(unit=fres, fmt='(i2.2)') &
+                  LVT_LIS_rc(source)%gridDesc(9)*100
+             fres = '0P'//trim(fres)//'DEG'
+          else
+             fproj = 'C'
+             write(unit=fres, fmt='(i10)') &
+                  nint(LVT_LIS_rc(source)%gridDesc(10)*100)
+             read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
+             c = 0
+             do i=1,10
+                if(fres1(i).ne.' '.and.c==0) c = i
+             enddo
+             fres3 = '0P'
+             fres2 = trim(fres3)
+             do i=c,10
+                fres2 = trim(fres2)//trim(fres1(i))
+             enddo
+             fres2 = trim(fres2)//'DEG'
+          endif
+
+          dname = trim(odir_temp)//'/'//trim(cdate1)//&
+               '/PS.AFWA_SC.'//trim(LVT_rc%security_class)//&
+               '_DI.'//trim(LVT_rc%distribution_class)//&
+               '_DC.'//&
+               trim(LVT_rc%data_category)//'_GP.LIS_GR.'//&
+               trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
+               '_PA.'//trim(fint)//'-HR-SUM_DD.'// &
+               trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+          select case (LVT_LIS_rc(source)%format)
+          case ( "binary" )
+             out_fname = trim(dname)//'.DAT'
+          case ( "grib1" )
+             out_fname = trim(dname)//'.GR1'
+          case ( "netcdf" )
+             out_fname = trim(dname)//'.nc'
+          case ( "grib2" )
+             out_fname = trim(dname)//'.GR2'
+          case default
+          end select
+       elseif(style_temp.eq."WMO convention (AFW OPS)") then
+          write(unit=fint,fmt='(i2.2)') writeint/3600
+          write(unit=cdate1, fmt='(i4.4, i2.2, i2.2)') &
+               yr, mo, da
+
+          write(unit=cdate, fmt='(i2.2, i2.2)') hr, mn
+
+          if(LVT_rc%domain.eq."polar") then
+             fproj = 'P'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."lambert") then
+             fproj = 'L'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."polar") then
+             fproj = 'M'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)
+             fres = trim(fres)//'KM'
+          elseif(LVT_rc%domain.eq."gaussian") then
+             fproj = 'G'
+             write(unit=fres, fmt='(i2.2)') LVT_LIS_rc(source)%gridDesc(9)*100
+             fres = '0P'//trim(fres)//'DEG'
+          else
+             fproj = 'C'
+             write(unit=fres, fmt='(i10)') &
+                  nint(LVT_LIS_rc(source)%gridDesc(10)*100)
+             read(unit=fres,fmt='(10a1)') (fres1(i),i=1,10)
+             c = 0
+             do i=1,10
+                if(fres1(i).ne.' '.and.c==0) c = i
+             enddo
+             fres3 = '0P'
+             fres2 = trim(fres3)
+             do i=c,10
+                fres2 = trim(fres2)//trim(fres1(i))
+             enddo
+             fres2 = trim(fres2)//'DEG'
+          endif
+
+          dname = trim(odir_temp)//'/'//trim(cdate1)//&
+               '/PS.AFWA_SC.'//trim(LVT_rc%security_class)//&
+               '_DI.'//trim(LVT_rc%distribution_class)//&
+               '_GP.LIS_GR.'//&
+               trim(fproj)//trim(fres2)//'_AR.'//trim(LVT_rc%area_of_data)//&
+               '_PA.LIS_DD.'// &
+               trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+          select case (LVT_LIS_rc(source)%format)
+          case ( "binary" )
+             out_fname = trim(dname)//'.DAT'
+          case ( "grib1" )
+             out_fname = trim(dname)//'.GR1'
+          case ( "netcdf" )
+             out_fname = trim(dname)//'.nc'
+          case ( "grib2" )
+             out_fname = trim(dname)//'.GR2'
+          case default
+          end select
+       else
+          call lvt_log_msg('ERR: LVT_create_output_filename --')
+          call lvt_log_msg('  Unrecognized LIS output naming style:')
+          call lvt_log_msg('      '//style_temp)
+          call LVT_endrun
+       endif
+       fname = trim(out_fname)
+    endif
+  end subroutine Create_output_filename_with_timestamp
 
 !BOP
-! 
+!
 ! !ROUTINE: LVT_create_daobs_filename
 ! \label{LVT_create_daobs_filename}
 !
 ! !INTERFACE:
-subroutine LVT_create_daobs_filename(n, fname)
-! 
+  subroutine LVT_create_daobs_filename(n, fname)
+!
   ! !USES:
-   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
-   use LVT_coreMod,  only : LVT_rc
-  
-   implicit none 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+    use LVT_coreMod,  only : LVT_rc
+
+    implicit none
 !
-! !INPUT PARAMETERS: 
-   integer, intent(in)           :: n
-! 
+! !INPUT PARAMETERS:
+    integer, intent(in)           :: n
+!
 ! !OUTPUT PARAMETERS:
-   character(len=*), intent(out) :: fname
+    character(len=*), intent(out) :: fname
 !
-! !DESCRIPTION:  
+! !DESCRIPTION:
 !  Create the file name for the daobs files.  The convention used
-!  in LIS creates a restart filename in the following format. 
+!  in LIS creates a restart filename in the following format.
 !
 !  <output directory>/EXP<expno>/<model name>daobs.dat
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !   \item [n]
 !     index of the domain or nest
 !   \item [fname]
-!     the created file name. 
+!     the created file name.
 !   \item [mname]
-!    string describing the name of the model 
+!    string describing the name of the model
 !  \end{description}
-! 
+!
 ! !FILES USED:
 !
-! !REVISION HISTORY: 
-! 
+! !REVISION HISTORY:
+!
 !EOP
 
-   character(len=LVT_CONST_PATH_LEN) :: out_fname
-   character*100      :: cdate, cdate1
+    character(len=LVT_CONST_PATH_LEN) :: out_fname
+    character*100      :: cdate, cdate1
 
-   
-   write(unit=cdate, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
-        LVT_rc%yr, LVT_rc%mo, &
-        LVT_rc%da, LVT_rc%hr,LVT_rc%mn
-   write(unit=cdate1, fmt='(i4.4, i2.2)') &
-        LVT_rc%yr, LVT_rc%mo
-   
-   out_fname = trim(LVT_rc%odir)//'/' & 
-        //'/DAOBS/'//trim(cdate1)//'/'//trim(cdate)//'.1gs4r'
-   
-   fname = trim(out_fname)
-   
- end subroutine LVT_create_daobs_filename
+    write(unit=cdate, fmt='(i4.4, i2.2, i2.2, i2.2, i2.2)') &
+         LVT_rc%yr, LVT_rc%mo, &
+         LVT_rc%da, LVT_rc%hr,LVT_rc%mn
+    write(unit=cdate1, fmt='(i4.4, i2.2)') &
+         LVT_rc%yr, LVT_rc%mo
+
+    out_fname = trim(LVT_rc%odir)//'/' &
+         //'/DAOBS/'//trim(cdate1)//'/'//trim(cdate)//'.1gs4r'
+
+    fname = trim(out_fname)
+
+  end subroutine LVT_create_daobs_filename
 
 !BOP
-! 
+!
 ! !ROUTINE: convertParam_real
 ! \label{convertParam_real}
 !
-! !INTERFACE: 
-subroutine convertParam_real(k,pdata, ldata)
-! !USES: 
-  use LVT_coreMod
-  use map_utils
+! !INTERFACE:
+  subroutine convertParam_real(k,pdata, ldata)
+! !USES:
+    use LVT_coreMod
+    use map_utils
 
-! !ARGUMENTS: 
-  integer,     intent(in)    :: k
-  real,        intent(in)    :: pdata(LVT_rc%pnc,LVT_rc%pnr)
-  real,        intent(inout) :: ldata(LVT_LIS_rc(k)%lnc,LVT_LIS_rc(k)%lnr)
+! !ARGUMENTS:
+    integer,     intent(in)    :: k
+    real,        intent(in)    :: pdata(LVT_rc%pnc,LVT_rc%pnr)
+    real,        intent(inout) :: ldata(LVT_LIS_rc(k)%lnc,LVT_LIS_rc(k)%lnr)
 !
 ! !DESCRIPTION:
-!  This routine subsets the floating point data 
+!  This routine subsets the floating point data
 !  read from the parameter attributes
 !  file supplied by LDT to the LVT domain being run. It is assumed
-!  that the parameter data domain is at the same spatial resolution 
-!  and map projection as that of the LVT domain. 
-!  
-!EOP  
-  real                :: rlat, rlon,ctmp, rtmp
-  integer             :: c,r
+!  that the parameter data domain is at the same spatial resolution
+!  and map projection as that of the LVT domain.
+!
+!EOP
+    real                :: rlat, rlon,ctmp, rtmp
+    integer             :: c,r
 
 ! Using the map_utils routines could lead to roundoff errors. We use
-! simpler calculations for latlon projection. 
+! simpler calculations for latlon projection.
 
-  do r=1,LVT_LIS_rc(k)%lnr
-     do c=1,LVT_LIS_rc(k)%lnc
+    do r=1,LVT_LIS_rc(k)%lnr
+       do c=1,LVT_LIS_rc(k)%lnc
 
-        call ij_to_latlon(LVT_LIS_domain(k)%proj, float(c), float(r), &
-             rlat, rlon)
-        
-        call latlon_to_ij(LVT_domain%lvtparamproj, rlat, rlon, &
-             ctmp, rtmp)
-        ldata(c,r) = pdata(nint(ctmp), nint(rtmp))
-        
-     enddo
-  enddo
-   
-end subroutine convertParam_real
+          call ij_to_latlon(LVT_LIS_domain(k)%proj, float(c), float(r), &
+               rlat, rlon)
+
+          call latlon_to_ij(LVT_domain%lvtparamproj, rlat, rlon, &
+               ctmp, rtmp)
+          ldata(c,r) = pdata(nint(ctmp), nint(rtmp))
+
+       enddo
+    enddo
+
+  end subroutine convertParam_real
 
 !BOP
-! 
+!
 ! !ROUTINE: convertParam_int
 ! \label{convertParam_int}
 !
-! !INTERFACE: 
-subroutine convertParam_int(k, pdata, ldata)
-! !USES: 
-  use LVT_coreMod
-  use map_utils
+! !INTERFACE:
+  subroutine convertParam_int(k, pdata, ldata)
+! !USES:
+    use LVT_coreMod
+    use map_utils
 
-! !ARGUMENTS: 
-  integer,     intent(in)    :: k
-  integer,     intent(in)    :: pdata(LVT_rc%pnc,LVT_rc%pnr)
-  integer,     intent(inout) :: ldata(LVT_LIS_rc(k)%lnc,LVT_LIS_rc(k)%lnr)
+! !ARGUMENTS:
+    integer,     intent(in)    :: k
+    integer,     intent(in)    :: pdata(LVT_rc%pnc,LVT_rc%pnr)
+    integer,     intent(inout) :: ldata(LVT_LIS_rc(k)%lnc,LVT_LIS_rc(k)%lnr)
 !
 ! !DESCRIPTION:
-!  This routine subsets the floating point data 
+!  This routine subsets the floating point data
 !  read from the parameter attributes
 !  file supplied by LDT to the LVT domain being run. It is assumed
-!  that the parameter data domain is at the same spatial resolution 
-!  and map projection as that of the LVT domain. 
-!  
-!EOP  
-  real                :: rlat, rlon,ctmp, rtmp
-  integer             :: c,r
+!  that the parameter data domain is at the same spatial resolution
+!  and map projection as that of the LVT domain.
+!
+!EOP
+    real                :: rlat, rlon,ctmp, rtmp
+    integer             :: c,r
 
-  do r=1,LVT_LIS_rc(k)%lnr
-     do c=1,LVT_LIS_rc(k)%lnc
-        call ij_to_latlon(LVT_LIS_domain(k)%proj, float(c), float(r), &
-             rlat, rlon)
-        
-        call latlon_to_ij(LVT_domain%lvtparamproj, rlat, rlon, &
-             ctmp, rtmp)
-        ldata(c,r) = pdata(nint(ctmp), nint(rtmp))
-        
-     enddo
-  enddo
-   
-end subroutine convertParam_int
+    do r=1,LVT_LIS_rc(k)%lnr
+       do c=1,LVT_LIS_rc(k)%lnc
+          call ij_to_latlon(LVT_LIS_domain(k)%proj, float(c), float(r), &
+               rlat, rlon)
+
+          call latlon_to_ij(LVT_domain%lvtparamproj, rlat, rlon, &
+               ctmp, rtmp)
+          ldata(c,r) = pdata(nint(ctmp), nint(rtmp))
+
+       enddo
+    enddo
+
+  end subroutine convertParam_int
 
 
 end module LVT_fileIOMod
