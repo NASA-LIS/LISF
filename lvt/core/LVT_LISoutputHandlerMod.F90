@@ -4608,9 +4608,6 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 !EOP
 
     integer :: ftn
-    integer :: nunit
-    integer :: iret
-    real    :: rand
     integer :: ios
 
     type(LVT_LISmetadataEntry), pointer :: lisdataEntry
@@ -4620,7 +4617,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     type(LVT_LISmetadataEntry), pointer :: swnet,lwnet,qle,qh,qg,pet
     type(LVT_LISmetadataEntry), pointer :: qf,qa,qv,delsurfheat
     type(LVT_metadataEntry),    pointer :: wrsi,br, ef,totalprecip,esi
-    type(LVT_LISmetadataEntry), pointer :: rainf,snowf,qs,qsb, prcp
+    type(LVT_LISmetadataEntry), pointer :: rainf,snowf,qs,qsb
     type(LVT_LISmetadataEntry), pointer :: delswe,delintercept,delsoilmoist
     type(LVT_LISmetadataEntry), pointer :: delcoldcont, delsurfstor
     type(LVT_LISmetadataEntry), pointer :: evap, potevap, et
@@ -4629,7 +4626,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     type(LVT_metadataEntry),    pointer :: ecanopoverqle, tvegoverqle, esoiloverqle
     type(LVT_LISmetadataEntry), pointer :: ecanop, tveg, esoil
     type(LVT_metadataEntry),    pointer :: roottemp,rootmoist,gwscalc,tws_calc
-    type(LVT_LISmetadataEntry), pointer :: watertabled,tws,gws,wt
+    type(LVT_LISmetadataEntry), pointer :: tws
     type(LVT_LISmetadataEntry), pointer :: soilmoist,canopint
     type(LVT_metadataEntry),    pointer :: refet, relsmc
     type(LVT_LISmetadataEntry), pointer :: psurf, tair,qair,wind
@@ -4647,9 +4644,6 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     real                       :: fcd, sigma, Rnl, Rn
     real                       :: lhs, rhs, denom
 
-    integer                    :: nl_vic(LVT_rc%npts)
-    real                       :: total_depth_vic(LVT_rc%npts)
-    logical                    :: depth_found(LVT_rc%npts)
     type(LVT_metadataEntry), pointer :: dataEntry
 
     time_period_count = time_period_count + 1 ! EM
@@ -6256,9 +6250,6 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 !EOP
 
     integer :: ftn(nfiles)
-    integer :: nunit
-    integer :: iret
-    real    :: rand
     integer :: ios
 
     type(LVT_LISmetadataEntry), pointer :: lisdataEntry
@@ -6268,7 +6259,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     type(LVT_LISmetadataEntry), pointer :: swnet,lwnet,qle,qh,qg
     type(LVT_LISmetadataEntry), pointer :: qf,qa,qv,delsurfheat
     type(LVT_metadataEntry),    pointer :: wrsi,br, ef,totalprecip
-    type(LVT_LISmetadataEntry), pointer :: rainf,snowf,qs,qsb, prcp
+    type(LVT_LISmetadataEntry), pointer :: rainf,snowf,qs,qsb
     type(LVT_LISmetadataEntry), pointer :: delswe,delintercept,delsoilmoist
     type(LVT_LISmetadataEntry), pointer :: delcoldcont, delsurfstor
     type(LVT_LISmetadataEntry), pointer :: evap, potevap, et
@@ -6277,7 +6268,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     type(LVT_metadataEntry),    pointer :: ecanopoverqle, tvegoverqle, esoiloverqle
     type(LVT_LISmetadataEntry), pointer :: ecanop, tveg, esoil
     type(LVT_metadataEntry),    pointer :: roottemp,rootmoist,gwscalc,tws_calc
-    type(LVT_LISmetadataEntry), pointer :: watertabled,tws,gws,wt
+    type(LVT_LISmetadataEntry), pointer :: tws
     type(LVT_LISmetadataEntry), pointer :: soilmoist,canopint
     type(LVT_metadataEntry),    pointer :: refet, relsmc
     type(LVT_LISmetadataEntry), pointer :: psurf, tair,qair,wind
@@ -6286,9 +6277,6 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     real                       :: lambda, gamma, gammaStar, rnet_minus_g
     real                       :: dx,es_tmin, es_tmax, esm, deltax, ed
 
-    integer                    :: nl_vic(LVT_rc%npts)
-    real                       :: total_depth_vic(LVT_rc%npts)
-    logical                    :: depth_found(LVT_rc%npts)
     logical                    :: file_exists(nfiles)
     type(LVT_metadataEntry), pointer :: dataEntry
 
@@ -8038,11 +8026,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     real, allocatable :: value2d_ip(:,:)
     logical*1, allocatable :: lo(:)
     integer :: unit_id
-    integer :: k,i,c,r,t,gid,kk,index
-    integer :: j,lubi, nsize, iret
-    integer :: jpds(200), jgds(200)
-    integer :: kf,kpds(200),gridDesc(200)
-    
+    integer :: k,i,c,r,t,gid,index
+    integer :: nsize, iret
+
     unit_id = -1
     if(dataEntry%selectOpt.eq.1) then 
        do i=1,dataEntry%nunits
@@ -10392,6 +10378,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     integer        :: mo
     integer        :: iret
 
+    external :: bilinear_interp
+    external :: upscaleByAveraging
+
     var_out = LVT_rc%udef
     mi = LVT_LIS_rc(source)%lnc*LVT_LIS_rc(source)%lnr
     mo = LVT_rc%lnc*LVT_rc%lnr
@@ -10467,6 +10456,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     integer        :: mi
     integer        :: mo
     integer        :: iret
+
+    external :: bilinear_interp
+    external :: upscaleByAveraging
 
     var_out = LVT_rc%udef
     do kk=1,LVT_LIS_rc(source)%nensem
@@ -10691,6 +10683,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
     integer        :: iret
     integer        :: gid
 
+    external :: bilinear_interp
+    external :: upscaleByAveraging
+
     mi = LVT_LIS_rc(source)%lnc*LVT_LIS_rc(source)%lnr
     mo = LVT_rc%lnc*LVT_rc%lnr
     var_out = LVT_rc%udef
@@ -10882,9 +10877,9 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 
     real, allocatable :: gtmp(:)
     real, allocatable :: gtmp2d(:,:)
-    integer :: i, gid
+    integer :: gid
     integer :: c,r, nc, cnt
-    integer :: c1,c2,r1,r2
+    integer :: c1,r1
 
     allocate(gtmp(LVT_LIS_rc(source)%glbngrid))
     read(ftn) gtmp
