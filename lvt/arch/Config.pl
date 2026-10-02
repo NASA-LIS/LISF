@@ -15,21 +15,33 @@
 # Process environment and configure options
 #
 
-$sanitize = " ";
-
 if(defined($ENV{LVT_ARCH})){
    $sys_arch = $ENV{LVT_ARCH};
    # The Cray/Intel environment is almost identical to the Linux/Intel
    # environment.  There are two modifications that must be made to the
    # Linux/Intel configuration settings to make them work on the Cray.
-   # So reset the sys_arch variable to "intel_ifc" and set a flag to 
-   # enable the cray modifications.
+   # So reset the sys_arch variable to "linux_ifc" and set a flag to
+   # enable the Cray modifications.
    if($sys_arch eq "cray_ifc"){
       $sys_arch = "linux_ifc";
       $cray_modifications = 1;
    }
    else{
       $cray_modifications = 0;
+   }
+   # The Intel/ifx environment is almost identical to the Intel/ifort
+   # environment.  There are two compiler flags that must be appropriately
+   # set to share the remaining compiler flags.
+   # So set those two flags here and reset the sys_arch variable
+   # to "linux_ifc" if necessary.
+   if($sys_arch eq "linux_ifc"){
+      $intel_sanitize = " ";
+      $intel_stack_check = " -fp-stack-check ";
+   }
+   if($sys_arch eq "linux_ifx"){
+      $sys_arch = "linux_ifc";
+      $intel_sanitize = " -fsanitize=memory ";
+      $intel_stack_check = " ";
    }
 }
 else{
@@ -82,18 +94,26 @@ if($opt_lev eq "\n"){
    $opt_lev=2;
 }
 
+if($sys_arch eq "linux_ifc"){
+   if($opt_lev > -2) {
+      # $intel_sanitize = " -fsanitize=memory " is for optimization
+      # levels -3 and -2 only.
+      $intel_sanitize = " ";
+   }
+}
+
 if($opt_lev == -3) {
     $sys_opt   = "-g -O0";
     $sys_c_opt = "-g -O0";
     if($sys_arch eq "linux_ifc"){
-        $sanitize=" -fsanitize=memory";
-
         # Fortran flags
 	$sys_opt = "-g -O0 -warn";
 	$sys_opt .=
             " -check bounds,format,output_conversion,pointers,stack,";
-        $sys_opt .= "uninit";
-	$sys_opt .= "  -ftrapuv -fsanitize=memory";
+   $sys_opt .= "uninit";
+   $sys_opt .= $intel_stack_check;
+	$sys_opt .= "  -ftrapuv ";
+   $sys_opt .= $intel_sanitize;
 
         # C flags
 	$sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wcheck -Wdeprecated";
@@ -104,9 +124,11 @@ if($opt_lev == -3) {
 	$sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
 	$sys_c_opt .= " -Wunused-function -Wunused-parameter";
 	$sys_c_opt .= " -Wunused-variable -Wwrite-strings";
+   $sys_c_opt .= $intel_stack_check;
 	$sys_c_opt .= " -fp-trap=common";
-        $sys_c_opt .= " -fp-trap-all=common";
-	$sys_c_opt .= " -ftrapv -fsanitize=memory";
+   $sys_c_opt .= " -fp-trap-all=common";
+	$sys_c_opt .= " -ftrapv";
+   $sys_c_opt .= $intel_sanitize;
     }
     elsif($sys_arch eq "linux_pgi") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
@@ -160,7 +182,9 @@ if($opt_lev == -2) {
         $sys_opt .=
             " -check bounds,format,output_conversion,pointers,stack,";
         $sys_opt .= "uninit";
-        $sys_opt .= " -fp-stack-check -ftrapuv ";
+        $sys_opt .= $intel_stack_check;
+        $sys_opt .= " -ftrapuv ";
+        $sys_opt .= $intel_sanitize;
 
         # C flags
         $sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wdeprecated";
@@ -171,9 +195,11 @@ if($opt_lev == -2) {
         $sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
         $sys_c_opt .= " -Wunused-function -Wunused-parameter";
         $sys_c_opt .= " -Wunused-variable -Wwrite-strings";
-        $sys_c_opt .= " -fp-stack-check -fp-trap=common";
+        $sys_c_opt .= $intel_stack_check;
+        $sys_c_opt .= " -fp-trap=common";
         $sys_c_opt .= " -fp-trap-all=common";
         $sys_c_opt .= " -ftrapv";
+        $sys_c_opt .= $intel_sanitize;
 
    }
    elsif($sys_arch eq "linux_gfortran") {
@@ -600,7 +626,7 @@ if($sys_arch eq "linux_ifc") {
       $fflags77= "-c ".$sys_opt." -traceback -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
       $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
-   $ldflags= $sanitize."  -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt ";
+   $ldflags= $intel_sanitize."  -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt ";
 }
 elsif($sys_arch eq "linux_pgi") {
    $cflags = "-c -DLITTLE_ENDIAN -DPGI";
