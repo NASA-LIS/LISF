@@ -48,7 +48,7 @@ subroutine LVT_readConfig(configfile)
   character*100 :: temp1
   character*1   :: fproc(4)
   logical       :: exists
-  integer       :: i,k,rc
+  integer       :: i,rc
   integer       :: twsmooth
   character*30  :: scInterval
   character*10  :: time
