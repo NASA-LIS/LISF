@@ -140,7 +140,11 @@ contains
     type(LVT_metadataEntry), pointer :: ds3
     type(LVT_statsEntry),    pointer :: stats
 
-
+    external :: LVT_readMetricsAttributes
+    external :: system
+    external :: initmetric
+    external :: readmetricrestart
+    
     call ESMF_ConfigGetAttribute(LVT_config,metricsAttribFile,&
          label="Metrics attributes file:",&
          rc=rc)
@@ -527,6 +531,8 @@ contains
     character*5000          :: c_line
     integer                 :: status
 
+    external :: system
+
     if(metric%timeopt.eq.1.and.metric%extractTS.eq.1) then 
 
        if(LVT_rc%lvt_wopt.eq."2d ensemble gridspace") then 
@@ -729,7 +735,9 @@ contains
     integer              :: selectNlevs(LVT_rc%nDataStreams)
 !EOP
     integer            :: m
-    
+
+    external :: initmetric
+
     if(stats%selectOpt.eq.1.and.selectNlevs(1).ge.1) then 
 ! Hardcoded the second index to 4 to account for multiple fields within each
 ! metric (Assuming that we don't need more than 2 fields within a metric.
@@ -802,7 +810,6 @@ contains
   subroutine LVT_checkTavgSpecs()
 
     type(LVT_metaDataEntry), pointer :: model
-    type(LVT_statsEntry)   , pointer :: stats
     
     logical :: tavg_check_status
     logical :: inst_check_status
@@ -891,6 +898,8 @@ contains
     integer       :: m
     integer       :: pass
 
+    external :: diagnosemetric
+
     if(LVT_rc%computeFlag) then     
        do m=LVT_rc%metric_sindex,LVT_rc%metric_eindex
           if(LVT_metricsPtr(m)%metricEntryPtr%selectOpt.gt.0) then
@@ -945,19 +954,18 @@ contains
 !EOP
 
     logical                 :: alarmCheck,alarmCheck_rst
-    integer                 :: m,nfrac
-    integer                 :: mfactor
+    integer                 :: m
     integer                 :: yr, mo, da, hr, mn, ss
-    integer                 :: nyr, nmo, nda, nhr, nmn, nss
-    type(ESMF_Time)         :: currTime
-    type(ESMF_TimeInterval) :: ts
     integer                 :: ftn
     character(len=LVT_CONST_PATH_LEN) :: rstfile
     character(len=12)       :: cdate
-    character(len=4)        :: cdate1
     character(len=LVT_CONST_PATH_LEN) :: dir_string
-    integer                 :: status
     logical                 :: alarmCheck_total
+
+    external :: system
+    external :: computemetric
+    external :: resetmetric
+    external :: writemetricrestart
 
     yr = LVT_rc%yr
     mo = LVT_rc%mo
@@ -1250,12 +1258,8 @@ contains
    integer                 :: i,c,r,t,tid,m
    real                    :: sum_v
    integer                 :: nsum_v
-   real                    :: wsum_v
-   integer                 :: wnsum_v
    real, allocatable       :: sum_sd_v(:)
    integer, allocatable    :: nsum_sd_v(:)
-   real, allocatable       :: wsum_sd_v(:)
-   integer, allocatable    :: wnsum_sd_v(:)
 !   real,    allocatable    :: ts_v(LVT_LIS_rc(1)%ntiles)
    real,    allocatable    :: ts_v(:)
    integer                 :: nts_v
@@ -1471,7 +1475,6 @@ contains
    integer             :: npts(nsize, LVT_rc%nensem)
    character(len=*)    :: varname
    real                :: ci(LVT_rc%nensem)
-   integer             :: dummy
 ! 
 ! !DESCRIPTION: 
 !  This routine outputs a summary of various statistics computed 
@@ -1493,17 +1496,12 @@ contains
    integer             :: i,c,r,m,t
    real                :: sum_v
    integer             :: nsum_v
-   real                :: wsum_v
-   integer             :: wnsum_v
    real, allocatable       :: sum_sd_v(:)
    integer, allocatable    :: nsum_sd_v(:)
-   real, allocatable       :: wsum_sd_v(:)
-   integer, allocatable    :: wnsum_sd_v(:)
 
    real, allocatable       :: ts_v(:)
    integer                 :: nts_v
    real,   allocatable     :: ci_val(:)
-
 
    allocate(sum_sd_v(LVT_rc%ntslocs))
    allocate(nsum_sd_v(LVT_rc%ntslocs))
@@ -1646,6 +1644,8 @@ contains
     integer            :: iret
     character(len=LVT_CONST_PATH_LEN) :: fname_total
 
+    external :: system
+    
     if(pass.eq.metric%npass.and.metric%selectOpt.eq.1) then 
        call system("mkdir -p "//trim(LVT_rc%statsodir))
        write(unit=cdate,fmt='(i4.4,i2.2,i2.2,i2.2,i2.2)') LVT_rc%yr, LVT_rc%mo, &
@@ -1715,13 +1715,8 @@ contains
     character(len=LVT_CONST_PATH_LEN) :: fname_ts
     character(len=12)       :: cdate
     character(len=4)        :: cdate1
-    integer                 :: status,iret
-    type(ESMF_Time)         :: currTime
-    type(ESMF_TimeInterval) :: ts
-    integer                 :: yr, mo, da, hr, mn, ss,doy
-    real*8                  :: time
-    real                    :: gmt
-
+    integer                 :: iret
+    integer                 :: yr, mo, da, hr, mn, ss
 
     if(metric%timeOpt.eq.1.and.metric%writeTS.eq.1.and.&
          metric%npass.eq.pass) then 
@@ -1836,7 +1831,6 @@ contains
 !   a file on disk. 
 !EOP
     integer :: count
-    integer :: index
 
     type(LVT_metadataEntry), pointer :: model
     type(LVT_metadataEntry), pointer :: obs
@@ -1917,9 +1911,7 @@ contains
 !
 !EOP
 
-    integer             :: k 
     integer             :: m
-    integer             :: t   
     character*500       :: short_name_ds1, short_name_ds2
     character*500       :: long_name, standard_name, units
 
@@ -2091,17 +2083,16 @@ contains
     type(LVT_metaDataEntry) :: model
     type(LVT_metaDataEntry) :: obs
     type(LVT_statsEntry)    :: stats
-    integer                 :: vlevels
+
 ! 
 ! !DESCRIPTION:
 !  This routine writes the specified set of temporal statistics for a 
 !  single variable. 
 !EOP
 
-    integer             :: k 
-    integer             :: t
-    integer             :: l
     integer             :: m
+
+    external :: writemetricentry
 
     do m=LVT_rc%metric_sindex,LVT_rc%metric_eindex
        if(LVT_metricsPtr(m)%metricEntryPtr%timeOpt.eq.1.and.&
@@ -2659,10 +2650,10 @@ contains
 !  single variable at the end of the analysis. 
 !EOP
 
-    integer             :: k 
-    integer             :: c,r,m
-    integer             :: t,i
-    
+    integer             :: m
+
+    external :: writemetricentry
+
     if(stats%selectOpt.eq.1) then 
        do m=LVT_rc%metric_sindex,LVT_rc%metric_eindex
           call writemetricentry(m,pass,1,model%selectNlevs,stats,obs)
