@@ -1085,11 +1085,10 @@ contains
 !     call to abort program when a fatal error is detected. 
 !   \end{description}
 !EOP
-    integer :: k,i
+    integer :: k
 
-    real, allocatable    :: var(:), meanv(:), stdv(:)
     character*100        :: mvar,units
-    integer :: t, m, c
+    integer :: t, m
 
     if(dataEntry%selectOpt.eq.1) then 
 
@@ -1201,11 +1200,10 @@ contains
 !     call to abort program when a fatal error is detected. 
 !   \end{description}
 !EOP
-    integer :: k,i
+    integer :: k
 
-    real, allocatable    :: var(:), meanv(:), stdv(:)
     character*100        :: mvar,units
-    integer :: t, m, c
+    integer :: t
 
     if(dataEntry%selectOpt.eq.1) then 
 
@@ -1500,9 +1498,8 @@ contains
 !     call to abort program when a fatal error is detected. 
 !   \end{description}
 !EOP
-    integer :: i,k,m,t,timeRange
+    integer :: k,m,t,timeRange
     character*10 :: stepType
-    integer :: ierr
 
     if(dataEntry%selectOpt.eq.1) then 
 
@@ -1861,9 +1858,8 @@ contains
 !     call to abort program when a fatal error is detected. 
 !   \end{description}
 !EOP
-    integer :: i,k,m,t,timeRange, pdTemplate !, depscale
+    integer :: k,m,t,timeRange, pdTemplate !, depscale
     character*10 :: stepType
-    integer :: ierr
     integer, dimension(:),allocatable :: depscale
 
     if(dataEntry%selectOpt.eq.1) then 
@@ -2135,7 +2131,6 @@ contains
     character*6             :: xtime_begin_time
     character*50            :: xtime_units
     character*50            :: xtime_timeInc
-    integer                 :: iret
 ! Note that the fix to add lat/lon to the NETCDF output will output
 ! undefined values for the water points. 
     character(len=8)        :: date
@@ -2490,14 +2485,13 @@ contains
 
     integer                 :: dimID(4)
     integer                 :: tdimID,xtimeID,ensID
-    integer                 :: t,c,r,m,i,index1
+    integer                 :: t,c,r,m,i
     real, allocatable       :: ensval(:) 
     type(LIS_metadataEntry), pointer :: xlat, xlong
     character*8             :: xtime_begin_date
     character*6             :: xtime_begin_time
     character*50            :: xtime_units
     character*50            :: xtime_timeInc
-    integer                 :: iret
 ! Note that the fix to add lat/lon to the NETCDF output will output
 ! undefined values for the water points. 
     character(len=8)        :: date
@@ -3265,7 +3259,7 @@ contains
 !     writes a variable into a netcdf formatted file. 
 !   \end{description}
 !EOP    
-    integer       :: i,k,m,t
+    integer       :: k,m,t
     integer       :: nmodel_status
 
     nmodel_status = 0
@@ -3404,7 +3398,7 @@ contains
 !     writes a variable into a netcdf formatted file. 
 !   \end{description}
 !EOP    
-    integer       :: i,k,t
+    integer       :: k,t
     integer       :: nmodel_status
 
     nmodel_status = 0
@@ -3803,7 +3797,6 @@ contains
 !EOP
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    integer :: data_index
     integer :: shuffle, deflate, deflate_level
     integer :: dimID_t(2)
     character*50 :: var_flag_tmp
@@ -3940,13 +3933,11 @@ contains
 !EOP
     integer                 :: tdimID,xtimeID
     integer                 :: t,c,r,index1
-    type(LIS_metadataEntry) :: xlat,xlong,xtime
-    integer                 :: sindex, eindex
+    type(LIS_metadataEntry) :: xlat,xlong
     character*8             :: xtime_begin_date
     character*6             :: xtime_begin_time
     character*50            :: xtime_units
     character*50            :: xtime_timeInc
-    integer                 :: ftn_stats
     integer                 :: iret
     real,     allocatable   :: gvar(:)
     integer                 :: shuffle, deflate, deflate_level
@@ -5641,9 +5632,9 @@ contains
 !EOP
     real, allocatable :: gtmp(:)
     real, allocatable :: gtmp2d(:,:)
-    integer :: i, gid
+    integer :: gid
     integer :: c,r, nc, cnt
-    integer :: c1,c2,r1,r2
+    integer :: c1,r1
 
     allocate(gtmp(LIS_rc%glbngrid(n)))
     read(ftn) gtmp
@@ -6950,8 +6941,8 @@ subroutine writevar_grib1_withstats_real(ftn, ftn_stats, n,   &
   integer              :: idate,idate1
   real, allocatable        :: gtmp(:,:)
   real, allocatable    :: gtmp1(:)
-  integer              :: c,r,count1
-  integer              :: gid,ntiles
+  integer              :: c,r
+  integer              :: gid
   real                 :: lat_ur, lon_ur
   real                 :: lat_ll, lon_ll
   integer              :: yr1, mo1,da1,hr1,mn1
@@ -7306,8 +7297,8 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
   integer              :: idate,idate1
   real, allocatable        :: gtmp(:,:)
   real, allocatable    :: gtmp1(:)
-  integer              :: c,r,count1
-  integer              :: gid,ntiles
+  integer              :: c,r
+  integer              :: gid
   real                 :: lat_ur, lon_ur
   real                 :: lat_ll, lon_ll
   integer              :: yr1, mo1,da1,hr1,mn1
@@ -7864,9 +7855,7 @@ end subroutine writevar_grib2_withstats_real
     real                :: gvar_tile(LIS_rc%glbntiles_red(n))
     integer             :: global
     
-    integer             :: count1
-    integer             :: l,r,c,gid,stid,t, tid
-    integer             :: ierr
+    integer             :: r,c,gid,stid,tid
 
     if(LIS_masterproc) then      
        do r=1,LIS_rc%gnr(n)
@@ -7892,9 +7881,7 @@ end subroutine writevar_grib2_withstats_real
     real                :: gvar_tile(LIS_rc%glbntiles_red(n))
     integer             :: global
     
-    integer             :: count1
-    integer             :: l,m,r,c,gid,stid,t, tid
-    integer             :: ierr
+    integer             :: m,r,c,gid,stid,tid
 
     gvar = 0.0 
     if(LIS_masterproc) then      
@@ -7946,7 +7933,7 @@ end subroutine writevar_grib2_withstats_real
 !  \end{description}
 !
 !EOP
-    integer           :: i,t,tid
+    integer           :: i,tid
 
     do i=1,LIS_rc%npatch(n,m)
        tid = LIS_surface(n,m)%tile(i)%tile_id
@@ -7984,7 +7971,7 @@ end subroutine writevar_grib2_withstats_real
     real,     allocatable   :: gvar_patch(:)
     
     integer             :: count1
-    integer             :: l,r,c,gid,stid,t,npatch, tid
+    integer             :: r,c,gid,stid,t,npatch, tid
     logical             :: dummy
     integer             :: ierr
 
@@ -8054,7 +8041,7 @@ end subroutine writevar_grib2_withstats_real
     integer             :: ensmode
     
     integer             :: count1
-    integer             :: l,r,c,gid,stid,t,npatch, tid,kk
+    integer             :: r,c,gid,stid,t,npatch, tid,kk
     integer             :: ierr
 
 !    if(LIS_masterproc) then        
@@ -8154,10 +8141,10 @@ end subroutine writevar_grib2_withstats_real
 
     integer :: ierr
     integer :: npatch
-    integer :: stid, tid
+    integer :: stid
     integer :: patch_deltas
-    real    :: mean_v, std_v, var_v, max_v, min_v
-    integer :: i,c,r,l,t,ntiles,gid,count1
+    real    :: max_v, min_v
+    integer :: c,r,l,t,gid,count1
 
     if(LIS_rc%wopt.eq."2d gridspace") then !gridded output 
        if(LIS_masterproc) then 
@@ -8279,10 +8266,10 @@ end subroutine writevar_grib2_withstats_real
 
     integer :: ierr
     integer :: npatch
-    integer :: stid, tid
+    integer :: stid
     integer :: patch_deltas
-    real    :: mean_v, std_v, var_avg
-    integer :: i,c,r,l,t,ntiles,gid,count1
+    real    :: var_avg
+    integer :: c,r,l,t,gid,count1
 
     if(LIS_rc%wopt.eq."2d gridspace") then !gridded output 
        if(LIS_masterproc) then 
@@ -9222,7 +9209,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid(n, gtmp, var)
 !EOP
 
    real, allocatable  :: gtmp1d(:)
-   integer :: i,c,r,m,t,l
+   integer :: c,r,l
    integer :: ntiles, gid, count1
    integer :: ierr
    integer :: gdeltas
@@ -9311,7 +9298,7 @@ subroutine LIS_scatter_global_to_local_grid(n, gtmp,ltmp)
 
    real, allocatable :: gtmp1d(:)
    real, allocatable :: gtmp2d(:,:)
-   integer :: i,c,r,m,t,l
+   integer :: c,r
    integer :: gid
    integer :: ierr
 
@@ -9382,9 +9369,9 @@ subroutine LIS_scatter_global_to_local_grid(n, gtmp,ltmp)
 !  \end{description}
 !EOP
     real, allocatable :: gtmp2d(:,:)
-    integer :: i, gid
+    integer :: gid
     integer :: c,r, nc, cnt
-    integer :: c1,c2,r1,r2
+    integer :: c1,r1
 
     allocate(gtmp2d(LIS_rc%gnc(n), LIS_rc%gnr(n)))
 
