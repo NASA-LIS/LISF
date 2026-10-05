@@ -12,36 +12,38 @@ module LIS_histDataMod
 !BOP
 !
 !  !MODULE: LIS_histDataMod
-! 
-!  !DESCRIPTION: 
-!   This module is used by the user to define the metadata associated with 
+!
+!  !DESCRIPTION:
+!   This module is used by the user to define the metadata associated with
 !   model output. The module lists a superset of the land surface model
-!   variables. The user can choose a subset from this list through the 
+!   variables. The user can choose a subset from this list through the
 !   lis configuration file for model output. Currently this list includes
-!   the variable definitions from ALMA specification. 
+!   the variable definitions from ALMA specification.
 !
 !   \textsl{http://www.lmd.jussieu.fr/ALMA/}
-!   
-!  !REVISION HISTORY: 
+!
+!  !REVISION HISTORY:
 !  21 Oct 2005    Sujay Kumar  Initial Specification
 !  19 Jan 2007    Chuck Alonge Added Snow Depth Option (Future use in WPS)
-!   4 Jul 2008    Sujay Kumar Redesigned the I/O to enable generic I/O for  
-!                     all LSMs. 
+!   4 Jul 2008    Sujay Kumar Redesigned the I/O to enable generic I/O for
+!                     all LSMs.
 !  11 May 2011    Sujay Kumar, Updated to be generic across all LIS I/O and
 !                     not just land surface model output
 !  26 May 2011    Soni Yatheendradas: Added Potential ET forcings for FEWSNET
 !  11 Jan 2012    Jiarui Dong, Added the Sac-HT/Snow17 implementation
-!  28 Jan 2014    David Mocko; Updates for AFWA GRIB-1 files using GRIBAPI library
+!  28 Jan 2014    David Mocko; Updates for AFWA GRIB-1 files using GRIBAPI
+!                     library
 !  21 Feb 2014    David Mocko; More updates for matching AFWA GRIB-1 files
 !                     to the LIS-6 GRIB output
-!  14 Mar 2014    David Mocko: Added CAPE, CRAINFFORC, CMFORC, and CHFORC outputs
+!  14 Mar 2014    David Mocko: Added CAPE, CRAINFFORC, CMFORC, and CHFORC
+!                     outputs
 !  28 Mar 2014    David Mocko: More refinements/fixes to AFWA GRIB-1 CONFIGS
 !   6 Apr 2015    Hiroko Beaudoing: Added GRIB2 specific surface type indexes
-!                 106 and 114 in place for 112 (some variables left alone) 
-!  01 Jun 2017    Augusto Getirana: Add/update HyMAP2 outputs [SWS, differetial and 
-!                      potential evaporation and deep water infiltration (DWI)]
-!  
-!  
+!                 106 and 114 in place for 112 (some variables left alone)
+!  01 Jun 2017    Augusto Getirana: Add/update HyMAP2 outputs [SWS,
+!                     differetial and potential evaporation and deep water
+!                     infiltration (DWI)]
+!
 !EOP
   use ESMF
   use LIS_coreMod
@@ -50,7 +52,7 @@ module LIS_histDataMod
 
   implicit none
 
-  PRIVATE 
+  PRIVATE
 
   public :: LIS_histDataInit
   public :: LIS_routingHistDataInit
@@ -68,66 +70,66 @@ module LIS_histDataMod
 !-----------------------------------------------------------------------------
   public :: LIS_histData
   ! LSM
-  public :: LIS_MOC_SWNET   
-  public :: LIS_MOC_LWNET   
-  public :: LIS_MOC_QLE     
-  public :: LIS_MOC_QH      
-  public :: LIS_MOC_QG      
-  public :: LIS_MOC_QF      
-  public :: LIS_MOC_QV      
-  public :: LIS_MOC_QTAU    
-  public :: LIS_MOC_QA         
+  public :: LIS_MOC_SWNET
+  public :: LIS_MOC_LWNET
+  public :: LIS_MOC_QLE
+  public :: LIS_MOC_QH
+  public :: LIS_MOC_QG
+  public :: LIS_MOC_QF
+  public :: LIS_MOC_QV
+  public :: LIS_MOC_QTAU
+  public :: LIS_MOC_QA
   public :: LIS_MOC_DELSURFHEAT
   public :: LIS_MOC_DELCOLDCONT
   public :: LIS_MOC_BR
   public :: LIS_MOC_EF
-  public :: LIS_MOC_SNOWF     
-  public :: LIS_MOC_RAINF     
-  public :: LIS_MOC_EVAP      
-  public :: LIS_MOC_QS        
-  public :: LIS_MOC_QREC      
-  public :: LIS_MOC_QSB       
-  public :: LIS_MOC_QSM       
-  public :: LIS_MOC_QFZ       
-  public :: LIS_MOC_QST       
+  public :: LIS_MOC_SNOWF
+  public :: LIS_MOC_RAINF
+  public :: LIS_MOC_EVAP
+  public :: LIS_MOC_QS
+  public :: LIS_MOC_QREC
+  public :: LIS_MOC_QSB
+  public :: LIS_MOC_QSM
+  public :: LIS_MOC_QFZ
+  public :: LIS_MOC_QST
   public :: LIS_MOC_DELSOILMOIST
-  public :: LIS_MOC_DELSWE    
+  public :: LIS_MOC_DELSWE
   public :: LIS_MOC_DELSURFSTOR
   public :: LIS_MOC_DELINTERCEPT
-  public :: LIS_MOC_SNOWT     
-  public :: LIS_MOC_VEGT      
-  public :: LIS_MOC_BARESOILT 
-  public :: LIS_MOC_AVGSURFT  
-  public :: LIS_MOC_RADT      
-  public :: LIS_MOC_ALBEDO    
-  public :: LIS_MOC_ALBEDO_DIR_V    
-  public :: LIS_MOC_ALBEDO_DIF_V    
-  public :: LIS_MOC_ALBEDO_DIR_N    
-  public :: LIS_MOC_ALBEDO_DIF_N    
-  public :: LIS_MOC_SWE       
+  public :: LIS_MOC_SNOWT
+  public :: LIS_MOC_VEGT
+  public :: LIS_MOC_BARESOILT
+  public :: LIS_MOC_AVGSURFT
+  public :: LIS_MOC_RADT
+  public :: LIS_MOC_ALBEDO
+  public :: LIS_MOC_ALBEDO_DIR_V
+  public :: LIS_MOC_ALBEDO_DIF_V
+  public :: LIS_MOC_ALBEDO_DIR_N
+  public :: LIS_MOC_ALBEDO_DIF_N
+  public :: LIS_MOC_SWE
   public :: LIS_MOC_SNOWDENSITY
   public :: LIS_MOC_SNOWGRAIN
-  public :: LIS_MOC_SWEVEG    
-  public :: LIS_MOC_SURFSTOR  
-  public :: LIS_MOC_SOILMOIST 
-  public :: LIS_MOC_SOILTEMP  
+  public :: LIS_MOC_SWEVEG
+  public :: LIS_MOC_SURFSTOR
+  public :: LIS_MOC_SOILMOIST
+  public :: LIS_MOC_SOILTEMP
   public :: LIS_MOC_SMLIQFRAC
   public :: LIS_MOC_SMFROZFRAC
-  public :: LIS_MOC_SOILWET   
+  public :: LIS_MOC_SOILWET
   public :: LIS_MOC_MATRICPOTENTIAL
   public :: LIS_MOC_POTEVAP
   public :: LIS_MOC_VPD
-  public :: LIS_MOC_ECANOP    
-  public :: LIS_MOC_TVEG      
-  public :: LIS_MOC_ESOIL     
-  public :: LIS_MOC_EWATER    
-  public :: LIS_MOC_ROOTMOIST 
+  public :: LIS_MOC_ECANOP
+  public :: LIS_MOC_TVEG
+  public :: LIS_MOC_ESOIL
+  public :: LIS_MOC_EWATER
+  public :: LIS_MOC_ROOTMOIST
   public :: LIS_MOC_ROOTTEMP
-  public :: LIS_MOC_CANOPINT  
-  public :: LIS_MOC_EVAPSNOW     
-  public :: LIS_MOC_SUBSNOW   
-  public :: LIS_MOC_SUBSURF   
-  public :: LIS_MOC_ACOND   
+  public :: LIS_MOC_CANOPINT
+  public :: LIS_MOC_EVAPSNOW
+  public :: LIS_MOC_SUBSNOW
+  public :: LIS_MOC_SUBSURF
+  public :: LIS_MOC_ACOND
   public :: LIS_MOC_WATERTABLED
   public :: LIS_MOC_TWS
   public :: LIS_MOC_GWS
@@ -150,32 +152,31 @@ module LIS_histDataMod
   public :: LIS_MOC_TOTSOILCARB
   public :: LIS_MOC_TOTLIVBIOM
 
-  
-  public :: LIS_MOC_WINDFORC  
-  public :: LIS_MOC_RAINFFORC 
-  public :: LIS_MOC_SNOWFFORC 
-  public :: LIS_MOC_CRAINFFORC 
-  public :: LIS_MOC_LSRAINFFORC 
-  public :: LIS_MOC_CSNOWFFORC 
-  public :: LIS_MOC_LSSNOWFFORC 
-  public :: LIS_MOC_TAIRFORC  
-  public :: LIS_MOC_QAIRFORC  
-  public :: LIS_MOC_PSURFFORC 
+  public :: LIS_MOC_WINDFORC
+  public :: LIS_MOC_RAINFFORC
+  public :: LIS_MOC_SNOWFFORC
+  public :: LIS_MOC_CRAINFFORC
+  public :: LIS_MOC_LSRAINFFORC
+  public :: LIS_MOC_CSNOWFFORC
+  public :: LIS_MOC_LSSNOWFFORC
+  public :: LIS_MOC_TAIRFORC
+  public :: LIS_MOC_QAIRFORC
+  public :: LIS_MOC_PSURFFORC
   public :: LIS_MOC_SWDOWNFORC
   public :: LIS_MOC_LWDOWNFORC
   public :: LIS_MOC_DIRECTSWFORC
   public :: LIS_MOC_DIFFUSESWFORC
-  public :: LIS_MOC_NWINDFORC  
-  public :: LIS_MOC_EWINDFORC  
-  public :: LIS_MOC_FHEIGHTFORC  
-  public :: LIS_MOC_CHFORC  
-  public :: LIS_MOC_CMFORC  
-  public :: LIS_MOC_EMISSFORC  
-  public :: LIS_MOC_MIXRATIOFORC  
-  public :: LIS_MOC_COSZENFORC  
-  public :: LIS_MOC_ALBEDOFORC  
-  public :: LIS_MOC_PARDRFORC  
-  public :: LIS_MOC_PARDFFORC  
+  public :: LIS_MOC_NWINDFORC
+  public :: LIS_MOC_EWINDFORC
+  public :: LIS_MOC_FHEIGHTFORC
+  public :: LIS_MOC_CHFORC
+  public :: LIS_MOC_CMFORC
+  public :: LIS_MOC_EMISSFORC
+  public :: LIS_MOC_MIXRATIOFORC
+  public :: LIS_MOC_COSZENFORC
+  public :: LIS_MOC_ALBEDOFORC
+  public :: LIS_MOC_PARDRFORC
+  public :: LIS_MOC_PARDFFORC
 !<for vic>
   public :: LIS_MOC_SNOWFLAGFORC
   public :: LIS_MOC_DENSITYFORC
@@ -184,28 +185,28 @@ module LIS_histDataMod
   public :: LIS_MOC_ARESIST
 !</for vic>
 
-  public :: LIS_MOC_LANDMASK  
-  public :: LIS_MOC_LANDCOVER 
-  public :: LIS_MOC_SOILTYPE  
+  public :: LIS_MOC_LANDMASK
+  public :: LIS_MOC_LANDCOVER
+  public :: LIS_MOC_SOILTYPE
   public :: LIS_MOC_SANDFRAC
   public :: LIS_MOC_CLAYFRAC
   public :: LIS_MOC_SILTFRAC
   public :: LIS_MOC_POROSITY
-  public :: LIS_MOC_SOILCOLOR 
+  public :: LIS_MOC_SOILCOLOR
   public :: LIS_MOC_ELEVATION
   public :: LIS_MOC_SLOPE
-  public :: LIS_MOC_LAI       
-  public :: LIS_MOC_SAI       
+  public :: LIS_MOC_LAI
+  public :: LIS_MOC_SAI
   public :: LIS_MOC_SNFRALBEDO
   public :: LIS_MOC_MXSNALBEDO
-  public :: LIS_MOC_GREENNESS 
-  public :: LIS_MOC_TEMPBOT  
+  public :: LIS_MOC_GREENNESS
+  public :: LIS_MOC_TEMPBOT
   public :: LIS_MOC_GLACIERFRACTION
 
   public :: LIS_MOC_CCOND
   public :: LIS_MOC_RELSMC
   public :: LIS_MOC_RHMIN
-  public :: LIS_MOC_TOTALPRECIP     
+  public :: LIS_MOC_TOTALPRECIP
   public :: LIS_MOC_CRAINF
   PUBLIC :: LIS_MOC_LSRAINF
   PUBLIC :: LIS_MOC_LSSNOWF
@@ -216,7 +217,7 @@ module LIS_histDataMod
   public :: LIS_MOC_THERMAL_ROUGHNESS
   public :: LIS_MOC_T2DIAG
   public :: LIS_MOC_Q2DIAG
-  public :: LIS_MOC_RNET   
+  public :: LIS_MOC_RNET
   public :: LIS_MOC_CH
   public :: LIS_MOC_CM
   public :: LIS_MOC_MIXRATIO
@@ -281,16 +282,15 @@ module LIS_histDataMod
   public :: LIS_MOC_growing_season
   public :: LIS_MOC_WHC
   public :: LIS_MOC_LGP
-  public :: LIS_MOC_WR_TimeStep ! SY
-  public :: LIS_MOC_AET_TimeStep ! SY
-  public :: LIS_MOC_WRSI_TimeStep ! SY
-  public :: LIS_MOC_SurplusWater_TimeStep ! SY
+  public :: LIS_MOC_WR_TimeStep
+  public :: LIS_MOC_AET_TimeStep
+  public :: LIS_MOC_WRSI_TimeStep
+  public :: LIS_MOC_SurplusWater_TimeStep
 
 ! NLDAS
   public :: LIS_MOC_CAPEFORC
 
   ! Routing
-
   public :: LIS_MOC_RIVSTO
   public :: LIS_MOC_RIVDPH
   public :: LIS_MOC_RIVVEL
@@ -301,7 +301,7 @@ module LIS_histDataMod
   public :: LIS_MOC_FLDDPH
   public :: LIS_MOC_FLDVEL
   public :: LIS_MOC_FLDFRC
-  public :: LIS_MOC_FLDARE  
+  public :: LIS_MOC_FLDARE
   public :: LIS_MOC_SFCELV
   public :: LIS_MOC_RNFSTO
   public :: LIS_MOC_BSFSTO
@@ -318,15 +318,16 @@ module LIS_histDataMod
   public :: LIS_MOC_RTM_EMISSIVITY
   public :: LIS_MOC_RTM_TB
   public :: LIS_MOC_RTM_SM
+
   ! Irrigation
-  public :: LIS_MOC_IRRIGATEDWATER  
+  public :: LIS_MOC_IRRIGATEDWATER
 
   public :: LIS_MOC_LSM_COUNT
   public :: LIS_MOC_ROUTING_COUNT
   public :: LIS_MOC_RTM_COUNT
   public :: LIS_MOC_IRRIG_COUNT
 
-  ! FLAKE 2003, Added by Shugong Wang 05/20/2013 
+  ! FLAKE 2003
   public ::   LIS_MOC_LAKE_T_SNOW
   public ::   LIS_MOC_LAKE_T_ICE
   public ::   LIS_MOC_LAKE_T_MNW
@@ -350,83 +351,82 @@ module LIS_histDataMod
   public ::   LIS_MOC_LAKE_I_W
   public ::   LIS_MOC_LAKE_Q_LWA
   public ::   LIS_MOC_LAKE_Q_LWW
-  public ::   LIS_MOC_LAKE_Q_BOT 
+  public ::   LIS_MOC_LAKE_Q_BOT
 
   ! SAC-HTET and Snow-17
-
   public ::   LIS_MOC_SACUZTWH
   public ::   LIS_MOC_SACUZFWH
   public ::   LIS_MOC_SACLZTWH
   public ::   LIS_MOC_SACLZFSH
   public ::   LIS_MOC_SACLZFPH
-  
+
   public ::   LIS_MOC_SACSWINT
   public ::   LIS_MOC_SACTSINT
   public ::   LIS_MOC_SACSWHINT
   public ::   LIS_MOC_SACFROST
-  
+
   ! NoahMP
-  public ::   LIS_MOC_CANOPY_TEMP 
-  public ::   LIS_MOC_CANOPY_VP   
-  public ::   LIS_MOC_CANOPY_WF   
-  public ::   LIS_MOC_CANOPY_INTL   
-  public ::   LIS_MOC_GROUNDAVGT   
-  public ::   LIS_MOC_GROUNDVEGT   
-  public ::   LIS_MOC_SOWN_NLAYER   
-  public ::   LIS_MOC_SNOW_LBDFSS   
-  public ::   LIS_MOC_SOIL_LBDFSS   
-  public ::   LIS_MOC_SNOWICE   
-  public ::   LIS_MOC_SNOWLIQ   
+  public ::   LIS_MOC_CANOPY_TEMP
+  public ::   LIS_MOC_CANOPY_VP
+  public ::   LIS_MOC_CANOPY_WF
+  public ::   LIS_MOC_CANOPY_INTL
+  public ::   LIS_MOC_GROUNDAVGT
+  public ::   LIS_MOC_GROUNDVEGT
+  public ::   LIS_MOC_SOWN_NLAYER
+  public ::   LIS_MOC_SNOW_LBDFSS
+  public ::   LIS_MOC_SOIL_LBDFSS
+  public ::   LIS_MOC_SNOWICE
+  public ::   LIS_MOC_SNOWLIQ
   public ::   LIS_MOC_WT_AQUI_SATSOIL
-  public ::   LIS_MOC_LAKEWATER   
-  public ::   LIS_MOC_LEAFMASS    
-  public ::   LIS_MOC_ROOTMASS    
-  public ::   LIS_MOC_STEMMASS    
-  public ::   LIS_MOC_WOODMASS    
-  public ::   LIS_MOC_CARBON_DEEPSOIL   
-  public ::   LIS_MOC_CARBON_SHALLOWSOIL    
-  public ::   LIS_MOC_SNOWAGE   
-  public ::   LIS_MOC_BETWEENWATER    
-  public ::   LIS_MOC_QRECTOGW    
-  public ::   LIS_MOC_QRECFROMGW    
-  public ::   LIS_MOC_FSR   
-  public ::   LIS_MOC_FCEV    
-  public ::   LIS_MOC_FGEV    
-  public ::   LIS_MOC_FCTR    
-  public ::   LIS_MOC_VEGE2MT   
-  public ::   LIS_MOC_BARE2MT   
-  public ::   LIS_MOC_VEGE2MQ2    
-  public ::   LIS_MOC_BARE2MQ2    
-  public ::   LIS_MOC_APAR    
-  public ::   LIS_MOC_PSCO2   
-  public ::   LIS_MOC_SAV   
-  public ::   LIS_MOC_SAG   
-  public ::   LIS_MOC_PONDING    
-  public ::   LIS_MOC_PONDING1   
-  public ::   LIS_MOC_PONDING2   
-  public ::   LIS_MOC_RSSUN   
-  public ::   LIS_MOC_RSSHA   
-  public ::   LIS_MOC_BGAP    
-  public ::   LIS_MOC_WGAP    
-  public ::   LIS_MOC_CHV   
-  public ::   LIS_MOC_CHB   
-  public ::   LIS_MOC_SHG   
-  public ::   LIS_MOC_SHC   
-  public ::   LIS_MOC_SHB   
-  public ::   LIS_MOC_EVG   
-  public ::   LIS_MOC_EVB   
-  public ::   LIS_MOC_GHV   
-  public ::   LIS_MOC_GHB   
-  public ::   LIS_MOC_IRV   
-  public ::   LIS_MOC_IRC   
-  public ::   LIS_MOC_IRB   
-  public ::   LIS_MOC_HTR    
-  public ::   LIS_MOC_HEVC   
-  public ::   LIS_MOC_CHLEAF    
-  public ::   LIS_MOC_CHUC    
-  public ::   LIS_MOC_CHV2    
-  public ::   LIS_MOC_CHB2    
-  public ::   LIS_MOC_FPICE   
+  public ::   LIS_MOC_LAKEWATER
+  public ::   LIS_MOC_LEAFMASS
+  public ::   LIS_MOC_ROOTMASS
+  public ::   LIS_MOC_STEMMASS
+  public ::   LIS_MOC_WOODMASS
+  public ::   LIS_MOC_CARBON_DEEPSOIL
+  public ::   LIS_MOC_CARBON_SHALLOWSOIL
+  public ::   LIS_MOC_SNOWAGE
+  public ::   LIS_MOC_BETWEENWATER
+  public ::   LIS_MOC_QRECTOGW
+  public ::   LIS_MOC_QRECFROMGW
+  public ::   LIS_MOC_FSR
+  public ::   LIS_MOC_FCEV
+  public ::   LIS_MOC_FGEV
+  public ::   LIS_MOC_FCTR
+  public ::   LIS_MOC_VEGE2MT
+  public ::   LIS_MOC_BARE2MT
+  public ::   LIS_MOC_VEGE2MQ2
+  public ::   LIS_MOC_BARE2MQ2
+  public ::   LIS_MOC_APAR
+  public ::   LIS_MOC_PSCO2
+  public ::   LIS_MOC_SAV
+  public ::   LIS_MOC_SAG
+  public ::   LIS_MOC_PONDING
+  public ::   LIS_MOC_PONDING1
+  public ::   LIS_MOC_PONDING2
+  public ::   LIS_MOC_RSSUN
+  public ::   LIS_MOC_RSSHA
+  public ::   LIS_MOC_BGAP
+  public ::   LIS_MOC_WGAP
+  public ::   LIS_MOC_CHV
+  public ::   LIS_MOC_CHB
+  public ::   LIS_MOC_SHG
+  public ::   LIS_MOC_SHC
+  public ::   LIS_MOC_SHB
+  public ::   LIS_MOC_EVG
+  public ::   LIS_MOC_EVB
+  public ::   LIS_MOC_GHV
+  public ::   LIS_MOC_GHB
+  public ::   LIS_MOC_IRV
+  public ::   LIS_MOC_IRC
+  public ::   LIS_MOC_IRB
+  public ::   LIS_MOC_HTR
+  public ::   LIS_MOC_HEVC
+  public ::   LIS_MOC_CHLEAF
+  public ::   LIS_MOC_CHUC
+  public ::   LIS_MOC_CHV2
+  public ::   LIS_MOC_CHB2
+  public ::   LIS_MOC_FPICE
   public ::   LIS_MOC_QINSUR
   public ::   LIS_MOC_ETRANI
   public ::   LIS_MOC_WTRFLX
@@ -451,8 +451,8 @@ module LIS_histDataMod
   public :: LIS_MOC_AC_StSen
   public :: LIS_MOC_AC_cycle_complete
   ! end AquaCrop
- 
-  ! RUC 
+
+  ! RUC
   public :: LIS_MOC_QVG
   public :: LIS_MOC_QCG
   public :: LIS_MOC_QSG
@@ -467,11 +467,11 @@ module LIS_histDataMod
   public :: LIS_MOC_DRIP
   public :: LIS_QH_SNOW
   public :: LIS_MOC_SNOWTHRESH
-  ! end ruc 
+  ! end ruc
 
   ! JULES
   public :: LIS_MOC_GS
-  public :: LIS_MOC_GC 
+  public :: LIS_MOC_GC
   PUBLIC :: LIS_MOC_JULES_STHZW
   PUBLIC :: LIS_MOC_JULES_STHU
   PUBLIC :: LIS_MOC_JULES_STHU_MIN
@@ -480,14 +480,14 @@ module LIS_histDataMod
   PUBLIC :: LIS_MOC_JULES_SMVCST
   PUBLIC :: LIS_MOC_JULES_SMVCWT
   PUBLIC :: LIS_MOC_JULES_FSAT
-  PUBLIC :: LIS_MOC_JULES_FWETL 
-  public :: LIS_MOC_JULES_ESOIL     
+  PUBLIC :: LIS_MOC_JULES_FWETL
+  public :: LIS_MOC_JULES_ESOIL
   ! For JULES 5.0 PS41
   public :: LIS_MOC_SNOW_SOOT
   public :: LIS_MOC_GRND_SNOW
   public :: LIS_MOC_SURFT_SNOW
-  
-! Crocus snow model 
+
+  ! Crocus snow model
   public ::   LIS_MOC_SNOWLIQPROF
   public ::   LIS_MOC_SNOWHEATCONTENTPROF
   public ::   LIS_MOC_SNOWRHOPROF
@@ -509,9 +509,8 @@ module LIS_histDataMod
   public ::   LIS_MOC_SNOWHEATDRAG
   public ::   LIS_MOC_SNOWDELTAHEAT
   public ::   LIS_MOC_SNOWSURFACEQ
-  !public ::   LIS_MOC_SNOWWIND_DIR
 
-! SnowModel outputs:
+  ! SnowModel outputs:
   public ::   LIS_MOC_SWE_SM
   public ::   LIS_MOC_SNOWDEPTH_SM
   public ::   LIS_MOC_SNOWDENSITY_SM
@@ -542,8 +541,8 @@ module LIS_histDataMod
   integer :: LIS_MOC_JULES_SMVCST = -9999
   integer :: LIS_MOC_JULES_SMVCWT = -9999
   integer :: LIS_MOC_JULES_FSAT  = -9999
-  integer :: LIS_MOC_JULES_FWETL = -9999 
-  integer :: LIS_MOC_JULES_ESOIL = -9999 
+  integer :: LIS_MOC_JULES_FWETL = -9999
+  integer :: LIS_MOC_JULES_ESOIL = -9999
 
   ! AWRAL
   public :: LIS_MOC_SR
@@ -589,7 +588,7 @@ module LIS_histDataMod
   integer :: LIS_MOC_DELSURFSTOR  = -9999
   integer :: LIS_MOC_DELINTERCEPT = -9999
 
-   ! ALMA SURFACE STATE VARIABLES
+  ! ALMA SURFACE STATE VARIABLES
   integer :: LIS_MOC_SNOWT      = -9999
   integer :: LIS_MOC_VEGT       = -9999
   integer :: LIS_MOC_BARESOILT  = -9999
@@ -603,37 +602,37 @@ module LIS_histDataMod
   integer :: LIS_MOC_SWE        = -9999
   integer :: LIS_MOC_SNOWDENSITY = -9999
   integer :: LIS_MOC_SNOWGRAIN  = -9999
-  integer :: LIS_MOC_SWEVEG     = -9999 
+  integer :: LIS_MOC_SWEVEG     = -9999
   integer :: LIS_MOC_SURFSTOR   = -9999
-   
-   ! ALMA SUBSURFACE STATE VARIABLES
-   integer :: LIS_MOC_SOILMOIST  = -9999
-   integer :: LIS_MOC_SOILTEMP   = -9999
-   integer :: LIS_MOC_SMLIQFRAC  = -9999
-   integer :: LIS_MOC_SMFROZFRAC = -9999
-   integer :: LIS_MOC_SOILWET    = -9999
-   integer :: LIS_MOC_MATRICPOTENTIAL    = -9999
 
-   ! ALMA EVAPORATION COMPONENTS
-   integer :: LIS_MOC_POTEVAP    = -9999
-   integer :: LIS_MOC_VPD        = -9999   
-   integer :: LIS_MOC_ECANOP     = -9999
-   integer :: LIS_MOC_TVEG       = -9999
-   integer :: LIS_MOC_ESOIL      = -9999
-   integer :: LIS_MOC_EWATER     = -9999
-   integer :: LIS_MOC_ROOTMOIST  = -9999
-   integer :: LIS_MOC_CANOPINT   = -9999
-   integer :: LIS_MOC_EVAPSNOW   = -9999
-   integer :: LIS_MOC_SUBSNOW    = -9999
-   integer :: LIS_MOC_SUBSURF    = -9999
-   integer :: LIS_MOC_ACOND      = -9999
+  ! ALMA SUBSURFACE STATE VARIABLES
+  integer :: LIS_MOC_SOILMOIST  = -9999
+  integer :: LIS_MOC_SOILTEMP   = -9999
+  integer :: LIS_MOC_SMLIQFRAC  = -9999
+  integer :: LIS_MOC_SMFROZFRAC = -9999
+  integer :: LIS_MOC_SOILWET    = -9999
+  integer :: LIS_MOC_MATRICPOTENTIAL    = -9999
 
-   ! ALMA OTHER HYDROLOGIC VARIABLES
+  ! ALMA EVAPORATION COMPONENTS
+  integer :: LIS_MOC_POTEVAP    = -9999
+  integer :: LIS_MOC_VPD        = -9999
+  integer :: LIS_MOC_ECANOP     = -9999
+  integer :: LIS_MOC_TVEG       = -9999
+  integer :: LIS_MOC_ESOIL      = -9999
+  integer :: LIS_MOC_EWATER     = -9999
+  integer :: LIS_MOC_ROOTMOIST  = -9999
+  integer :: LIS_MOC_CANOPINT   = -9999
+  integer :: LIS_MOC_EVAPSNOW   = -9999
+  integer :: LIS_MOC_SUBSNOW    = -9999
+  integer :: LIS_MOC_SUBSURF    = -9999
+  integer :: LIS_MOC_ACOND      = -9999
+
+  ! ALMA OTHER HYDROLOGIC VARIABLES
   integer :: LIS_MOC_WATERTABLED= -9999
   integer :: LIS_MOC_TWS        = -9999
   integer :: LIS_MOC_GWS        = -9999
 
-   ! ALMA COLD SEASON PROCESSES
+  ! ALMA COLD SEASON PROCESSES
   integer :: LIS_MOC_SNOWCOVER  = -9999
   integer :: LIS_MOC_SALBEDO    = -9999
   integer :: LIS_MOC_SNOWTPROF  = -9999
@@ -645,443 +644,420 @@ module LIS_histDataMod
   integer :: LIS_MOC_LAYERSNOWDENSITY = -9999
   integer :: LIS_MOC_LAYERSNOWGRAIN = -9999
 
-   ! ALMA VARIABLES TO BE COMPARED WITH REMOTE SENSED DATA
-   integer :: LIS_MOC_LWUP       = -9999
+  ! ALMA VARIABLES TO BE COMPARED WITH REMOTE SENSED DATA
+  integer :: LIS_MOC_LWUP       = -9999
 
-   ! ALMA CARBON VARIABLES
-   integer :: LIS_MOC_GPP        = -9999
-   integer :: LIS_MOC_NPP        = -9999
-   integer :: LIS_MOC_NEE        = -9999
-   integer :: LIS_MOC_AUTORESP   = -9999
-   integer :: LIS_MOC_HETERORESP = -9999
-   integer :: LIS_MOC_LEAFRESP   = -9999
-   integer :: LIS_MOC_TOTSOILCARB= -9999
-   integer :: LIS_MOC_TOTLIVBIOM = -9999
+  ! ALMA CARBON VARIABLES
+  integer :: LIS_MOC_GPP        = -9999
+  integer :: LIS_MOC_NPP        = -9999
+  integer :: LIS_MOC_NEE        = -9999
+  integer :: LIS_MOC_AUTORESP   = -9999
+  integer :: LIS_MOC_HETERORESP = -9999
+  integer :: LIS_MOC_LEAFRESP   = -9999
+  integer :: LIS_MOC_TOTSOILCARB= -9999
+  integer :: LIS_MOC_TOTLIVBIOM = -9999
 
-   ! ALMA FORCING VARIABLES
-   integer :: LIS_MOC_WINDFORC   = -9999
-   integer :: LIS_MOC_RAINFFORC  = -9999
-   integer :: LIS_MOC_SNOWFFORC  = -9999
-   integer :: LIS_MOC_CRAINFFORC  = -9999
-   integer :: LIS_MOC_LSRAINFFORC = -9999
-   integer :: LIS_MOC_CSNOWFFORC  = -9999
-   integer :: LIS_MOC_LSSNOWFFORC = -9999
-   integer :: LIS_MOC_TAIRFORC   = -9999
-   integer :: LIS_MOC_QAIRFORC   = -9999
-   integer :: LIS_MOC_PSURFFORC  = -9999
-   integer :: LIS_MOC_SWDOWNFORC = -9999
-   integer :: LIS_MOC_LWDOWNFORC = -9999
+  ! ALMA FORCING VARIABLES
+  integer :: LIS_MOC_WINDFORC   = -9999
+  integer :: LIS_MOC_RAINFFORC  = -9999
+  integer :: LIS_MOC_SNOWFFORC  = -9999
+  integer :: LIS_MOC_CRAINFFORC  = -9999
+  integer :: LIS_MOC_LSRAINFFORC = -9999
+  integer :: LIS_MOC_CSNOWFFORC  = -9999
+  integer :: LIS_MOC_LSSNOWFFORC = -9999
+  integer :: LIS_MOC_TAIRFORC   = -9999
+  integer :: LIS_MOC_QAIRFORC   = -9999
+  integer :: LIS_MOC_PSURFFORC  = -9999
+  integer :: LIS_MOC_SWDOWNFORC = -9999
+  integer :: LIS_MOC_LWDOWNFORC = -9999
 
-   ! CLSM FORCING VARIABLES
-   integer :: LIS_MOC_PARDRFORC  = -9999
-   integer :: LIS_MOC_PARDFFORC  = -9999
+  ! CLSM FORCING VARIABLES
+  integer :: LIS_MOC_PARDRFORC  = -9999
+  integer :: LIS_MOC_PARDFFORC  = -9999
 
+  ! PARAMETER OUTPUT - EXPERIMENTAL (USE W/WRF-WPS)
+  integer :: LIS_MOC_LANDMASK   = -9999
+  integer :: LIS_MOC_LANDCOVER  = -9999
+  integer :: LIS_MOC_SOILTYPE   = -9999
+  integer :: LIS_MOC_SANDFRAC   = -9999
+  integer :: LIS_MOC_CLAYFRAC   = -9999
+  integer :: LIS_MOC_SILTFRAC   = -9999
+  integer :: LIS_MOC_POROSITY   = -9999
+  integer :: LIS_MOC_SOILCOLOR  = -9999
+  integer :: LIS_MOC_ELEVATION  = -9999
+  integer :: LIS_MOC_SLOPE      = -9999
+  integer :: LIS_MOC_LAI        = -9999
+  integer :: LIS_MOC_SAI        = -9999
+  integer :: LIS_MOC_SNFRALBEDO = -9999
+  integer :: LIS_MOC_MXSNALBEDO = -9999
+  integer :: LIS_MOC_GREENNESS  = -9999
+  integer :: LIS_MOC_TEMPBOT   = -9999
+  integer :: LIS_MOC_GLACIERFRACTION = -9999
+  ! NLDAS OUTPUT
+  integer :: LIS_MOC_CCOND    = -9999
 
-   ! PARAMETER OUTPUT - EXPERIMENTAL (USE W/WRF-WPS)
-   integer :: LIS_MOC_LANDMASK   = -9999
-   integer :: LIS_MOC_LANDCOVER  = -9999
-   integer :: LIS_MOC_SOILTYPE   = -9999
-   integer :: LIS_MOC_SANDFRAC   = -9999
-   integer :: LIS_MOC_CLAYFRAC   = -9999
-   integer :: LIS_MOC_SILTFRAC   = -9999
-   integer :: LIS_MOC_POROSITY   = -9999
-   integer :: LIS_MOC_SOILCOLOR  = -9999
-   integer :: LIS_MOC_ELEVATION  = -9999
-   integer :: LIS_MOC_SLOPE      = -9999
-   integer :: LIS_MOC_LAI        = -9999
-   integer :: LIS_MOC_SAI        = -9999
-   integer :: LIS_MOC_SNFRALBEDO = -9999
-   integer :: LIS_MOC_MXSNALBEDO = -9999
-   integer :: LIS_MOC_GREENNESS  = -9999
-   integer :: LIS_MOC_TEMPBOT   = -9999
-   integer :: LIS_MOC_GLACIERFRACTION = -9999
-   ! NLDAS OUTPUT
-   integer :: LIS_MOC_CCOND    = -9999
+  ! ADDITIONAL AFWA VARIABLES
+  integer :: LIS_MOC_RELSMC       = -9999
+  integer :: LIS_MOC_RHMIN        = -9999
+  integer :: LIS_MOC_ROOTTEMP  = -9999
+  integer :: LIS_MOC_TOTALPRECIP = -9999
+  integer :: LIS_MOC_CRAINF  = -9999
+  integer :: LIS_MOC_LSRAINF = -9999
+  integer :: LIS_MOC_CSNOWF  = -9999
+  integer :: LIS_MOC_LSSNOWF = -9999
 
-   ! ADDITIONAL AFWA VARIABLES
-   integer :: LIS_MOC_RELSMC       = -9999
-   integer :: LIS_MOC_RHMIN        = -9999
-   integer :: LIS_MOC_ROOTTEMP  = -9999
-   integer :: LIS_MOC_TOTALPRECIP = -9999
-   integer :: LIS_MOC_CRAINF  = -9999
-   integer :: LIS_MOC_LSRAINF = -9999
-   integer :: LIS_MOC_CSNOWF  = -9999
-   integer :: LIS_MOC_LSSNOWF = -9999
+  ! multivariate diagnostics (Bowen Ratio, Evaporative fraction)
+  integer :: LIS_MOC_BR = -9999
+  integer :: LIS_MOC_EF = -9999
 
-   ! multivariate diagnostics (Bowen Ratio, Evaporative fraction)
-   integer :: LIS_MOC_BR = -9999
-   integer :: LIS_MOC_EF = -9999
+  ! ADDITIONAL COUPLING FORCING VARIABLES
+  integer :: LIS_MOC_DIRECTSWFORC  = -9999
+  integer :: LIS_MOC_DIFFUSESWFORC = -9999
+  integer :: LIS_MOC_NWINDFORC     = -9999
+  integer :: LIS_MOC_EWINDFORC     = -9999
+  integer :: LIS_MOC_FHEIGHTFORC   = -9999
+  integer :: LIS_MOC_CHFORC        = -9999
+  integer :: LIS_MOC_CMFORC        = -9999
+  integer :: LIS_MOC_EMISSFORC     = -9999
+  integer :: LIS_MOC_MIXRATIOFORC  = -9999
+  integer :: LIS_MOC_COSZENFORC    = -9999
+  integer :: LIS_MOC_ALBEDOFORC    = -9999
 
-   ! ADDITIONAL COUPLING FORCING VARIABLES
-   integer :: LIS_MOC_DIRECTSWFORC  = -9999
-   integer :: LIS_MOC_DIFFUSESWFORC = -9999
-   integer :: LIS_MOC_NWINDFORC     = -9999
-   integer :: LIS_MOC_EWINDFORC     = -9999
-   integer :: LIS_MOC_FHEIGHTFORC   = -9999
-   integer :: LIS_MOC_CHFORC        = -9999
-   integer :: LIS_MOC_CMFORC        = -9999
-   integer :: LIS_MOC_EMISSFORC     = -9999
-   integer :: LIS_MOC_MIXRATIOFORC  = -9999
-   integer :: LIS_MOC_COSZENFORC    = -9999
-   integer :: LIS_MOC_ALBEDOFORC    = -9999
+  ! ADDITIONAL Noah3.x variables
+  integer :: LIS_MOC_SOILET  = -9999
+  integer :: LIS_MOC_Z0BRD   = -9999
+  integer :: LIS_MOC_ROUGHNESS   = -9999
+  integer :: LIS_MOC_THERMAL_ROUGHNESS   = -9999
 
-   ! ADDITIONAL Noah3.x variables
-   integer :: LIS_MOC_SOILET  = -9999
-   integer :: LIS_MOC_Z0BRD   = -9999
-   integer :: LIS_MOC_ROUGHNESS   = -9999
-   integer :: LIS_MOC_THERMAL_ROUGHNESS   = -9999
+  !t2,q2 diagnostics
+  integer :: LIS_MOC_T2DIAG = -9999
+  integer :: LIS_MOC_Q2DIAG = -9999
+  integer :: LIS_MOC_RNET = -9999
+  integer :: LIS_MOC_CH     = -9999
+  integer :: LIS_MOC_CM     = -9999
+  integer :: LIS_MOC_MIXRATIO = -9999
 
-   !t2,q2 diagnostics
-   integer :: LIS_MOC_T2DIAG = -9999
-   integer :: LIS_MOC_Q2DIAG = -9999
-   integer :: LIS_MOC_RNET = -9999
-   integer :: LIS_MOC_CH     = -9999
-   integer :: LIS_MOC_CM     = -9999
-   integer :: LIS_MOC_MIXRATIO = -9999
+  !<for vic>
+  !Additional VIC forcing variables
+  integer :: LIS_MOC_SNOWFLAGFORC          = -9999
+  integer :: LIS_MOC_DENSITYFORC           = -9999
+  integer :: LIS_MOC_VAPORPRESSFORC        = -9999
+  integer :: LIS_MOC_VAPORPRESSDEFICITFORC = -9999
+  integer :: LIS_MOC_ARESIST               = -9999
+  !</for vic>
 
-!<for vic>
-   !Additional VIC forcing variables
-   integer :: LIS_MOC_SNOWFLAGFORC          = -9999
-   integer :: LIS_MOC_DENSITYFORC           = -9999
-   integer :: LIS_MOC_VAPORPRESSFORC        = -9999
-   integer :: LIS_MOC_VAPORPRESSDEFICITFORC = -9999
-   integer :: LIS_MOC_ARESIST               = -9999
-!</for vic>
+  integer :: LIS_MOC_SACUZTWC    = -9999
+  integer :: LIS_MOC_SACUZFWC    = -9999
+  integer :: LIS_MOC_SACLZTWC    = -9999
+  integer :: LIS_MOC_SACLZFSC    = -9999
+  integer :: LIS_MOC_SACLZFPC    = -9999
+  integer :: LIS_MOC_SACADIMPC    = -9999
+  integer :: LIS_MOC_SNOW17SWE    = -9999
+  integer :: LIS_MOC_SNOW17LIQW    = -9999
+  integer :: LIS_MOC_SNOW17NEGHS    = -9999
+  integer :: LIS_MOC_SNOW17ACCMAX    = -9999
+  integer :: LIS_MOC_SNOW17AEADJ    = -9999
+  integer :: LIS_MOC_SNOW17RMLT    = -9999
 
-   integer :: LIS_MOC_SACUZTWC    = -9999
-   integer :: LIS_MOC_SACUZFWC    = -9999
-   integer :: LIS_MOC_SACLZTWC    = -9999
-   integer :: LIS_MOC_SACLZFSC    = -9999
-   integer :: LIS_MOC_SACLZFPC    = -9999
-   integer :: LIS_MOC_SACADIMPC    = -9999
-   integer :: LIS_MOC_SNOW17SWE    = -9999
-   integer :: LIS_MOC_SNOW17LIQW    = -9999
-   integer :: LIS_MOC_SNOW17NEGHS    = -9999
-   integer :: LIS_MOC_SNOW17ACCMAX    = -9999
-   integer :: LIS_MOC_SNOW17AEADJ    = -9999
-   integer :: LIS_MOC_SNOW17RMLT    = -9999
+  !<for vic>
+  integer :: LIS_MOC_VIC_PET_SATSOIL   = -9999
+  integer :: LIS_MOC_VIC_PET_H2OSURF   = -9999
+  integer :: LIS_MOC_VIC_PET_SHORT     = -9999
+  integer :: LIS_MOC_VIC_PET_TALL      = -9999
+  integer :: LIS_MOC_VIC_PET_NATVEG    = -9999
+  integer :: LIS_MOC_VIC_PET_VEGNOCR   = -9999
+  !</for vic>
 
-!<for vic>
-   integer :: LIS_MOC_VIC_PET_SATSOIL   = -9999
-   integer :: LIS_MOC_VIC_PET_H2OSURF   = -9999
-   integer :: LIS_MOC_VIC_PET_SHORT     = -9999
-   integer :: LIS_MOC_VIC_PET_TALL      = -9999
-   integer :: LIS_MOC_VIC_PET_NATVEG    = -9999
-   integer :: LIS_MOC_VIC_PET_VEGNOCR   = -9999
-!</for vic>
+  !FLDAS
+  integer :: LIS_MOC_PETFORC         = -9999
+  integer :: LIS_MOC_REFETFORC       = -9999
 
-   !FLDAS
-   integer :: LIS_MOC_PETFORC         = -9999
-   integer :: LIS_MOC_REFETFORC       = -9999
+  ! FLDAS-WRSI OUTPUTS LIST
+  integer :: LIS_MOC_SOS = -9999
+  integer :: LIS_MOC_WRSI = -9999
+  integer :: LIS_MOC_KF2 = -9999
+  integer :: LIS_MOC_SumWR = -9999
+  integer :: LIS_MOC_SumET = -9999
+  integer :: LIS_MOC_SWI = -9999
+  integer :: LIS_MOC_SOSa = -9999
+  integer :: LIS_MOC_TotalSurplusWater = -9999
+  integer :: LIS_MOC_MaxSurplusWater = -9999
+  integer :: LIS_MOC_TotalWaterDeficit = -9999
+  integer :: LIS_MOC_MaxWaterDeficit = -9999
+  integer :: LIS_MOC_TotalAETInitial = -9999
+  integer :: LIS_MOC_TotalWRInitial = -9999
+  integer :: LIS_MOC_TotalSurplusWaterInitial = -9999
+  integer :: LIS_MOC_TotalWaterDeficitInitial = -9999
+  integer :: LIS_MOC_TotalAETVeg = -9999
+  integer :: LIS_MOC_TotalWRVeg = -9999
+  integer :: LIS_MOC_TotalSurplusWaterVeg = -9999
+  integer :: LIS_MOC_TotalWaterDeficitVeg = -9999
+  integer :: LIS_MOC_TotalAETFlower = -9999
+  integer :: LIS_MOC_TotalWRFlower = -9999
+  integer :: LIS_MOC_TotalSurplusWaterFlower = -9999
+  integer :: LIS_MOC_TotalWaterDeficitFlower = -9999
+  integer :: LIS_MOC_TotalAETRipe = -9999
+  integer :: LIS_MOC_TotalWRRipe = -9999
+  integer :: LIS_MOC_TotalSurplusWaterRipe = -9999
+  integer :: LIS_MOC_TotalWaterDeficitRipe = -9999
+  integer :: LIS_MOC_PermWiltDate = -9999
+  integer :: LIS_MOC_Wilting1 = -9999
+  integer :: LIS_MOC_Wilting2 = -9999
+  integer :: LIS_MOC_WRSIa = -9999
+  integer :: LIS_MOC_growing_season = -9999
+  integer :: LIS_MOC_WHC                      = -9999
+  integer :: LIS_MOC_LGP                      = -9999
+  integer :: LIS_MOC_WR_TimeStep              = -9999
+  integer :: LIS_MOC_AET_TimeStep             = -9999
+  integer :: LIS_MOC_WRSI_TimeStep            = -9999
+  integer :: LIS_MOC_SurplusWater_TimeStep    = -9999
 
-   ! FLDAS-WRSI OUTPUTS LIST
-   integer :: LIS_MOC_SOS = -9999
-   integer :: LIS_MOC_WRSI = -9999
-   integer :: LIS_MOC_KF2 = -9999
-   integer :: LIS_MOC_SumWR = -9999
-   integer :: LIS_MOC_SumET = -9999
-   integer :: LIS_MOC_SWI = -9999
-   integer :: LIS_MOC_SOSa = -9999
-   integer :: LIS_MOC_TotalSurplusWater = -9999
-   integer :: LIS_MOC_MaxSurplusWater = -9999
-   integer :: LIS_MOC_TotalWaterDeficit = -9999
-   integer :: LIS_MOC_MaxWaterDeficit = -9999
-   integer :: LIS_MOC_TotalAETInitial = -9999
-   integer :: LIS_MOC_TotalWRInitial = -9999
-   integer :: LIS_MOC_TotalSurplusWaterInitial = -9999
-   integer :: LIS_MOC_TotalWaterDeficitInitial = -9999
-   integer :: LIS_MOC_TotalAETVeg = -9999
-   integer :: LIS_MOC_TotalWRVeg = -9999
-   integer :: LIS_MOC_TotalSurplusWaterVeg = -9999
-   integer :: LIS_MOC_TotalWaterDeficitVeg = -9999
-   integer :: LIS_MOC_TotalAETFlower = -9999
-   integer :: LIS_MOC_TotalWRFlower = -9999
-   integer :: LIS_MOC_TotalSurplusWaterFlower = -9999
-   integer :: LIS_MOC_TotalWaterDeficitFlower = -9999
-   integer :: LIS_MOC_TotalAETRipe = -9999
-   integer :: LIS_MOC_TotalWRRipe = -9999
-   integer :: LIS_MOC_TotalSurplusWaterRipe = -9999
-   integer :: LIS_MOC_TotalWaterDeficitRipe = -9999
-   integer :: LIS_MOC_PermWiltDate = -9999
-   integer :: LIS_MOC_Wilting1 = -9999
-   integer :: LIS_MOC_Wilting2 = -9999
-   integer :: LIS_MOC_WRSIa = -9999
-   integer :: LIS_MOC_growing_season = -9999
-   integer :: LIS_MOC_WHC                      = -9999
-   integer :: LIS_MOC_LGP                      = -9999
-   integer :: LIS_MOC_WR_TimeStep              = -9999 ! SY
-   integer :: LIS_MOC_AET_TimeStep             = -9999 ! SY
-   integer :: LIS_MOC_WRSI_TimeStep            = -9999 ! SY
-   integer :: LIS_MOC_SurplusWater_TimeStep    = -9999 ! SY
+  !NLDAS
+  integer :: LIS_MOC_CAPEFORC         = -9999
 
-   !NLDAS
-   integer :: LIS_MOC_CAPEFORC         = -9999
+  !Variables related to streamflow routing
+  integer :: LIS_MOC_STREAMFLOW = -9999
+  integer :: LIS_MOC_RIVSTO = -9999
+  integer :: LIS_MOC_RIVDPH = -9999
+  integer :: LIS_MOC_RIVVEL = -9999
+  integer :: LIS_MOC_FLDOUT = -9999
+  integer :: LIS_MOC_FLDEVAP = -9999
+  integer :: LIS_MOC_FLDSTO = -9999
+  integer :: LIS_MOC_FLDDPH = -9999
+  integer :: LIS_MOC_FLDVEL = -9999
+  integer :: LIS_MOC_FLDFRC = -9999
+  integer :: LIS_MOC_FLDARE = -9999
+  integer :: LIS_MOC_SFCELV = -9999
+  integer :: LIS_MOC_RNFSTO = -9999
+  integer :: LIS_MOC_BSFSTO = -9999
+  integer :: LIS_MOC_RNFDWI = -9999
+  integer :: LIS_MOC_BSFDWI = -9999
+  integer :: LIS_MOC_SURFWS = -9999
 
-   !Variables related to streamflow routing
-   integer :: LIS_MOC_STREAMFLOW = -9999
-   integer :: LIS_MOC_RIVSTO = -9999
-   integer :: LIS_MOC_RIVDPH = -9999
-   integer :: LIS_MOC_RIVVEL = -9999
-   integer :: LIS_MOC_FLDOUT = -9999
-   integer :: LIS_MOC_FLDEVAP = -9999
-   integer :: LIS_MOC_FLDSTO = -9999
-   integer :: LIS_MOC_FLDDPH = -9999
-   integer :: LIS_MOC_FLDVEL = -9999
-   integer :: LIS_MOC_FLDFRC = -9999
-   integer :: LIS_MOC_FLDARE = -9999
-   integer :: LIS_MOC_SFCELV = -9999
-   integer :: LIS_MOC_RNFSTO = -9999
-   integer :: LIS_MOC_BSFSTO = -9999
-   integer :: LIS_MOC_RNFDWI = -9999
-   integer :: LIS_MOC_BSFDWI = -9999
-   integer :: LIS_MOC_SURFWS = -9999
+  !Urban drainage and flood modeling
+  integer :: LIS_MOC_DRSTO = -9999
+  integer :: LIS_MOC_DROUT = -9999
 
-   !Urban drainage and flood modeling
-   integer :: LIS_MOC_DRSTO = -9999
-   integer :: LIS_MOC_DROUT = -9999
+  integer :: LIS_MOC_EWAT = -9999
+  integer :: LIS_MOC_EDIF = -9999
 
+  !Variables related to RTMs
+  integer :: LIS_MOC_RTM_EMISSIVITY = -9999
+  integer :: LIS_MOC_RTM_TB = -9999
+  integer :: LIS_MOC_RTM_SM = -9999
 
-   integer :: LIS_MOC_EWAT = -9999
-   integer :: LIS_MOC_EDIF = -9999
-   !Variables related to RTMs
-   integer :: LIS_MOC_RTM_EMISSIVITY = -9999
-   integer :: LIS_MOC_RTM_TB = -9999
-   integer :: LIS_MOC_RTM_SM = -9999
+  integer :: LIS_MOC_IRRIGATEDWATER
 
-   integer :: LIS_MOC_IRRIGATEDWATER
+  integer :: LIS_MOC_LSM_COUNT
+  integer :: LIS_MOC_ROUTING_COUNT
+  integer :: LIS_MOC_RTM_COUNT
+  integer :: LIS_MOC_IRRIG_COUNT
 
-   integer :: LIS_MOC_LSM_COUNT
-   integer :: LIS_MOC_ROUTING_COUNT
-   integer :: LIS_MOC_RTM_COUNT
-   integer :: LIS_MOC_IRRIG_COUNT
-   
-   ! <- for FLAKE 2013->
-   integer :: LIS_MOC_LAKE_T_SNOW    =   -9999
-   integer :: LIS_MOC_LAKE_T_ICE =   -9999
-   integer :: LIS_MOC_LAKE_T_MNW =   -9999
-   integer :: LIS_MOC_LAKE_T_WML =   -9999
-   integer :: LIS_MOC_LAKE_T_BOT =   -9999
-   integer :: LIS_MOC_LAKE_T_B1  =   -9999
-   integer :: LIS_MOC_LAKE_C_T   =   -9999
-   integer :: LIS_MOC_LAKE_H_SNOW    =   -9999
-   integer :: LIS_MOC_LAKE_H_ICE =   -9999
-   integer :: LIS_MOC_LAKE_H_ML  =   -9999
-   integer :: LIS_MOC_LAKE_H_B1  =   -9999
-   integer :: LIS_MOC_LAKE_T_SFC =   -9999
-   integer :: LIS_MOC_LAKE_ALBEDO_WATER  =   -9999
-   integer :: LIS_MOC_LAKE_ALBEDO_ICE    =   -9999
-   integer :: LIS_MOC_LAKE_ALBEDO_SNOW   =   -9999
-   integer :: LIS_MOC_LAKE_UFR_A =   -9999
-   integer :: LIS_MOC_LAKE_UFR_W =   -9999
-   integer :: LIS_MOC_LAKE_WCONV =   -9999
-   integer :: LIS_MOC_LAKE_Q_SE  =   -9999
-   integer :: LIS_MOC_LAKE_Q_LA  =   -9999
-   integer :: LIS_MOC_LAKE_I_W   =   -9999
-   integer :: LIS_MOC_LAKE_Q_LWA =   -9999
-   integer :: LIS_MOC_LAKE_Q_LWW =   -9999
-   integer :: LIS_MOC_LAKE_Q_BOT =   -9999
-   ! <- end for FLAKE 2013 ->
-
-
-   ! <- SACHTET ->
-
-   integer :: LIS_MOC_SACUZTWH = -9999
-   integer :: LIS_MOC_SACUZFWH = -9999
-   integer :: LIS_MOC_SACLZTWH = -9999
-   integer :: LIS_MOC_SACLZFSH = -9999
-   integer :: LIS_MOC_SACLZFPH = -9999
-   integer :: LIS_MOC_SACSWINT = -9999
-   integer :: LIS_MOC_SACTSINT = -9999
-   integer :: LIS_MOC_SACSWHINT = -9999
-   integer :: LIS_MOC_SACFROST = -9999
-
-   ! <- NoahMP ->
-    integer ::  LIS_MOC_CANOPY_TEMP = -9999
-    integer ::  LIS_MOC_CANOPY_VP   = -9999
-    integer ::  LIS_MOC_CANOPY_WF   = -9999
-    integer ::  LIS_MOC_CANOPY_INTL   = -9999
-    integer ::  LIS_MOC_GROUNDAVGT   = -9999
-    integer ::  LIS_MOC_GROUNDVEGT   = -9999
-    integer ::  LIS_MOC_SOWN_NLAYER   = -9999
-    integer ::  LIS_MOC_SNOW_LBDFSS   = -9999
-    integer ::  LIS_MOC_SOIL_LBDFSS   = -9999
-    integer ::  LIS_MOC_SNOWICE   = -9999
-    integer ::  LIS_MOC_SNOWLIQ   = -9999
-    integer ::  LIS_MOC_WT_AQUI_SATSOIL    = -9999
-    integer ::  LIS_MOC_LAKEWATER   = -9999
-    integer ::  LIS_MOC_LEAFMASS    = -9999
-    integer ::  LIS_MOC_ROOTMASS    = -9999
-    integer ::  LIS_MOC_STEMMASS    = -9999
-    integer ::  LIS_MOC_WOODMASS    = -9999
-    integer ::  LIS_MOC_CARBON_DEEPSOIL   = -9999
-    integer ::  LIS_MOC_CARBON_SHALLOWSOIL    = -9999
-    integer ::  LIS_MOC_SNOWAGE   = -9999
-    integer ::  LIS_MOC_BETWEENWATER    = -9999
-    integer ::  LIS_MOC_QRECTOGW    = -9999
-    integer ::  LIS_MOC_QRECFROMGW    = -9999
-    integer ::  LIS_MOC_FSR   = -9999
-    !integer ::  LIS_MOC_LWUP    = -9999
-    integer ::  LIS_MOC_FCEV    = -9999
-    integer ::  LIS_MOC_FGEV    = -9999
-    integer ::  LIS_MOC_FCTR    = -9999
-    integer ::  LIS_MOC_VEGE2MT   = -9999
-    integer ::  LIS_MOC_BARE2MT   = -9999
-    integer ::  LIS_MOC_VEGE2MQ2    = -9999
-    integer ::  LIS_MOC_BARE2MQ2    = -9999
-    integer ::  LIS_MOC_APAR    = -9999
-    integer ::  LIS_MOC_PSCO2   = -9999
-    integer ::  LIS_MOC_SAV   = -9999
-    integer ::  LIS_MOC_SAG   = -9999
-    integer ::  LIS_MOC_PONDING    = -9999
-    integer ::  LIS_MOC_PONDING1   = -9999
-    integer ::  LIS_MOC_PONDING2   = -9999
-    integer ::  LIS_MOC_RSSUN   = -9999
-    integer ::  LIS_MOC_RSSHA   = -9999
-    integer ::  LIS_MOC_BGAP    = -9999
-    integer ::  LIS_MOC_WGAP    = -9999
-    integer ::  LIS_MOC_CHV   = -9999
-    integer ::  LIS_MOC_CHB   = -9999
-    integer ::  LIS_MOC_SHG   = -9999
-    integer ::  LIS_MOC_SHC   = -9999
-    integer ::  LIS_MOC_SHB   = -9999
-    integer ::  LIS_MOC_EVG   = -9999
-    integer ::  LIS_MOC_EVB   = -9999
-    integer ::  LIS_MOC_GHV   = -9999
-    integer ::  LIS_MOC_GHB   = -9999
-    integer ::  LIS_MOC_IRV   = -9999
-    integer ::  LIS_MOC_IRC   = -9999
-    integer ::  LIS_MOC_IRB   = -9999
-    integer ::  LIS_MOC_HTR    = -9999
-    integer ::  LIS_MOC_HEVC   = -9999
-    integer ::  LIS_MOC_CHLEAF    = -9999
-    integer ::  LIS_MOC_CHUC    = -9999
-    integer ::  LIS_MOC_CHV2    = -9999
-    integer ::  LIS_MOC_CHB2    = -9999
-    integer ::  LIS_MOC_FPICE   = -9999
-    integer ::  LIS_MOC_QINSUR = -9999
-    integer ::  LIS_MOC_ETRANI = -9999
-    integer ::  LIS_MOC_WTRFLX = -9999
-!  <- end Noah MP  ->
-
-!  <- AquaCrop ->
-   integer :: LIS_MOC_AC_Biomass  = -9999
-   integer :: LIS_MOC_AC_CCiActual  = -9999
-   integer :: LIS_MOC_AC_RootZoneWC_Actual  = -9999
-   integer :: LIS_MOC_AC_RootZoneWC_WP  = -9999
-   integer :: LIS_MOC_AC_RootZoneWC_FC  = -9999
-   integer :: LIS_MOC_AC_Tact  = -9999
-   integer :: LIS_MOC_AC_Eact  = -9999
-   integer :: LIS_MOC_AC_ETo  = -9999
-   integer :: LIS_MOC_AC_Rain  = -9999
-   integer :: LIS_MOC_AC_Irrigation  = -9999
-   integer :: LIS_MOC_AC_Tmin  = -9999
-   integer :: LIS_MOC_AC_Tmax  = -9999
-   integer :: LIS_MOC_AC_RootingDepth  = -9999
-   integer :: LIS_MOC_AC_Yield  = -9999
-   integer :: LIS_MOC_AC_StExp  = -9999
-   integer :: LIS_MOC_AC_StSen  = -9999
-   integer :: LIS_MOC_AC_cycle_complete  = -9999
-
-!   <- RUC -> 
-   integer :: LIS_MOC_QVG = -9999
-   integer :: LIS_MOC_QCG = -9999
-   integer :: LIS_MOC_QSG = -9999
-   integer :: LIS_MOC_SNNOT75CM = -9999
-   integer :: LIS_MOC_FRZPREC_DEN = -9999
-   integer :: LIS_MOC_FRZPREC = -9999
-   integer :: LIS_MOC_ACC_SNOWF = -9999
-   integer :: LIS_MOC_ACC_FRZPREC = -9999
-   integer :: LIS_MOC_ACC_EVAP = -9999
-   integer :: LIS_MOC_QSFC = -9999
-   integer :: LIS_MOC_DEW_FROST = -9999
-   integer :: LIS_MOC_DRIP = -9999
-   integer :: LIS_QH_SNOW = -9999 
-!   <- end RUC ->  
-
-    ! <- JULES -> 
-    integer :: LIS_MOC_GS = -9999
-    integer :: LIS_MOC_GC = -9999 
-
-!   <- AWRAL ->
-    integer :: LIS_MOC_SR = -9999
-    integer :: LIS_MOC_SG = -9999
-    integer :: LIS_MOC_S0_HRU = -9999
-    integer :: LIS_MOC_SS_HRU = -9999
-    integer :: LIS_MOC_SD_HRU = -9999
-    integer :: LIS_MOC_MLEAF_HRU = -9999
-    integer :: LIS_MOC_E0 = -9999
-    integer :: LIS_MOC_ETOT = -9999
-    integer :: LIS_MOC_DD = -9999
-    integer :: LIS_MOC_S0 = -9999
-    integer :: LIS_MOC_SS = -9999
-    integer :: LIS_MOC_SD = -9999
-    integer :: LIS_MOC_QTOT = -9999
-
-! Crocus snow model 
-    integer :: LIS_MOC_SNOWLIQPROF = -9999
-    integer :: LIS_MOC_SNOWHEATCONTENTPROF = -9999
-    integer :: LIS_MOC_SNOWRHOPROF = -9999
-    integer :: LIS_MOC_SNOWALB = -9999
-    integer :: LIS_MOC_SNOWGRAIN1PROF = -9999
-    integer :: LIS_MOC_SNOWGRAIN2PROF = -9999
-    integer :: LIS_MOC_SNOWHISTPROF = -9999
-    integer :: LIS_MOC_SNOWAGEPROF = -9999
-    integer :: LIS_MOC_SNOWLIQCONTENTPROF = -9999
-    integer :: LIS_MOC_SNOWTEMPPROF = -9999
-    integer :: LIS_MOC_SNOWHIGHTPROF = -9999
-    integer :: LIS_MOC_SNOWQS = -9999
-    integer :: LIS_MOC_SNOWSOILHEATFLUX = -9999
-    integer :: LIS_MOC_BLOWINGSNOWSUBLIM = -9999
-    integer :: LIS_MOC_SNOWRECHARD = -9999
-    integer :: LIS_MOC_SNOWEMISS = -9999
-    integer :: LIS_MOC_SNOWCM = -9999
-    integer :: LIS_MOC_SNOWSHEARVLOCITY = -9999
-    integer :: LIS_MOC_SNOWHEATDRAG = -9999
-    integer :: LIS_MOC_SNOWDELTAHEAT = -9999
-    integer :: LIS_MOC_SNOWSURFACEQ = -9999
-
-! SnowModel outputs:
-    integer :: LIS_MOC_SWE_SM = -9999
-    integer :: LIS_MOC_SNOWDEPTH_SM = -9999
-    integer :: LIS_MOC_SNOWDENSITY_SM = -9999
-    integer :: LIS_MOC_QSM_SM = -9999
-    integer :: LIS_MOC_SUBSNOW_SM = -9999
-    integer :: LIS_MOC_QS_SM = -9999
-    integer :: LIS_MOC_TOTALPRECIP_SM = -9999
-    integer :: LIS_MOC_RAINF_SM = -9999
-    integer :: LIS_MOC_SNOWF_SM = -9999
-    integer :: LIS_MOC_ALBEDO_SM = -9999
-    integer :: LIS_MOC_ELEVATION_SM = -9999
-    integer :: LIS_MOC_LANDCOVER_SM = -9999
-    integer :: LIS_MOC_SWDOWNFORC_SM = -9999
-    integer :: LIS_MOC_LWDOWNFORC_SM = -9999
-    integer :: LIS_MOC_EWINDFORC_SM = -9999
-    integer :: LIS_MOC_NWINDFORC_SM = -9999
-! .......
+  ! <- for FLAKE 2013->
+  integer :: LIS_MOC_LAKE_T_SNOW    =   -9999
+  integer :: LIS_MOC_LAKE_T_ICE =   -9999
+  integer :: LIS_MOC_LAKE_T_MNW =   -9999
+  integer :: LIS_MOC_LAKE_T_WML =   -9999
+  integer :: LIS_MOC_LAKE_T_BOT =   -9999
+  integer :: LIS_MOC_LAKE_T_B1  =   -9999
+  integer :: LIS_MOC_LAKE_C_T   =   -9999
+  integer :: LIS_MOC_LAKE_H_SNOW    =   -9999
+  integer :: LIS_MOC_LAKE_H_ICE =   -9999
+  integer :: LIS_MOC_LAKE_H_ML  =   -9999
+  integer :: LIS_MOC_LAKE_H_B1  =   -9999
+  integer :: LIS_MOC_LAKE_T_SFC =   -9999
+  integer :: LIS_MOC_LAKE_ALBEDO_WATER  =   -9999
+  integer :: LIS_MOC_LAKE_ALBEDO_ICE    =   -9999
+  integer :: LIS_MOC_LAKE_ALBEDO_SNOW   =   -9999
+  integer :: LIS_MOC_LAKE_UFR_A =   -9999
+  integer :: LIS_MOC_LAKE_UFR_W =   -9999
+  integer :: LIS_MOC_LAKE_WCONV =   -9999
+  integer :: LIS_MOC_LAKE_Q_SE  =   -9999
+  integer :: LIS_MOC_LAKE_Q_LA  =   -9999
+  integer :: LIS_MOC_LAKE_I_W   =   -9999
+  integer :: LIS_MOC_LAKE_Q_LWA =   -9999
+  integer :: LIS_MOC_LAKE_Q_LWW =   -9999
+  integer :: LIS_MOC_LAKE_Q_BOT =   -9999
+  ! <- end for FLAKE 2013 ->
 
 
-#if 0
-   ! SPECIAL CASE INDICES
-   ! These are required because Min/Max support cannot be generically
-   ! handled for GRIB-1 output.  The routine writeSingleGrib1Var maps
-   ! these two entries to LIS_MOC_TAIRFORC.
-   ! They should not be counted in the LIS_MOC_COUNT total count.
-   integer, parameter :: LIS_MOC_TAIRFORC_MIN = 112
-   integer, parameter :: LIS_MOC_TAIRFORC_MAX = 113
+  ! <- SACHTET ->
+  integer :: LIS_MOC_SACUZTWH = -9999
+  integer :: LIS_MOC_SACUZFWH = -9999
+  integer :: LIS_MOC_SACLZTWH = -9999
+  integer :: LIS_MOC_SACLZFSH = -9999
+  integer :: LIS_MOC_SACLZFPH = -9999
+  integer :: LIS_MOC_SACSWINT = -9999
+  integer :: LIS_MOC_SACTSINT = -9999
+  integer :: LIS_MOC_SACSWHINT = -9999
+  integer :: LIS_MOC_SACFROST = -9999
 
-   ! READ ABOVE NOTE ABOUT SPECIAL CASE INDICES
-   integer, parameter :: LIS_MOC_COUNT      = 145
-   ! Add the special cases.  LIS_MOC_GRIB_COUNT should be used only in
-   ! LIS_gribMod.F90.
-   integer, parameter :: LIS_MOC_GRIB_COUNT = 145
+  ! <- NoahMP ->
+  integer ::  LIS_MOC_CANOPY_TEMP = -9999
+  integer ::  LIS_MOC_CANOPY_VP   = -9999
+  integer ::  LIS_MOC_CANOPY_WF   = -9999
+  integer ::  LIS_MOC_CANOPY_INTL   = -9999
+  integer ::  LIS_MOC_GROUNDAVGT   = -9999
+  integer ::  LIS_MOC_GROUNDVEGT   = -9999
+  integer ::  LIS_MOC_SOWN_NLAYER   = -9999
+  integer ::  LIS_MOC_SNOW_LBDFSS   = -9999
+  integer ::  LIS_MOC_SOIL_LBDFSS   = -9999
+  integer ::  LIS_MOC_SNOWICE   = -9999
+  integer ::  LIS_MOC_SNOWLIQ   = -9999
+  integer ::  LIS_MOC_WT_AQUI_SATSOIL    = -9999
+  integer ::  LIS_MOC_LAKEWATER   = -9999
+  integer ::  LIS_MOC_LEAFMASS    = -9999
+  integer ::  LIS_MOC_ROOTMASS    = -9999
+  integer ::  LIS_MOC_STEMMASS    = -9999
+  integer ::  LIS_MOC_WOODMASS    = -9999
+  integer ::  LIS_MOC_CARBON_DEEPSOIL   = -9999
+  integer ::  LIS_MOC_CARBON_SHALLOWSOIL    = -9999
+  integer ::  LIS_MOC_SNOWAGE   = -9999
+  integer ::  LIS_MOC_BETWEENWATER    = -9999
+  integer ::  LIS_MOC_QRECTOGW    = -9999
+  integer ::  LIS_MOC_QRECFROMGW    = -9999
+  integer ::  LIS_MOC_FSR   = -9999
+  integer ::  LIS_MOC_FCEV    = -9999
+  integer ::  LIS_MOC_FGEV    = -9999
+  integer ::  LIS_MOC_FCTR    = -9999
+  integer ::  LIS_MOC_VEGE2MT   = -9999
+  integer ::  LIS_MOC_BARE2MT   = -9999
+  integer ::  LIS_MOC_VEGE2MQ2    = -9999
+  integer ::  LIS_MOC_BARE2MQ2    = -9999
+  integer ::  LIS_MOC_APAR    = -9999
+  integer ::  LIS_MOC_PSCO2   = -9999
+  integer ::  LIS_MOC_SAV   = -9999
+  integer ::  LIS_MOC_SAG   = -9999
+  integer ::  LIS_MOC_PONDING    = -9999
+  integer ::  LIS_MOC_PONDING1   = -9999
+  integer ::  LIS_MOC_PONDING2   = -9999
+  integer ::  LIS_MOC_RSSUN   = -9999
+  integer ::  LIS_MOC_RSSHA   = -9999
+  integer ::  LIS_MOC_BGAP    = -9999
+  integer ::  LIS_MOC_WGAP    = -9999
+  integer ::  LIS_MOC_CHV   = -9999
+  integer ::  LIS_MOC_CHB   = -9999
+  integer ::  LIS_MOC_SHG   = -9999
+  integer ::  LIS_MOC_SHC   = -9999
+  integer ::  LIS_MOC_SHB   = -9999
+  integer ::  LIS_MOC_EVG   = -9999
+  integer ::  LIS_MOC_EVB   = -9999
+  integer ::  LIS_MOC_GHV   = -9999
+  integer ::  LIS_MOC_GHB   = -9999
+  integer ::  LIS_MOC_IRV   = -9999
+  integer ::  LIS_MOC_IRC   = -9999
+  integer ::  LIS_MOC_IRB   = -9999
+  integer ::  LIS_MOC_HTR    = -9999
+  integer ::  LIS_MOC_HEVC   = -9999
+  integer ::  LIS_MOC_CHLEAF    = -9999
+  integer ::  LIS_MOC_CHUC    = -9999
+  integer ::  LIS_MOC_CHV2    = -9999
+  integer ::  LIS_MOC_CHB2    = -9999
+  integer ::  LIS_MOC_FPICE   = -9999
+  integer ::  LIS_MOC_QINSUR = -9999
+  integer ::  LIS_MOC_ETRANI = -9999
+  integer ::  LIS_MOC_WTRFLX = -9999
+  !  <- end Noah MP  ->
 
-   TODO: implement support for the special case of LIS_MOC_TAIRFORC_MIN
-         and LIS_MOC_TAIRFORC_MAX.
-#endif
+  !  <- AquaCrop ->
+  integer :: LIS_MOC_AC_Biomass  = -9999
+  integer :: LIS_MOC_AC_CCiActual  = -9999
+  integer :: LIS_MOC_AC_RootZoneWC_Actual  = -9999
+  integer :: LIS_MOC_AC_RootZoneWC_WP  = -9999
+  integer :: LIS_MOC_AC_RootZoneWC_FC  = -9999
+  integer :: LIS_MOC_AC_Tact  = -9999
+  integer :: LIS_MOC_AC_Eact  = -9999
+  integer :: LIS_MOC_AC_ETo  = -9999
+  integer :: LIS_MOC_AC_Rain  = -9999
+  integer :: LIS_MOC_AC_Irrigation  = -9999
+  integer :: LIS_MOC_AC_Tmin  = -9999
+  integer :: LIS_MOC_AC_Tmax  = -9999
+  integer :: LIS_MOC_AC_RootingDepth  = -9999
+  integer :: LIS_MOC_AC_Yield  = -9999
+  integer :: LIS_MOC_AC_StExp  = -9999
+  integer :: LIS_MOC_AC_StSen  = -9999
+  integer :: LIS_MOC_AC_cycle_complete  = -9999
 
-   real, parameter :: LIS_MOC_MAX_NUM =  999999.0
-   real, parameter :: LIS_MOC_MIN_NUM = -999999.0
-  
+  !   <- RUC ->
+  integer :: LIS_MOC_QVG = -9999
+  integer :: LIS_MOC_QCG = -9999
+  integer :: LIS_MOC_QSG = -9999
+  integer :: LIS_MOC_SNNOT75CM = -9999
+  integer :: LIS_MOC_FRZPREC_DEN = -9999
+  integer :: LIS_MOC_FRZPREC = -9999
+  integer :: LIS_MOC_ACC_SNOWF = -9999
+  integer :: LIS_MOC_ACC_FRZPREC = -9999
+  integer :: LIS_MOC_ACC_EVAP = -9999
+  integer :: LIS_MOC_QSFC = -9999
+  integer :: LIS_MOC_DEW_FROST = -9999
+  integer :: LIS_MOC_DRIP = -9999
+  integer :: LIS_QH_SNOW = -9999
+  !   <- end RUC ->
+
+  ! <- JULES ->
+  integer :: LIS_MOC_GS = -9999
+  integer :: LIS_MOC_GC = -9999
+
+  !   <- AWRAL ->
+  integer :: LIS_MOC_SR = -9999
+  integer :: LIS_MOC_SG = -9999
+  integer :: LIS_MOC_S0_HRU = -9999
+  integer :: LIS_MOC_SS_HRU = -9999
+  integer :: LIS_MOC_SD_HRU = -9999
+  integer :: LIS_MOC_MLEAF_HRU = -9999
+  integer :: LIS_MOC_E0 = -9999
+  integer :: LIS_MOC_ETOT = -9999
+  integer :: LIS_MOC_DD = -9999
+  integer :: LIS_MOC_S0 = -9999
+  integer :: LIS_MOC_SS = -9999
+  integer :: LIS_MOC_SD = -9999
+  integer :: LIS_MOC_QTOT = -9999
+
+  ! Crocus snow model
+  integer :: LIS_MOC_SNOWLIQPROF = -9999
+  integer :: LIS_MOC_SNOWHEATCONTENTPROF = -9999
+  integer :: LIS_MOC_SNOWRHOPROF = -9999
+  integer :: LIS_MOC_SNOWALB = -9999
+  integer :: LIS_MOC_SNOWGRAIN1PROF = -9999
+  integer :: LIS_MOC_SNOWGRAIN2PROF = -9999
+  integer :: LIS_MOC_SNOWHISTPROF = -9999
+  integer :: LIS_MOC_SNOWAGEPROF = -9999
+  integer :: LIS_MOC_SNOWLIQCONTENTPROF = -9999
+  integer :: LIS_MOC_SNOWTEMPPROF = -9999
+  integer :: LIS_MOC_SNOWHIGHTPROF = -9999
+  integer :: LIS_MOC_SNOWQS = -9999
+  integer :: LIS_MOC_SNOWSOILHEATFLUX = -9999
+  integer :: LIS_MOC_BLOWINGSNOWSUBLIM = -9999
+  integer :: LIS_MOC_SNOWRECHARD = -9999
+  integer :: LIS_MOC_SNOWEMISS = -9999
+  integer :: LIS_MOC_SNOWCM = -9999
+  integer :: LIS_MOC_SNOWSHEARVLOCITY = -9999
+  integer :: LIS_MOC_SNOWHEATDRAG = -9999
+  integer :: LIS_MOC_SNOWDELTAHEAT = -9999
+  integer :: LIS_MOC_SNOWSURFACEQ = -9999
+
+  ! SnowModel outputs:
+  integer :: LIS_MOC_SWE_SM = -9999
+  integer :: LIS_MOC_SNOWDEPTH_SM = -9999
+  integer :: LIS_MOC_SNOWDENSITY_SM = -9999
+  integer :: LIS_MOC_QSM_SM = -9999
+  integer :: LIS_MOC_SUBSNOW_SM = -9999
+  integer :: LIS_MOC_QS_SM = -9999
+  integer :: LIS_MOC_TOTALPRECIP_SM = -9999
+  integer :: LIS_MOC_RAINF_SM = -9999
+  integer :: LIS_MOC_SNOWF_SM = -9999
+  integer :: LIS_MOC_ALBEDO_SM = -9999
+  integer :: LIS_MOC_ELEVATION_SM = -9999
+  integer :: LIS_MOC_LANDCOVER_SM = -9999
+  integer :: LIS_MOC_SWDOWNFORC_SM = -9999
+  integer :: LIS_MOC_LWDOWNFORC_SM = -9999
+  integer :: LIS_MOC_EWINDFORC_SM = -9999
+  integer :: LIS_MOC_NWINDFORC_SM = -9999
+  ! .......
+
+  real, parameter :: LIS_MOC_MAX_NUM =  999999.0
+  real, parameter :: LIS_MOC_MIN_NUM = -999999.0
+
   type, public :: LIS_metadataEntry
      character(len=100) :: long_name
      character(len=100) :: standard_name
@@ -1094,18 +1070,16 @@ module LIS_histDataMod
      integer       :: form
      integer       :: index           ! LIS_MOC_INDEX
      integer       :: vlevels
-     integer       :: varId_def         
+     integer       :: varId_def
      integer       :: varId_opt1
      integer       :: varId_opt2
-     integer :: varId_max ! EMK
-     integer :: varId_min ! EMK
+     integer :: varId_max
+     integer :: varId_min
      integer       :: gribSF          ! GRIB scale factor
      integer       :: gribSfc         ! GRIB surface
      integer       :: gribLvl         ! GRIB level
      integer       :: gribDis         ! GRIB2 discipline
      integer       :: gribCat         ! GRIB2 category
-     !integer       :: gribminId      ! GRIB id for minimum field
-     !integer       :: gribmaxId      ! GRIB id for maximum field
      integer       :: timeAvgOpt
      integer       :: selectOpt
      integer       :: minMaxOpt
@@ -1131,7 +1105,7 @@ module LIS_histDataMod
   end type dep
 
   type, public :: output_meta
-!BOC
+     !BOC
      real*8  :: time         ! time to begin writing output
      integer :: syear        ! year to begin writing output
      integer :: smonth       ! month to begin writing output
@@ -1155,38 +1129,38 @@ module LIS_histDataMod
      type(dep), allocatable, dimension(:) :: ptr_into_routing_list
      type(dep), allocatable, dimension(:) :: ptr_into_rtm_list
      type(dep), allocatable, dimension(:) :: ptr_into_irrig_list
-!EOC
+     !EOC
   end type output_meta
 
   type(output_meta),     allocatable :: LIS_histData(:)
 
 contains
- 
+
 !BOP
 !  !ROUTINE: LIS_histDataInit
 ! \label{LIS_histDataInit}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_histDataInit(n, ntiles)
-! !USES: 
+! !USES:
 
     implicit none
 
-! !ARGUMENTS: 
-    integer,  intent(IN)   :: n 
+! !ARGUMENTS:
+    integer,  intent(IN)   :: n
     integer,  intent(IN)   :: ntiles
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This routine initializes the required linked lists to hold the selected
 !  list of LSM variables
 !
-!   The arguments are: 
+!   The arguments are:
 !   \begin{description}
 !    \item[n]  index of the nest \newline
 !    \item[ntiles]  size of the tilespace \newline
 !   \end{description}
 !
-!   The routines invoked are: 
+!   The routines invoked are:
 !   \begin{description}
 !    \item[get\_moc\_attributes] (\ref{get_moc_attributes}) \newline
 !      adds history output objects to the linked lists and sets the
@@ -1195,7 +1169,7 @@ contains
 !      completes the setting of the elements in the history output objects
 !      and allocates the data structures related to the variable being output
 !    \item[LIS\_resetOutputVars] (\ref{LIS_resetOutputVars}) \newline
-!      resets the arrays storing the variable values. 
+!      resets the arrays storing the variable values.
 !   \end{description}
 !EOP
     type(ESMF_Config) :: modelSpecConfig
@@ -1205,8 +1179,8 @@ contains
     integer           :: grib_depthlvl
     integer           :: grib_snowlvl
 
-    !hkb--GRIB2 specific Depth below land surface = 106
-    !hkb--GRIB2 specific Snow level = 114
+    !GRIB2 specific Depth below land surface = 106
+    !GRIB2 specific Snow level = 114
     if (LIS_rc%wout == "grib2") then
        grib_depthlvl = 106
        grib_snowlvl  = 114
@@ -1221,7 +1195,7 @@ contains
 
     LIS_MOC_LSM_COUNT     = 0
     LIS_MOC_RTM_COUNT     = 0
-    LIS_MOC_IRRIG_COUNT   = 0 
+    LIS_MOC_IRRIG_COUNT   = 0
 
     call ESMF_ConfigFindLabel(LIS_config,"Model output attributes file:", &
                               rc=rc)
@@ -1232,19 +1206,20 @@ contains
                          trim(LIS_rc%outputSpecFile(n))
 
     inquire(file=LIS_rc%outputSpecFile(n),exist=file_exists)
-    if(.not.file_exists) then 
-       write(LIS_logunit,*) '[ERR] Model output attributes file does not exist...'
+    if(.not.file_exists) then
+       write(LIS_logunit,*) &
+            '[ERR] Model output attributes file does not exist...'
        write(LIS_logunit,*) '[ERR] Program stopping... '
        call LIS_endrun()
     endif
 
     modelSpecConfig = ESMF_ConfigCreate(rc=rc)
     call ESMF_ConfigLoadFile(modelSpecConfig,trim(LIS_rc%outputSpecFile(n)), &
-         rc=rc)     
-!-------------------------------------------------------------------------
-! read the meta data attributes for each variable
-!-------------------------------------------------------------------------
-  !!! JULES
+         rc=rc)
+    !-------------------------------------------------------------------------
+    ! read the meta data attributes for each variable
+    !-------------------------------------------------------------------------
+    !!! JULES
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowSoot:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowSoot",&
@@ -1281,8 +1256,8 @@ contains
             n,1,ntiles,(/"-"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    
-    ! 
+
+    !
     call ESMF_ConfigFindLabel(modelSpecConfig,"fsat:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "fsat",&
@@ -1294,7 +1269,7 @@ contains
             n,1,ntiles,(/"-"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    ! 
+    !
     call ESMF_ConfigFindLabel(modelSpecConfig,"fwetl:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "fwetl",&
@@ -1306,7 +1281,7 @@ contains
             n,1,ntiles,(/"-"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"JESoil:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "JESoil",&
@@ -1319,7 +1294,7 @@ contains
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"sthf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "sthf",&
@@ -1331,7 +1306,6 @@ contains
             n,1,ntiles,(/"-"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"sthu_min:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -1382,13 +1356,12 @@ contains
     endif
 
     ! Arguments to register_dataEntry:
-    ! LIS_MOC_INDEX, tail dataEntry, nest index, number of units, 
-    ! number of tiles, units, stats form, 
+    ! LIS_MOC_INDEX, tail dataEntry, nest index, number of units,
+    ! number of tiles, units, stats form,
     ! GRIB surface type, GRIB levels type
 
-    ! AIX requires the strings in these array contrustors 
+    ! AIX requires the strings in these array contrustors
     ! to have the same length.  So I have padded the shorter string.
-    
     call ESMF_ConfigFindLabel(modelSpecConfig,"Swnet:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "Swnet",&
@@ -1567,8 +1540,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWF,&
             LIS_histData(n)%head_lsm_list,&
-!            n,2,ntiles,(/"kg/m2s","kg/m2 "/),&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&   ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -1581,8 +1553,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_RAINF,&
             LIS_histData(n)%head_lsm_list,&
-!            n,2,ntiles,(/"kg/m2s","kg/m2 "/),&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&   ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -1621,8 +1592,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QS,&
             LIS_histData(n)%head_lsm_list,&
-!            n,2,ntiles,(/"kg/m2s","kg/m2 "/),&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&  ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"IN ","OUT"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -1637,8 +1607,8 @@ contains
             LIS_histData(n)%head_lsm_list,&
             n,2,ntiles,(/"kg/m2s","kg/m2 "/),&
 #if (defined AFWA_GRIB_CONFIGS)
-! Hard-code baseflow surface and level to AFWA's specifications
-! to make the LIS-7 output match the LIS-6 style. - dmm
+            ! Hard-code baseflow surface and level to AFWA's specifications
+            ! to make the LIS-7 output match the LIS-6 style.
             2,(/"IN ","OUT"/),2,112,200,&
 #else
             2,(/"IN ","OUT"/),2,1,1,&
@@ -1666,8 +1636,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QSM,&
             LIS_histData(n)%head_lsm_list,&
-!            n,2,ntiles,(/"kg/m2s","kg/m2 "/),&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&   ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"S2L","L2S"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -1839,7 +1808,7 @@ contains
             n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDirVis:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "AlbDirVis",&
@@ -1851,7 +1820,7 @@ contains
             n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDifVis:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "AlbDifVis",&
@@ -1863,8 +1832,7 @@ contains
             n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDirNIR:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "AlbDirNIR",&
@@ -1876,7 +1844,7 @@ contains
             n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"AlbDifNIR:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "AlbDifNIR",&
@@ -1888,7 +1856,6 @@ contains
             n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"SWE:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -1949,7 +1916,7 @@ contains
             n,1,ntiles,(/"micron"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowDepth:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowDepth",&
@@ -1960,7 +1927,7 @@ contains
             LIS_histData(n)%head_lsm_list,&
             n,3,ntiles,(/"m ", "cm", "mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
-       ! cm is added for VIC, Shugong Wang 02/20/2012
+       ! cm is added for VIC
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"GrndSnow:",rc=rc)
@@ -1986,8 +1953,8 @@ contains
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
-    ! added by Shugong Wang 05/02/2018 for JULES 
+
+    ! added for JULES
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowThick:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowThick",&
@@ -2035,7 +2002,7 @@ contains
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowAge:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SnowAge",&
@@ -2048,7 +2015,6 @@ contains
             model_patch=.true.)
     endif
 
-    ! Added by Zhuo Wang on 11/11/2018
     call ESMF_ConfigFindLabel(modelSpecConfig,"Smcwtd:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
           "SMCWTD",&
@@ -2091,7 +2057,7 @@ contains
          "soil_temperature",&
          "soil temperature",rc)
     if ( rc == 1 ) then
-!hkb-- GRIB2 specific Depth below land surface = 106
+       ! GRIB2 specific Depth below land surface = 106
        if (LIS_rc%wout .eq. "grib2") then
         call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SOILTEMP,&
              LIS_histData(n)%head_lsm_list,&
@@ -2176,8 +2142,8 @@ contains
             n,1,ntiles,(/"Pa"/),&
             1,(/"-"/),2,1,1,&
             model_patch=.true.)
-    endif    
-    
+    endif
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"ECanop:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "ECanop",&
@@ -2274,8 +2240,8 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SUBSNOW,&
             LIS_histData(n)%head_lsm_list,n,&
-!            5,ntiles,(/"kg/m2s","mm/hr ","W/m2  ","mm    ", "kg/m2 "/),&
-            6,ntiles,(/"kg/m2s","mm/hr ","W/m2  ","mm    ", "kg/m2 ","m     "/),&  ! KRA
+            6,ntiles,(/"kg/m2s","mm/hr ","W/m2  ","mm    ", "kg/m2 ", &
+            "m     "/),&
             1,(/"-"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -2358,7 +2324,6 @@ contains
          "surface_snow_area_fraction",&
          "snow cover",rc)
     if ( rc == 1 ) then
-       ! EMK...Added percentage
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWCOVER,&
             LIS_histData(n)%head_lsm_list,&
             n,2,ntiles,(/"-","%"/),1,(/"-"/),1,1,1,&
@@ -2540,7 +2505,7 @@ contains
             n,1,ntiles,(/"m"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"Gs:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "Gs",&
@@ -2634,8 +2599,8 @@ contains
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_WINDFORC,&
             LIS_histData(n)%head_lsm_list,n,2,&
 #if (defined AFWA_GRIB_CONFIGS)
-! Hard-code wind surface and level to AFWA's specifications
-! to make the LIS-7 output match the LIS-6 style. - dmm
+            ! Hard-code wind surface and level to AFWA's specifications
+            ! to make the LIS-7 output match the LIS-6 style.
             ntiles,(/"m/s   ","km/day"/),1,(/"-"/),1,105,10,&
 #else
             ntiles,(/"m/s   ","km/day"/),1,(/"-"/),1,1,1,&
@@ -2678,7 +2643,7 @@ contains
             ntiles,(/"kg/m2s","kg/m2 "/),2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"LSRainf_f:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "LSRainf_f",&
@@ -2690,7 +2655,7 @@ contains
             ntiles,(/"kg/m2s","kg/m2 "/),2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"CSnowf_f:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "CSnowf_f",&
@@ -2702,7 +2667,7 @@ contains
             ntiles,(/"kg/m2s","kg/m2 "/),2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"LSSnowf_f:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "LSSnowf_f",&
@@ -2724,8 +2689,8 @@ contains
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TAIRFORC,&
             LIS_histData(n)%head_lsm_list,&
 #if (defined AFWA_GRIB_CONFIGS)
-! Hard-code air temperature surface and level to AFWA's specifications
-! to make the LIS-7 output match the LIS-6 style. - dmm
+            ! Hard-code air temperature surface and level to AFWA's
+            ! specification to make the LIS-7 output match the LIS-6 style.
             n,1,ntiles,(/"K"/),1,(/"-"/),1,105,2,&
 #else
             n,1,ntiles,(/"K"/),1,(/"-"/),1,1,1,&
@@ -2742,8 +2707,8 @@ contains
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QAIRFORC,&
             LIS_histData(n)%head_lsm_list,&
 #if (defined AFWA_GRIB_CONFIGS)
-! Hard-code specific humidity surface and level to AFWA's specifications
-! to make the LIS-7 output match the LIS-6 style. - dmm
+            ! Hard-code specific humidity surface and level to AFWA's
+            ! specifications to make the LIS-7 output match the LIS-6 style.
             n,1,ntiles,(/"kg/kg"/),1,(/"-"/),2,105,2,&
 #else
             n,1,ntiles,(/"kg/kg"/),1,(/"-"/),2,1,1,&
@@ -3326,13 +3291,15 @@ contains
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"TotalSurplusWaterInitial:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"TotalSurplusWaterInitial:", &
+         rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "TotalSurplusWaterInitial",&
          "total_surplus_water_initial",&
          "total surplus water initial", rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TotalSurplusWaterInitial,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_TotalSurplusWaterInitial,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -3345,7 +3312,8 @@ contains
          "total_water_deficit_initial",&
          "total water deficit initial",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TotalWaterDeficitInitial,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_TotalWaterDeficitInitial,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -3381,7 +3349,8 @@ contains
          "total_surplus_water_veg",&
          "total surplus water veg",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TotalSurplusWaterVeg,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_TotalSurplusWaterVeg,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -3429,7 +3398,8 @@ contains
          "TotalSurplusWaterFlower",&
          "TotalSurplusWaterFlower",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TotalSurplusWaterFlower,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_TotalSurplusWaterFlower,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -3441,7 +3411,8 @@ contains
          "TotalWaterDeficitFlower",&
          "TotalWaterDeficitFlower",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TotalWaterDeficitFlower,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_TotalWaterDeficitFlower,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -3477,7 +3448,8 @@ contains
          "TotalSurplusWaterRipe",&
          "TotalSurplusWaterRipe",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TotalSurplusWaterRipe,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_TotalSurplusWaterRipe,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -3489,7 +3461,8 @@ contains
          "TotalWaterDeficitRipe",&
          "TotalWaterDeficitRipe",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TotalWaterDeficitRipe,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_TotalWaterDeficitRipe,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -3616,7 +3589,8 @@ contains
          "SurplusWater_TimeStep",&
          "SurplusWater_TimeStep",rc)
     if (rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SurplusWater_TimeStep,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_SurplusWater_TimeStep,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1)
     endif
@@ -3639,7 +3613,6 @@ contains
          "Atmospheric_Density",&
          "Atmospheric Density",rc)
     if ( rc == 1 ) then
-       ! the unit was '-' for air density. Chaged to 'kg/m3' by Shugong Wang on 02/17/2012     
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_DENSITYFORC,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m3"/),1,(/"-"/),1,1,1)
@@ -3662,7 +3635,8 @@ contains
          "Vapor_Pressure_Deficit",&
          "Vapor Pressure Deficit",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_VAPORPRESSDEFICITFORC,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT, &
+            LIS_MOC_VAPORPRESSDEFICITFORC,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1)
     endif
@@ -3701,7 +3675,7 @@ contains
             n,1,ntiles,(/"m3/m3"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"sac_swhint:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "sac_swhint",&
@@ -3713,7 +3687,7 @@ contains
             n,1,ntiles,(/"m3/m3"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"sac_frost:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "sac_frost",&
@@ -3725,7 +3699,6 @@ contains
             n,1,ntiles,(/"-"/),1,(/"-"/),2,1,1)
     endif
 
-    
     call ESMF_ConfigFindLabel(modelSpecConfig,"sac_uztwc:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "sac_uztwc",&
@@ -3791,7 +3764,6 @@ contains
             LIS_histData(n)%head_lsm_list,&
             n,2,ntiles,(/"mm", "- "/),1,(/"-"/),2,1,1)
     endif
-
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"sac_uztwh:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
@@ -3913,7 +3885,7 @@ contains
             LIS_histData(n)%head_lsm_list,&
             n,2,ntiles,(/"kg/m2 ","kg/m2s"/),1,(/"-"/),2,1,1)
     endif
-!<for vic>
+    !<for vic>
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"vic_pet_satsoil:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
@@ -3986,7 +3958,7 @@ contains
                                n,2,ntiles,(/"kg/m2 ","kg/m2s"/),1,(/"-"/),&
                                2,1,1,model_patch=.true.)
     endif
-!</for vic>
+    !</for vic>
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"Lake_Tsnow:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -4200,7 +4172,6 @@ contains
          "LakeIW",&
          "Lake_radiation_flux_at_the_interface",&
          "Lake radiation flux at the interface",rc)
-
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_LAKE_I_W,&
             LIS_histData(n)%head_lsm_list,&
@@ -4214,7 +4185,6 @@ contains
          "LakeQbot",&
          "Lake_heat_flux_across_water_sediment_boundary",&
          "Lake heat flux across water sediment boundary",rc)
-
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_LAKE_Q_BOT,&
             LIS_histData(n)%head_lsm_list,&
@@ -4255,8 +4225,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TOTALPRECIP,&
             LIS_histData(n)%head_lsm_list,&
-!            n,2,ntiles,(/"kg/m2s","kg/m2 "/),&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&    ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
@@ -4284,7 +4253,8 @@ contains
             n,1,ntiles,(/"m"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    ! JULES 
+
+    ! JULES
     call ESMF_ConfigFindLabel(modelSpecConfig,"ThermalRoughness:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "ThermalRoughness",&
@@ -4296,7 +4266,7 @@ contains
             n,1,ntiles,(/"m"/),1,(/"-"/),1,112,0,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"LSRainf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "LSRainf",&
@@ -4309,7 +4279,7 @@ contains
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"LSSnowf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "LSSnowf",&
@@ -4322,7 +4292,7 @@ contains
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"CSnowf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "CSnowf",&
@@ -4335,8 +4305,6 @@ contains
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
-
-
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"RTM emissivity:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_rtm_list,&
@@ -4384,26 +4352,13 @@ contains
             model_patch=.true.)
     endif
 
-    !<- NoahMP ->
-!    call ESMF_ConfigFindLabel(modelSpecConfig,"LwUP:",rc=rc)
-!    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-!         "LwUP",&
-!         "total_net_longwave_radiation_to_atmosphere",&
-!         "total net longwave radiation to atmosphere",rc)
-!    if ( rc == 1 ) then
-!       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_LWUP,&
-!            LIS_histData(n)%head_lsm_list,&
-!            n,1,ntiles,(/"W/m2"/),2,(/"UP","DN"/),1,1,1,&
-!            model_patch=.true.)
-!    endif
-
     Call ESMF_ConfigFindLabel(modelSpecConfig, "VegCanopT:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "VegCanopT", &
          "canopy_air_temperature",  &
          "canopy air temperature",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CANOPY_TEMP, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CANOPY_TEMP, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"K"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4445,7 +4400,6 @@ contains
             model_patch=.true.)
     endif
 
-    ! Added by Zhuo Wang on 11/11/2018
     Call ESMF_ConfigFindLabel(modelSpecConfig, "Wslake:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "Wslake",  &
@@ -4603,7 +4557,6 @@ contains
             model_patch=.true.)
     endif
 
-
     call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Tact:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "AC_Tact",&
@@ -4651,7 +4604,6 @@ contains
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Irrigation:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -4750,14 +4702,13 @@ contains
     endif
     !End AquaCrop
 
-    
     Call ESMF_ConfigFindLabel(modelSpecConfig, "StemMass:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "StemMass", &
          "mass_of_wood_stem",  &
          "mass of wood stem", rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_STEMMASS, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_STEMMASS, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"g/m2"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4769,7 +4720,7 @@ contains
          "mass_of_wood_including_woody_roots",  &
          "mass of wood including woody roots",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_WOODMASS, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_WOODMASS, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"g/m2"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4781,7 +4732,7 @@ contains
          "stable_carbon_in_deep_soil",  &
          "stable carbon in deep soil",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CARBON_DEEPSOIL, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CARBON_DEEPSOIL, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"g/m2"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4793,12 +4744,11 @@ contains
          "short-lived_carbon_in_shallow_soil",  &
          "short-lived carbon in shallow soil",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CARBON_SHALLOWSOIL, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CARBON_SHALLOWSOIL, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"g/m2"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "RechToGW:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -4806,7 +4756,7 @@ contains
          "recharge_to_the_water_table_when_groundwater_is_deep",  &
          "recharge to the water table when groundwater is deep",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_QRECTOGW, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_QRECTOGW, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"m"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4818,7 +4768,7 @@ contains
          "recharge_from_the_water_table_when_groundwater_is_shallow",  &
          "recharge from the water table when groundwater is shallow",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_QRECFROMGW, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_QRECFROMGW, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"m"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4830,7 +4780,7 @@ contains
          "total_reflected_solar_radiation",   &
          "total reflected solar radiation",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FSR, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FSR, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
@@ -4842,7 +4792,7 @@ contains
          "canopy_evaporative_heat_to_atmosphere",   &
          "canopy evaporative heat to atmosphere",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FCEV, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FCEV, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
@@ -4854,7 +4804,7 @@ contains
          "transpiration_heat_to_atmosphere",   &
          "transpiration heat to atmosphere",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FCTR, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FCTR, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
@@ -4866,7 +4816,7 @@ contains
          "2-m_air_temperature_over_vegetated_part",  &
          "2-m air temperature over vegetated part",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_VEGE2MT, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_VEGE2MT, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"K"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4878,7 +4828,7 @@ contains
          "2-m_specific_humidity_over_vegetation",  &
          "2-m specific humidity over vegetation",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_VEGE2MQ2, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_VEGE2MQ2, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"kg/kg"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4890,12 +4840,11 @@ contains
          "absorbed_photosynthesis_active_energy_by_canopy",   &
          "absorbed photosynthesis active radiation energy by canopy",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_APAR, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_APAR, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"IN ", "OUT"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "PSCO2:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -4903,7 +4852,7 @@ contains
          "total_photosynthesis_of_CO2",   &
          "total photosynthesis of CO2",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_PSCO2, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_PSCO2, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"umol/m2s"/), 2, (/"IN ", "OUT"/),1,1,1,&
             model_patch=.true.)
@@ -4916,12 +4865,11 @@ contains
          "solar_radiation_absorbed_by_vegetation",   &
          "solar radiation absorbed by vegetation",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SAV, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SAV, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"IN ", "OUT"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "SAG:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -4929,7 +4877,7 @@ contains
          "solar_radiation_absorbed_by_ground",   &
          "solar radiation absorbed by ground",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SAG, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SAG, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"IN ", "OUT"/),1,1,1,&
             model_patch=.true.)
@@ -4941,7 +4889,7 @@ contains
          "surface_ponding",  &
          "surface ponding",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_PONDING, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_PONDING, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"mm"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4953,7 +4901,7 @@ contains
          "surface_ponding2",  &
          "surface ponding2",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_PONDING2, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_PONDING2, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"mm"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4965,7 +4913,7 @@ contains
          "shaded_stomatal_resistance",  &
          "shaded stomatal resistance",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_RSSHA, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_RSSHA, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"s/m"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4977,19 +4925,19 @@ contains
          "sunlit_stomatal_resistance",  &
          "sunlit stomatal resistance",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_RSSUN, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_RSSUN, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"s/m"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     Call ESMF_ConfigFindLabel(modelSpecConfig, "WCanoGapFrac:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "WCanoGapFrac", &
          "within-canopy_gap_fraction_for_beam",  &
          "within-canopy gap fraction for beam",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_WGAP, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_WGAP, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"-"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -5001,19 +4949,19 @@ contains
          "between-canopy_gap_fraction_for_beam",  &
          "between-canopy gap fraction for beam",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_BGAP, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_BGAP, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"-"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     call esmf_configfindlabel(modelspecconfig, "ChVeg:", rc = rc)
     call get_moc_attributes(modelspecconfig, lis_histdata(n)%head_lsm_list, &
          "ChVeg", &
          "sensible_heat_exchange_coefficient_over_vegetated_fraction",  &
          "sensible heat exchange coefficient over vegetated fraction",rc)
     if ( rc == 1 ) then
-        call register_dataentry(lis_moc_lsm_count, LIS_MOC_CHV, &
+       call register_dataentry(lis_moc_lsm_count, LIS_MOC_CHV, &
             lis_histdata(n)%head_lsm_list,&
             n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -5025,7 +4973,7 @@ contains
          "sensible_heat_exchange_coefficient_over_bare-ground_fraction",  &
          "sensible heat exchange coefficient over bare-ground fraction",rc)
     if ( rc == 1 ) then
-        call register_dataentry(lis_moc_lsm_count, LIS_MOC_CHB, &
+       call register_dataentry(lis_moc_lsm_count, LIS_MOC_CHB, &
             lis_histdata(n)%head_lsm_list,&
             n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -5037,12 +4985,11 @@ contains
          "bare_ground_sensible_heat",   &
          "bare ground sensible heat",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SHB, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SHB, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "QhGrnd:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5062,12 +5009,11 @@ contains
          "canopy_sensible_heat",   &
          "canopy sensible heat",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SHC, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_SHC, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "EvapHBare:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5075,12 +5021,11 @@ contains
          "bare_ground_evaporation_heat",   &
          "bare ground evaporation heat",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_EVB, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_EVB, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "EvapHGrnd:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5088,12 +5033,11 @@ contains
          "ground_evaporation_heat",   &
          "ground evaporation heat",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_EVG, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_EVG, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "GrndHBare:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5101,7 +5045,7 @@ contains
          "bare_ground_heat_flux",   &
          "bare ground heat flux",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_GHB, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_GHB, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
@@ -5113,12 +5057,11 @@ contains
          "vegetated_ground_heat_flux",   &
          "vegetated ground heat flux",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_GHV, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_GHV, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "IRC:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5126,12 +5069,11 @@ contains
          "canopy_net_long_wave_radiation",   &
          "canopy net long wave radiation",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_IRC, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_IRC, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "IRV:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5139,7 +5081,7 @@ contains
          "vegetated_ground_net_long_wave_radiation",   &
          "vegetated ground net long wave radiation",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_IRV, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_IRV, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
@@ -5151,12 +5093,11 @@ contains
          "bare_ground_net_long_wave_radiation",   &
          "bare ground net long wave radiation",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_IRB, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_IRB, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "HeatTR:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5164,12 +5105,11 @@ contains
          "transpiration_heat",   &
          "transpiration heat",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_HTR, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_HTR, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "HeatEVC:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5177,12 +5117,11 @@ contains
          "canopy_evaporation_heat",   &
          "canopy evaporation heat", rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_HEVC, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_HEVC, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"W/m2"/), 2, (/"UP", "DN"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "ChLeaf:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5190,7 +5129,7 @@ contains
          "leaf_exchange_coefficient",  &
          "leaf exchange coefficient",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHLEAF, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHLEAF, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -5202,12 +5141,11 @@ contains
          "under_canopy_exchange_coefficient",  &
          "under canopy exchange coefficient",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHUC, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHUC, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "ChV2:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5215,12 +5153,11 @@ contains
          "sensible_heat_exchange_coefficient_over_vegetated_fraction",  &
          "sensible heat exchange coefficient over vegetated fraction",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHV2, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHV2, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "ChB2:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5228,12 +5165,11 @@ contains
          "sensible_heat_exchange_coefficient_over_bare_ground",  &
          "sensible heat exchange coefficient over bare ground",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHB2, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_CHB2, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-
 
     Call ESMF_ConfigFindLabel(modelSpecConfig, "fpice:", rc = rc)
     Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5241,7 +5177,7 @@ contains
          "snow_fraction_in_precipitation",  &
          "snow fraction in precipitation",rc)
     if ( rc == 1 ) then
-        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FPICE, &
+       call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_FPICE, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"-"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
@@ -5284,7 +5220,7 @@ contains
     endif
     !<- end NoahMP ->
 
-! Snow model 
+    ! Snow model
     call ESMF_ConfigFindLabel(modelSpecConfig,"ZP_SNOWSWE:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "LayerLiquidWaterEquivalent",&
@@ -5537,8 +5473,7 @@ contains
             model_patch=.true.)
     endif
 
-!<-- SnowModel outputs -->
-!    integer :: LIS_MOC_SWE_SM = -9999
+    !<-- SnowModel outputs -->
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_SWE:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_SWE",&
@@ -5551,7 +5486,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_SNOWDEPTH_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_SnowDepth:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_SnowDepth",&
@@ -5562,10 +5496,8 @@ contains
             LIS_histData(n)%head_lsm_list,&
             n,3,ntiles,(/"m ", "cm", "mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
-       ! cm is added for VIC, Shugong Wang 02/20/2012
     endif
 
-!    integer :: LIS_MOC_SNOWDENSITY_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_SnowDensity:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_SnowDensity",&
@@ -5578,7 +5510,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_QSM_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_Qsm:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_Qsm",&
@@ -5587,12 +5518,11 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QSM_SM,&
             LIS_histData(n)%head_lsm_list,&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&   ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"S2L","L2S"/),2,1,1,&
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_QS_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_Qs:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_Qs",&
@@ -5601,12 +5531,11 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QS_SM,&
             LIS_histData(n)%head_lsm_list,&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&  ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"IN ","OUT"/),2,1,1,&
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_SUBSNOW_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_SubSnow:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_SubSnow",&
@@ -5615,12 +5544,12 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SUBSNOW,&
             LIS_histData(n)%head_lsm_list,n,&
-            6,ntiles,(/"kg/m2s","mm/hr ","W/m2  ","mm    ", "kg/m2 ","m     "/),&  ! KRA
+            6,ntiles,(/"kg/m2s","mm/hr ","W/m2  ","mm    ", "kg/m2 ", &
+            "m     "/),&
             1,(/"-"/),2,1,1,&
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_TOTALPRECIP_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_TotalPrecip:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_TotalPrecip",&
@@ -5629,12 +5558,11 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TOTALPRECIP_SM,&
             LIS_histData(n)%head_lsm_list,&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&    ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_RAINF_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_Rainf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_Rainf",&
@@ -5643,12 +5571,11 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_RAINF_SM,&
             LIS_histData(n)%head_lsm_list,&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&   ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_SNOWF_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_Snowf:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_Snowf",&
@@ -5657,12 +5584,11 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SNOWF_SM,&
             LIS_histData(n)%head_lsm_list,&
-            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&   ! KRA
+            n,3,ntiles,(/"kg/m2s","kg/m2 ","m     "/),&
             2,(/"UP","DN"/),2,1,1,&
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_ALBEDO_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_Albedo:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_Albedo",&
@@ -5675,7 +5601,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_ELEVATION_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_Elevation:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "SM_Elevation",&
@@ -5688,7 +5613,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_LANDCOVER_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_Landcover:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "SM_Landcover",&
@@ -5701,7 +5625,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_SWDOWNFORC_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_SWdown:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "SM_SWdown",&
@@ -5714,7 +5637,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_LWDOWNFORC_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_LWdown:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "SM_LWdown",&
@@ -5727,7 +5649,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_NWINDFORC_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_NWind:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "SM_NWind",&
@@ -5740,7 +5661,6 @@ contains
             model_patch=.true.)
     endif
 
-!    integer :: LIS_MOC_EWINDFORC_SM = -9999
     call ESMF_ConfigFindLabel(modelSpecConfig,"SM_EWind:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "SM_EWind",&
@@ -5753,11 +5673,8 @@ contains
             model_patch=.true.)
     endif
 
-! .........
-
-
     !<- RUC addition ->
-    ! RUC  density of frozen precipitation (kg m{-3})
+    ! RUC density of frozen precipitation (kg m{-3})
     call ESMF_ConfigFindLabel(modelSpecConfig,"Density_FrzRain:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "Density_FrzRain",&
@@ -5781,8 +5698,7 @@ contains
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1)
     endif
 
-
-    !  RUC: effective cloud water mixing ratio at the surface 
+    !  RUC: effective cloud water mixing ratio at the surface
     call ESMF_ConfigFindLabel(modelSpecConfig,"MixRatio_QCG:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "MixRatio_QCG",&
@@ -5808,7 +5724,7 @@ contains
             model_patch=.true.)
     endif
 
-    ! RUC:  surface water vapor mixing ratio at satration (kg/kg) 
+    ! RUC:  surface water vapor mixing ratio at satration (kg/kg)
     call ESMF_ConfigFindLabel(modelSpecConfig,"MixRatio_QSG:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
          "MixRatio_QSG",&
@@ -5834,7 +5750,6 @@ contains
             model_patch=.true.)
     endif
 
-
     ! RUC  snow temperature at 7.5 cm depth (k)
     call ESMF_ConfigFindLabel(modelSpecConfig,"SnowT7.5cm:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5847,7 +5762,7 @@ contains
             n,1,ntiles,(/"K"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     ! RUC  dewfall (or frostfall for t<273.15) ( m )
     call ESMF_ConfigFindLabel(modelSpecConfig,"Dew_Frost:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list,&
@@ -5856,7 +5771,7 @@ contains
          "dew or frost",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_DEW_FROST,&
-         LIS_histData(n)%head_lsm_list,&
+            LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"m"/),1,(/"-"/),2,1,1)
     endif
 
@@ -5868,7 +5783,7 @@ contains
          "throughfall of precipitation from canopy",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_DRIP,&
-         LIS_histData(n)%head_lsm_list,&
+            LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),2,1,1)
     endif
 
@@ -5880,7 +5795,7 @@ contains
          "snow heat flux",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_QH_SNOW,&
-         LIS_histData(n)%head_lsm_list,&
+            LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"W/m2"/),1,(/"-"/),2,1,1)
     endif
 
@@ -5896,7 +5811,7 @@ contains
             n,1,ntiles,(/"kg/m2"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
+
     ! RUC  run total frozen precipitation accumulation (kg m{-2})
     call ESMF_ConfigFindLabel(modelSpecConfig,"RunTotal_FrzRain:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
@@ -5935,10 +5850,10 @@ contains
             n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    
-    !<- end of RUC addition -> 
 
-!   <- AWRAL ->
+    !<- end of RUC addition ->
+
+    !   <- AWRAL ->
     call ESMF_ConfigFindLabel(modelSpecConfig,"sr:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "sr",&
@@ -5950,7 +5865,7 @@ contains
             n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
             model_patch=.true.)
     endif
-     
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"sg:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "sg",&
@@ -6082,7 +5997,7 @@ contains
             n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
             model_patch=.true.)
     endif
-   
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"Qtot:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "Qtot",&
@@ -6097,7 +6012,8 @@ contains
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"UrbDrainStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "UrbDrainStor",&
          "Urban_Drainage_Water_Storage",&
          "Urban Drainage Water Storage",rc)
@@ -6108,7 +6024,8 @@ contains
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"UrbDrainDis:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "UrbDrainDis",&
          "Urban_Drainage_Discharge",&
          "Urban Drainage Discharge",rc)
@@ -6118,8 +6035,7 @@ contains
             n,1,ntiles,(/"m3/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
     endif
 
-!   <- end of AWRAL addition -> 
-   
+    !   <- end of AWRAL addition ->
     call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
 
     allocate(LIS_histData(n)%ptr_into_lsm_list(LIS_MOC_LSM_COUNT))
@@ -6142,35 +6058,33 @@ contains
     call LIS_resetOutputVars(n,3) !for RTM
     call LIS_resetOutputVars(n,4) !for Irrigation
 
-
 end subroutine LIS_histDataInit
-
 
 !BOP
 !  !ROUTINE: LIS_routingHistDataInit
 ! \label{LIS_routingHistDataInit}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_routingHistDataInit(n, ntiles)
-! !USES: 
+! !USES:
 
     implicit none
 
-! !ARGUMENTS: 
-    integer,  intent(IN)   :: n 
+! !ARGUMENTS:
+    integer,  intent(IN)   :: n
     integer,  intent(IN)   :: ntiles
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This routine initializes the required linked lists to hold the selected
 !  list of LSM variables
 !
-!   The arguments are: 
+!   The arguments are:
 !   \begin{description}
 !    \item[n]  index of the nest \newline
 !    \item[ntiles]  size of the tilespace \newline
 !   \end{description}
 !
-!   The routines invoked are: 
+!   The routines invoked are:
 !   \begin{description}
 !    \item[get\_moc\_attributes] (\ref{get_moc_attributes}) \newline
 !      adds history output objects to the linked lists and sets the
@@ -6179,7 +6093,7 @@ end subroutine LIS_histDataInit
 !      completes the setting of the elements in the history output objects
 !      and allocates the data structures related to the variable being output
 !    \item[LIS\_resetOutputVars] (\ref{LIS_resetOutputVars}) \newline
-!      resets the arrays storing the variable values. 
+!      resets the arrays storing the variable values.
 !   \end{description}
 !EOP
     type(ESMF_Config) :: modelSpecConfig
@@ -6189,8 +6103,8 @@ end subroutine LIS_histDataInit
     integer           :: grib_depthlvl
     integer           :: grib_snowlvl
 
-    !hkb--GRIB2 specific Depth below land surface = 106
-    !hkb--GRIB2 specific Snow level = 114
+    ! GRIB2 specific Depth below land surface = 106
+    ! GRIB2 specific Snow level = 114
     if (LIS_rc%wout == "grib2") then
        grib_depthlvl = 106
        grib_snowlvl  = 114
@@ -6204,18 +6118,20 @@ end subroutine LIS_histDataInit
     LIS_MOC_ROUTING_COUNT = 0
 
     inquire(file=LIS_rc%outputSpecFile(n),exist=file_exists)
-    if(.not.file_exists) then 
-       write(LIS_logunit,*) '[ERR] Model output attributes file does not exist...'
+    if(.not.file_exists) then
+       write(LIS_logunit,*) &
+            '[ERR] Model output attributes file does not exist...'
        write(LIS_logunit,*) '[ERR] Program stopping... '
        call LIS_endrun()
     endif
 
     modelSpecConfig = ESMF_ConfigCreate(rc=rc)
     call ESMF_ConfigLoadFile(modelSpecConfig,trim(LIS_rc%outputSpecFile(n)), &
-         rc=rc)     
+         rc=rc)
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"Streamflow:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "Streamflow",&
          "streamflow",&
          "streamflow",rc)
@@ -6226,7 +6142,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"RiverStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "RiverStor",&
          "River_Water_Storage",&
          "River Water Storage",rc)
@@ -6237,7 +6154,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"RiverDepth:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "RiverDepth",&
          "River_Depth",&
          "River Depth",rc)
@@ -6248,7 +6166,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"RiverVelocity:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "RiverFlowVelocity",&
          "River_Flow_Velocity",&
          "River Flow Velocity",rc)
@@ -6259,7 +6178,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"FloodQ:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "FloodQ",&
          "Floodplain_Water_Discharge",&
          "Floodplain Water Discharge",rc)
@@ -6270,7 +6190,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"FloodEvap:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "FloodEvap",&
          "Floodplain_evaporation",&
          "Floodplain evaporation",rc)
@@ -6281,7 +6202,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"FloodStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "FloodStor",&
          "Floodplain_Water_Storage",&
          "Floodplain Water Storage",rc)
@@ -6292,7 +6214,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"FloodDepth:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "FloodDepth",&
          "Floodplain_Depth",&
          "Floodplain Depth",rc)
@@ -6303,7 +6226,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"FloodVelocity:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "FloodVelocity",&
          "Floodplain Flow Velocity",&
          "Floodplain_Flow_Velocity",rc)
@@ -6314,7 +6238,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"FloodedFrac:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "FloodedFrac",&
          "Flooded Fraction",&
          "Flooded_Fraction",rc)
@@ -6325,7 +6250,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"FloodedArea:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "FloodedArea",&
          "Flooded Area",&
          "Flooded_Area",rc)
@@ -6336,7 +6262,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"SurfElev:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "SurfElev",&
          "Surface Water Elevation",&
          "Surface_Water_Elevation",rc)
@@ -6347,7 +6274,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"RunoffStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "RunoffStor",&
          "Runoff Reservoir Storage",&
          "Runoff_Reservoir_Storage",rc)
@@ -6358,7 +6286,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"BaseflowStor:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "BaseflowStor",&
          "Baseflow Reservoir Storage",&
          "Baseflow_Reservoir_Storage",rc)
@@ -6368,9 +6297,9 @@ end subroutine LIS_histDataInit
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,model_patch=.true.)
     endif
 
-
     call ESMF_ConfigFindLabel(modelSpecConfig,"RunoffDWI:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "RunoffDWI",&
          "Runoff Deep Water Infiltration",&
          "Runoff_Deep_Water_Infiltration",rc)
@@ -6381,7 +6310,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"BaseflowDWI:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "BaseflowDWI",&
          "Baseflow Deep Water Infiltration",&
          "Baseflow_Deep_Water_Infiltration",rc)
@@ -6392,7 +6322,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"SWS:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "SWS",&
          "Surface Water Storage",&
          "Surface_Water_Storage",rc)
@@ -6403,7 +6334,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"EvapWater:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "EvapWater",&
          "Evaporation_open_water",&
          "Evaporation_open_water",rc)
@@ -6414,7 +6346,8 @@ end subroutine LIS_histDataInit
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"EvapDif:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+    call get_moc_attributes(modelSpecConfig, &
+         LIS_histData(n)%head_routing_list,&
          "EvapDif",&
          "Differential_evaporation",&
          "Differential_evaporation",rc)
@@ -6423,7 +6356,7 @@ end subroutine LIS_histDataInit
             LIS_histData(n)%head_routing_list,&
             n,1,ntiles,(/"kg/m2s"/),1,(/"-"/),1,1,1,model_patch=.true.)
     endif
-    
+
     call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
 
     allocate(LIS_histData(n)%ptr_into_routing_list(LIS_MOC_ROUTING_COUNT))
@@ -6434,7 +6367,6 @@ end subroutine LIS_histDataInit
 
     call LIS_resetOutputVars(n,2) !for ROUTING
 
-
   end subroutine LIS_routingHistDataInit
 !BOP
 !
@@ -6442,8 +6374,8 @@ end subroutine LIS_histDataInit
 !  \label{get_moc_attributes}
 !
 ! !INTERFACE:
-subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, short_name, &
-                              standard_name, long_name, status)
+  subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, short_name, &
+       standard_name, long_name, status)
 !
 ! !DESCRIPTION:
 ! This routine reads the model output configuration attributes for
@@ -6458,7 +6390,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, short_name, &
 ! !USES:
    !NONE
 
-   implicit none
+    implicit none
 
 ! !ARGUMENTS:
 ! \begin{description}
@@ -6479,90 +6411,92 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, short_name, &
 !       output: flag indicating whether the output variable was selected \newline
 !               in the configuration (0-no, 1-yes)
 ! \end{description}
-   type(ESMF_Config), intent(inout)     :: modelSpecConfig
-   type(LIS_metadataEntry), pointer, intent(out) :: head_dataEntry
-   character(len=*), intent(in)         :: short_name
-   character(len=*), intent(in)         :: standard_name
-   character(len=*), intent(in)         :: long_name
-   integer, intent(inout)               :: status
-   
-   integer                              :: selectOpt
-   character(len=20)                    :: cfunit
-   integer                              :: rc
+    type(ESMF_Config), intent(inout)     :: modelSpecConfig
+    type(LIS_metadataEntry), pointer, intent(out) :: head_dataEntry
+    character(len=*), intent(in)         :: short_name
+    character(len=*), intent(in)         :: standard_name
+    character(len=*), intent(in)         :: long_name
+    integer, intent(inout)               :: status
 
-   type(LIS_metadataEntry), pointer     :: current, dataEntry
-   
-   ! status is an in/out argument.
-   !
-   ! Its input value is set by a call to ESMF_ConfigFindLabel, and it
-   ! indicates whether a label was found in the modelSpecConfig.
-   !
-   ! Its output value indicates whether the output variable associated
-   ! with the label was selected for output. 0 = no; 1 = yes.
+    integer                              :: selectOpt
+    character(len=20)                    :: cfunit
+    integer                              :: rc
 
-   if ( status == ESMF_SUCCESS ) then ! found label in modelSpecConfig
+    type(LIS_metadataEntry), pointer     :: current, dataEntry
 
-      call ESMF_ConfigGetAttribute(modelSpecConfig,selectOpt,&
-           default=0,rc=rc)
+    ! status is an in/out argument.
+    !
+    ! Its input value is set by a call to ESMF_ConfigFindLabel, and it
+    ! indicates whether a label was found in the modelSpecConfig.
+    !
+    ! Its output value indicates whether the output variable associated
+    ! with the label was selected for output. 0 = no; 1 = yes.
 
-      if ( selectOpt == 1 ) then
+    if ( status == ESMF_SUCCESS ) then ! found label in modelSpecConfig
 
-         status = 1 ! output variable was selected
+       call ESMF_ConfigGetAttribute(modelSpecConfig,selectOpt,&
+            default=0,rc=rc)
 
-         allocate(dataEntry)
-         if ( .not. associated(head_dataEntry) ) then
-            head_dataEntry => dataEntry
-         else
-            current => head_dataEntry
-            do while ( associated(current%next) )
-               current => current%next
-            enddo
-            current%next => dataEntry
-         endif
-         dataEntry%next => null()
+       if ( selectOpt == 1 ) then
 
-         dataEntry%selectOpt = selectOpt
+          status = 1 ! output variable was selected
 
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%units,rc=rc)
-         call convertToCFunits(dataEntry%units, cfunit)
+          allocate(dataEntry)
+          if ( .not. associated(head_dataEntry) ) then
+             head_dataEntry => dataEntry
+          else
+             current => head_dataEntry
+             do while ( associated(current%next) )
+                current => current%next
+             enddo
+             current%next => dataEntry
+          endif
+          dataEntry%next => null()
 
-         dataEntry%units = trim(cfunit)
+          dataEntry%selectOpt = selectOpt
 
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%dir,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%timeAvgOpt,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%minMaxOpt,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%stdOpt,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%vlevels,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%varId_def,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%gribSF,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%gribDis,rc=rc)
-         call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%gribCat,rc=rc)
-      
-         dataEntry%short_name=trim(short_name)
-         dataEntry%standard_name=trim(standard_name)
-         dataEntry%long_name=trim(long_name)
-      else
-         status = 0 ! output variable was not selected
-      endif
-   else
-      status = 0 ! label was not found in modelSpecConfig, therefore
-                 ! the output variable was not selected
-   endif
-   
-end subroutine get_moc_attributes
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%units,rc=rc)
+          call convertToCFunits(dataEntry%units, cfunit)
 
+          dataEntry%units = trim(cfunit)
+
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%dir,rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%timeAvgOpt,&
+               rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%minMaxOpt, &
+               rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%stdOpt,rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%vlevels,rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%varId_def, &
+               rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%gribSF,rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%gribDis,rc=rc)
+          call ESMF_ConfigGetAttribute(modelSpecConfig,dataEntry%gribCat,rc=rc)
+
+          dataEntry%short_name=trim(short_name)
+          dataEntry%standard_name=trim(standard_name)
+          dataEntry%long_name=trim(long_name)
+       else
+          status = 0 ! output variable was not selected
+       endif
+    else
+       status = 0 ! label was not found in modelSpecConfig, therefore
+                  ! the output variable was not selected
+    endif
+
+  end subroutine get_moc_attributes
 
 !BOP
-! 
+!
 ! !ROUTINE: allocate_dataEntry
 ! \label{allocate_dataEntry}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine allocate_dataEntry(dataEntry,nunits,ntiles,unittypes,ndirs,&
        dirtypes, model_patch)
 
     implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
     type(LIS_metadataEntry), pointer :: dataEntry
     integer                 :: nunits
     integer                 :: ntiles
@@ -6570,28 +6504,28 @@ end subroutine get_moc_attributes
     integer                 :: ndirs
     character(len=*)        :: dirtypes(ndirs)
     logical                 :: model_patch
-! 
-! !DESCRIPTION: 
-!  This routine initializes the datastructures required for the 
-!  specified output variable. 
+!
+! !DESCRIPTION:
+!  This routine initializes the datastructures required for the
+!  specified output variable.
 !EOP
-    integer                 :: i 
+    integer                 :: i
     character(len=20)       :: cfunit
 
-    if(dataEntry%selectOpt.ne.0) then 
+    if(dataEntry%selectOpt.ne.0) then
        if(dataEntry%timeAvgOpt.eq.2 .or. &
-            dataEntry%timeAvgOpt.eq.4) then 
+            dataEntry%timeAvgOpt.eq.4) then
           allocate(dataEntry%modelOutput(2,ntiles,dataEntry%vlevels))
        else
           allocate(dataEntry%modelOutput(1,ntiles,dataEntry%vlevels))
        endif
        allocate(dataEntry%count(ntiles,dataEntry%vlevels))
-       dataEntry%modelOutput = 0 
+       dataEntry%modelOutput = 0
        dataEntry%count = 0
-       dataEntry%diagFlag = 0 
+       dataEntry%diagFlag = 0
 
        dataEntry%nunits = nunits
-       allocate(dataEntry%unittypes(nunits))       
+       allocate(dataEntry%unittypes(nunits))
 
        do i=1,nunits
           call convertToCFunits(unittypes(i),cfunit)
@@ -6599,12 +6533,12 @@ end subroutine get_moc_attributes
        enddo
 
        dataEntry%ndirs = ndirs
-       allocate(dataEntry%dirtypes(ndirs))       
+       allocate(dataEntry%dirtypes(ndirs))
        do i=1,ndirs
           dataEntry%dirtypes(i) = dirtypes(i)
        enddo
 
-       if(dataEntry%minMaxOpt.ne.0) then 
+       if(dataEntry%minMaxOpt.ne.0) then
           allocate(dataEntry%minimum(ntiles,dataEntry%vlevels))
           allocate(dataEntry%maximum(ntiles,dataEntry%vlevels))
           ! Initialize the minimux and maximum fields to implausible values.
@@ -6615,17 +6549,17 @@ end subroutine get_moc_attributes
   end subroutine allocate_dataEntry
 
 !BOP
-! 
+!
 ! !ROUTINE: convertToCFunits
 ! \label{convertToCFunits}
 !
-! !INTERFACE: 
+! !INTERFACE:
   subroutine convertToCFunits(unit,cfunit)
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !   This routine converts the LIS specified units to CF compliant
-!   unit specifications. 
-! 
+!   unit specifications.
+!
 !EOP
 
     implicit none
@@ -6633,45 +6567,45 @@ end subroutine get_moc_attributes
     character(len=*)  :: unit
     character(len=*), intent(out)  :: cfunit
     cfunit = ""
-    if(unit.eq."W/m2") then 
+    if(unit.eq."W/m2") then
        cfunit = "W m-2"
-    elseif(unit.eq."J/m2") then 
+    elseif(unit.eq."J/m2") then
        cfunit = "J m-2"
-    elseif(unit.eq."kg/m2") then 
+    elseif(unit.eq."kg/m2") then
        cfunit = "kg m-2"
-    elseif(unit.eq."kg/m2s") then 
+    elseif(unit.eq."kg/m2s") then
        cfunit = "kg m-2 s-1"
-    elseif(unit.eq."kg/m2s2") then 
+    elseif(unit.eq."kg/m2s2") then
        cfunit = "kg m-2 s-2"
-    elseif(unit.eq."kg/m3") then 
+    elseif(unit.eq."kg/m3") then
        cfunit = "kg m-3"
-    elseif(unit.eq."m3/m3") then 
+    elseif(unit.eq."m3/m3") then
        cfunit = "m^3 m-3"
-    elseif(unit.eq."m/s") then 
+    elseif(unit.eq."m/s") then
        cfunit = "m s-1"
-    elseif(unit.eq."s/m") then 
+    elseif(unit.eq."s/m") then
        cfunit = "s m-1"
-    elseif(unit.eq."m3/s") then 
+    elseif(unit.eq."m3/s") then
        cfunit = "m3 s-1"
-    elseif(unit.eq."N/m2") then 
+    elseif(unit.eq."N/m2") then
        cfunit = "N m-2"
-    elseif(unit.eq."g/m2") then 
+    elseif(unit.eq."g/m2") then
        cfunit = "g m-2"
-    elseif(unit.eq."g/m2s") then 
+    elseif(unit.eq."g/m2s") then
        cfunit = "g m-2 s-1"
-    elseif(unit.eq."kg/kg") then 
+    elseif(unit.eq."kg/kg") then
        cfunit = "kg kg-1"
-    elseif(unit.eq."g/g") then 
+    elseif(unit.eq."g/g") then
        cfunit = "g g-1"
-    elseif(unit.eq."umol/m2s") then 
+    elseif(unit.eq."umol/m2s") then
        cfunit = "umol m-2 s-1"
-    elseif(unit.eq."mm/hr") then 
+    elseif(unit.eq."mm/hr") then
        cfunit = "mm hr-1"
-    elseif(unit.eq."km/day") then 
+    elseif(unit.eq."km/day") then
        cfunit = "km day-1"
-    elseif(unit.eq."J/kg") then 
+    elseif(unit.eq."J/kg") then
        cfunit = "J kg-1"
-    elseif(unit.eq."t/ha") then 
+    elseif(unit.eq."t/ha") then
        cfunit = "t ha-1"
     else
        cfunit = unit
@@ -6681,11 +6615,11 @@ end subroutine get_moc_attributes
 !BOP
 ! !ROUTINE: LIS_diagnoseSurfaceOutputVar
 ! \label{LIS_diagnoseSurfaceOutputVar}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_diagnoseSurfaceOutputVar(n, t, index, vlevel, value, unit,&
-                                          direction, valid_min, valid_max, &
-                                          surface_type)
+       direction, valid_min, valid_max, &
+       surface_type)
     implicit none
 ! !ARGUMENTS:
     integer, intent(in)           :: n
@@ -6698,41 +6632,41 @@ end subroutine get_moc_attributes
     real,    intent(in), optional :: valid_min
     real,    intent(in), optional :: valid_max
     integer, intent(in), optional :: surface_type
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This routine is the user callable interface to the LIS\_diagnoseOutputVar
 !  routine.
 !
 !  See LIS\_diagnoseOutputVar for more details.
-!EOP    
+!EOP
     integer                     :: tid
     logical                     :: model_patch
 
-    if(present(surface_type)) then 
+    if(present(surface_type)) then
        tid = LIS_surface(n,surface_type)%tile(t)%tile_id
-       model_patch = .true. 
+       model_patch = .true.
     else
        tid = t
-       model_patch = .false. 
+       model_patch = .false.
     endif
-    
+
     call LIS_diagnoseOutputVar(LIS_histData(n)%head_lsm_list,   &
          LIS_MOC_LSM_COUNT, LIS_histData(n)%ptr_into_lsm_list,&
          n, tid, index, vlevel, value, unit,&
          direction,valid_min,valid_max,model_patch)
-    
+
   end subroutine LIS_diagnoseSurfaceOutputVar
 
 !BOP
 ! !ROUTINE: LIS_diagnoseRoutingOutputVar
 ! \label{LIS_diagnoseRoutingOutputVar}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_diagnoseRoutingOutputVar(n, t, index, vlevel, value, unit,&
-                                          direction,valid_min,valid_max)
+       direction,valid_min,valid_max)
     implicit none
 ! !ARGUMENTS:
-    integer, intent(in)           :: n    
+    integer, intent(in)           :: n
     integer, intent(in)           :: t
     integer, intent(in)           :: index
     integer, intent(in)           :: vlevel
@@ -6741,13 +6675,13 @@ end subroutine get_moc_attributes
     character(len=*)              :: direction
     real,    intent(in), optional :: valid_min
     real,    intent(in), optional :: valid_max
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This routine is the user callable interface to the LIS\_diagnoseOutputVar
 !  routine.
 !
 !  See LIS\_diagnoseOutputVar for more details.
-!EOP    
+!EOP
 
     real    :: vmin, vmax
     integer :: gindex
@@ -6755,21 +6689,21 @@ end subroutine get_moc_attributes
     logical :: model_patch
 
     model_patch = .true.
-   
+
     if ( index /= -9999 ) then
 
-       if(PRESENT(valid_min)) then 
+       if(PRESENT(valid_min)) then
           vmin = valid_min
        else
           vmin = -1.0E+15
        endif
-       
-       if(PRESENT(valid_max)) then 
+
+       if(PRESENT(valid_max)) then
           vmax = valid_max
        else
           vmax = 1.0E+15
        endif
-       
+
        dataEntry => LIS_histData(n)%ptr_into_routing_list(index)%dataEntryPtr
        gindex = LIS_routing(n)%tile(t)%index
 
@@ -6783,13 +6717,13 @@ end subroutine get_moc_attributes
 !BOP
 ! !ROUTINE: LIS_diagnoseRTMOutputVar
 ! \label{LIS_diagnoseRTMOutputVar}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_diagnoseRTMOutputVar(n, t, index, vlevel, value, unit,&
-                                      direction,valid_min,valid_max)
+       direction,valid_min,valid_max)
     implicit none
 ! !ARGUMENTS:
-    integer, intent(in)           :: n    
+    integer, intent(in)           :: n
     integer, intent(in)           :: t
     integer, intent(in)           :: index
     integer, intent(in)           :: vlevel
@@ -6798,30 +6732,30 @@ end subroutine get_moc_attributes
     character(len=*)              :: direction
     real,    intent(in), optional :: valid_min
     real,    intent(in), optional :: valid_max
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This routine is the user callable interface to the LIS\_diagnoseOutputVar
 !  routine.
 !
 !  See LIS\_diagnoseOutputVar for more details.
-!EOP    
-  call LIS_diagnoseOutputVar(LIS_histData(n)%head_rtm_list, &
-       LIS_MOC_RTM_COUNT, LIS_histData(n)%ptr_into_rtm_list,&
-       n, t, index, vlevel, value, unit,  &
-       direction,valid_min,valid_max)
-    
+!EOP
+    call LIS_diagnoseOutputVar(LIS_histData(n)%head_rtm_list, &
+         LIS_MOC_RTM_COUNT, LIS_histData(n)%ptr_into_rtm_list,&
+         n, t, index, vlevel, value, unit,  &
+         direction,valid_min,valid_max)
+
   end subroutine LIS_diagnoseRTMOutputVar
 
 !BOP
 ! !ROUTINE: LIS_diagnoseIrrigationOutputVar
 ! \label{LIS_diagnoseIrrigationOutputVar}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_diagnoseIrrigationOutputVar(n, t, index, vlevel, value, unit,&
-                                      direction,valid_min,valid_max)
+       direction,valid_min,valid_max)
     implicit none
 ! !ARGUMENTS:
-    integer, intent(in)           :: n    
+    integer, intent(in)           :: n
     integer, intent(in)           :: t
     integer, intent(in)           :: index
     integer, intent(in)           :: vlevel
@@ -6830,30 +6764,30 @@ end subroutine get_moc_attributes
     character(len=*)              :: direction
     real,    intent(in), optional :: valid_min
     real,    intent(in), optional :: valid_max
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This routine is the user callable interface to the LIS\_diagnoseOutputVar
 !  routine.
 !
 !  See LIS\_diagnoseOutputVar for more details.
-!EOP    
+!EOP
     call LIS_diagnoseOutputVar(LIS_histData(n)%head_irrig_list, &
          LIS_MOC_IRRIG_COUNT, LIS_histData(n)%ptr_into_irrig_list,&
          n, t, index, vlevel, value, unit,  &
          direction,valid_min,valid_max)
-    
-end subroutine LIS_diagnoseIrrigationOutputVar
+
+  end subroutine LIS_diagnoseIrrigationOutputVar
 
 !BOP
 ! !ROUTINE: LIS_diagnoseOutputVar
 ! \label{LIS_diagnoseOutputVar}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_diagnoseOutputVar(head_dataEntry,&
-                                   count, ptr_into_list,&
-                                   n, t, index, vlevel, value, unit,&
-                                   direction,valid_min,valid_max,&
-                                   model_patch)
+       count, ptr_into_list,&
+       n, t, index, vlevel, value, unit,&
+       direction,valid_min,valid_max,&
+       model_patch)
     use  LIS_coreMod, only : LIS_domain
     use  LIS_logMod, only : LIS_endrun
     implicit none
@@ -6861,7 +6795,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
     type(LIS_metadataEntry), pointer, intent(in) :: head_dataEntry
     integer, intent(in)           :: count
     type(dep), dimension(count), intent(in) :: ptr_into_list
-    integer, intent(in)           :: n    
+    integer, intent(in)           :: n
     integer, intent(in)           :: t
     integer, intent(in)           :: index
     integer, intent(in)           :: vlevel
@@ -6871,13 +6805,13 @@ end subroutine LIS_diagnoseIrrigationOutputVar
     real,    intent(in), optional :: valid_min
     real,    intent(in), optional :: valid_max
     logical, intent(in), optional :: model_patch
-! 
-! !DESCRIPTION: 
-!  This routine maps the LSM, routing, or RTM specific variable to the 
+!
+! !DESCRIPTION:
+!  This routine maps the LSM, routing, or RTM specific variable to the
 !  appropriate variable in the given history output linked list, and it also
-!  enables time averaging of the variable, if specified. 
-! 
-!   The arguments are: 
+!  enables time averaging of the variable, if specified.
+!
+!   The arguments are:
 !   \begin{description}
 !   \item[head\_dataEntry]  head of the given history linked list \newline
 !   \item[n]  index of the nest \newline
@@ -6887,7 +6821,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !   \item[vlevel] vertical dimension of the variable, if any \newline
 !   \item[value]  value of the specified variable \newline
 !   \end{description}
-!EOP    
+!EOP
     real    :: vmin, vmax
     integer :: gindex
     type(LIS_metadataEntry), pointer :: dataEntry
@@ -6895,45 +6829,24 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 
     if ( index /= -9999 ) then
 
-       if(PRESENT(valid_min)) then 
+       if(PRESENT(valid_min)) then
           vmin = valid_min
        else
           vmin = -1.0E+15
        endif
-       
-       if(PRESENT(valid_max)) then 
+
+       if(PRESENT(valid_max)) then
           vmax = valid_max
        else
           vmax = 1.0E+15
        endif
-       
-       if(PRESENT(model_patch)) then 
+
+       if(PRESENT(model_patch)) then
           mpatch = model_patch
        else
           mpatch = .false.
        endif
 
-!#if 0
-!    dataEntry => head_dataEntry
-!
-!    do while ( associated(dataEntry) )
-!       if ( dataEntry%index == index ) then
-!          exit
-!       endif
-!       dataEntry => dataEntry%next
-!    enddo
-!
-!    if ( associated(dataEntry) ) then
-!       if ( dataEntry%selectOpt /= 0 ) then
-!          gindex = LIS_domain(n)%tile(t)%index
-!          call diagnoseDataEntry(n,dataEntry,                               &
-!                                 t,vlevel,value,unit,direction,vmin,vmax, &
-!                                 LIS_domain(n)%grid(gindex)%ntiles,       &
-!                                 LIS_domain(n)%grid(gindex)%subgrid_tiles,&
-!                                 mpatch)
-!       endif
-!    endif
-!#else
        dataEntry => ptr_into_list(index)%dataEntryPtr
        gindex = LIS_domain(n)%tile(t)%index
        call diagnoseDataEntry(n,dataEntry,                             &
@@ -6941,27 +6854,24 @@ end subroutine LIS_diagnoseIrrigationOutputVar
             LIS_domain(n)%grid(gindex)%ntiles,       &
             LIS_domain(n)%grid(gindex)%subgrid_tiles,&
             mpatch)
-!#endif
-
     endif
-    
+
   end subroutine LIS_diagnoseOutputVar
 
-
 !BOP
-! 
+!
 ! !ROUTINE: diagnoseDataEntry
 ! \label{diagnoseDataEntry}
-! 
+!
 ! !INTERFACE:
   subroutine diagnoseDataEntry(n,dataentry, t, vlevel,in_value, unit, &
-                               direction, vmin, vmax, nsiblings, &
-                               siblings,model_patch)
-! !USES: 
+       direction, vmin, vmax, nsiblings, &
+       siblings,model_patch)
+! !USES:
 
     implicit none
-! !ARGUMENTS:     
-    integer                 :: n 
+! !ARGUMENTS:
+    integer                 :: n
     type(LIS_metadataEntry) :: dataEntry
     integer                 :: t
     integer                 :: vlevel
@@ -6974,86 +6884,86 @@ end subroutine LIS_diagnoseIrrigationOutputVar
     integer, intent(in), dimension(nsiblings) :: siblings
     logical                 :: model_patch
 
-! 
-! !DESCRIPTION: 
-!  This routine maps a single output variable to the appropriate variable 
-!  in the generic list of the LIS history writer. 
+!
+! !DESCRIPTION:
+!  This routine maps a single output variable to the appropriate variable
+!  in the generic list of the LIS history writer.
 !EOP
     integer                 :: i
     logical                 :: unit_status
     logical                 :: dir_status
     real                    :: mfactor
     real                    :: value
-       
+
     unit_status = .false.
     do i=1,dataEntry%nunits
-       if(unit.eq.dataEntry%unittypes(i)) then 
-          unit_status = .true. 
+       if(unit.eq.dataEntry%unittypes(i)) then
+          unit_status = .true.
           exit
        endif
     enddo
-    
-    dir_status = .false. 
+
+    dir_status = .false.
     do i=1,dataEntry%ndirs
-       if(direction.eq.dataEntry%dirtypes(i)) then 
-          dir_status = .true. 
+       if(direction.eq.dataEntry%dirtypes(i)) then
+          dir_status = .true.
           exit
        endif
     enddo
-    
-    if(unit_status.and.dir_status) then 
+
+    if(unit_status.and.dir_status) then
        if(unit.eq.dataEntry%units) then
-          ! it is assumed that there will be only two 
-          ! directions. 
-          if(direction.eq.dataEntry%dir) then 
+          ! it is assumed that there will be only two
+          ! directions.
+          if(direction.eq.dataEntry%dir) then
              mfactor = 1.0
           else
              mfactor = -1.0
           endif
-          
-          if(in_value.ne.LIS_rc%udef) then 
+
+          if(in_value.ne.LIS_rc%udef) then
              ! Correct the direction of value
              value = in_value * mfactor
           else
              value = in_value
           endif
-          
-          if(mfactor.eq.1) then 
+
+          if(mfactor.eq.1) then
              dataEntry%valid_min = vmin
              dataEntry%valid_max = vmax
           else
              dataEntry%valid_min = vmax
              dataEntry%valid_max = vmin
           endif
-          if(value.ne.LIS_rc%udef) then 
+          if(value.ne.LIS_rc%udef) then
              ! accumulate values and record instantaneous values
              if(dataEntry%timeAvgOpt.eq.2) then
                 dataEntry%modelOutput(1,t,vlevel) = &
                      dataEntry%modelOutput(1,t,vlevel) + value
                 dataEntry%modelOutput(2,t,vlevel) = value
-                !$OMP CRITICAL 
+                !$OMP CRITICAL
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
-                !$OMP END CRITICAL 
+                !$OMP END CRITICAL
                 ! accumulate values
              elseif(dataEntry%timeAvgOpt.eq.1 .or. &
-                  dataEntry%timeAvgOpt.eq.3) then 
+                  dataEntry%timeAvgOpt.eq.3) then
                 dataEntry%modelOutput(1,t,vlevel) = &
                      dataEntry%modelOutput(1,t,vlevel) + value
-                !$OMP CRITICAL 
+                !$OMP CRITICAL
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
-                !$OMP END CRITICAL 
+                !$OMP END CRITICAL
                 ! record data for _tavg and _acc
              elseif(dataEntry%timeAvgOpt.eq.4) then
                 dataEntry%modelOutput(1,t,vlevel) = &
                      dataEntry%modelOutput(1,t,vlevel) + value
                 dataEntry%modelOutput(2,t,vlevel) = &
                      dataEntry%modelOutput(2,t,vlevel) + value
-                !$OMP CRITICAL 
+                !$OMP CRITICAL
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
-                !$OMP END CRITICAL 
+                !$OMP END CRITICAL
                 ! record instantaneous values
              else if (dataEntry%timeAvgOpt.eq.0) then
                 dataEntry%modelOutput(1,t,vlevel) = value
@@ -7063,7 +6973,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
                      trim(dataEntry%standard_name)
                 call LIS_endrun
              endif
-             
+
              if ( dataEntry%minMaxOpt /= 0 ) then
                 if ( value < dataEntry%minimum(t,vlevel) ) then
                    do i = 1, nsiblings
@@ -7077,42 +6987,42 @@ end subroutine LIS_diagnoseIrrigationOutputVar
                 endif
              endif
           endif
-          dataEntry%diagflag = 1 
-          
+          dataEntry%diagflag = 1
+
        endif
     endif
-    if(.not.unit_status) then 
+    if(.not.unit_status) then
        write(LIS_logunit,*) '[ERR] ',trim(dataEntry%units),&
             ' for field ',trim(dataEntry%standard_name),' is not defined '
        write(LIS_logunit,*) '[ERR] for diagnostic output...'
        write(LIS_logunit,*) '[ERR] supported unit types: ',dataEntry%unittypes
        write(LIS_logunit,*) '[ERR] Program stopping ..'
-       call LIS_endrun()       
+       call LIS_endrun()
     endif
-    if(.not.dir_status) then 
+    if(.not.dir_status) then
        write(LIS_logunit,*) '[ERR] ',trim(dataEntry%dir),&
             ' for field ',trim(dataEntry%standard_name),' is not defined '
        write(LIS_logunit,*) '[ERR] for diagnostic output...'
        write(LIS_logunit,*) '[ERR] supported direction types: ',&
             dataEntry%dirtypes
        write(LIS_logunit,*) '[ERR] Program stopping ..'
-       call LIS_endrun()       
+       call LIS_endrun()
     endif
   end subroutine diagnoseDataEntry
 
 !BOP
-! 
+!
 ! !ROUTINE: diagnoseRoutingDataEntry
 ! \label{diagnoseRoutingDataEntry}
-! 
+!
 ! !INTERFACE:
   subroutine diagnoseRoutingDataEntry(n,dataentry, t, vlevel,in_value, unit, &
-                               direction, vmin, vmax)
-! !USES: 
+       direction, vmin, vmax)
+! !USES:
 
     implicit none
-! !ARGUMENTS:     
-    integer                 :: n 
+! !ARGUMENTS:
+    integer                 :: n
     type(LIS_metadataEntry) :: dataEntry
     integer                 :: t
     integer                 :: vlevel
@@ -7122,85 +7032,85 @@ end subroutine LIS_diagnoseIrrigationOutputVar
     real                    :: vmin
     real                    :: vmax
 
-! 
-! !DESCRIPTION: 
-!  This routine maps a single output variable to the appropriate variable 
-!  in the generic list of the LIS history writer. 
+!
+! !DESCRIPTION:
+!  This routine maps a single output variable to the appropriate variable
+!  in the generic list of the LIS history writer.
 !EOP
     integer                 :: i
     logical                 :: unit_status
     logical                 :: dir_status
     real                    :: mfactor
     real                    :: value
-       
+
     unit_status = .false.
     do i=1,dataEntry%nunits
-       if(unit.eq.dataEntry%unittypes(i)) then 
-          unit_status = .true. 
+       if(unit.eq.dataEntry%unittypes(i)) then
+          unit_status = .true.
           exit
        endif
     enddo
-    
-    dir_status = .false. 
+
+    dir_status = .false.
     do i=1,dataEntry%ndirs
-       if(direction.eq.dataEntry%dirtypes(i)) then 
-          dir_status = .true. 
+       if(direction.eq.dataEntry%dirtypes(i)) then
+          dir_status = .true.
           exit
        endif
     enddo
-    
-    if(unit_status.and.dir_status) then 
+
+    if(unit_status.and.dir_status) then
        if(unit.eq.dataEntry%units) then
-          ! it is assumed that there will be only two 
-          ! directions. 
-          if(direction.eq.dataEntry%dir) then 
+          ! it is assumed that there will be only two
+          ! directions.
+          if(direction.eq.dataEntry%dir) then
              mfactor = 1.0
           else
              mfactor = -1.0
           endif
-          
-          if(in_value.ne.LIS_rc%udef) then 
+
+          if(in_value.ne.LIS_rc%udef) then
              ! Correct the direction of value
              value = in_value * mfactor
           else
              value = in_value
           endif
-          
-          if(mfactor.eq.1) then 
+
+          if(mfactor.eq.1) then
              dataEntry%valid_min = vmin
              dataEntry%valid_max = vmax
           else
              dataEntry%valid_min = vmax
              dataEntry%valid_max = vmin
           endif
-          if(value.ne.LIS_rc%udef) then 
+          if(value.ne.LIS_rc%udef) then
              ! accumulate values and record instantaneous values
-             if(dataEntry%timeAvgOpt.eq.2) then 
+             if(dataEntry%timeAvgOpt.eq.2) then
                 dataEntry%modelOutput(1,t,vlevel) = &
                      dataEntry%modelOutput(1,t,vlevel) + value
                 dataEntry%modelOutput(2,t,vlevel) = value
-                !$OMP CRITICAL 
+                !$OMP CRITICAL
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
-                !$OMP END CRITICAL 
+                !$OMP END CRITICAL
                 ! accumulate values
              elseif(dataEntry%timeAvgOpt.eq.1 .or. &
-                  dataEntry%timeAvgOpt.eq.3) then 
+                  dataEntry%timeAvgOpt.eq.3) then
                 dataEntry%modelOutput(1,t,vlevel) = &
                      dataEntry%modelOutput(1,t,vlevel) + value
-                !$OMP CRITICAL 
+                !$OMP CRITICAL
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
-                !$OMP END CRITICAL 
-             elseif(dataEntry%timeAvgOpt.eq.4) then 
+                !$OMP END CRITICAL
+             elseif(dataEntry%timeAvgOpt.eq.4) then
                 dataEntry%modelOutput(1,t,vlevel) = &
                      dataEntry%modelOutput(1,t,vlevel) + value
                 dataEntry%modelOutput(2,t,vlevel) = &
                      dataEntry%modelOutput(2,t,vlevel) + value
-                !$OMP CRITICAL 
+                !$OMP CRITICAL
                 dataEntry%count(t,vlevel) = &
                      dataEntry%count(t,vlevel)+1
-                !$OMP END CRITICAL 
+                !$OMP END CRITICAL
 
                 ! record instantaneous values
              else if (dataEntry%timeAvgOpt.eq.0) then
@@ -7211,53 +7121,53 @@ end subroutine LIS_diagnoseIrrigationOutputVar
                      trim(dataEntry%standard_name)
                 call LIS_endrun
              endif
-             
+
           endif
-          dataEntry%diagflag = 1 
-          
+          dataEntry%diagflag = 1
+
        endif
     endif
-    if(.not.unit_status) then 
+    if(.not.unit_status) then
        write(LIS_logunit,*) '[ERR] ',trim(dataEntry%units),&
             ' for field ',trim(dataEntry%standard_name),' is not defined '
        write(LIS_logunit,*) '[ERR] for diagnostic output...'
        write(LIS_logunit,*) '[ERR] supported unit types: ',dataEntry%unittypes
        write(LIS_logunit,*) '[ERR] Program stopping ..'
-       call LIS_endrun()       
+       call LIS_endrun()
     endif
-    if(.not.dir_status) then 
+    if(.not.dir_status) then
        write(LIS_logunit,*) '[ERR] ',trim(dataEntry%dir),&
             ' for field ',trim(dataEntry%standard_name),' is not defined '
        write(LIS_logunit,*) '[ERR] for diagnostic output...'
        write(LIS_logunit,*) '[ERR] supported direction types: ',&
             dataEntry%dir
        write(LIS_logunit,*) '[ERR] Program stopping ..'
-       call LIS_endrun()       
+       call LIS_endrun()
     endif
   end subroutine diagnoseRoutingDataEntry
 !BOP
 ! !ROUTINE: LIS_resetOutputVars
 ! \label{LIS_resetOutputVars}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_resetOutputVars(n,group)
 ! !ARGUMENTS:
-    integer, intent(in) :: n 
+    integer, intent(in) :: n
     integer, intent(in) :: group
-! 
-! !DESCRIPTION: 
-!   This routine resets the specified variables to enable time averaging 
-!    for the next history output step. 
+!
+! !DESCRIPTION:
+!   This routine resets the specified variables to enable time averaging
+!    for the next history output step.
 !
 !   It also resets the minimum and maximum fields.
-!   
-!   The arguments are: 
+!
+!   The arguments are:
 !   \begin{description}
 !   \item[n]  index of the nest \newline
 !   \item[group]  output group (1- LSM, 2-ROUTING, 3-RTM) \newline
 !   \end{description}
 !EOP
-    type(LIS_metadataEntry), pointer :: dataEntry 
+    type(LIS_metadataEntry), pointer :: dataEntry
 
     if(group.eq.1) then !LSM output
        dataEntry => LIS_histData(n)%head_lsm_list
@@ -7270,7 +7180,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
     endif
 
     do while ( associated(dataEntry) )
-       if(dataEntry%selectOpt.ne.0) then 
+       if(dataEntry%selectOpt.ne.0) then
           call resetOutputVar(dataEntry)
        endif
        dataEntry => dataEntry%next
@@ -7278,22 +7188,21 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 
   end subroutine LIS_resetOutputVars
 
-
 !BOP
 ! !ROUTINE: resetOutputVar
 ! \label{resetOutputVar}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine resetOutputVar(dataEntry)
 
-  implicit none
+    implicit none
 
 ! !ARGUMENTS:
-   type(LIS_metadataEntry), pointer :: dataEntry
+    type(LIS_metadataEntry), pointer :: dataEntry
 
-! !DESCRIPTION: 
-!   This routine resets the specified variable to enable time averaging 
-!   for the next history output step. 
+! !DESCRIPTION:
+!   This routine resets the specified variable to enable time averaging
+!   for the next history output step.
 !
 !   It also resets the minimum and maximum fields.
 !
@@ -7302,32 +7211,31 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !   \item[dataEntry] data structure to reset
 !   \end{description}
 !EOP
-      dataEntry%modelOutput = 0.0
-      dataEntry%count = 0 
-      dataEntry%diagFlag = 0 
+    dataEntry%modelOutput = 0.0
+    dataEntry%count = 0
+    dataEntry%diagFlag = 0
 
-      if ( dataEntry%minMaxOpt .ne. 0 ) then
-         dataEntry%minimum = LIS_MOC_MAX_NUM
-         dataEntry%maximum = LIS_MOC_MIN_NUM
-      endif
+    if ( dataEntry%minMaxOpt .ne. 0 ) then
+       dataEntry%minimum = LIS_MOC_MAX_NUM
+       dataEntry%maximum = LIS_MOC_MIN_NUM
+    endif
 
   end subroutine resetOutputVar
 
-          
 !BOP
 ! !ROUTINE: LIS_rescaleCount
 ! \label{LIS_rescaleCount}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_rescaleCount(n,group)
-! 
+!
     use LIS_mpiMod
 
-     implicit none
+    implicit none
 ! !ARGUMENTS:
-     integer, intent(in) :: n, group
+    integer, intent(in) :: n, group
 
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !   This routine rescales the count.  dataEntry%count records
 !   how many time the corresponding variable has been diagnosed.
 !   This count is incremented each time the diagnose routine is called
@@ -7339,93 +7247,66 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !   count is used to time-average output.  count is not used when writing
 !   accumulated output.  count is 1 when diagnosing instantaneous output.
 !
-!   The arguments are: 
+!   The arguments are:
 !   \begin{description}
 !   \item[n]  index of the nest \newline
 !   \item[group]  output group (1 = LSM; 2 = ROUTING; 3 = RTM) \newline
 !   \end{description}
 !EOP
 
-     type(LIS_metadataEntry), pointer :: dataEntry 
-     integer :: count
-     integer :: k
-     integer :: ierr
-     
-     if(group.eq.1) then !LSM output
-        dataEntry => LIS_histData(n)%head_lsm_list
-     elseif(group.eq.2) then !ROUTING
-        dataEntry => LIS_histData(n)%head_routing_list
-     elseif(group.eq.3) then !RTM
-        dataEntry => LIS_histData(n)%head_rtm_list
-     elseif(group.eq.4) then !Irrigation
-        dataEntry => LIS_histData(n)%head_irrig_list
-     endif
+    type(LIS_metadataEntry), pointer :: dataEntry
+    integer :: count
+    integer :: k
+    integer :: ierr
 
-     do while ( associated(dataEntry) )
-        if(dataEntry%selectOpt.ne.0) then
-           do k=1,dataEntry%vlevels
-!#if (defined SPMD)
-!              call mpi_reduce(sum(dataEntry%count(:,k)),&
-!                   count, 1, MPI_INTEGER, MPI_SUM, 0, &
-!                   LIS_mpi_comm,ierr)
-!#else
-!              count = sum(dataEntry%count(:,k))
-!#endif
+    if(group.eq.1) then !LSM output
+       dataEntry => LIS_histData(n)%head_lsm_list
+    elseif(group.eq.2) then !ROUTING
+       dataEntry => LIS_histData(n)%head_routing_list
+    elseif(group.eq.3) then !RTM
+       dataEntry => LIS_histData(n)%head_rtm_list
+    elseif(group.eq.4) then !Irrigation
+       dataEntry => LIS_histData(n)%head_irrig_list
+    endif
+
+    do while ( associated(dataEntry) )
+       if(dataEntry%selectOpt.ne.0) then
+          do k=1,dataEntry%vlevels
 #if (defined SPMD)
-              call mpi_reduce(dataEntry%diagFlag,&
-                   count, 1, MPI_INTEGER, MPI_SUM, 0, &
-                   LIS_mpi_comm,ierr)
+             call mpi_reduce(dataEntry%diagFlag,&
+                  count, 1, MPI_INTEGER, MPI_SUM, 0, &
+                  LIS_mpi_comm,ierr)
 #else
-              count = dataEntry%diagflag
+             count = dataEntry%diagflag
 #endif
-              if(LIS_masterproc) then 
-                 if(count.eq.0) then 
-                    write(LIS_logunit,*) '[ERR] ',dataEntry%short_name,&
-                         ' field is not defined'
-                    write(LIS_logunit,*) '[ERR] for diagnostic output...'
-                    write(LIS_logunit,*) '[ERR] Please exclude it from the model output attributes table'
-                    write(LIS_logunit,*) '[ERR] Program stopping ..'
-                    call LIS_endrun()
-                 endif
-              endif
-           enddo
-
-#if 0        
-           ! Rescale the count when the timeAvgOpt indicates to use
-           ! time averaging.
-           ! If timeAvgOpt indicates instantaneous-only or accumulate
-           ! then there is no need to rescale the count
-
-           if ( (dataEntry%timeAvgOpt == 1) .or. &
-                (dataEntry%timeAvgOpt == 2) ) then 
-              do k=1,dataEntry%vlevels
-                 do m=1,LIS_rc%max_model_types
-                    if(dataEntry%count(m,k).gt.0) then 
-                       dataEntry%count(m,k) = dataEntry%count(m,k) / &
-                                              LIS_rc%npatch(n,m)
-                   endif
-                 enddo
-              enddo
-           endif
-#endif
-           
-        endif
-        dataEntry => dataEntry%next
-     enddo
+             if(LIS_masterproc) then
+                if(count.eq.0) then
+                   write(LIS_logunit,*) '[ERR] ',dataEntry%short_name,&
+                        ' field is not defined'
+                   write(LIS_logunit,*) '[ERR] for diagnostic output...'
+                   write(LIS_logunit,*) '[ERR] Please exclude it from ' // &
+                        'the model output attributes table'
+                   write(LIS_logunit,*) '[ERR] Program stopping ..'
+                   call LIS_endrun()
+                endif
+             endif
+          enddo
+       endif
+       dataEntry => dataEntry%next
+    enddo
 
   end subroutine LIS_rescaleCount
-
 
 !BOP
 ! !ROUTINE: register_dataEntry
 ! \label{register_dataEntry}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine register_dataEntry(count,lis_moc_index,head_dataEntry,&
-                                n,nunits,ntiles,&
-                                unittypes,ndirs,dirtypes,form,gribsfc,griblvl,&
-                                model_patch)
-  implicit none
+       n,nunits,ntiles,&
+       unittypes,ndirs,dirtypes,form,gribsfc,griblvl,&
+       model_patch)
+    implicit none
 ! !ARGUMENTS:
     integer                 :: count
     integer                 :: lis_moc_index
@@ -7440,13 +7321,13 @@ end subroutine LIS_diagnoseIrrigationOutputVar
     integer                 :: gribsfc
     integer                 :: griblvl
     logical, optional       :: model_patch
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  This routine completes the assignment of elements of the history
 !  output linked list object corresponding to the variable given by
 !  lis\_moc\_index.
 !
-!   The arguments are: 
+!   The arguments are:
 !   \begin{description}
 !   \item[lis\_moc\_index] variable to process
 !   \item[head\_dataEntry] head of the given history output linked list
@@ -7461,106 +7342,106 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !   \item[griblvl] type of GRIB level
 !   \end{description}
 !
-!   The routines invoked are: 
+!   The routines invoked are:
 !   \begin{description}
 !    \item[allocate\_dataEntry] (\ref{allocate_dataEntry}) \newline
 !      allocates the data structures related to the variable being output
 !   \end{description}
 !EOP
-!   
-      type(LIS_metadataEntry), pointer :: dataEntry
-      logical                          :: model_patch_tmp
-      integer                          :: i, ierr
+!
+    type(LIS_metadataEntry), pointer :: dataEntry
+    logical                          :: model_patch_tmp
+    integer                          :: i, ierr
 
-      if(present(model_patch)) then 
-         model_patch_tmp = model_patch
-      else
-         model_patch_tmp = .false.
-      endif
+    if(present(model_patch)) then
+       model_patch_tmp = model_patch
+    else
+       model_patch_tmp = .false.
+    endif
 
-      count = count + 1
-      lis_moc_index = count
+    count = count + 1
+    lis_moc_index = count
 
-      dataEntry => head_dataEntry
-      do while ( associated(dataEntry%next) )
-         dataEntry => dataEntry%next
-      enddo
+    dataEntry => head_dataEntry
+    do while ( associated(dataEntry%next) )
+       dataEntry => dataEntry%next
+    enddo
 
-      dataEntry%index   = lis_moc_index
-      dataEntry%form    = form
-      dataEntry%gribSfc = gribsfc
-      dataEntry%gribLvl = griblvl
+    dataEntry%index   = lis_moc_index
+    dataEntry%form    = form
+    dataEntry%gribSfc = gribsfc
+    dataEntry%gribLvl = griblvl
 
-      call allocate_dataEntry(dataEntry,nunits,ntiles,unittypes, &
-                              ndirs,dirtypes, model_patch_tmp)
+    call allocate_dataEntry(dataEntry,nunits,ntiles,unittypes, &
+         ndirs,dirtypes, model_patch_tmp)
 
-      ierr = -1
-      do i = 1,dataEntry%ndirs
-         if ( dataEntry%dir == dataEntry%dirtypes(i) ) then 
-            ierr = i
-            exit
-         endif
-      enddo
+    ierr = -1
+    do i = 1,dataEntry%ndirs
+       if ( dataEntry%dir == dataEntry%dirtypes(i) ) then
+          ierr = i
+          exit
+       endif
+    enddo
 
-      if ( ierr == -1 ) then 
-         write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
-                              dataEntry%standard_name,       &
-                              ' with direction type of ',    &
-                              dataEntry%dir,                 &
-                              ' is not defined'
-         write(LIS_logunit,*) '[ERR] for diagnostic output.'
-         write(LIS_logunit,*) '[ERR] Acceptable options are:'
-         do i = 1,dataEntry%ndirs
-            write(LIS_logunit,*) '[ERR] ',trim(dataEntry%dirtypes(i))
-         enddo
-         write(LIS_logunit,*) '[ERR] Program stopping.'
-         call LIS_endrun()
-      endif          
+    if ( ierr == -1 ) then
+       write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+            dataEntry%standard_name,       &
+            ' with direction type of ',    &
+            dataEntry%dir,                 &
+            ' is not defined'
+       write(LIS_logunit,*) '[ERR] for diagnostic output.'
+       write(LIS_logunit,*) '[ERR] Acceptable options are:'
+       do i = 1,dataEntry%ndirs
+          write(LIS_logunit,*) '[ERR] ',trim(dataEntry%dirtypes(i))
+       enddo
+       write(LIS_logunit,*) '[ERR] Program stopping.'
+       call LIS_endrun()
+    endif
 
-      ierr = -1
-      do i = 1,dataEntry%nunits
-         if ( dataEntry%units == dataEntry%unittypes(i) ) then 
-            ierr = i
-            exit
-         endif
-      enddo    
+    ierr = -1
+    do i = 1,dataEntry%nunits
+       if ( dataEntry%units == dataEntry%unittypes(i) ) then
+          ierr = i
+          exit
+       endif
+    enddo
 
-      if ( ierr == -1 ) then 
-         write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
-                              dataEntry%standard_name,       &
-                              ' in units of ',               &
-                              dataEntry%units,               &
-                              ' is not defined'
-         write(LIS_logunit,*) '[ERR] for diagnostic output.'
-         write(LIS_logunit,*) '[ERR] Program stopping.'
-         do i = 1,dataEntry%nunits
-            write(LIS_logunit,*) '[ERR] Acceptable options are:'
-            write(LIS_logunit,*) '[ERR] ',trim(dataEntry%unittypes(i))
-         enddo    
-         call LIS_endrun()
-      endif
+    if ( ierr == -1 ) then
+       write(LIS_logunit,*) '[ERR] register_dataEntry: ', &
+            dataEntry%standard_name,       &
+            ' in units of ',               &
+            dataEntry%units,               &
+            ' is not defined'
+       write(LIS_logunit,*) '[ERR] for diagnostic output.'
+       write(LIS_logunit,*) '[ERR] Program stopping.'
+       do i = 1,dataEntry%nunits
+          write(LIS_logunit,*) '[ERR] Acceptable options are:'
+          write(LIS_logunit,*) '[ERR] ',trim(dataEntry%unittypes(i))
+       enddo
+       call LIS_endrun()
+    endif
 
   end subroutine register_dataEntry
 
 !BOP
 ! !ROUTINE: set_ptr_into_list
 ! \label{set_ptr_into_list}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine set_ptr_into_list(count, head, array)
-     implicit none
+    implicit none
 ! !ARGUMENTS:
-     integer                          :: count
-     type(LIS_metadataEntry), pointer :: head
-     type(dep), dimension(count)      :: array
-! 
-! !DESCRIPTION: 
+    integer                          :: count
+    type(LIS_metadataEntry), pointer :: head
+    type(dep), dimension(count)      :: array
+!
+! !DESCRIPTION:
 !  This routine takes an array of pointers and sets each element of the
 !  array to point directly to its corresponding element in the given
 !  history output linked list.  This allows for direct access to the
 !  elements in the history output linked list.
 !
-!   The arguments are: 
+!   The arguments are:
 !   \begin{description}
 !   \item[count] number of elements in the given history output linked list
 !   \item[head] head of the given history output linked list
@@ -7568,16 +7449,16 @@ end subroutine LIS_diagnoseIrrigationOutputVar
 !                the given history output linked list
 !   \end{description}
 !EOP
-!   
+!
 
-     type(LIS_metadataEntry), pointer :: dataEntry
-     integer :: i
+    type(LIS_metadataEntry), pointer :: dataEntry
+    integer :: i
 
-     dataEntry => head
-     do i = 1, count
-        array(i)%dataEntryPtr => dataEntry
-        dataEntry => dataEntry%next
-     enddo
+    dataEntry => head
+    do i = 1, count
+       array(i)%dataEntryPtr => dataEntry
+       dataEntry => dataEntry%next
+    enddo
 
   end subroutine set_ptr_into_list
 
