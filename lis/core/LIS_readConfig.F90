@@ -72,6 +72,9 @@ subroutine LIS_readConfig()
   character(len=LIS_CONST_PATH_LEN) :: diag_dir
   integer :: ierr ! EMK
   integer, external  :: LIS_create_subdirs
+  external :: LIS_mapSurfaceModelType
+  external :: LIS_initialize_registries
+
 ! ______________________________________________________________
 
   if ( LIS_masterproc ) then
