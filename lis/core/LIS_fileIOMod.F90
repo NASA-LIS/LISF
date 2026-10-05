@@ -45,14 +45,17 @@ module LIS_fileIOMod
   public :: LIS_create_stats_filename    ! create a stats filename
   public :: LIS_create_dapert_filename   ! create a perturbations file
   public :: LIS_create_innov_filename    ! create an innovations filename
-  public :: LIS_create_incr_filename     ! create an analysis increments filename
+  public :: LIS_create_incr_filename     ! create an analysis increments
+                                         ! filename
   public :: LIS_create_daspread_filename ! create an innovations filename
   public :: LIS_create_obs_filename      ! create an observations filename
   public :: LIS_create_gain_filename
-  public :: LIS_putget                   !a generic read/write method.
-  public :: LIS_readData                 !generic method for reading surface parameters
-  public :: LIS_readDomainConfigSpecs    !generic method to read configurable options
-                                         !for a particular surface dataset
+  public :: LIS_putget                   ! a generic read/write method.
+  public :: LIS_readData                 ! generic method for reading surface
+                                         ! parameters
+  public :: LIS_readDomainConfigSpecs    ! generic method to read configurable
+                                         ! options for a particular surface
+                                         ! dataset
   public :: LIS_checkDomainExtents       !checks if the data domain extents are
                                          !contained in the LIS running domain
   public :: LIS_read_param
@@ -70,9 +73,9 @@ module LIS_fileIOMod
      module procedure read2Ddata
 !
 ! !DESCRIPTION:
-!  Routine to read 2d data from a binary file, with direct access format. A special
-!  routine is required to read the landcover data since it includes a distribution of
-!  vegetation types at each grid point.
+!  Routine to read 2d data from a binary file, with direct access format. A
+!  special routine is required to read the landcover data since it includes a
+!  distribution of vegetation types at each grid point.
 !
 !EOP
   end interface LIS_readData
@@ -229,7 +232,7 @@ contains
     character(len=LIS_CONST_PATH_LEN) :: out_dname
     integer            :: ios
 
-    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI
+    ! Calls to 'system' fail when using SGI MPT as the MPI
     ! implementation on Pleiades. We replace with a C wrapper function
     ! that calls the 'mkdir' standard POSIX function. This requires
     ! defining the C wrapper function, and specifying new variables to
@@ -256,7 +259,7 @@ contains
     elseif(LIS_rc%wstyle.eq."WMO convention") then
        ! If output style is "WMO convention", ensure that the below
        ! sub-directories are created before other parts of LIS will
-       ! try to write datasets into those sub-directories. - Mocko
+       ! try to write datasets into those sub-directories.
        out_dname = trim(LIS_rc%odir)
        if (trim(mname).eq."SURFACEMODEL") then
           continue
@@ -290,10 +293,9 @@ contains
 #if ( defined AIX )
     call system('mkdir -p '//trim(out_dname))
 #else
-    ! EMK...Calls to 'system' fail when using SGI MPT as the MPI
+    ! Calls to 'system' fail when using SGI MPT as the MPI
     ! implementation on Pleiades. We replace with a C wrapper function
     ! that calls the 'mkdir' standard POSIX function.
-    !         ios = system('mkdir -p '//trim(out_dname))
     c_string = trim(out_dname)
     ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
 #endif
@@ -323,7 +325,8 @@ contains
     character(len=*), intent(out)          :: fname
     character(len=*), intent(in), optional :: model_name ! needed for gswp run
     character(len=*), intent(in), optional :: odir ! needed for gswp run
-    real, intent(in), optional             :: writeint ! output writing interval
+    real, intent(in), optional             :: writeint ! output writing
+                                                       ! interval
 !
 ! !DESCRIPTION:
 !  Create the file name for the output data files. It creates both the
@@ -337,11 +340,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!      <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!      <extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -349,7 +354,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!     03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -698,7 +704,8 @@ contains
                //'_GP.'//'LIS-NRT-JULES'
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Land surface model for 557WW NRT forecast convention ', &
+               '[ERR] Invalid Land surface model for 557WW NRT forecast ' // &
+               'convention ', &
                trim(LIS_rc%lsm)
           call LIS_endrun()
        end if
@@ -715,7 +722,8 @@ contains
           continue
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Routing model for 557WW NRT forecast convention ', &
+               '[ERR] Invalid Routing model for 557WW NRT forecast ' // &
+               'convention ', &
                trim(LIS_rc%routingmodel)
           call LIS_endrun()
        end if
@@ -745,13 +753,6 @@ contains
        end if
        write(unit=fhr, fmt='(i3.3)') hr
 
-!       dname = trim(dname) &
-!            //'_GR.'//trim(fproj)//trim(fres2) &
-!            //'_AR.'//trim(LIS_rc%area_of_data) &
-!            //'_PA.'//trim(model_name) &
-!            //'_DD.'//trim(cdate1) &
-!            //'_DT.'//trim(cdate) &
-!            //'_DF'
        dname = trim(dname) &
             //'_GR.'//trim(fproj)//trim(fres2) &
             //'_AR.'//trim(LIS_rc%area_of_data) &
@@ -947,7 +948,8 @@ contains
     logical         , intent(in)           :: flag
     character(len=*), intent(in), optional :: model_name ! needed for gswp run
     character(len=*), intent(in), optional :: odir ! needed for gswp run
-    real, intent(in), optional             :: writeint ! output writing interval
+    real, intent(in), optional             :: writeint ! output writing
+                                                       ! interval
 !
 ! !DESCRIPTION:
 !  Create the file name for the output data files. It creates both the
@@ -961,11 +963,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -973,7 +977,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!     03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -1425,7 +1430,8 @@ contains
                //'_GP.'//'LIS-NRT-JULES'
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Land surface model for 557WW NRT forecast convention ', &
+               '[ERR] Invalid Land surface model for 557WW NRT forecast ' // &
+               'convention ', &
                trim(LIS_rc%lsm)
           call LIS_endrun()
        end if
@@ -1442,7 +1448,8 @@ contains
           continue
        else
           write(LIS_logunit,*) &
-               '[ERR] Invalid Routing model for 557WW NRT forecast convention ', &
+               '[ERR] Invalid Routing model for 557WW NRT forecast ' // &
+               'convention ', &
                trim(LIS_rc%routingmodel)
           call LIS_endrun()
        end if
@@ -1472,13 +1479,6 @@ contains
        end if
        write(unit=fhr, fmt='(i3.3)') hr
 
-!       dname = trim(dname) &
-!            //'_GR.'//trim(fproj)//trim(fres2) &
-!            //'_AR.'//trim(LIS_rc%area_of_data) &
-!            //'_PA.'//trim(model_name) &
-!            //'_DD.'//trim(cdate1) &
-!            //'_DT.'//trim(cdate) &
-!            //'_DF'
        dname = trim(dname) &
             //'_GR.'//trim(fproj)//trim(fres2) &
             //'_AR.'//trim(LIS_rc%area_of_data) &
@@ -1681,11 +1681,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_
+!     <yyyymmddhhmnss>.<extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -1693,7 +1695,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!     03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -1819,11 +1822,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!      <extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -1831,7 +1836,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!    03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -2346,11 +2352,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -2358,7 +2366,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!    03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -2517,11 +2526,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_
+!     <yyyymmddhhmnss>.<extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -2529,7 +2540,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!     03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -2688,11 +2700,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_
+!     <yyyymmddhhmnss>.<extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -2700,7 +2714,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!     03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -2928,7 +2943,7 @@ contains
 
     rec_length = imax * jmax * 4
 
-    !YDT 9/27/07, create dir for write in case it does not exit
+    ! Create dir for write in case it does not exit
     if( iofunc .eq. 'w' ) &
          call system('mkdir -p `dirname '//trim(file_name)//'`')
 
@@ -2938,7 +2953,7 @@ contains
     if( istat .eq. 0 ) then
 
        !-----------------------------------------------------------------
-       !     read from file, abort on error
+       ! read from file, abort on error
        !-----------------------------------------------------------------
 
        if( iofunc .eq. 'r' )then
@@ -2956,7 +2971,7 @@ contains
              call LIS_endrun
           endif
           !--------------------------------------------------------------
-          !     write to file, abort on error
+          ! write to file, abort on error
           !--------------------------------------------------------------
 
        elseif( iofunc .eq. 'w' )then
@@ -2975,7 +2990,7 @@ contains
           endif
 
           !--------------------------------------------------------------
-          !     else abort due to invalid iofunc value
+          ! else abort due to invalid iofunc value
           !--------------------------------------------------------------
 
        else
@@ -2992,7 +3007,7 @@ contains
        return
 
        !-----------------------------------------------------------------
-       !     error handling
+       ! error handling
        !-----------------------------------------------------------------
     else
        call LIS_releaseUnitNumber(ftn)
@@ -3070,9 +3085,9 @@ contains
     external :: system
 
     !------------------------------------------------------------------
-    !     executable code starts here ... open file, abort on error
+    ! executable code starts here ... open file, abort on error
     !------------------------------------------------------------------
-    !YDT 9/27/07, create dir for write in case it does not exit
+    ! create dir for write in case it does not exit
     if( iofunc .eq. 'w' ) &
          call system('mkdir -p `dirname '//trim(file_name)//'`')
 
@@ -3084,7 +3099,7 @@ contains
     if( istat .eq. 0 ) then
 
        !-----------------------------------------------------------------
-       !     read from file, abort on error
+       ! read from file, abort on error
        !-----------------------------------------------------------------
 
        if( iofunc .eq. 'r' )then
@@ -3102,7 +3117,7 @@ contains
           endif
 
           !--------------------------------------------------------------
-          !     write to file, abort on error
+          ! write to file, abort on error
           !--------------------------------------------------------------
 
        elseif( iofunc .eq. 'w' )then
@@ -3120,7 +3135,7 @@ contains
           endif
 
           !--------------------------------------------------------------
-          !     else abort due to invalid iofunc value
+          ! else abort due to invalid iofunc value
           !--------------------------------------------------------------
 
        else
@@ -3178,11 +3193,13 @@ contains
 !  \end{verbatim}
 !  3 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.
+!     <extension>
 !  \end{verbatim}
 !  4 level hierarchy
 !  \begin{verbatim}
-!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_<yyyymmddhhmnss>.<extension>
+!   <output directory>/<model name>/<yyyy>/<yyyymm>/LIS_HIST_
+!     <yyyymmddhhmnss>.<extension>
 !  \end{verbatim}
 !  WMO convention
 !  \begin{verbatim}
@@ -3190,7 +3207,8 @@ contains
 !  \end{verbatim}
 !   A filename in the convention of weather products (such as): \newline
 !   {\small
-!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
+!   PS.AFWA\_SC.U\_DI.C\_DC.ANLYS\_GP.LIS\_GR.C0P25DEG\_AR.GLOBAL\_PA.
+!     03-HR-SUM\_DD.YYYYMMDD\_DT.HH00\_DF.GR1 \newline
 !   }
 !   where                             \newline
 !    PS = Product source              \newline
@@ -3329,103 +3347,6 @@ contains
          LIS_nss_halo_ind(n,LIS_localPet+1): &
          LIS_nse_halo_ind(n,LIS_localPet+1))
 
-#if 0
-    if(LIS_rc%param_proj.eq."gaussian") then ! gaussian
-       line1 = gaussian_find_row(LIS_rc%gridDesc(n,4))  -   &
-            gaussian_find_row(LIS_rc%gridDesc(n,44)) + 1
-       line2 = gaussian_find_col(LIS_rc%gridDesc(n,5))  -   &
-            gaussian_find_col(LIS_rc%gridDesc(n,45)) + 1
-
-       do r=1,LIS_rc%lnr(n)
-          do c=1,LIS_rc%lnc(n)
-             glnc = line2+c-1
-             glnr = line1+r-1
-             line = (glnr-1)*nint(LIS_rc%gridDesc(n,42))+glnc
-             read(ftn,rec=line,iostat=istat) array(c,r)
-             if( istat .ne. 0 ) then
-                message(1) = 'program:  LIS'
-                message(2) = '  routine:  read2DData'
-                message(3) = '  iostat != 0'
-                call LIS_abort( message )
-                call LIS_endrun
-             endif
-          enddo
-       enddo
-    elseif(LIS_rc%param_proj.eq."latlon") then
-       do r=1,LIS_rc%lnr(n)
-          do c=1,LIS_rc%lnc(n)
-             call ij_to_latlon(LIS_domain(n)%lisproj,float(c),float(r),&
-                  rlat(c,r),rlon(c,r))
-          enddo
-       enddo
-
-       nc_dom = nint((gridDesc(4)-gridDesc(2))/(gridDesc(5)))+1
-       do r=1,LIS_rc%lnr(n)
-          do c=1,LIS_rc%lnc(n)
-             line1 = nint((rlat(c,r)-gridDesc(1))/gridDesc(6))+1
-             line2 = nint((rlon(c,r)-gridDesc(2))/gridDesc(5))+1
-             line = (line1-1)*nc_dom + line2
-             read(ftn,rec=line) array(c,r)
-          enddo
-       enddo
-    elseif(LIS_rc%param_proj.eq."polar") then !ps
-
-#if 0
-       call map_set(PROJ_PS,LIS_rc%gridDesc(n,4),LIS_rc%gridDesc(n,5), &
-            LIS_rc%gridDesc(n,8)*1000.0,                       &
-            LIS_rc%gridDesc(n,11),LIS_rc%gridDesc(n,10),0.0,   &
-            LIS_rc%lnc(n),LIS_rc%lnr(n),proj)
-
-       do r=1,LIS_rc%lnr(n)
-          do c=1,LIS_rc%lnc(n)
-             call ij_to_latlon(proj,float(c),float(r),rlat(c,r),rlon(c,r))
-          enddo
-       enddo
-
-       call map_set(PROJ_PS,gridDesc(1),gridDesc(2),  &
-            gridDesc(6)*1000.0,               &
-            gridDesc(4),gridDesc(3),0.0,      &
-            int(gridDesc(7)),int(gridDesc(8)),&
-            proj)
-
-       do r=1,LIS_rc%lnr(n)
-          do c=1,LIS_rc%lnc(n)
-             call latlon_to_ij(proj,rlat(c,r),rlon(c,r),ctmp,rtmp)
-
-             line1 = nint(rtmp)
-             line2 = nint(ctmp)
-             line = (line1-1)*gridDesc(7)+line2
-             read(ftn,rec=line) array(c,r)
-          enddo
-       enddo
-#endif
-
-    elseif(LIS_rc%param_proj.eq."UTM") then !utm
-       !rlat/rlon used here to store northing and easting
-       do r=1,LIS_rc%lnr(n)
-          do c=1,LIS_rc%lnc(n)
-             rlat(c,r) = LIS_rc%gridDesc(n,4)+(r-1)*LIS_rc%gridDesc(n,9)
-             rlon(c,r) = LIS_rc%gridDesc(n,5)+(c-1)*LIS_rc%gridDesc(n,9)
-          enddo
-       enddo
-
-       nc_dom = gridDesc(4)
-
-       do r=1,LIS_rc%lnr(n)
-          do c=1,LIS_rc%lnc(n)
-             line1 = nint((rlat(c,r)-gridDesc(2))/gridDesc(6))+1
-             line2 = nint((rlon(c,r)-gridDesc(3))/gridDesc(6))+1
-             line = (line1-1)*nc_dom +line2
-             read(ftn,rec=line) array(c,r)
-          enddo
-       enddo
-    else
-       write(LIS_logunit,*) &
-            '[ERR] This parameter projection is not supported...'
-       write(LIS_logunit,*) '[ERR] Program stopping ....'
-       call LIS_endrun
-    endif
-#endif
   end subroutine read2Ddata
 
 !BOP
