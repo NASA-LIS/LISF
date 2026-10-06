@@ -117,6 +117,12 @@ module NoahMP50_module
 !     soil configuration option. unit: -
 !   \item[pedo\_opt]
 !     soil pedotransfer function option. unit: -
+!   \item[compact\_opt]
+!     snow compaction option. unit: -
+!   \item[scf\_opt]
+!     ground snow cover fraction option. unit: -
+!   \item[wetland\_opt]
+!     wetland option. unit: -
 !   \item[crop\_opt]
 !     crop model option (0-$>$none; 1-$>$Liu et al.2016). unit: -
 !   \item[irr\_opt]

@@ -435,6 +435,44 @@ subroutine NoahMP50_readcrd()
           Noahmp50_struc(n)%tksno_opt
   enddo
 
+!----------new physics options in v5.2 start-------------------------------
+! snow compaction option
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "Noah-MP.5.0 snow compaction option:", rc = rc)
+  do n=1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, Noahmp50_struc(n)%compact_opt, &
+          rc=rc)
+     call LIS_verify(rc, &
+          "Noah-MP.5.0 snow compaction option: not defined")
+     write(LIS_logunit,33) "snow compaction:", &
+          Noahmp50_struc(n)%compact_opt
+  enddo
+
+! snow cover fraction option
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "Noah-MP.5.0 snow cover fraction option:", rc = rc)
+  do n=1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, Noahmp50_struc(n)%scf_opt, &
+          rc=rc)
+     call LIS_verify(rc, &
+          "Noah-MP.5.0 snow cover fraction option: not defined")
+     write(LIS_logunit,33) "snow cover fraction:", &
+          Noahmp50_struc(n)%scf_opt
+  enddo
+
+! Wetland option
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "Noah-MP.5.0 wetland option:", rc = rc)
+  do n=1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, Noahmp50_struc(n)%wetland_opt, &
+          rc=rc)
+     call LIS_verify(rc, &
+          "Noah-MP.5.0 wetland option: not defined")
+     write(LIS_logunit,33) "wetland:", &
+          Noahmp50_struc(n)%wetland_opt
+  enddo
+!----------new physics options in v5.2 end-------------------------------
+
   ! irrigation option (0->none; 1->always on;
   !  2->trigger by planting/harvest dates; 3->trigger by LAI)
   call ESMF_ConfigFindLabel(LIS_config, &

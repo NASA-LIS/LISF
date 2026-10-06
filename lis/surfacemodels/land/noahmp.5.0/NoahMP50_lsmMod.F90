@@ -122,6 +122,12 @@ module NoahMP50_lsmMod
 !   soil configuration option
 ! \item[pedo\_opt]
 !   soil pedotransfer function option
+! \item[compact\_opt]
+!   snow compaction option
+! \item[scf\_opt]
+!   ground snow cover fraction option
+! \item[wetland\_opt]
+!   wetland option
 ! \item[crop\_opt]
 !   crop model option (0->none; 1->Liu2016)
 ! \item[irr\_opt]
@@ -234,6 +240,9 @@ module NoahMP50_lsmMod
      integer            :: rsf_opt
      integer            :: soil_opt
      integer            :: pedo_opt
+     integer            :: compact_opt
+     integer            :: scf_opt
+     integer            :: wetland_opt
      integer            :: crop_opt
      integer            :: irr_opt
      integer            :: irrm_opt

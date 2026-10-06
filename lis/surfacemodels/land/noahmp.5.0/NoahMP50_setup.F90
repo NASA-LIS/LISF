@@ -888,6 +888,18 @@ SUBROUTINE TRANSFER_MP_PARAMETERS_NEW(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,&
   parameters%PSIWLT           =           NoahmpIO%PSIWLT_TABLE
   parameters%Z0SOIL           =           NoahmpIO%Z0SOIL_TABLE
   parameters%Z0LAKE           =           NoahmpIO%Z0LAKE_TABLE
+!v5.2 new parameters
+  parameters%SNOWCOMPACTm_AR24           =           NoahmpIO%SNOWCOMPACTm_AR24_TABLE
+parameters%SNOWCOMPACTb_AR24           =           NoahmpIO%SNOWCOMPACTb_AR24_TABLE
+parameters%SNOWCOMPACT_P1_AR24           =           NoahmpIO%SNOWCOMPACT_P1_AR24_TABLE
+parameters%SNOWCOMPACT_P2_AR24           =           NoahmpIO%SNOWCOMPACT_P2_AR24_TABLE
+parameters%SNOWCOMPACT_P3_AR24           =           NoahmpIO%SNOWCOMPACT_P3_AR24_TABLE
+parameters%SNOWCOMPACT_Up_AR24           =           NoahmpIO%SNOWCOMPACT_Up_AR24_TABLE
+parameters%SCFm1_AR25           =           NoahmpIO%SCFm1_AR25_TABLE
+parameters%SCFm2_AR25           =           NoahmpIO%SCFm2_AR25_TABLE
+parameters%SCfac1_AR25           =           NoahmpIO%SCfac1_AR25_TABLE
+parameters%SCfac2_AR25           =           NoahmpIO%SCfac2_AR25_TABLE
+parameters%WCAP           =           NoahmpIO%WCAP_TABLE
 
 ! ----------------------------------------------------------------------
 !  Transfer irrigation parameters

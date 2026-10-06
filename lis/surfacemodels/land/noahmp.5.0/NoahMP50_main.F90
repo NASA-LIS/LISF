@@ -266,6 +266,9 @@ subroutine NoahMP50_main(n)
         NoahmpIO%IOPT_RSF           = NoahMP50_struc(n)%rsf_opt
         NoahmpIO%IOPT_SOIL          = NoahMP50_struc(n)%soil_opt
         NoahmpIO%IOPT_PEDO          = NoahMP50_struc(n)%pedo_opt
+	  NoahmpIO%IOPT_COMPACT         = NoahMP50_struc(n)%compact_opt
+	  NoahmpIO%IOPT_SCF         = NoahMP50_struc(n)%scf_opt
+	 NoahmpIO%IOPT_WETLAND        = NoahMP50_struc(n)%wetland_opt
         NoahmpIO%IOPT_CROP          = NoahMP50_struc(n)%crop_opt
         NoahmpIO%IOPT_IRR           = NoahMP50_struc(n)%irr_opt
         NoahmpIO%IOPT_IRRM          = NoahMP50_struc(n)%irrm_opt
