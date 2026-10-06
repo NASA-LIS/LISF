@@ -7,77 +7,77 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-module LIS_PRIV_rcMod 
+module LIS_PRIV_rcMod
 !BOP
 !
 ! !MODULE: LIS_PRIV_rcMod
 !
 ! !DESCRIPTION:
-!  
-!  Module for specifying model independent variables in LIS. 
-!  The module does not contain any variables that are specific to the 
-!  extensible components in LIS. The module specifies variables 
-!  for overall run control, options for the choice of parameter datasets, 
-!  data assimilation choices, and the variables controlling the time
-!  management in LIS. 
 !
-!  The variables specified in this module include: 
+!  Module for specifying model independent variables in LIS.
+!  The module does not contain any variables that are specific to the
+!  extensible components in LIS. The module specifies variables
+!  for overall run control, options for the choice of parameter datasets,
+!  data assimilation choices, and the variables controlling the time
+!  management in LIS.
+!
+!  The variables specified in this module include:
 !  \begin{description}
 !  \item[runmode]
-!   choice of running mode in LIS 
+!   choice of running mode in LIS
 !  \item[nnest]
 !   number of nests or running instances (1 or higher)
 !  \item[ntiles]
 !   This array stores the size of tilespace of the running domain,
 !   for each processor, for each nest
 !  \item[glbntiles]
-!   This array stores the size of the tilespace of the overall running domain 
+!   This array stores the size of the tilespace of the overall running domain
 !   for each nest (including the halo regions)
 !  \item[glbntiles\_red]
-!   This array stores the size of the tilespace of the overall running domain 
+!   This array stores the size of the tilespace of the overall running domain
 !   for each nest (excluding the halo regions)
 !  \item[ngrid]
-!   This array stores the size of gridspace of the running domain, 
+!   This array stores the size of gridspace of the running domain,
 !   for each processor, for each nest
 !  \item[glbngrid]
 !   This array stores the size of the gridspace of the overall running domain
-!   for  each nest 
+!   for each nest
 !  \item[glbngrid\_red]
-!   This array stores the size of the gridspace of the overall running domain 
+!   This array stores the size of the gridspace of the overall running domain
 !   for each nest (excluding the halo regions)
 !  \item[gnc]
-!   Array containing the East-West grid dimension of the overall running 
+!   Array containing the East-West grid dimension of the overall running
 !   grid for each nest
 !  \item[gnr]
-!   Array containing the North-South grid dimension of the overall running 
+!   Array containing the North-South grid dimension of the overall running
 !   grid for each nest
 !  \item[lnc]
-!   Array containing the East-West grid dimension of the running 
+!   Array containing the East-West grid dimension of the running
 !   grid for each processor, for each nest (including the halo regions)
 !  \item[lnr]
-!   Array containing the North-South grid dimension of the running 
+!   Array containing the North-South grid dimension of the running
 !   grid for each processor, for each nest (including the halo regions)
 !  \item[lnc\_red]
-!   Array containing the East-West grid dimension of the running 
+!   Array containing the East-West grid dimension of the running
 !   grid for each processor, for each nest (excluding the halo regions)
 !  \item[lnr\_red]
-!   Array containing the North-South grid dimension of the running 
+!   Array containing the North-South grid dimension of the running
 !   grid for each processor, for each nest (excluding the halo regions)
 !  \item[ncatg]
 !  Total number of land tiles in the catchment-based parameter files per nest.
 !  \item[lis\_map\_proj]
-!   Choice of map projection used in LIS. 
+!   Choice of map projection used in LIS.
 !  \item[nlatlon\_dimensions]
-!   Choice of the dimension for output lat/lon variables ('1D' or '2D') 
+!   Choice of the dimension for output lat/lon variables ('1D' or '2D')
 !  \item[lsm]
-!   Choice of the land surface model in LIS. 
+!   Choice of the land surface model in LIS.
 !  \item[param\_proj]
-!   Map projection type of parameter datasets. 
+!   Map projection type of parameter datasets.
 !  \item[texturemap]
 !   boolean value to denote if soil texture map should be used (0- do not
 !   use, 1-use). If this value is set to 1, the sand, clay and silt fraction
 !   maps will not be read. Otherwise the texture data is read the fraction
-!   data will not be used. 
+!   data will not be used.
 !  \item[vegsrc]
 !   Choice of the source of landcover data source
 !  \item[soilsrc]
@@ -122,7 +122,7 @@ module LIS_PRIV_rcMod
 !   Maximum number of tiles per grid to be considered for subgrid tiling
 !  \item[surface\_minp]
 !   Minumum cutoff percentage of vegetation distribution for subgrid
-!   tiling 
+!   tiling
 !  \item[decompose\_by\_processes]
 !   Logical flag indicating whether to decompose the running domain based
 !   on the number of processes (.true.) or to decompose based on a specified
@@ -134,21 +134,25 @@ module LIS_PRIV_rcMod
 !  \item[halox]
 !   Halo size (in grid points) in the East-West dimensions for processor layout
 !  \item[haloy]
-!   Halo size (in grid points) in the North-South dimensions for processor layout
+!   Halo size (in grid points) in the North-South dimensions for processor
+!   layout
 !  \item[udef]
 !   Value to be used as undefined variable
 !  \item[gridDesc]
-!  Array describing the running grid and the parameter grid specification, for each nest.
-!  The size of the array is 50 for a particular nest. The first 30 locations of this 
-!  array are used to specify the running grid and the rest are used to specify parameter
-!  grid. Note that though run domains can be specified in several map projections, 
-!  specification of the parameter domains are currently only allowed for lat/lon, 
-!  gaussian, and UTM projections. For e.g., if the user specifies a running domain in lambert, 
-!  the parameter domain is expected to be in one of the supported grids for parameter
-!  domain specification. The array indices for different map projections are defined as follows: 
+!  Array describing the running grid and the parameter grid specification,
+!  for each nest.
+!  The size of the array is 50 for a particular nest. The first 30 locations
+!  of this array are used to specify the running grid and the rest are used
+!  to specify parameter
+!  grid. Note that though run domains can be specified in several map
+!  projections, specification of the parameter domains are currently only
+!  allowed for lat/lon, gaussian, and UTM projections. For e.g., if the user
+!  specifies a running domain in lambert, the parameter domain is expected to
+!  be in one of the supported grids for parameter domain specification. The
+!  array indices for different map projections are defined as follows:
 !
 !   \begin{description}
-!   \item[Lat/lon or geographic projection] 
+!   \item[Lat/lon or geographic projection]
 !    gridDesc(1) = 0 ; indicates lat/lon projection \newline
 !    gridDesc(2) = number of columns in the domain ; \newline
 !    gridDesc(3) = number of rows in the domain ; \newline
@@ -157,11 +161,13 @@ module LIS_PRIV_rcMod
 !    gridDesc(6) = 128 ; not used \newline
 !    gridDesc(7) =  latitude of the upper right corner of the domain \newline
 !    gridDesc(8) =  longitude of the upper right corner of the domain \newline
-!    gridDesc(9) =  spatial resolution (in degrees) along the E-W dimension \newline
-!    gridDesc(10) = spatial resolution (in degrees) along the N-S dimension  \newline
+!    gridDesc(9) =  spatial resolution (in degrees) along the E-W dimension
+!    \newline
+!    gridDesc(10) = spatial resolution (in degrees) along the N-S dimension
+!    \newline
 !    gridDesc(11) = 64 ; not used  \newline
-!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible by 
-!                  32 indicates E-W ordering else N-S ordering \newline
+!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible
+!                  by 32 indicates E-W ordering else N-S ordering \newline
 !    gridDesc(30) = 0 ; indicates lat/lon projection
 !    gridDesc(32) = number of columns in the domain ; \newline
 !    gridDesc(33) = number of rows in the domain ; \newline
@@ -170,9 +176,11 @@ module LIS_PRIV_rcMod
 !    gridDesc(36) = 128 ; not used \newline
 !    gridDesc(37) =  latitude of the upper right corner of the domain \newline
 !    gridDesc(38) =  longitude of the upper right corner of the domain \newline
-!    gridDesc(39) =  spatial resolution (in degrees) along the E-W dimension \newline
-!    gridDesc(40) = spatial resolution (in degrees) along the N-S dimension  \newline
-! 
+!    gridDesc(39) =  spatial resolution (in degrees) along the E-W dimension
+!    \newline
+!    gridDesc(40) = spatial resolution (in degrees) along the N-S dimension
+!    \newline
+!
 !   \item[Mercator projection]
 !    gridDesc(1) = 1 ; indicates mercator projection \newline
 !    gridDesc(2) = number of columns in the domain ; \newline
@@ -185,33 +193,8 @@ module LIS_PRIV_rcMod
 !    gridDesc(9) =  spatial reolution (in km) along N-S dimension \newline
 !    gridDesc(10) = true latitude 1 \newline
 !    gridDesc(11) = standard longitude  \newline
-!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible by 
-!                  32 indicates E-W ordering else N-S ordering \newline
-!    gridDesc(30) = TBD \newline
-!    gridDesc(32) = TBD \newline
-!    gridDesc(33) = TBD \newline
-!    gridDesc(34) = TBD \newline
-!    gridDesc(35) = TBD \newline
-!    gridDesc(36) = TBD \newline
-!    gridDesc(37) = TBD \newline
-!    gridDesc(38) = TBD \newline
-!    gridDesc(39) = TBD \newline
-!    gridDesc(40) = TBD \newline
-! 
-!   \item[Lambert conformal projection] 
-!    gridDesc(1) = 3 ; indicates lambert projection \newline
-!    gridDesc(2) = number of columns in the domain ; \newline
-!    gridDesc(3) = number of rows in the domain ; \newline
-!    gridDesc(4) = latitude of the lower left corner of the domain \newline
-!    gridDesc(5) = longitude of the lower left corner of the domain \newline
-!    gridDesc(6) = 8 ; not used \newline
-!    gridDesc(7) =  true latitude 2 \newline
-!    gridDesc(8) =  spatial resolution (in km) along E-W dimension \newline
-!    gridDesc(9) =  spatial reolution (in km) along N-S dimension \newline
-!    gridDesc(10) = true latitude 1 \newline
-!    gridDesc(11) = standard longitude  \newline
-!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible by 
-!                  32 indicates E-W ordering else N-S ordering \newline
+!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible
+!                   by 32 indicates E-W ordering else N-S ordering \newline
 !    gridDesc(30) = TBD \newline
 !    gridDesc(32) = TBD \newline
 !    gridDesc(33) = TBD \newline
@@ -223,7 +206,32 @@ module LIS_PRIV_rcMod
 !    gridDesc(39) = TBD \newline
 !    gridDesc(40) = TBD \newline
 !
-!   \item[Gaussian projection] 
+!   \item[Lambert conformal projection]
+!    gridDesc(1) = 3 ; indicates lambert projection \newline
+!    gridDesc(2) = number of columns in the domain ; \newline
+!    gridDesc(3) = number of rows in the domain ; \newline
+!    gridDesc(4) = latitude of the lower left corner of the domain \newline
+!    gridDesc(5) = longitude of the lower left corner of the domain \newline
+!    gridDesc(6) = 8 ; not used \newline
+!    gridDesc(7) =  true latitude 2 \newline
+!    gridDesc(8) =  spatial resolution (in km) along E-W dimension \newline
+!    gridDesc(9) =  spatial reolution (in km) along N-S dimension \newline
+!    gridDesc(10) = true latitude 1 \newline
+!    gridDesc(11) = standard longitude  \newline
+!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible
+!                   by 32 indicates E-W ordering else N-S ordering \newline
+!    gridDesc(30) = TBD \newline
+!    gridDesc(32) = TBD \newline
+!    gridDesc(33) = TBD \newline
+!    gridDesc(34) = TBD \newline
+!    gridDesc(35) = TBD \newline
+!    gridDesc(36) = TBD \newline
+!    gridDesc(37) = TBD \newline
+!    gridDesc(38) = TBD \newline
+!    gridDesc(39) = TBD \newline
+!    gridDesc(40) = TBD \newline
+!
+!   \item[Gaussian projection]
 !    gridDesc(1) = 4 ; indicates gaussian projection \newline
 !    gridDesc(2) = number of columns in the domain ; \newline
 !    gridDesc(3) = number of rows in the domain ; \newline
@@ -232,11 +240,12 @@ module LIS_PRIV_rcMod
 !    gridDesc(6) = 8 ; not used \newline
 !    gridDesc(7) = latitude of the upper right corner of the domain  \newline
 !    gridDesc(8) =  longitude of the upper right corner of the domain \newline
-!    gridDesc(9) =  spatial resolution (in degrees) along the E-W dimension \newline
+!    gridDesc(9) =  spatial resolution (in degrees) along the E-W dimension
+!    \newline
 !    gridDesc(10) = number of latitude circles \newline
 !    gridDesc(11) = 64 ; not used  \newline
-!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible by 
-!                  32 indicates E-W ordering else N-S ordering \newline
+!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible
+!                   by 32 indicates E-W ordering else N-S ordering \newline
 !    gridDesc(41) = 4 \newline
 !    gridDesc(42) = number of columns in the domain  \newline
 !    gridDesc(43) = number of rows in the domain \newline
@@ -247,7 +256,7 @@ module LIS_PRIV_rcMod
 !    gridDesc(48) = latitude of the upper right corner point  \newline
 !    gridDesc(49) = spatial resolution in the E-W dimension \newline
 !    gridDesc(50) = number of latitude circles \newline
-!   \item[polar stereographic projection] 
+!   \item[polar stereographic projection]
 !    gridDesc(1) = 5 ; indicates polar stereographic projection \newline
 !    gridDesc(2) = number of columns in the domain ; \newline
 !    gridDesc(3) = number of rows in the domain ; \newline
@@ -259,8 +268,8 @@ module LIS_PRIV_rcMod
 !    gridDesc(9) =  spatial reolution (in km) along N-S dimension \newline
 !    gridDesc(10) = true latitude \newline
 !    gridDesc(11) = standard longitude  \newline
-!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible by 
-!                  32 indicates E-W ordering else N-S ordering \newline
+!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible
+!                   by 32 indicates E-W ordering else N-S ordering \newline
 !    gridDesc(30) = TBD \newline
 !    gridDesc(32) = TBD \newline
 !    gridDesc(33) = TBD \newline
@@ -271,7 +280,7 @@ module LIS_PRIV_rcMod
 !    gridDesc(38) = TBD \newline
 !    gridDesc(39) = TBD \newline
 !    gridDesc(40) = TBD \newline
-!   \item[UTM projection] 
+!   \item[UTM projection]
 !    gridDesc(1) = 7 ; indicates UTM projection \newline
 !    gridDesc(2) = number of columns in the domain ; \newline
 !    gridDesc(3) = number of rows in the domain ; \newline
@@ -283,8 +292,8 @@ module LIS_PRIV_rcMod
 !    gridDesc(9) = spatial resolution (in meters) \newline
 !    gridDesc(10) = UTM zone \newline
 !    gridDesc(11) = 64 ; not used \newline
-!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible by 
-!                  32 indicates E-W ordering else N-S ordering \newline
+!    gridDesc(20) = 255 ; used to specify the ordering of data (non-divisible
+!                   by 32 indicates E-W ordering else N-S ordering \newline
 !    gridDesc(34) = UTM zone \newline
 !    gridDesc(35) = northing of the lower left corner point \newline
 !    gridDesc(37) = easting of the lower left corner point \newline
@@ -294,25 +303,28 @@ module LIS_PRIV_rcMod
 !   \end{description}
 !  \item[soil\_gridDesc, topo\_gridDesc, lc\_gridDesc]
 !  Array describing the soils, topography, and landmask/landcover
-!  data grid, respectively, for each nest. The specification 
-!  of these arrays for different map projections are 
-!  as follows: 
+!  data grid, respectively, for each nest. The specification
+!  of these arrays for different map projections are
+!  as follows:
 !   \begin{description}
-!    \item[Lat/lon or geographic projection] 
+!    \item[Lat/lon or geographic projection]
 !     gridDesc(1) = latitude of the lower left corner of the domain \newline
 !     gridDesc(2) = longitude of the lower left corner of the domain \newline
 !     gridDesc(3) =  latitude of the upper right corner of the domain \newline
 !     gridDesc(4) =  longitude of the upper right corner of the domain \newline
-!     gridDesc(5) =  spatial resolution (in degrees) along the E-W dimension \newline
-!     gridDesc(6) = spatial resolution (in degrees) along the N-S dimension  \newline
-!   \item[Gaussian projection] 
+!     gridDesc(5) =  spatial resolution (in degrees) along the E-W dimension
+!     \newline
+!     gridDesc(6) = spatial resolution (in degrees) along the N-S dimension
+!     \newline
+!   \item[Gaussian projection]
 !     gridDesc(1) = latitude of the lower left corner of the domain \newline
 !     gridDesc(2) = longitude of the lower left corner of the domain \newline
 !     gridDesc(3) = latitude of the upper right corner of the domain \newline
 !     gridDesc(4) = longitude of the upper right corner of the domain \newline
-!     gridDesc(5) = spatial resolution (in degrees) along the E-W dimension \newline
+!     gridDesc(5) = spatial resolution (in degrees) along the E-W dimension
+!     \newline
 !     gridDesc(6) = number of latitude circles  \newline
-!   \item[UTM projection] 
+!   \item[UTM projection]
 !     gridDesc(1) = UTM zone
 !     gridDesc(2) = northing of the lower left corner of the domain \newline
 !     gridDesc(3) = easting of the lower left corner of the domain \newline
@@ -325,17 +337,18 @@ module LIS_PRIV_rcMod
 !  \item[nmetforc]
 !   Number of meteorological forcing datasets used in a LIS simulation.
 !  \item[nperforc]
-!   Number of ensemble members that correspond to a single forcing source. 
+!   Number of ensemble members that correspond to a single forcing source.
 !  \item[metforc\_blend\_alg]
-!   Blending algorithm used for merging different forcing datasets. 
+!   Blending algorithm used for merging different forcing datasets.
 !  \item[metforc]
 !   Choice of meteorological forcings
 !  \item[met\_ecor]
 !   Choice of topographical downscaling method for met forcing
 !  \item[met\_nf]
-!   Number of forcing variables in each met forcing dataset. 
+!   Number of forcing variables in each met forcing dataset.
 !  \item[met\_interp]
-!   Spatial interpolation option for met forcing (1-bilinear, 2-conservative, 3-neighbor)
+!   Spatial interpolation option for met forcing (1-bilinear, 2-conservative,
+!   3-neighbor)
 !  \item[met\_upscale]
 !   Spatial upscaling option for met forcing, currently only supports
 !   upscaling by averaging
@@ -346,7 +359,7 @@ module LIS_PRIV_rcMod
 !   for each nest
 !  \item[gridchange]
 !   boolean array denoting if the native grid for the meteorological forcing
-!   need to be changed. 
+!   need to be changed.
 !  \item[shortflag]
 !   Shortwave radiation source flag (1-instantaneous, 2-time averaged)
 !  \item[longflag]
@@ -388,7 +401,7 @@ module LIS_PRIV_rcMod
 !  \item[vfile]
 !  Name of the landcover file, for each nest
 !  \item[vfile\_form]
-!  
+!
 !  \item[safile]
 !  Name of the sand fraction data file, for each nest
 !  \item[clfile]
@@ -451,7 +464,7 @@ module LIS_PRIV_rcMod
 !  \item[wout]
 !  Output data format (binary, GRIB-1, netcdf)
 !  \item[wsingle]
-!  Option to write each variable to a separate file 
+!  Option to write each variable to a separate file
 !  \item[wstyle]
 !  Output file naming style (3 level hierarchy, 5 level, WMO convention)
 !  \item[sout]
@@ -473,11 +486,11 @@ module LIS_PRIV_rcMod
 !  \item[odir]
 !  Output directory
 !  \item[dfile]
-!  Diagnostic output file 
+!  Diagnostic output file
 !  \item[sdoy]
 !  Starting julian day
 !  \item[sss]
-!  Starting second 
+!  Starting second
 !  \item[smn]
 !  Starting minute
 !  \item[shr]
@@ -493,7 +506,7 @@ module LIS_PRIV_rcMod
 !  \item[edoy]
 !  Ending julian day
 !  \item[ess]
-!  Ending second 
+!  Ending second
 !  \item[emn]
 !  Ending minute
 !  \item[ehr]
@@ -519,7 +532,7 @@ module LIS_PRIV_rcMod
 !  \item[doy]
 !  Current julian day
 !  \item[ss]
-!  Current second 
+!  Current second
 !  \item[mn]
 !  Current minute
 !  \item[hr]
@@ -606,13 +619,13 @@ module LIS_PRIV_rcMod
 !  \item[nappmodel]
 !   Total number of application models
 !  \item[landslidemodel]
-!   Choice of landslide model. 
+!   Choice of landslide model.
 !  \end{description}
 ! !REVISION HISTORY:
-!  12 Apr 2001: Urszula Jambor; Added domain,lsm,& force namefile paramters 
+!  12 Apr 2001: Urszula Jambor; Added domain,lsm,& force namefile paramters
 !  30 Jul 2001: Matt Rodell; Add new soil parameter variables
 !  14 Nov 2002; Sujay Kumar; Optimized version for LIS
-!  14 Oct 2003; Sujay Kumar; Removed LSM specific variables. 
+!  14 Oct 2003; Sujay Kumar; Removed LSM specific variables.
 !  19 Jan 2007; Chuck Alonge; Added Flag to output parameters
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
 !  02 May 2023: Sujay Kumar; Add lat/lon dimension variable
@@ -621,10 +634,10 @@ module LIS_PRIV_rcMod
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   type lisrcdec
-     character*50           :: runmode 
-     integer                :: nnest 
-    
-     integer                :: max_model_types 
+     character*50           :: runmode
+     integer                :: nnest
+
+     integer                :: max_model_types
      integer                :: nsf_model_types
      integer, allocatable       :: sf_model_type(:)
      character*50, allocatable  :: sf_model_type_name(:)
@@ -632,25 +645,25 @@ module LIS_PRIV_rcMod
      character*50, allocatable  :: sf_model_type_name_select(:)
 
      integer                :: lsm_index
-     integer                :: lake_index 
-     integer                :: glacier_index 
-     integer                :: wetland_index 
-     integer                :: openwater_index 
+     integer                :: lake_index
+     integer                :: glacier_index
+     integer                :: wetland_index
+     integer                :: openwater_index
 
      integer, allocatable       :: ntiles(:)
      integer, allocatable       :: glbntiles(:)
      integer, allocatable       :: glbntiles_red(:)
-!tilespace in each surface model, which is essentially a "patch"
+     !tilespace in each surface model, which is essentially a "patch"
      integer, allocatable       :: npatch(:,:)
      integer, allocatable       :: glbnpatch(:,:)
      integer, allocatable       :: glbnpatch_red(:,:)
-     
+
      integer, allocatable       :: nroutinggrid(:)
      integer, allocatable       :: glbnroutinggrid(:)
      integer, allocatable       :: glbnroutinggrid_red(:)
 
-     integer, allocatable       :: ngrid(:) 
-     integer, allocatable       :: obs_ngrid(:) 
+     integer, allocatable       :: ngrid(:)
+     integer, allocatable       :: obs_ngrid(:)
      integer, allocatable       :: glbngrid(:)
      integer, allocatable       :: obs_glbngrid(:)
      integer, allocatable       :: obs_glbngrid_red(:)
@@ -685,7 +698,7 @@ module LIS_PRIV_rcMod
      character*50               :: glaciermodel
      character*50               :: openwatermodel
      character*50               :: param_proj
-    
+
      character(len=LIS_CONST_PATH_LEN), allocatable :: paramfile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: obsdomainfile(:)
      character*50, allocatable  :: usemaskmap(:)
@@ -713,58 +726,55 @@ module LIS_PRIV_rcMod
      character*50, allocatable  :: usebexpmap(:)
      character*50, allocatable  :: usequartzmap(:)
      integer, allocatable       :: usesnowmap(:)
-     
+
      integer, allocatable       :: soilsrc(:)
      integer, allocatable       :: snowsrc(:)
      integer                :: surface_maxt
-     real                   :: surface_minp    
+     real                   :: surface_minp
      integer                :: soilt_maxt
-     real                   :: soilt_minp    
+     real                   :: soilt_minp
      integer                :: soilf_maxt
-     real                   :: soilf_minp    
+     real                   :: soilf_minp
      integer                :: elev_maxt
-     real                   :: elev_minp    
+     real                   :: elev_minp
      integer                :: slope_maxt
-     real                   :: slope_minp    
+     real                   :: slope_minp
      integer                :: aspect_maxt
-     real                   :: aspect_minp    
+     real                   :: aspect_minp
 
      logical                :: decompose_by_processes
      integer                :: npesx
      integer                :: npesy
      integer                :: halox
      integer                :: haloy
-     real                   :: udef              
-     real, allocatable      :: gridDesc(:,:)     
-     real, allocatable      :: obs_gridDesc(:,:)     
+     real                   :: udef
+     real, allocatable      :: gridDesc(:,:)
+     real, allocatable      :: obs_gridDesc(:,:)
      real, allocatable      :: minLat(:),maxLat(:)
      real, allocatable      :: minLon(:),maxLon(:)
-!     real, allocatable          :: soil_gridDesc(:,:)
-!     real, allocatable          :: topo_gridDesc(:,:)
-!     real, allocatable          :: lc_gridDesc(:,:)  
 
-     integer                :: nf   
+     integer                :: nf
      integer                :: nmetforc
      character*50           :: metforc_blend_alg
      character*50, allocatable  :: metforc(:)
-     character*50, allocatable  :: met_ecor(:)       
+     character*50, allocatable  :: met_ecor(:)
      integer,      allocatable  :: metforc_ensmem(:)
-     integer, allocatable       :: pcp_downscale(:)       
+     integer, allocatable       :: pcp_downscale(:)
      integer, allocatable       :: met_nf(:)
      integer, allocatable       :: met_nensem(:)
      integer, allocatable       :: met_nperforc(:)
-     
+
      character*50, allocatable  :: met_interp(:)
      character*50, allocatable  :: met_upscale(:)
      character*50, allocatable  :: met_tinterp(:)
      character*50, allocatable  :: met_proj(:)
 
-     integer, allocatable       :: rstflag(:) 
+     integer, allocatable       :: rstflag(:)
      integer, allocatable       :: gridchange(:)
      integer                :: shortflag
-     integer                :: longflag 
+     integer                :: longflag
 
-     character*50           :: perturb_forcing    
+     character*50           :: perturb_forcing
      real                   :: pertforcInterval
      character*50, allocatable  :: perturb_obs(:)
      real, allocatable          :: pertobsInterval(:)
@@ -783,56 +793,56 @@ module LIS_PRIV_rcMod
      integer                :: nslopebands
      integer                :: naspectbands
 
-     integer                :: bareclass 
+     integer                :: bareclass
      integer                :: urbanclass
-     integer                :: snowclass 
+     integer                :: snowclass
      integer                :: waterclass
      integer                :: wetlandclass
      integer                :: glacierclass
      integer                :: cropclass
-     integer                :: laiflag  
-     integer                :: saiflag       
-     character(len=LIS_CONST_PATH_LEN), allocatable :: mfile(:)  
+     integer                :: laiflag
+     integer                :: saiflag
+     character(len=LIS_CONST_PATH_LEN), allocatable :: mfile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: vfile(:)
      integer,       allocatable :: vfile_form(:)
-     character(len=LIS_CONST_PATH_LEN), allocatable :: safile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: clfile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: sifile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: safile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: clfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: sifile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: txtfile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: pofile(:)
-     character(len=LIS_CONST_PATH_LEN), allocatable :: psisatfile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: ksatfile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: bexpfile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: qzfile(:)   
-     character(len=LIS_CONST_PATH_LEN), allocatable :: iscfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: psisatfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: ksatfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: bexpfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: qzfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: iscfile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: elevfile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: slfile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: aspfile(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: curvfile(:)
-     character(len=LIS_CONST_PATH_LEN), allocatable :: albfile(:)  
-     character(len=LIS_CONST_PATH_LEN), allocatable :: mxsnal(:)   
-     character(len=LIS_CONST_PATH_LEN), allocatable :: tbotfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: albfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: mxsnal(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: tbotfile(:)
      integer                :: tbot_terrain_adj
      integer                :: tbot_update_lag
      integer                :: tbot_lagday
-     character(len=LIS_CONST_PATH_LEN), allocatable :: shdmaxfile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: shdminfile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: slopetypefile(:) 
-     character(len=LIS_CONST_PATH_LEN), allocatable :: tile_coord_file(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: shdmaxfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: shdminfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: slopetypefile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: tile_coord_file(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: tile_veg_file(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: outputSpecFile(:)
      integer                :: output_at_specifictime
      integer                :: albInterval
      integer                :: laiInterval
-     real*8                 :: laitime  
-     real*8                 :: saitime  
+     real*8                 :: laitime
+     real*8                 :: saitime
      character*50           :: wopt
      character*50           :: wopt_routing
      integer                :: wopt_rst
-     character*50           :: wout           
+     character*50           :: wout
      integer                :: wsingle
      character*50           :: wstyle
-     logical                :: sout           
+     logical                :: sout
      integer                :: grib_table
      integer                :: grib_center_id
      integer                :: grib_subcenter_id
@@ -842,41 +852,41 @@ module LIS_PRIV_rcMod
      character*50           :: startcode
      integer                :: plevel
      character(len=LIS_CONST_PATH_LEN) :: odir
-     character(len=LIS_CONST_PATH_LEN) :: dfile      
-     integer                :: sdoy        
-     integer                :: sss         
-     integer                :: smn         
-     integer                :: shr         
-     integer                :: sda         
-     integer                :: smo         
-     integer                :: syr         
-     integer                :: endcode        
-     integer                :: ess            
-     integer                :: emn            
-     integer                :: edoy           
-     integer                :: ehr            
-     integer                :: eda            
-     integer                :: emo            
-     integer                :: eyr            
-     integer                :: endtime        
-     real*8                 :: etime               
+     character(len=LIS_CONST_PATH_LEN) :: dfile
+     integer                :: sdoy
+     integer                :: sss
+     integer                :: smn
+     integer                :: shr
+     integer                :: sda
+     integer                :: smo
+     integer                :: syr
+     integer                :: endcode
+     integer                :: ess
+     integer                :: emn
+     integer                :: edoy
+     integer                :: ehr
+     integer                :: eda
+     integer                :: emo
+     integer                :: eyr
+     integer                :: endtime
+     real*8                 :: etime
      real                   :: egmt
      real                   :: twInterval
 
      integer                :: monthCount
      integer                :: alrm_prev_mo
 
-     integer                :: ess1            
-     integer                :: emn1            
-     integer                :: edoy1           
-     integer                :: ehr1            
-     integer                :: eda1            
-     integer                :: emo1            
+     integer                :: ess1
+     integer                :: emn1
+     integer                :: edoy1
+     integer                :: ehr1
+     integer                :: eda1
+     integer                :: emo1
      integer                :: eyr1
      real*8                 :: etime1
      real                   :: egmt1
-     real,    allocatable   :: nts(:)     
-     real                   :: ts         
+     real,    allocatable   :: nts(:)
+     real                   :: ts
      integer, allocatable   :: tscount(:)
      integer                :: doy
      integer                :: yr
@@ -884,14 +894,14 @@ module LIS_PRIV_rcMod
      integer                :: da
      integer                :: hr
      integer                :: mn
-     integer                :: ss 
+     integer                :: ss
      integer                :: ms
-     real*8                 :: time      
+     real*8                 :: time
      real                   :: gmt
      integer                :: ndas
      integer                :: nperts
      character*50, allocatable  :: daalg(:)
-     
+
      integer, allocatable       :: useANNinDA(:)
      character(len=LIS_CONST_PATH_LEN), allocatable :: ANNdaFile(:)
 
@@ -941,27 +951,27 @@ module LIS_PRIV_rcMod
      character*20           :: area_of_data
      character(len=LIS_CONST_PATH_LEN) :: lis_config_file='lis.config'
      character*100          :: institution = 'NASA GSFC'
-!RTM related variables
+     !RTM related variables
      character*50           :: rtm
-!landslide model related variables
+     !landslide model related variables
      integer                :: nappmodel
-     character*50           :: landslidemodel ! SY   
+     character*50           :: landslidemodel
 
      character*50           :: routingmodel
      character*50           :: runoffdatasource
 
      character*50           :: irrigation_type
-     real                   :: irrigation_thresh !BZ
+     real                   :: irrigation_thresh
      integer                :: irrigation_mxsoildpth
 
      integer                :: forecastMode
      logical                :: zterp_correction
 
-     real                   :: irrigation_GVFparam1   !WN
-     real                   :: irrigation_GVFparam2   !WN
-     integer                :: irrigation_dveg        !WN
-     integer                :: irrigation_SourcePartition  !WN
-     integer                :: irrigation_GWabstraction !JE 
+     real                   :: irrigation_GVFparam1
+     real                   :: irrigation_GVFparam2
+     integer                :: irrigation_dveg
+     integer                :: irrigation_SourcePartition
+     integer                :: irrigation_GWabstraction
 
      logical, allocatable       :: LSM_DAinst_valid(:)
      logical, allocatable       :: Routing_DAinst_valid(:)
@@ -969,5 +979,5 @@ module LIS_PRIV_rcMod
      integer                   :: nSubLSMs
      character*50, allocatable :: subLSM(:)
   end type lisrcdec
-  
+
 end module LIS_PRIV_rcMod
