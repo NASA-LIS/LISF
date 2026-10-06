@@ -15,19 +15,19 @@ module LIS_optUEMod
 !
 ! !DESCRIPTION:
 !  The code in this file provides interfaces to manage optimization and
-!  uncertainty modeling implementations in LIS 
-! 
+!  uncertainty modeling implementations in LIS
+!
 !  \subsubsection{Overview}
-!  The module provides interfaces for incorporating optimization and uncertainty
-!  modeling implementations into LIS. The abstract representation is to have the 
-!  algorithm work between a certain objective function and a certain decision 
-!  space using a specified opt/UE algorithm. The algorithm attempts to find
-!  potential solutions by optimizating the objective 
-!  function with respect to the decision space constraints. 
-!  
+!  The module provides interfaces for incorporating optimization and
+!  uncertainty modeling implementations into LIS. The abstract representation
+!  is to have the algorithm work between a certain objective function and a
+!  certain decision space using a specified opt/UE algorithm. The algorithm
+!  attempts to find potential solutions by optimizating the objective
+!  function with respect to the decision space constraints.
+!
 !  An example of an optimization algorithm is
 !  the suite of Genetic Algorithm-based heuristic optimization techniques
-!  
+!
 ! !REVISION HISTORY:
 !
 !  15 May 2007: Sujay Kumar; Initial implementation
@@ -44,9 +44,10 @@ module LIS_optUEMod
   public :: LIS_optUE_init    ! initialization for perturbation routines
   public :: LIS_objectiveFunc_init
   public :: LIS_optUEAlg_init
-  public :: LIS_isOptStopCriterionTrue ! method to check if the stopping criteria
-                                      ! for the algorithm is met 
-  public :: LIS_runOptUEAlg  ! run the optimization/uncertainty estimation algorithm
+  public :: LIS_isOptStopCriterionTrue ! method to check if the stopping
+                                       ! criteria for the algorithm is met
+  public :: LIS_runOptUEAlg  ! run the optimization/uncertainty estimation
+                             ! algorithm
   public :: LIS_OptUEAlg_reset
   public :: LIS_optUEAlg_readrestart
 !-----------------------------------------------------------------------------
@@ -62,45 +63,41 @@ module LIS_optUEMod
   type(ESMF_State), save  :: LIS_ObjectiveFunc
 !EOP
 
-
 contains
 !BOP
-! 
+!
 ! !ROUTINE: LIS_optUE_init
 ! \label{LIS_optUE_init}
-! 
-! !INTERFACE:  
+!
+! !INTERFACE:
   subroutine LIS_optUE_init
-! !USES: 
+! !USES:
     use LIS_coreMod,  only : LIS_rc, LIS_config, LIS_vecTile
     use LIS_logMod,   only : LIS_verify
-    
-! 
-! !DESCRIPTION: 
-! 
-!  This routine intializes the optimization/uncertainty estimation
-!  mode, the objective function and decision space objects. 
+
 !
-! 
+! !DESCRIPTION:
+!
+!  This routine intializes the optimization/uncertainty estimation
+!  mode, the objective function and decision space objects.
+!
+!
 !EOP
     integer :: status
     type(ESMF_Field)            :: varField
     type(ESMF_ArraySpec)        :: arrspec1
     integer, pointer            :: mod_flag(:)
-    integer                     :: n 
+    integer                     :: n
 
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%optUEAlg,&
          label="Optimization/Uncertainty Estimation Algorithm:",rc=status)
-    call LIS_verify(status,'Optimization/Uncertainty Estimation Algorithm: not defined')
-
-!    LIS_rc%optUEType = 0 
-!    call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%optUEtype,&
-!         label="Optimization/Uncertainty Estimation Type:",rc=status)
-!    call LIS_verify(status,'Optimization/Uncertainty Estimation Type: not defined')
+    call LIS_verify(status, &
+         'Optimization/Uncertainty Estimation Algorithm: not defined')
 
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%optUEset,&
          label="Optimization/Uncertainty Estimation Set:",rc=status)
-    call LIS_verify(status,'Optimization/Uncertainty Estimation Set: not defined')
+    call LIS_verify(status,'Optimization/Uncertainty Estimation Set: ' // &
+         'not defined')
 
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%objfuncmethod,&
          label="Objective Function Method:",rc=status)
@@ -111,7 +108,6 @@ contains
 
     LIS_decisionSpace = ESMF_StateCreate(name="Decision Space",rc=status)
     call LIS_verify(status)
-
 
     LIS_FeasibleSpace = ESMF_StateCreate(name="Feasible Space",rc=status)
     call LIS_verify(status)
@@ -127,39 +123,38 @@ contains
     call ESMF_StateAdd(LIS_feasibleSpace, (/varField/),rc=status)
     call LIS_verify(status)
 
-!initialize the feasibility flag
+    !initialize the feasibility flag
     call ESMF_FieldGet(varField,localDE=0,farrayPtr=mod_flag,rc=status)
     call LIS_verify(status)
     mod_flag = 0
-!    write(LIS_logunit,*) 'LIS_optUE_init mod_flag:', mod_flag
 
     LIS_objectiveFunc = ESMF_StateCreate(name="Objective Function",rc=status)
     call LIS_verify(status)
-    
+
   end subroutine LIS_optUE_init
 
 !BOP
-! 
+!
 ! !ROUTINE: LIS_objectiveFunc_init
 ! \label{LIS_objectiveFunc_init}
-! 
-! !INTERFACE:  
-  subroutine LIS_objectiveFunc_init
-! !USES: 
-    use LIS_coreMod,  only : LIS_rc
-! 
-! !DESCRIPTION: 
-! 
-!  This routine intializes the optimization/uncertainty estimation
-!  algorithm, the objective  function 
 !
-!  The methods invoked are: 
+! !INTERFACE:
+  subroutine LIS_objectiveFunc_init
+! !USES:
+    use LIS_coreMod,  only : LIS_rc
+!
+! !DESCRIPTION:
+!
+!  This routine intializes the optimization/uncertainty estimation
+!  algorithm, the objective function
+!
+!  The methods invoked are:
 !  \begin{description}
 !  \item[objectivefunctypeinit](\ref{objectivefunctypeinit}) \newline
 !    invokes the initialization routine for the specified objection
-!    function metric/method 
+!    function metric/method
 !  \end{description}
-! 
+!
 !EOP
     external :: objectivefunctypeinit
 
@@ -168,28 +163,28 @@ contains
   end subroutine LIS_objectiveFunc_init
 
 !BOP
-! 
+!
 ! !ROUTINE: LIS_optUEAlg_init
 ! \label{LIS_optUEAlg_init}
-! 
-! !INTERFACE:  
-  subroutine LIS_optUEAlg_init
-! !USES: 
-    use LIS_coreMod,  only : LIS_rc
-    
-! 
-! !DESCRIPTION: 
-! 
-!  This routine intializes the optimization/uncertainty estimation
-!  algorithm. 
 !
-!  The methods invoked are: 
+! !INTERFACE:
+  subroutine LIS_optUEAlg_init
+! !USES:
+    use LIS_coreMod,  only : LIS_rc
+
+!
+! !DESCRIPTION:
+!
+!  This routine initializes the optimization/uncertainty estimation
+!  algorithm.
+!
+!  The methods invoked are:
 !  \begin{description}
 !  \item[optUEalginit](\ref{optuealginit}) \newline
 !    invokes the init routine for the specified optimization
-!    or uncertainty estimation algorithm.  
+!    or uncertainty estimation algorithm.
 !  \end{description}
-! 
+!
 !EOP
     external :: optuealginit
 
@@ -198,30 +193,30 @@ contains
   end subroutine LIS_optUEAlg_init
 
 !BOP
-! 
+!
 ! !ROUTINE: LIS_isOptStopCriterionTrue
 ! \label{LIS_isOptStopCriterionTrue}
 !
-! !INTERFACE:  
+! !INTERFACE:
   function LIS_isOptStopCriterionTrue() result(finish)
-! !USES: 
+! !USES:
     use LIS_coreMod,   only : LIS_rc
-! !ARGUMENTS: 
+! !ARGUMENTS:
     logical :: finish
-! 
-! !DESCRIPTION: 
-! Invokes the appropriate method from the registry to check 
-! if the convergence criteria for the specified optimization 
-! /uncertainty estimation algorithm is met. 
 !
-!  The methods invoked are: 
+! !DESCRIPTION:
+! Invokes the appropriate method from the registry to check
+! if the convergence criteria for the specified optimization
+! /uncertainty estimation algorithm is met.
+!
+!  The methods invoked are:
 !  \begin{description}
 !  \item[checkconvergence](\ref{checkconvergence}) \newline
-!    invokes the method from the registry that specifies the 
+!    invokes the method from the registry that specifies the
 !    stopping criteria of the algorithm
 !  \end{description}
-! 
-!EOP        
+!
+!EOP
 
     external :: checkconvergence
 
@@ -232,18 +227,18 @@ contains
 !BOP
 ! !ROUTINE: LIS_runoptUE
 ! \label{LIS_runoptUE}
-! 
-! !INTERFACE: 
-  subroutine LIS_runOptUEAlg()
-! !USES: 
-    use LIS_coreMod,   only : LIS_rc
-! 
-! !DESCRIPTION: 
-! 
-!  invokes the run method of the selected optimization/uncertainty 
-!  estimation algorithm from the registry 
 !
-!  The methods invoked are: 
+! !INTERFACE:
+  subroutine LIS_runOptUEAlg()
+! !USES:
+    use LIS_coreMod,   only : LIS_rc
+!
+! !DESCRIPTION:
+!
+!  invokes the run method of the selected optimization/uncertainty
+!  estimation algorithm from the registry
+!
+!  The methods invoked are:
 !  \begin{description}
 !  \item[runoptue](\ref{runoptue}) \newline
 !    invokes the specific optue algorithm related operations
@@ -262,23 +257,23 @@ contains
 !BOP
 ! !ROUTINE: LIS_optUEAlg_readrestart
 ! \label{LIS_optUEAlg_readrestart}
-! 
-! !INTERFACE: 
+!
+! !INTERFACE:
   subroutine LIS_optUEAlg_readrestart()
-! !USES: 
+! !USES:
     use LIS_coreMod, only : LIS_rc
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  invokes the read restart method for the selected optimization/uncertainty
 !  estimation algorithm from the registry
-! 
-!  The methods invoked are: 
+!
+!  The methods invoked are:
 !  \begin{description}
 !   \item[optuereadrestart](\ref{optuereadrestart})
 !    invokes the call to read the restart file from the OPT/UE algorithm.
 !  \end{description}
-!EOP    
-    implicit none 
+!EOP
+    implicit none
 
     logical         :: rstflag
 
@@ -288,27 +283,27 @@ contains
 
   end subroutine LIS_optUEAlg_readrestart
 
-
 !BOP
-! 
+!
 ! !ROUTINE: LIS_optUEAlg_reset
 ! \label{LIS_optUEAlg_reset}
-! 
-! !INTERFACE:  
+!
+! !INTERFACE:
   subroutine LIS_optUEAlg_reset
-! !USES: 
+! !USES:
     use LIS_logMod
-    
-! 
-! !DESCRIPTION: 
-! 
-! 
+
+!
+! !DESCRIPTION:
+!
+!
 !EOP
     type(ESMF_Field)  :: feasField
     integer           :: status
     integer, pointer  :: modflag(:)
 
-    call ESMF_StateGet(LIS_FeasibleSpace, "Feasibility Flag", feasField, rc=status)
+    call ESMF_StateGet(LIS_FeasibleSpace, "Feasibility Flag", feasField, &
+         rc=status)
     call LIS_verify(status)
     call ESMF_FieldGet(feasField,localDE=0,farrayPtr=modflag,rc=status)
     call LIS_verify(status)
