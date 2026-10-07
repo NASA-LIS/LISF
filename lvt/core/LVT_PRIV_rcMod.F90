@@ -367,11 +367,11 @@ module LVT_PRIV_rcMod
      integer                    :: HYCOM_hi_ant_nc
      integer                    :: HYCOM_hi_ant_nr
      logical                    :: HYCOM_proc_start
-     real,  allocatable         :: HYCOM_n11(:)
-     real,  allocatable         :: HYCOM_aice_arc_n11(:)
-     real,  allocatable         :: HYCOM_aice_ant_n11(:)
-     real,  allocatable         :: HYCOM_hi_arc_n11(:)
-     real,  allocatable         :: HYCOM_hi_ant_n11(:)
+     integer,  allocatable         :: HYCOM_n11(:)
+     integer,  allocatable         :: HYCOM_aice_arc_n11(:)
+     integer,  allocatable         :: HYCOM_aice_ant_n11(:)
+     integer,  allocatable         :: HYCOM_hi_arc_n11(:)
+     integer,  allocatable         :: HYCOM_hi_ant_n11(:)
      integer                    :: processHYCOM
      character(len=LVT_CONST_PATH_LEN) :: HYCOMdir
      integer                    :: applyNoiseReductionFilter
