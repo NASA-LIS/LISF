@@ -27,6 +27,7 @@ module LDT_LMLCMod
 !  18 Jul 2013: KR Arsenault; Expanded options
 !  30 Nov 2018: David Mocko; Added Bondville landcover classification
 !   9 Sep 2026: David Mocko; Added Noah-MP-5.0
+!   9 Oct 2026: David Mocko; Added Noah-MP-5.2
 !
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -875,7 +876,7 @@ contains
 
   ! Attributes serving Noah-MP only (at this time):
     if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1") &
-                                     .or.(LDT_rc%lsm.eq."Noah-MP.5.0")) then
+    .or.(LDT_rc%lsm.eq."Noah-MP.5.0").or.(LDT_rc%lsm.eq."Noah-MP.5.2")) then
       select case( LDT_rc%lc_type(n) ) 
        case( "IGBPNCEP" ) 
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &

@@ -28,6 +28,7 @@ module LDT_param_pluginMod
 !  28 Jun 2022:  Eric Kemp    - Added NAFPA background precipitation
 !  24 Apr 2025:  Yeosang Yoon - Added RAPID
 !   9 Sep 2026:  David Mocko  - Added Noah-MP-5.0
+!   9 Oct 2026:  David Mocko  - Added Noah-MP-5.2
 !EOP
 
   use LDT_pluginIndices
@@ -149,6 +150,14 @@ contains
     call registerlsmparamprocwriteheader(trim(LDT_noahmp50Id)//char(0),&
          NoahParms_writeHeader)
     call registerlsmparamprocwritedata(trim(LDT_noahmp50Id)//char(0),&
+         NoahParms_writeData)
+
+  ! Noah-MP (v5.2) LSM:
+    call registerlsmparamprocinit(trim(LDT_noahmp52Id)//char(0),&
+         NoahParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_noahmp52Id)//char(0),&
+         NoahParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_noahmp52Id)//char(0),&
          NoahParms_writeData)
 
   ! AquaCrop 7.2 LSM:

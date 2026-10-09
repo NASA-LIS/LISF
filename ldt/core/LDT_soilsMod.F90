@@ -42,6 +42,7 @@ module LDT_soilsMod
 !  21 Oct 2005: Sujay Kumar; Initial implementation
 !  21 Nov 2012: K. Arsenault; Include additional soil parameters
 !   9 Sep 2026: David Mocko; Added Noah-MP-5.0
+!   9 Oct 2026: David Mocko; Added Noah-MP-5.2
 !
   use ESMF
 #if ( defined SPMD )
@@ -1838,7 +1839,7 @@ module LDT_soilsMod
 
   ! Attributes serving Noah-MP only (at this time):
     if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1") &
-                                     .or.(LDT_rc%lsm.eq."Noah-MP.5.0")) then
+    .or.(LDT_rc%lsm.eq."Noah-MP.5.0").or.(LDT_rc%lsm.eq."Noah-MP.5.2")) then
     ! Number of soil types:
       if( LDT_rc%soil_classification(1) == "STATSGO" ) then
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_SOILTYPES", &

@@ -29,6 +29,7 @@ module LDT_pluginIndices
 !  24 Apr 2025: Yeosang Yoon -- Added RAPID
 !  08 Jul 2025: Eric Kemp -- Added SNIP
 !  09 Sep 2026: David Mocko -- Added Noah-MP-5.0
+!  09 Oct 2026: David Mocko -- Added Noah-MP-5.2
 !
 !EOP
   PRIVATE
@@ -197,6 +198,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_noahmp36Id    = "Noah-MP.3.6"
    character*50, public,  parameter :: LDT_noahmp401Id   = "Noah-MP.4.0.1"
    character*50, public,  parameter :: LDT_noahmp50Id    = "Noah-MP.5.0"
+   character*50, public,  parameter :: LDT_noahmp52Id    = "Noah-MP.5.2"
    character*50, public,  parameter :: LDT_ac72Id        = "AquaCrop.7.2"
    character*50, public,  parameter :: LDT_clm2Id        = "CLM.2"
    character*50, public,  parameter :: LDT_clm45Id       = "CLM.4.5"

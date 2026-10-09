@@ -21,6 +21,7 @@ module LDT_LSMparamProcMod
 ! !REVISION HISTORY: 
 !  14 Aug 2014:  Sujay Kumar;  Initial Specification
 !   9 Sep 2026:  David Mocko;  Added Noah-MP-5.0
+!   9 Oct 2026:  David Mocko;  Added Noah-MP-5.2
 ! 
   use ESMF
   use LDT_coreMod
@@ -89,7 +90,8 @@ contains
             LDT_rc%lsm.ne."Noah.3.9".or.&
             LDT_rc%lsm.ne."Noah-MP.3.6".or.&
             LDT_rc%lsm.ne."Noah-MP.4.0.1".or.&
-            LDT_rc%lsm.ne."Noah-MP.5.0") then 
+            LDT_rc%lsm.ne."Noah-MP.5.0".or.&
+            LDT_rc%lsm.ne."Noah-MP.5.2") then 
 
           call lsmparamprocinit(trim(LDT_rc%lsm)//char(0),flag)
        else
