@@ -52,7 +52,7 @@ static char vcid[] = "$Id: vic411_CalcBlowingSnow.c,v 1.4.2.1 2007/04/18 20:18:5
 #define FETCH 1               /* Include fetch dependence (1). */
 #define CALC_PROB 1             /* Variable (1) or constant (0) probability of occurence. */
 
-double vic411_qromb(double (*vic411_sub_with_height)(), double es, double Wind, double AirDens, double ZO, 
+double vic411_qromb(double (*vic411_funcd)(double,double,double,double,double,double,double,double,double,double,double), double es, double Wind, double AirDens, double ZO, 
 	     double EactAir, double F, double hsalt, double phi_r, double ushear, double Zrh, 
 	     double a, double b);
 double (*vic411_funcd)(double z,double es,  double Wind, double AirDens, double ZO,          
@@ -328,14 +328,14 @@ double vic411_CalcBlowingSnow( double Dt,
   
 }
 
-double vic411_qromb(double (*vic411_funcd)(), double es, double Wind, double AirDens, double ZO, 
+double vic411_qromb(double (*vic411_funcd)(double,double,double,double,double,double,double,double,double,double,double), double es, double Wind, double AirDens, double ZO, 
 	     double EactAir, double F, double hsalt, double phi_r, double ushear, double Zrh, 
 	     double a, double b)
      // Returns the integral of the function func from a to b.  Integration is performed 
      // by Romberg's method:  Numerical Recipes in C Section 4.3
 {
   void vic411_polint(double xa[], double ya[], int n, double x, double *y, double *dy);
-  double vic411_trapzd(double (*vic411_funcd)(), double es, double Wind, double AirDens, 
+  double vic411_trapzd(double (*vic411_funcd)(double,double,double,double,double,double,double,double,double,double,double), double es, double Wind, double AirDens, 
 		double ZO, double EactAir, double F, double hsalt, double phi_r, 
 		double ushear, double Zrh, double a, double b, int n);
 
@@ -397,7 +397,7 @@ void vic411_polint(double xa[], double ya[], int n, double x, double *y, double 
 
 
 
-double vic411_trapzd(double (*vic411_funcd)(), double es, double Wind, double AirDens, double ZO, 
+double vic411_trapzd(double (*vic411_funcd)(double,double,double,double,double,double,double,double,double,double,double), double es, double Wind, double AirDens, double ZO, 
 	      double EactAir, double F, double hsalt, double phi_r, double ushear, 
 	      double Zrh, double a, double b, int n)
 {
