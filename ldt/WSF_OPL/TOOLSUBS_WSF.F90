@@ -56,6 +56,7 @@ CONTAINS
     logical :: file_exists
     integer :: i, j, ichan, iband
     real :: sil, tt18, denom
+    integer*2, allocatable :: quality_flag2(:,:) ! 2-byte version of the quality flag for performing IOR logic
 
     ! Temporary arrays for channel extraction (Fortran order)
     real*4, allocatable :: tb_18v(:,:), tb_18h(:,:)
@@ -133,6 +134,7 @@ CONTAINS
     allocate(snow(nfovs, nscans))
     allocate(precip(nfovs, nscans))
     allocate(quality_flag(nfovs, nscans))
+    allocate(quality_flag2(nfovs, nscans))
     allocate(band_quality_flags(nfovs, nscans, 6))  ! 6 bands max
     allocate(chan_frequencies(nchans))
     allocate(chan_polarizations(nchans))
@@ -159,6 +161,7 @@ CONTAINS
     snow = 0
     precip = 0
     quality_flag = 0
+    quality_flag2 = 0
     band_quality_flags = 0
 
     ! Read variables
@@ -330,12 +333,12 @@ CONTAINS
     ! =====================================================================
     do j = 1, nfovs
         do i = 1, nscans
-            quality_flag(j,i) = 0
+            quality_flag2(j,i) = 0
 
             ! Bit 0: Ocean (land_frac < 0.5)
             if (land_frac_low(j,i) >= 0.0) then
                 if (land_frac_low(j,i) < 0.5) then
-                    quality_flag(j,i) = IOR(quality_flag(j,i), 1)  ! Ocean
+                    quality_flag2(j,i) = IOR(quality_flag2(j,i), 1_2)  ! Ocean
                 endif
             endif
 
@@ -350,7 +353,7 @@ CONTAINS
                         tt18 = (tb_18v(j,i) - tb_23v(j,i))
                         if ((sil < 0.005) .and. (tt18 < -2.0)) then
                             precip(j,i) = 1
-                            quality_flag(j,i) = IOR(quality_flag(j,i), 2)
+                            quality_flag2(j,i) = IOR(quality_flag2(j,i), 2_2)
                         endif
                     endif
                 endif
@@ -359,7 +362,7 @@ CONTAINS
                 if (tb_36v(j,i) > 0.0 .and. tb_89v(j,i) > 0.0) then
                     if (tb_36v(j,i) - tb_89v(j,i) < -5.0) then
                         snow(j,i) = 1
-                        quality_flag(j,i) = IOR(quality_flag(j,i), 4)
+                        quality_flag2(j,i) = IOR(quality_flag2(j,i), 4_2)
                     endif
                 endif
             endif
@@ -390,30 +393,31 @@ CONTAINS
             ! Map band quality to the combined quality flag bits 3-7
             ! Band 1: 10.65 GHz -> bit 3
             if (nband >= 1 .and. band_quality_flags(j,i,1) == 1) then
-                quality_flag(j,i) = IOR(quality_flag(j,i), 8)   ! 2^3
+                quality_flag2(j,i) = IOR(quality_flag2(j,i), 8_2)   ! 2^3
             endif
 
             ! Band 2: 18.7 GHz -> bit 4
             if (nband >= 2 .and. band_quality_flags(j,i,2) == 1) then
-                quality_flag(j,i) = IOR(quality_flag(j,i), 16)  ! 2^4
+                quality_flag2(j,i) = IOR(quality_flag2(j,i), 16_2)  ! 2^4
             endif
 
             ! Band 3: 23.8 GHz -> bit 5
             if (nband >= 3 .and. band_quality_flags(j,i,3) == 1) then
-                quality_flag(j,i) = IOR(quality_flag(j,i), 32)  ! 2^5
+                quality_flag2(j,i) = IOR(quality_flag2(j,i), 32_2)  ! 2^5
             endif
 
             ! Band 4: 36.5 GHz -> bit 6
             if (nband >= 4 .and. band_quality_flags(j,i,4) == 1) then
-                quality_flag(j,i) = IOR(quality_flag(j,i), 64)  ! 2^6
+                quality_flag2(j,i) = IOR(quality_flag2(j,i), 64_2)  ! 2^6
             endif
 
             ! Band 5: 89.0 GHz -> bit 7
             if (nband >= 5 .and. band_quality_flags(j,i,5) == 1) then
-                quality_flag(j,i) = IOR(quality_flag(j,i), 128) ! 2^7
+                quality_flag2(j,i) = IOR(quality_flag2(j,i), 128_2) ! 2^7
             endif
         end do
     end do
+    quality_flag = quality_flag2
 
     ! Debug output
     write(LDT_logunit,*)'[INFO] Quality flag statistics:'
@@ -432,6 +436,7 @@ CONTAINS
     deallocate(chan_freq, chan_pol)
     deallocate(qf_from_file)
     deallocate(validation_flags, degradation_flags, exclusion_flags)
+    deallocate(quality_flag2)
 
     ierr = 0
 
