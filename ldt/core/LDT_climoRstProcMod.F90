@@ -115,8 +115,6 @@ contains
     character*3               :: month_name(12)
     character*100             :: model_name
 
-    external :: system
-
     n = 1
 
     month_name = (/"JAN","FEB","MAR","APR","MAY","JUN",&
