@@ -49,11 +49,13 @@ if(defined($ENV{LIS_ARCH})){
    if($sys_arch eq "linux_ifc"){
       $intel_sanitize = " ";
       $intel_stack_check = " -fp-stack-check ";
+      $intel_wcheck = "-Wcheck";
    }
    if($sys_arch eq "linux_ifx"){
       $sys_arch = "linux_ifc";
       $intel_sanitize = " -fsanitize=memory ";
       $intel_stack_check = " ";
+      $intel_wcheck = " "; # Not supported by icx
    }
 }
 else{
@@ -183,7 +185,8 @@ if($opt_lev == -3) {
         $sys_opt .= $intel_sanitize;
 
         # C flags
-        $sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wcheck -Wdeprecated";
+        $sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wdeprecated";
+        $sys_c_opt .= $intel_wcheck;
         $sys_c_opt .= " -Wextra-tokens -Wformat";
         $sys_c_opt .= " -Wformat-security -Wmissing-declarations";
         $sys_c_opt .= " -Wmissing-prototypes -Wpointer-arith -Wremarks";
@@ -255,7 +258,8 @@ elsif($opt_lev == -2) {
         $sys_opt .= $intel_sanitize;
 
         # C flags
-        $sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wcheck -Wdeprecated";
+        $sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wdeprecated";
+        $sys_c_opt .= $intel_wcheck;
         $sys_c_opt .= " -Wextra-tokens -Wformat";
         $sys_c_opt .= " -Wformat-security -Wmissing-declarations";
         $sys_c_opt .= " -Wmissing-prototypes -Wpointer-arith -Wremarks";
