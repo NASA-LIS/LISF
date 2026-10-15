@@ -123,6 +123,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ! Logical for checking data presence
     logical :: has_data
     logical :: do_filter  ! .true. if snow/precip filtering is enabled
+    integer*1 :: bit ! needed for performing IOR logic
 
     write(LDT_logunit,*)'[INFO] ========================================='
     write(LDT_logunit,*)'[INFO] WSF HOURLY GROUP PROCESSING'
@@ -585,7 +586,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
                 ! Set each bit based on majority vote
                 do i = 1, 8
                     if (ARFS_QUALITY_FLAG_SUM(c,r,i) > ARFS_COUNT_QF(c,r)/2) then
-                        ARFS_QUALITY_FLAG(c,r) = IOR(ARFS_QUALITY_FLAG(c,r), 2**(i-1))
+                        bit = 2**(i-1)
+                        ARFS_QUALITY_FLAG(c,r) = IOR(ARFS_QUALITY_FLAG(c,r), bit)
                     endif
                 end do
             else
