@@ -73,7 +73,7 @@ contains
   subroutine LIS_optUE_init
 ! !USES: 
     use LIS_coreMod,  only : LIS_rc, LIS_config, LIS_vecTile
-    use LIS_logMod,   only : LIS_verify, LIS_logunit
+    use LIS_logMod,   only : LIS_verify
     
 ! 
 ! !DESCRIPTION: 
@@ -162,6 +162,8 @@ contains
 !  \end{description}
 ! 
 !EOP
+    external :: objectivefunctypeinit
+
     call objectivefunctypeinit(trim(LIS_rc%objfuncmethod)//char(0))
 
   end subroutine LIS_objectiveFunc_init
@@ -190,6 +192,9 @@ contains
 !  \end{description}
 ! 
 !EOP
+
+    external :: optuealginit
+
     call optuealginit(trim(LIS_rc%optUEAlg)//char(0))
 
   end subroutine LIS_optUEAlg_init
@@ -203,7 +208,6 @@ contains
   function LIS_isOptStopCriterionTrue() result(finish)
 ! !USES: 
     use LIS_coreMod,   only : LIS_rc
-    use LIS_logMod,          only : LIS_logunit
 ! !ARGUMENTS: 
     logical :: finish
 ! 
@@ -222,6 +226,8 @@ contains
 !EOP        
 
 !    write(LIS_logunit,*) 'begin checkconvergence in LIS_isOptStopCriterionTrue'
+    external :: checkconvergence
+
     call checkconvergence(trim(LIS_rc%optuealg)//char(0),finish)
 !    write(LIS_logunit,*) 'end checkconvergence in LIS_isOptStopCriterionTrue:', finish
 
@@ -251,6 +257,8 @@ contains
 !    on the specific method
 !  \end{description}
 !EOP
+    external :: runoptue
+
     call runoptue(trim(LIS_rc%optuealg)//char(0))
     
   end subroutine LIS_runOptUEAlg
@@ -275,6 +283,8 @@ contains
 !  \end{description}
 !EOP    
     implicit none 
+
+    external :: optuereadrestart
 
     call optuereadrestart(trim(LIS_rc%optuealg)//char(0))
 
