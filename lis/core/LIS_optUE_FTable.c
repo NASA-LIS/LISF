@@ -178,7 +178,6 @@ void FTN(registerupdateobjfunctype)(char *j, void (*func)(void), int len);
 void FTN(updateobjectivefunc)(char *j, int len);
 void FTN(registerresetobjfunctype)(char *j, void (*func)(void), int len);
 void FTN(resetobjectivefunctype)(char *j, int len);
-void FTN(registeroptuetypeobjfunceval)(char *j, void (*func)(void), int len);
 void FTN(evaluateobjfunction)(char *j, int len);
 
 //BOP
@@ -1451,50 +1450,6 @@ void FTN(resetobjectivefunctype)(char *j, int len)
     }
   }
   current->func();
-}
-
-//NOTE: ****This is deprecated - check and remove******
-//BOP
-// !ROUTINE: registeroptuetypeobjfunceval
-// \label{registeroptuetypeobjfunceval}
-//
-//
-// !INTERFACE:
-void FTN(registeroptuetypeobjfunceval)(char *j, void (*func)(void), int len)
-//
-// !DESCRIPTION:
-//  Creates an entry in the registry for the routine that
-//  evaluates objective function
-//
-// The arguments are:
-// \begin{description}
-//  \item[j]
-//   index of the runmode (param estimation, for e.g)
-//  \end{description}
-//EOP
-{
-  int len1;
-  struct objfuncevalnode* current;
-  struct objfuncevalnode* pnode;
-
-  // create node
-  len1 = len + 1; // ensure that there is space for terminating null
-  pnode = (struct objfuncevalnode*) malloc(sizeof(struct objfuncevalnode));
-  pnode->name = (char*) calloc(len1, sizeof(char));
-  strncpy(pnode->name, j, len);
-  pnode->func = func;
-  pnode->next = NULL;
-
-  if (objfunceval_table == NULL) {
-    objfunceval_table = pnode;
-  }
-  else {
-    current = objfunceval_table;
-    while (current->next != NULL) {
-      current = current->next;
-    }
-    current->next = pnode;
-  }
 }
 
 //BOP
