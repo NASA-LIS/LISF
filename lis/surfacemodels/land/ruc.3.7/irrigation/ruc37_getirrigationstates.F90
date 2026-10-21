@@ -69,9 +69,12 @@ subroutine RUC37_getirrigationstates(n,irrigState)
   integer, parameter   :: nsoil = 9
 
   integer              :: n
+#if 0
   integer              :: rc
   integer              :: t,k,gid,vegt,l
+#endif
   type(ESMF_State)     :: irrigState
+#if 0
   type(ESMF_Field)     :: irrigRateField,irrigFracField
   type(ESMF_Field)     :: irrigRootDepthField,irrigScaleField
   
@@ -90,7 +93,7 @@ subroutine RUC37_getirrigationstates(n,irrigState)
   real                 :: bexp, smhigh, smlow
   integer              :: lroot,veg_index1,veg_index2
   real                 :: gsthresh, ltime
-
+#endif
 ! _______________________________________________________
 
 #if 0

@@ -41,6 +41,8 @@ subroutine LIS_lsmirrigation_plugin
 !EOP
    use LIS_pluginIndices
 
+   external :: registerlsmirrigationgetstates
+
 #if ( defined SM_NOAH_3_3 )
    external noah33_getirrigationstates
 #endif

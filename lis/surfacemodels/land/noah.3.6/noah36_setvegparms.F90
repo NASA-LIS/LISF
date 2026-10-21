@@ -576,7 +576,7 @@ subroutine noah36_resetvegparms(mtype)
 
   implicit none
   integer :: mtype
-  integer :: n,j,t,m,gid,tid
+  integer :: n,t,m,gid,tid
 !!!!!  character*4      :: lutype,mminlu
 !!!!!  integer          :: iindex,lumatch
   real             :: interp_fraction

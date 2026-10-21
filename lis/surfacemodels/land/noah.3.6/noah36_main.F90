@@ -85,7 +85,6 @@ subroutine noah36_main(n)
   real        :: q2sat      ! SAT SPECIFIC HUMIDITY AT HEIGHT ZLVL ABOVE GROUND (KG KG-1)
   real        :: lwdn       ! LW DOWNWARD RADIATION (W M-2; POSITIVE, NOT NET LONGWAVE)
   real        :: sfcspd     ! WIND SPEED (M S-1) AT HEIGHT ZLVL_WIND ABOVE GROUND
-  real        :: esat       ! Saturation vapor pressure for water (Pa)
   integer     :: nsoil      ! number of soil layers
   real, allocatable :: sldpth(:)  ! thickness values for soil layers(meters)
   integer     :: ice        ! flag for ice physics (0=land, 1=sea-ice, -1=glacier-ice)
@@ -103,9 +102,6 @@ subroutine noah36_main(n)
   real        :: t2v       ! Virtual temp. at 1st mid. lev. above grnd (2)
   real        :: dqsdt2    ! Slope of sat. specific hum. curve for Penman
   real        :: slope     ! slope estimate of linear reservoir coefficient  
-  real        :: shdfac    ! 12-month green vegetation fraction
-  real        :: shdmin    ! minimum areal fractional coverage of annual green vegetation
-  real        :: shdmax    ! maximum areal fractional coverage of annual green vegetation
   real        :: tbot      ! annually-fixed, soil-temp condition at zbot
   real        :: evp
   real        :: eta       ! actual latent heat flux (w m-2) (neg: up from sfc)
@@ -129,7 +125,6 @@ subroutine noah36_main(n)
   real        :: flx3      ! phase-change heat flux from snowmelt (w m-2)
   real        :: flx4      ! UA snow-physics energy added to sensible heat flux from canopy (w m-2)
   real        :: fvb       ! UA snow-physics fraction of vegetation with snow below (unitless fraction, 0-1)
-  real        :: gama      ! UA snow-physics exp(-XLAI)
   real        :: fbur      ! UA snow-physics fraction of vegetation covered by snow (unitless fraction, 0-1)
   real        :: fgsn      ! UA snow-physics fraction of ground covered by snow (unitless fraction, 0-1)
 ! The following three variables are for WRF-HYDRO,
@@ -163,7 +158,6 @@ subroutine noah36_main(n)
   character*256 ::  llanduse, lsoil
 
   real        :: frzk, frzfact
-  real        :: t2diag, q2diag, rho
   real        :: relsmc   ! Relative "wetness" soil moisture (fraction) (smc - smcwlt) / (porosity - smcwlt)
   integer     :: t,i,k
   real        :: wchange_prev
@@ -189,12 +183,8 @@ subroutine noah36_main(n)
   REAL, PARAMETER :: A2=17.67,A3=273.15,A4=29.65, A23M4=A2*(A3-A4)
   REAL     :: soilhtc, soilmtc
   REAL     :: startht, startsm, startswe, startint
-  REAL     :: SFCTSNO
-  REAL     :: E2SAT
-  REAL     :: Q2SATI
   real     :: cm, ch
   logical  :: alarmCheck, Bondvillecheck
-  integer  :: iret
 
   real     :: julian_in
   integer  :: yr
@@ -224,7 +214,6 @@ subroutine noah36_main(n)
 ! HKB: added below (2/28/2023)
   type(irrigation_model) :: IM
 
-  integer                                 :: status
   integer                                 :: croptype
   
 #if 0 
@@ -265,9 +254,9 @@ subroutine noah36_main(n)
      !     -- Concurrent includes Paddy for recycling runoff
      if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
          LIS_rc%irrigation_type .eq. "Concurrent" ) then
-       ! Get irrigation state variables
-       ! -----------------------------------------
-       call IM%get_irrigstate (n, LIS_irrig_state(n))
+        ! Get irrigation state variables
+        ! -----------------------------------------
+        call IM%get_irrigstate (n, LIS_irrig_state(n))
      endif   ! irrigation
      ! end HKB -- need to get irrigation states
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ffrozp,dt,zlvl,zlvl_wind,sfctmp,q2,sfcprs,prcp,uwind,vwind,cpcp,soldn,q2sat,lwdn,sfcspd,esat,nsoil,sldpth,ice,isurban,solnet,local,solardirect,prcprain,cosz,th2,th2v,t1v,t2v,dqsdt2,slope,shdfac,shdmin,shdmax,tbot,evp,eta,eta_kinematic,shtflx,fdown,ec,edir,et,smav,ett,esnow,drip,dew,beta,etp,gflx,flx1,flx2,flx3,snomlt,sncovr,runoff3,rc,pc,rcs,rct,rcq,rcsoil,soilw,soilm,tsoil,snoalb,soilrz,soilrzmax,rdlai2d,usemonalb,ribb,ptu,ustar,soiltyp,llanduse,lsoil,frzk,frzfact,t2diag,q2diag,rho,i,k,soilhtc,soilmtc,startht,startsm,startswe,startint,sfctsno,e2sat,q2sati,ch,cm,row,col,WRSI_TimeStep,WR_TimeStep,AET_TimeStep)
@@ -781,11 +770,11 @@ subroutine noah36_main(n)
            row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
 !hkb
            ilat =  LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
-                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lat
+                LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+                LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lat
            ilon =  LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
-                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-                                       LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lon
+                LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+                LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lon
            call sflx(                                                                 &
                 ffrozp, isurban, dt, zlvl, nsoil, sldpth,                             &
                 local,                                                                &
@@ -1097,77 +1086,75 @@ subroutine noah36_main(n)
                 vlevel=1,unit="-",direction="-",surface_type=LIS_rc%lsm_index)
         endif
 
-
         ! Sprinkler Irrigation added water needs to be removed - HKB
         ! Paddy Irrigation recycle runoff QRI
         if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
             LIS_rc%irrigation_type .eq. "Concurrent" ) then
-            ! Save total runoff before QRI for all tiles in mm/s as in qs+qsb
-            IM%totR(t) = ( noah36_struc(n)%noah(t)%runoff1+ &
+           ! Save total runoff before QRI for all tiles in mm/s as in qs+qsb
+           IM%totR(t) = ( noah36_struc(n)%noah(t)%runoff1+ &
                 noah36_struc(n)%noah(t)%runoff2 )*LIS_CONST_RHOFW
-                                        
-            if ( IM%irrigType(t) .eq. 1 ) then  ! Sprinkler
-             ! Compute wchange before removing irrigRate from precip - HKB
+
+           if ( IM%irrigType(t) .eq. 1 ) then  ! Sprinkler
+              ! Compute wchange before removing irrigRate from precip - HKB
               wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
               noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
               prcp = prcp - IM%irrigRate(t)
               IM%recR(t) = 0.0
-              IM%outR(t) = 0.0 
+              IM%outR(t) = 0.0
 
             !-- Runoff Recycling Irrigation start
-            else if ( IM%irrigType(t) .eq. 3 ) then  ! Flood
+           else if ( IM%irrigType(t) .eq. 3 ) then  ! Flood
               croptype = noah36_struc(n)%noah(t)%vegt - (LIS_rc%nsurfacetypes - LIS_rc%numbercrops)   ! crop index 1-26; ricecrop = 3 for MIRCA
               if ( croptype .eq. LIS_rc%ricecrop ) then !paddy
-!! set QRI to negative for no qri -- do nothing 
-!!                IM%irrigQRI(t) = -10.
-                if ( IM%cropgs(t) .gt. 0 ) then  ! rice growing season
-                  if ( IM%irrigQRI(t) .gt. 0 ) then  ! do not adjust if QRI is negative
-                    IM%recR(t) = min(IM%irrigQRI(t)*IM%totR(t),IM%irrigRate(t))
-                    IM%outR(t) = IM%totR(t) - IM%recR(t)
-                     if ( IM%outR(t) .lt. 0 ) then
-                      write(LIS_logunit,*) " Negative ourR ...Stopping program ...",t
-                      call LIS_endrun()
-                     end if
-                    IM%irrigAppRate(t) = IM%irrigRate(t) - IM%recR(t)
-                     if ( IM%irrigAppRate(t) .lt. 0 ) then
-                      IM%irrigAppRate(t) = 0.0
-                      write(LIS_logunit,*) " Negative newI ...Stopping program ...",t
-                      call LIS_endrun()
-                     end if
-                    ! runoff2 in m/s, outR & totR in mm/s
-                    if ( IM%totR(t) .ne. 0 ) then   ! handle invalid
-                     noah36_struc(n)%noah(t)%runoff2 = noah36_struc(n)%noah(t)%runoff2 *(IM%outR(t)/IM%totR(t))
-                     noah36_struc(n)%noah(t)%runoff1 = noah36_struc(n)%noah(t)%runoff1 *(IM%outR(t)/IM%totR(t))
-                    endif
+!! set QRI to negative for no qri -- do nothing
+                 !!                IM%irrigQRI(t) = -10.
+                 if ( IM%cropgs(t) .gt. 0 ) then  ! rice growing season
+                    if ( IM%irrigQRI(t) .gt. 0 ) then  ! do not adjust if QRI is negative
+                       IM%recR(t) = min(IM%irrigQRI(t)*IM%totR(t),IM%irrigRate(t))
+                       IM%outR(t) = IM%totR(t) - IM%recR(t)
+                       if ( IM%outR(t) .lt. 0 ) then
+                          write(LIS_logunit,*) " Negative ourR ...Stopping program ...",t
+                          call LIS_endrun()
+                       end if
+                       IM%irrigAppRate(t) = IM%irrigRate(t) - IM%recR(t)
+                       if ( IM%irrigAppRate(t) .lt. 0 ) then
+                          IM%irrigAppRate(t) = 0.0
+                          write(LIS_logunit,*) " Negative newI ...Stopping program ...",t
+                          call LIS_endrun()
+                       end if
+                       ! runoff2 in m/s, outR & totR in mm/s
+                       if ( IM%totR(t) .ne. 0 ) then   ! handle invalid
+                          noah36_struc(n)%noah(t)%runoff2 = noah36_struc(n)%noah(t)%runoff2 *(IM%outR(t)/IM%totR(t))
+                          noah36_struc(n)%noah(t)%runoff1 = noah36_struc(n)%noah(t)%runoff1 *(IM%outR(t)/IM%totR(t))
+                       endif
+                    else
+                       IM%irrigAppRate(t) = IM%irrigRate(t) 
+                       IM%recR(t) = 0.0
+                       IM%outR(t) = IM%totR(t)
+                    endif     ! QRI negative
 
-                  else
-                   IM%irrigAppRate(t) = IM%irrigRate(t) 
-                   IM%recR(t) = 0.0
-                   IM%outR(t) = IM%totR(t)
-                  endif     ! QRI negative
-
-                else ! not in growing season
-                  IM%irrigAppRate(t) = IM%irrigRate(t)   ! should be zero
-                  IM%recR(t) = 0.0
-                  IM%outR(t) = IM%totR(t)
-                endif    ! growing season
+                 else ! not in growing season
+                    IM%irrigAppRate(t) = IM%irrigRate(t)   ! should be zero
+                    IM%recR(t) = 0.0
+                    IM%outR(t) = IM%totR(t)
+                 endif    ! growing season
               endif   ! paddy
-             ! Compute wchange after adjusted runoff1 & runoff2 - HKB
+              ! Compute wchange after adjusted runoff1 & runoff2 - HKB
               wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
                    noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
-            else    ! Drip
+           else    ! Drip
               ! Compute wchange after adjusted runoff1 & runoff2 - HKB
               wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
                    noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
               IM%recR(t) = 0.0
               IM%outR(t) = 0.0
-            endif    ! Flood
-            !-- Runoff Recycling Irrigation end
+           endif    ! Flood
+           !-- Runoff Recycling Irrigation end
 
         else
-          ! Compute wchange after adjusted runoff1 & runoff2 - HKB
-          wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
-               noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
+           ! Compute wchange after adjusted runoff1 & runoff2 - HKB
+           wchange_prev = prcp - evp - (noah36_struc(n)%noah(t)%runoff1+&
+                noah36_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
         endif   ! irrigation
 
         ! Include adjustment to runoff and soilm over paddies - HKB

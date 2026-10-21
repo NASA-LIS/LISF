@@ -138,7 +138,6 @@ contains
    !- Landcover types:
       if( isSurfaceTypeSelected(1) ) then
         num_lctypes = LDT_LSMparam_struc(n)%landcover%num_bins + LDT_rc%numcrop(n)
-!        print *, " Number of num_lctypes (LDT_surfacetype_init): ",num_lctypes
       endif
 
    !- Lake tiles:
@@ -176,10 +175,7 @@ contains
                                                num_wetlandtypes + &
                                                num_openwatertypes
 
-!      print *, 'sfc types: ',LDT_LSMparam_struc(n)%sfctype%num_bins
-
    !- Set surface type source name (for output field):
-!      write(*,*) (LDT_rc%sf_model_type_name_select(i),i=1, LDT_rc%nsf_model_types )
 
       if( isSurfaceTypeSelected(1) ) lsmname = trim(LDT_rc%lsm)
       if( isSurfaceTypeSelected(2) ) lakename = "+"//trim(LDT_rc%lakemodel)
@@ -696,7 +692,6 @@ contains
 
     call LDT_writeNETCDFdata(n,ftn,LDT_LSMparam_struc(n)%sfctype)
 
-!    print*, 'processed surface type ', LDT_localPet
 #if ( defined SPMD )
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif

@@ -64,7 +64,6 @@ subroutine noah33_setvegparms(mtype)
   integer       :: iindex,lumatch
   real          :: interp_fraction
   real          :: topt_data
-  real          :: cmcmax_data
   real          :: cfactr_data
   real          :: rsmax_data
   real          :: bare
@@ -559,7 +558,7 @@ subroutine noah33_resetvegparms(mtype)
 
   implicit none
   integer :: mtype
-  integer :: n,j,t,m,gid,tid
+  integer :: n,t,m,gid,tid
 !!!!!  character*4      :: lutype,mminlu
 !!!!!  integer          :: iindex,lumatch
   real             :: interp_fraction
