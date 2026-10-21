@@ -337,6 +337,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                       else
                         !bring to saturation 
                         totamount = totamount + &
+                           IM%IrrigScale(TileNo)* &
                            (noah33_struc(nest)%noah(TileNo)%smcmax - noah33_struc(nest)%noah(TileNo)%smc(l)) &
                            *sldpth(l)*1000.       ! mm
                         noah33_struc(nest)%noah(TileNo)%smc(l) =  &

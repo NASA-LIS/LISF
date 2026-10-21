@@ -875,11 +875,21 @@ contains
     if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1")) then
       select case( LDT_rc%lc_type(n) ) 
        case( "IGBPNCEP" ) 
-         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
-              20))
+         if( LDT_rc%crop_classification(1) .eq. "MIRCA" ) then
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                46))
+         else
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                20))
+         endif
        case( "USGS" )
-         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
-              27))
+         if( LDT_rc%crop_classification(1) .eq. "MIRCA" ) then
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                53))
+         else
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                27))
+         endif
        case( "USGS-RUC" )
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
               28))

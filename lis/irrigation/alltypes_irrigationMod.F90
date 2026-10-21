@@ -1385,7 +1385,7 @@ contains
        deallocate(noirr_qsb)
        deallocate(country)
 
-!      read in Optimized QRI: optQRI(polyid)
+!      read in Optimized QRI: optQRI(polyid)-- currently for 53 countries
        pifile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/polyid.csv"
        oqfile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/optQRI.csv"
        inquire(file=oqfile,exist=file_exists2)
@@ -1395,13 +1395,14 @@ contains
           open(ftn,file=oqfile,status='old')
           ftn2 = LIS_getNextUnitNumber()
           open(ftn2,file=pifile,status='old')
-          allocate( optQRI(total_countries) )
+          ! country index range from 0 to 256
+          allocate( optQRI(0:total_countries-1) )
           optQRI = -9999.
           do
              read(ftn,*,iostat=error) val
              read(ftn2,*,iostat=error2) j
              optQRI(j) = val
-             if (error == -1) exit
+             if (error /= 0) exit
           end do
           call LIS_releaseUnitNumber(ftn)
           call LIS_releaseUnitNumber(ftn2)

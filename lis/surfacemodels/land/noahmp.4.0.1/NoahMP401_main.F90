@@ -24,6 +24,7 @@
 !   10/29/19: David Mocko; Added RELSMC to output, and an option
 !                          for different units for Qs/Qsb/Albedo
 !   03/09/22: David Mocko: Fixed "input LAI" for dynamic vegetation options 7/8/9
+!   06/26/26: Hiroko Beaudoing: added irrigation scheme of Rodell et al 2026
 !
 ! !INTERFACE:
 subroutine NoahMP401_main(n)
@@ -36,6 +37,8 @@ subroutine NoahMP401_main(n)
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod
     use NoahMP401_lsmMod
+    use LIS_irrigationMod, only: LIS_irrig_state
+    use IRRIGATION_MODULE
 
     implicit none
 ! !ARGUMENTS:
@@ -260,6 +263,10 @@ subroutine NoahMP401_main(n)
     character*3 :: fnest
     REAL, PARAMETER:: LVH2O = 2.501000E+6 ! Latent heat for evapo for water  
 
+    ! HKB --irrigation variables
+    type(irrigation_model) :: IM
+    integer                :: croptype
+
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
     allocate( tmp_soilcomp( 8 ) )
@@ -283,6 +290,15 @@ subroutine NoahMP401_main(n)
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 model alarm "//trim(fnest))
 
     if (alarmCheck) Then
+
+        ! HKB -- Get irrigation state variables. 
+        !     -- Sprinkler needs to subract irrigation from precip before output
+        !     -- Concurrent includes Paddy for recycling runoff
+        if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
+            LIS_rc%irrigation_type .eq. "Concurrent" ) then
+          call IM%get_irrigstate (n, LIS_irrig_state(n))
+        endif   ! irrigation
+
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             dt = LIS_rc%ts
             row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
@@ -911,6 +927,67 @@ subroutine NoahMP401_main(n)
              value=(100.*noahmp401_struc(n)%noahmp401(t)%rhmin), &
              vlevel=1, unit="%", direction="-",&
              surface_type=LIS_rc%lsm_index)
+
+           ! Sprinkler Irrigation added water needs to be removed - HKB
+           ! Paddy Irrigation recycle runoff QRI
+           if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
+               LIS_rc%irrigation_type .eq. "Concurrent" ) then
+               ! Save total runoff before QRI for all tiles in mm/s as in qs+qsb
+               IM%totR(t) =   NOAHMP401_struc(n)%noahmp401(t)%runsf+ &
+                              NOAHMP401_struc(n)%noahmp401(t)%runsb
+
+               if ( IM%irrigType(t) .eq. 1 ) then  ! Sprinkler
+               ! Compute wchange before removing irrigRate from precip - HKB
+                tmp_prcp = tmp_prcp - IM%irrigRate(t)
+                IM%recR(t) = 0.0
+                IM%outR(t) = 0.0
+               !-- Runoff Recycling Irrigation start
+               else if ( IM%irrigType(t) .eq. 3 ) then  ! Flood
+               croptype = tmp_vegetype - (LIS_rc%nsurfacetypes - LIS_rc%numbercrops)   ! crop index 1-26; ricecrop = 3 for MIRCA
+                if ( croptype .eq. LIS_rc%ricecrop ) then !paddy
+!! -- Preprocess without QRI for computing Qs and Qsb with irrigation (max)
+!! -- set QRI to negative for no qri -- do nothing
+!!                IM%irrigQRI(t) = -10.    ! noqri
+                  if ( IM%cropgs(t) .gt. 0 ) then  ! rice growing season
+                    if ( IM%irrigQRI(t) .gt. 0 ) then  ! do not adjust if QRI is negative
+                      IM%recR(t) = min(IM%irrigQRI(t)*IM%totR(t),IM%irrigRate(t))
+                      IM%outR(t) = IM%totR(t) - IM%recR(t)
+                       if ( IM%outR(t) .lt. 0 ) then
+                        write(LIS_logunit,*) " Negative ourR ...Stopping program ...",t
+                        call LIS_endrun()
+                       end if
+                      IM%irrigAppRate(t) = IM%irrigRate(t) - IM%recR(t)
+                       if ( IM%irrigAppRate(t) .lt. 0 ) then
+                        IM%irrigAppRate(t) = 0.0
+                        write(LIS_logunit,*) " Negative newI ...Stopping program ...",t
+                        call LIS_endrun()
+                       end if
+                      ! baseflow in m/s, outR & totR in mm/s
+                      if ( IM%totR(t) .ne. 0 ) then   ! handle invalid
+                       NOAHMP401_struc(n)%noahmp401(t)%runsb = NOAHMP401_struc(n)%noahmp401(t)%runsb *(IM%outR(t)/IM%totR(t))
+                       NOAHMP401_struc(n)%noahmp401(t)%runsf = NOAHMP401_struc(n)%noahmp401(t)%runsf *(IM%outR(t)/IM%totR(t))
+                      endif
+
+                    else
+                     IM%irrigAppRate(t) = IM%irrigRate(t)
+                     IM%recR(t) = 0.0
+                     IM%outR(t) = IM%totR(t)
+                    endif     ! QRI negative
+
+                  else ! not in growing season
+                    IM%irrigAppRate(t) = IM%irrigRate(t)   ! should be zero
+                    IM%recR(t) = 0.0
+                    IM%outR(t) = IM%totR(t)
+                  endif    ! growing season
+                endif   ! paddy
+
+               else    ! Drip
+               ! Compute wchange after adjusted surface runoff & baseflow - HKB
+                IM%recR(t) = 0.0
+                IM%outR(t) = 0.0
+               endif    ! Flood
+               !-- Runoff Recycling Irrigation end
+            endif   ! irrigation
 
             ![ 1] output variable: tsk (unit=K  ). ***  surface radiative temperature
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RADT, value = NOAHMP401_struc(n)%noahmp401(t)%tsk, &
