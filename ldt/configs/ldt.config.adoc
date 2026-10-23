@@ -1487,11 +1487,6 @@ Multiple Cropping Max Seasons:  2
 
 Soils maps
 
-[[ssec-soilspecparams]]
-=== Soil Parameters
-
-Soils maps
-
 `Sand fraction map:` specifies the sand fraction map file.
 
 `Clay fraction map:` specifies the clay fraction map file.
