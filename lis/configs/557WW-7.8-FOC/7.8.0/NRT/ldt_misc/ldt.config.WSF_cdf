@@ -1,0 +1,194 @@
+# =============================================================================
+# LDT Configuration: WSF Soil Moisture Observation CDF Generation
+# MINIMAL config - only landmask from lis_input, everything else "none"
+# =============================================================================
+
+# Overall driver options
+LDT running mode:                   "DA preprocessing"
+Processed LSM parameter filename:   ./run/lis/lis_input.global.noahmp401.nc
+LIS number of nests:                 1
+Number of surface model types:       2
+Surface model types:                 LSM  Openwater
+Land surface model:                  "Noah-MP.4.0.1"
+Lake model:                          none
+Routing model:                       none
+Open water model:                    "template open water"
+Water fraction cutoff value:         0.5
+
+Number of met forcing sources:       0
+Met forcing sources:                 none
+LDT diagnostic file:                 ./ldtlog
+Mask-parameter fill diagnostic file: ./MPFilltest.log
+LDT output directory:                ./
+Undefined value:                    -9999.0
+Number of ensembles per tile:        1
+Number of processors along x:        1
+Number of processors along y:        1
+Output methodology:                  "2d gridspace"
+Output data format:                  netcdf
+Output naming style:                 "3 level hierarchy"
+
+# =============================================================================
+# Domain specification - GLOBAL 10km
+# =============================================================================
+Map projection of the LIS domain:     latlon
+Run domain lower left lat:            -89.9531250
+Run domain lower left lon:           -179.9296875
+Run domain upper right lat:            89.9531250
+Run domain upper right lon:           179.9296875
+Run domain resolution (dx):             0.1406250
+Run domain resolution (dy):             0.0937500
+
+#Landcover parameter inputs
+Landcover data source:                  "MODIS_Native"
+Landcover classification:               "IGBPNCEP"
+Landcover file:                         ./input/LS_PARAMETERS/noah_2dparms/igbp.bin
+Landcover spatial transform:            tile
+Landcover map projection:               latlon
+Landcover fill option:                  neighbor
+Landcover fill radius:                  5
+Landcover fill value:                   10
+
+#Landmask parameter inputs
+Create or readin landmask:              "readin"
+Landmask data source:                   "UKMO_CAP_Netcdf"
+Landmask file:                          ./data/cap2ldt_ps41.nc
+Landmask spatial transform:             none
+Landmask map projection:                latlon
+Landmask fill option:                   none
+Landmask lower left lat:                 -89.9531250
+Landmask lower left lon:                -179.9296875
+Landmask upper right lat:                 89.9531250
+Landmask upper right lon:                179.9296875
+Landmask resolution (dx):                  0.1406250
+Landmask resolution (dy):                  0.0937500
+
+
+# Crop-Irrigation parameters
+Incorporate crop information:     .false.
+Irrigation type data source:      none
+Irrigation fraction data source:  none
+
+# Soil Parameters
+Soil fraction data source:       none
+Soils spatial transform:         none
+Soils fill option:               none
+Soils map projection:            latlon
+
+Soil texture data source:       none
+Soil texture map:               ./input/LS_PARAMETERS/noah_2dparms/topsoil30snew
+Soil texture spatial transform:   none
+Soil texture fill option:         none
+Soil texture map projection:     latlon
+Soil texture force exclusion of water points during fill: true
+
+# Topography parameters -- Elevation, Slope, Aspect
+Elevation data source:        none
+Elevation number of bands:    1
+Elevation map:                none
+Elevation fill option:        none # Preserve elevation for water bodies
+Slope data source:            none
+Slope number of bands:        1
+Slope map:                    none
+Slope fill option:            none # Preserve slope for water bodies
+Aspect data source:           none
+Aspect number of bands:       1
+Aspect map:                   none
+Aspect fill option:           none # Preserve aspect ratio for water bodies
+
+Topography spatial transform:    none
+Topography map projection:       latlon
+
+# LSM-specific parameters
+Albedo data source:             none
+Albedo map:                     none
+Albedo climatology interval:    monthly
+Albedo spatial transform:       budget-bilinear
+Albedo fill option:             none
+Albedo map projection:          latlon
+
+Max snow albedo data source:          none
+Max snow albedo map:                  none
+Max snow albedo spatial transform:    none
+Max snow albedo fill option:          none 
+Max snow albedo map projection:       latlon
+
+Greenness data source:            NCEP_Native
+Greenness fraction map:        ./input/LS_PARAMETERS/noah_2dparms/gfrac
+Greenness climatology interval:    monthly
+Calculate min-max greenness fraction:  .false.
+Greenness maximum map:         ./input/LS_PARAMETERS/noah_2dparms/gfrac_max.asc
+Greenness minimum map:         ./input/LS_PARAMETERS/noah_2dparms/gfrac_min.asc
+Greenness spatial transform:       budget-bilinear
+Greenness fill option:             neighbor
+Greenness fill radius:             5
+Greenness fill value:              0.3
+Greenness maximum fill value:      1.0
+Greenness minimum fill value:      0.0
+Greenness map projection:          latlon
+
+Slope type data source:   none
+
+Bottom temperature data source:   none
+Bottom temperature map:           none
+Bottom temperature spatial transform:    budget-bilinear
+Bottom temperature fill option:   none 
+Bottom temperature topographic downscaling:  none
+Bottom temperature map projection:      latlon
+
+
+# Noah-MP specific parameter
+Noah-MP PBL Height Value:   900.
+
+# =============================================================================
+# DA Preprocessing Settings
+# =============================================================================
+DA preprocessing method:             "CDF generation"
+DA observation source:               "WSF soil moisture"
+Name of the preprocessed DA file:    "./cdf_wsfobs"
+
+Apply anomaly correction to obs:      0
+Temporal resolution of CDFs:         "monthly"
+Number of bins to use in the CDF:     100
+Observation count threshold:          30
+Temporal averaging interval:         "1hr"
+Apply external mask:                  0
+External mask directory:              none
+
+# =============================================================================
+# WSF Soil Moisture Settings
+# =============================================================================
+WSF soil moisture data directory:    ./wsf_sm_data
+
+# =============================================================================
+# Time Window for CDF Accumulation
+# =============================================================================
+Starting year:                        2024
+Starting month:                       4
+Starting day:                         13
+Starting hour:                        0
+Starting minute:                      0
+Starting second:                      0
+Ending year:                          2026
+Ending month:                         4
+Ending day:                           13
+Ending hour:                          0
+Ending minute:                        0
+Ending second:                        0
+LIS output timestep:                 "1hr"
+
+# =============================================================================
+# Tiling settings
+# =============================================================================
+Maximum number of surface type tiles per grid:     1
+Minimum cutoff percentage (surface type tiles):    0.05
+Maximum number of soil texture tiles per grid:     1
+Minimum cutoff percentage (soil texture tiles):    0.05
+Maximum number of soil fraction tiles per grid:    1
+Minimum cutoff percentage (soil fraction tiles):   0.05
+Maximum number of elevation bands per grid:        1
+Minimum cutoff percentage (elevation bands):       0.05
+Maximum number of slope bands per grid:            1
+Minimum cutoff percentage (slope bands):           0.05
+Maximum number of aspect bands per grid:           1
+Minimum cutoff percentage (aspect bands):          0.05

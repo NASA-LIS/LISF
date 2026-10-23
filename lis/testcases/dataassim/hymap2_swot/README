@@ -1,0 +1,30 @@
+The HyMAP2-SWOT Test Case
+
+The testcase demonstrates assimilating SWOT data via the HyMAP-2 router.
+
+The test runs over the Ohio region at a 10km resolution,
+from 2025-01-31T23:45:00 to 2025-05-01T00:00:00,
+at a 15 minute timestep.
+
+
+This directory contains:
+* this README file
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  routing output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case routing output. (testcase.ctl)
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Run the LIS executable using the lis.config file and your sample 
+  input data. 
+
+Notes:
+
+This feature was added in pull request #1750:
+http://github.com/nasa-lis/lisf/pull/1750

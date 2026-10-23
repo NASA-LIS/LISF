@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.5
+# Version 7.8
 #
-# Copyright (c) 2024 United States Government as represented by the
+# Copyright (c) 2026 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -90,6 +90,7 @@ _LVT_NOAHMP_INVOCATIONS_3HR = ['Albedo_tavg',
                                'Greenness_inst',
                                'LWdown_f_inst', 'LWdown_f_tavg',
                                'Landcover_inst', 'Landmask_inst',
+                               'PotEvap_tavg',
                                'Psurf_f_inst', 'Psurf_f_tavg',
                                'Qair_f_inst', 'Qair_f_tavg',
                                'Qg_tavg', 'Qh_tavg', 'Qle_tavg', 'Qs_acc',
@@ -104,7 +105,7 @@ _LVT_NOAHMP_INVOCATIONS_3HR = ['Albedo_tavg',
                                'Tair_f_tavg',
                                'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
 
-_LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
+_LVT_NOAHMP_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg','PotEvap_tavg',
                                 'RHMin_inst',
                                 'SoilMoist_tavg', 'SoilTemp_tavg',
                                 'SWdown_f_tavg', 'Tair_f_max',

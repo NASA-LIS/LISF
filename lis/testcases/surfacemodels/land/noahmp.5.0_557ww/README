@@ -1,0 +1,38 @@
+NoahMP-5.0 LSM Testcase
+
+This is a testcase that uses:
+  (a) The AGRMET forcing in retrospective mode
+  (b) Bilinear Interpolation
+  (c) The NoahMP version 5.0 land surface model
+  (e) Global domain at 10 km spatial resolution ( 0.140625 x 0.09375 )
+  (f) A time period from 00:00Z 1 Jan 2022 to 00:00Z 2 Jan 2022
+  (g) 12 ensemble member, USAFSI, SMOPS-ASCAT sm, and SMAP(NRT) sm data assimilation
+
+This directory contains:
+  (a) This README file
+  (b) The "ldt.config" file to generate the parameters using LDT
+  (c) An "input.ctl" file used to open the LDT parameters in GrADS
+  (d) The "lis.config.557ww" file used for this testcase
+  (e) The "lis.config.557ww.da" file used for this testcase
+  (f) The "MODEL_OUTPUT_LIST_noahmp5_NLDAS.TBL" file used by the lis.config files
+     to select the output variables
+  (g) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+
+Note that the "ldt.config" and "lis.config.557ww" and "lis.config.557ww.da" files should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Generate the LDT and the LIS executables
+  (b) Run the LDT executable using the "ldt.config" file 
+      with the testcase input data
+  (c) Run the LIS executable using the "lis.config" files with the
+      testcase input data
+  (d) View the binary output using the testcase GrADS files
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+

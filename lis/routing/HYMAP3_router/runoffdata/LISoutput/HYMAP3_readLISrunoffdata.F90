@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.8
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2026 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -47,7 +47,6 @@ subroutine HYMAP3_readLISrunoffdata(n, surface_runoff, baseflow)
   !
   ! 5) LIS outputs are in NETCDF format.
   !
-  !Added total evapotranspiration (Evap)
   integer                       :: c,r
   !ag - 17Mar2016
   real                  :: qs2d(HYMAP3_LISrunoffdata_struc(n)%nc, &
@@ -60,7 +59,7 @@ subroutine HYMAP3_readLISrunoffdata(n, surface_runoff, baseflow)
        HYMAP3_LISrunoffdata_struc(n)%nc*HYMAP3_LISrunoffdata_struc(n)%nr)
   logical*1             :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real                  :: var_out(LIS_rc%lnc(n)*LIS_rc%lnr(n))
-  integer               :: ios, nid,qsid,qsbid !,evapid
+  integer               :: ios, nid,qsid,qsbid
   character(LIS_CONST_PATH_LEN) :: filename
   logical               :: file_exists
   logical               :: check_Flag

@@ -44,9 +44,9 @@ NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(imerg)
 
 # Paths on local system. Customize before running this script.
-SCRIPTDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/nrt_lis_autotune_noahmp401/work/scripts
-CFGDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/nrt_lis_autotune_noahmp401/work/cfgs
-BINDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/lisf761_testing/LISF/lis/utils/usaf/retune_bratseth/src
+SCRIPTDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/LISFV7.8/nrt_lis_autotune_noahmp401/scripts
+CFGDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/LISFV7.8/nrt_lis_autotune_noahmp401/cfgs
+BINDIR=/lustre/typhoon/nwp601/proj-shared/emkemp/LISFV7.8/nrt_lis_autotune_noahmp401/src
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then

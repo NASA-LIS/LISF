@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.8
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2026 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -367,11 +367,11 @@ module LVT_PRIV_rcMod
      integer                    :: HYCOM_hi_ant_nc
      integer                    :: HYCOM_hi_ant_nr
      logical                    :: HYCOM_proc_start
-     real,  allocatable         :: HYCOM_n11(:)
-     real,  allocatable         :: HYCOM_aice_arc_n11(:)
-     real,  allocatable         :: HYCOM_aice_ant_n11(:)
-     real,  allocatable         :: HYCOM_hi_arc_n11(:)
-     real,  allocatable         :: HYCOM_hi_ant_n11(:)
+     integer,  allocatable         :: HYCOM_n11(:)
+     integer,  allocatable         :: HYCOM_aice_arc_n11(:)
+     integer,  allocatable         :: HYCOM_aice_ant_n11(:)
+     integer,  allocatable         :: HYCOM_hi_arc_n11(:)
+     integer,  allocatable         :: HYCOM_hi_ant_n11(:)
      integer                    :: processHYCOM
      character(len=LVT_CONST_PATH_LEN) :: HYCOMdir
      integer                    :: applyNoiseReductionFilter

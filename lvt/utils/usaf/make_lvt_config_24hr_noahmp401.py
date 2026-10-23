@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.5
+# Version 7.8
 #
-# Copyright (c) 2024 United States Government as represented by the
+# Copyright (c) 2026 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,8 +21,8 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.noahmp401"
 
-_STARTDT = datetime.datetime(2024, 9, 25, 12)
-_ENDDT = datetime.datetime(2024, 9, 26, 12)
+_STARTDT = datetime.datetime(2025, 1, 20, 12)
+_ENDDT = datetime.datetime(2025, 1, 21, 12)
 
 #_OUTPUT = "netcdf"
 _OUTPUT = "grib2"
@@ -31,6 +31,8 @@ _OUTPUT = "grib2"
 _VAR_ATTRIBUTES = {
     "Evap_tavg":
     "Evap        1  1  kg/m2s -  1  1 Evap        1  1  kg/m2s -  1  1",
+    "PotEvap_tavg":
+        "PotEvap     1  1  W/m2   -  1  1 PotEvap     1  1  W/m2   -  1  1",
     "LWdown_f_tavg":
         "LWdown_f    1  1  W/m2   -  1  1 LWdown_f    1  1  W/m2   -  1  1 ",
     "SoilMoist_tavg":
@@ -59,7 +61,7 @@ _VAR_ATTRIBUTES_SPECIAL = {
 
 # Smooth variables that are perturbed, derived from perturbed variables,
 # or are LSM outputs that are affected by perturbed variables via physics.
-_SMOOTH_VARS = ["Evap_tavg", "LWdown_f_tavg",
+_SMOOTH_VARS = ["Evap_tavg", "PotEvap_tavg", "LWdown_f_tavg",
                "SoilMoist_tavg",
                "SoilTemp_tavg", "SWdown_f_tavg",
                "Tair_f_max", "Tair_f_tavg",

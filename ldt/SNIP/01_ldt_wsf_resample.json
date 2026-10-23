@@ -1,0 +1,9 @@
+{
+  "target_datetime": "202501200600",
+  "start_offset_hours": 6,
+  "ldt": "./LDT",
+  "ldt_config_template": "./01_ldt_wsf_resample.ldt.config",
+  "v522_sdr_base": "./data/input/wsf_sdr_data/v5.2.2/res_sdr_01",
+  "raw_sdr_base": "./data/input/wsf_sdr_data",
+  "resampled_base": "./data/01_ldt_wsf_resample"
+}

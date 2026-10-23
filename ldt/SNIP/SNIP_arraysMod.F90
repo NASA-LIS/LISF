@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.8
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2026 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -68,7 +68,7 @@ module SNIP_arraysMod
      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNIP GRID
      real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
      real, allocatable :: navy_icecon(:,:)
-     real, allocatable :: amsr2_snowdepth(:,:)
+     real, allocatable :: pmw_snowdepth(:,:)
   end type SNIP_arrays_t
 
   type(SNIP_arrays_t), public :: SNIP_arrays

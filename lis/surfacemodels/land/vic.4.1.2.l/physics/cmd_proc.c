@@ -23,7 +23,7 @@ filenames_struct cmd_proc(int argc, char *argv[])
 **********************************************************************/
 {
   extern option_struct options;
-  extern int getopt();
+  extern int getopt(int, char *[], char *);
   extern char *optarg;
   extern char *optstring;
 

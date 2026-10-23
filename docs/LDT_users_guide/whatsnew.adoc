@@ -1,0 +1,103 @@
+
+[[sec-whatsnewcont]]
+== What`'s New (continued)
+
+NOTE: There were no public releases for versions 7.6 or 7.7.
+
+=== Version 7.5
+
+. Includes new runmode
+* Operation Enhanced (9-km) SMAP soil moisture (SMAP_E_OPL)
+. Supports additional data assimilation observations
+* CDFS green vegetation fraction (CDFS_GVF)
+* GEOS-FP effective soil temperature (GEOS_FP_TEFFobs)
+* Precipitation output from a LIS run (LISlsmPrecipobs)
+* Soil temperature output from a LIS run (LISlsmTEFFobs)
+* Operational 9-km enhanced SMAP soil moisture retrieval (SMAP_E_OPLsm)
+* VIIRS green vegetation fraction (VIIRS_GVF)
+. Supports additional parameters
+* SnowModel parameters
+
+=== Version 7.4
+
+. Includes new runmode
+* observation simulator runmode
+. Supports additional data assimilation observations
+* SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)
+* Thermal hydraulic disaggregation of soil moisture (THySM)
+. Supports additional parameters
+* Crocus parameters
+. Supports additional meteorological forcing sources
+* metforcing extracted from WRF output over Alaska domain (WRFAKdom)
+* metforcing extracted from WRF output (WRFoutv2)
+
+[IMPORTANT]
+====
+Support for these metforcing sources was *removed*:
+
+* ecmwfreanal
+* gdas3d
+* merra-land
+* nldas1
+====
+
+=== Version 7.3
+
+. Includes new runmodes
+* USAF snow and ice analysis (USAFSI) runmode
+* optimization and uncertainty estimation procecssing runmode
+* LIS Hydro preprocessing runmode
+* climatological restart processing runmode
+. Supports additional data assimilation observations
+* GLASS LAI observations
+* GRACE QL tws observations
+* Land Parameter Retrieval Model (LPRM) vegetation optical depth observations
+* NASA SMAP vegetation optical depth observations
+. Supports additional parameters
+* CLM45 parameters
+* glacier parameters
+* JULES 5.0 parameters
+* MERIT1K aspect, slope, and elevation parameters
+* HYMAP flow type, baseflow dwi ratio, and runoff dwi ratio parameters
+* Barlage native max snow albebdo parameter
+* MODIS native PFT landcover data
+* UKMO IGBP PFT landcover data
+* UM ancillary landcover data
+* NLDAS climatological precipitation data
+* UKMO IGBP native PFT landmask data
+* UKMO CAP landmask data
+* ISRIC texture and soil fraction parameter data
+. Supports GCOMW AMSR2 TB data in artificial neural network processing running mode
+. Supports ERA5 metforcing data in Metforcing processing running mode
+
+=== Version 7.2
+
+. Includes artificial neural network processing runmode
+
+The following are only in the development branch:
+
+. Supports NESDIS SMOPS datasets versions 1.3, 2.0, and 3.0
+. Supports JULES parameters
+. Supports ISRIC soil texture data
+
+=== Version 7.1
+
+. Includes MetTimeDScale runmode
+. Includes Metforcproc runmode
+. Supports crop parameters
+. Supports CLM2 parameters
+. Supports Flake parameters
+. Supports Mosaic parameters
+. Supports Noah parameters
+. Supports SiB2 parameters
+. Supports VIC parameters
+. Supports TRMM 3B42 V7 real time precipitation
+. Supports Aquarius L2 soil moisture observations
+. Supports GCOMW AMSR2 L3 soil moisture observations
+. Supports SMOS L2 soil moisture observations
+. Supports simulated GRACE products
+
+=== Version 7.0
+
+. This is the initial version developed for processing data inputs to LIS version 7.0 or higher.
+

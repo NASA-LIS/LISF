@@ -23,7 +23,7 @@ void vicerror(char error_text[])
         extern option_struct options;
 	extern Error_struct Error;
         filenames_struct fnames;
-	void _exit();
+	void _exit(int);
 
         options.COMPRESS=FALSE;	/* turn off compression of last set of files */
 

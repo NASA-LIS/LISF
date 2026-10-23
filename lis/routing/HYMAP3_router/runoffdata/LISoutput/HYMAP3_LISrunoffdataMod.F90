@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.8
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2026 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -49,7 +49,7 @@ module HYMAP3_LISrunoffdataMod
      integer             :: nc,nr
      character(len=LIS_CONST_PATH_LEN)       :: previous_filename
      real                :: datares
-     real, allocatable   :: qs(:,:),qsb(:,:),evap(:,:)
+     real, allocatable   :: qs(:,:),qsb(:,:)
   end type HYMAP3_LISrunoffdatadec
 
   type(HYMAP3_LISrunoffdatadec), allocatable :: &
@@ -224,11 +224,8 @@ contains
             LIS_rc%lnc(n),LIS_rc%lnr(n)))
        allocate(HYMAP3_LISrunoffdata_struc(n)%qsb( &
             LIS_rc%lnc(n),LIS_rc%lnr(n)))
-       allocate(HYMAP3_LISrunoffdata_struc(n)%evap( &
-            LIS_rc%lnc(n),LIS_rc%lnr(n)))
        HYMAP3_LISrunoffdata_struc(n)%qs=LIS_rc%udef
        HYMAP3_LISrunoffdata_struc(n)%qsb=LIS_rc%udef
-       HYMAP3_LISrunoffdata_struc(n)%evap=LIS_rc%udef
     enddo
 
   end subroutine HYMAP3_LISrunoffdata_init

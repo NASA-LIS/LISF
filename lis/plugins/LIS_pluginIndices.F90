@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.8
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2026 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -32,6 +32,7 @@ module LIS_pluginIndices
 !               for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS
 !  18 Mar 2020: Sarith Mahanam, added Concurrent irrigation
+!  16 Sep 2026: Cenlin He, added NoahMP 5.0
 !
 !EOP
 
@@ -77,6 +78,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_noah39Id    = "Noah.3.9"
    character*50, public,  parameter :: LIS_noahmp36Id  = "NoahMP.3.6"
    character*50, public,  parameter :: LIS_noahmp401Id = "Noah-MP.4.0.1"
+   character*50, public,  parameter :: LIS_noahmp50Id = "Noah-MP.5.0"
    character*50, public,  parameter :: LIS_ac72Id      = "AquaCrop.7.2"
    character*50, public,  parameter :: LIS_ruc37Id     = "RUC.3.7"
    character*50, public,  parameter :: LIS_clm2Id      = "CLM.2"
@@ -301,7 +303,7 @@ module LIS_pluginIndices
         "SSMI snow depth"
    character*50, public,  parameter :: LIS_AMSREsweobsId       = &
         "AMSR-E SWE"
-!   character*50, public,  parameter :: LIS_AMSREsnowobsId      = "AMSR-E snow" !yliu
+!   character*50, public,  parameter :: LIS_AMSREsnowobsId      = "AMSR-E snow"
    character*50, public,  parameter :: LIS_PMWsnowobsId        = &
         "PMW snow" !yliu
    character*50, public,  parameter :: LIS_modisscfId          = &
@@ -315,13 +317,13 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_SMOPSsmobsId        = &
         "SMOPS soil moisture"
    character*50, public,  parameter :: LIS_SMOPS_ASCATsmobsId  = &
-        "SMOPS-ASCAT soil moisture" ! MN
+        "SMOPS-ASCAT soil moisture"
    character*50, public,  parameter :: LIS_SMOPS_SMOSsmobsId   = &
-        "SMOPS-SMOS soil moisture"  ! MN
+        "SMOPS-SMOS soil moisture"
    character*50, public,  parameter :: LIS_SMOPS_AMSR2smobsId  = &
-        "SMOPS-AMSR2 soil moisture" ! MN
+        "SMOPS-AMSR2 soil moisture"
    character*50, public,  parameter :: LIS_SMOPS_SMAPsmobsId   = &
-        "SMOPS-SMAP soil moisture"  ! MN
+        "SMOPS-SMAP soil moisture"
    character*50, public,  parameter :: LIS_ASCAT_TUWsmobsId    = &
         "ASCAT (TUW) soil moisture"
    character*50, public,  parameter :: LIS_IMSscaobsId         = &
@@ -340,11 +342,11 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_NASASMAPsmobsId       = &
         "SMAP(NASA) soil moisture"
    character*50, public,  parameter :: LIS_CDFTRANSFERNASASMAPsmobsId = &
-        "SMAP(NASA) soil moisture with CDF Transfer"                 !MN
+        "SMAP(NASA) soil moisture with CDF Transfer"
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
-        "SMOS NRT NN soil moisture"                                  !YK
+        "SMOS NRT NN soil moisture"
    character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
-        "SMAP_E_OPL soil moisture"                                   !YK
+        "SMAP_E_OPL soil moisture"
    character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
         "SMAP(NASA) vegetation optical depth"
    character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
@@ -354,13 +356,15 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
         "MCD15A2H LAI"
    character*50, public,  parameter :: LIS_VIIRSgvfobsId         = &
-        "VIIRS GVF"                                                  !YK
+        "VIIRS GVF"
    character*50, public,  parameter :: LIS_CDFSgvfobsId          = &
-        "CDFS GVF"                                                   !YK
+        "CDFS GVF"
    character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
         "GLASS Albedo"
    character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
         "SMAP(NRT) soil moisture"
+   character*50, public,  parameter :: LIS_WSFsmobsId            = &
+        "WSF soil moisture"
    character*50, public,  parameter :: LIS_ASOsweobsId           = &
         "ASO SWE"
    character*50, public,  parameter :: LIS_synwlId             = &
@@ -371,6 +375,8 @@ module LIS_pluginIndices
         "Hydroweb water level"
    character*50, public,  parameter :: LIS_wusUCLAobsId        = &
         "Western U.S. UCLA snow"
+   character*50, public,  parameter :: LIS_swotwlId            = &
+        "SWOT water level"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
@@ -417,7 +423,7 @@ module LIS_pluginIndices
         "Gridded FLUXNET"
    character*50, public,  parameter :: LIS_USDA_ARSsmpeObsId = &
         "USDA ARSsm"
-   character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm" ! SY
+   character*50, public,  parameter :: LIS_ARSsmobsId = "ARS sm"
    character*50, public,  parameter :: LIS_ISMNsmobsId = "ISMN sm"
    character*50, public,  parameter :: LIS_SMAPsmobsId = "SMAP sm"
    character*50, public,  parameter :: LIS_UAsnowobsId = "UA snow"

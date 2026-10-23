@@ -17,10 +17,16 @@ NOTE: All users are encouraged to go to {lisfurl}[LISF`'s web-site] to fill in t
 
 LDT is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `git clone` the LISF source code into a directory within a case sensitive file system.  In particular, if you are using LDT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LDT from within a shared folder.  Move the LISF source code into a directory within the virtual machine.
 
-[[sec_publicrelease,Public Release Source Code]]
-=== Public Release Source Code
+[[sec_release_source_code]]
+=== Release Source Code
 
+ifdef::publicrelease[]
 The LISF public release {lisfrevision} source code is available both on {lisfurl}[LISF`'s web-site] under the "`Source`" menu and on GitHub under the NASA-LIS organization at {nasalisf} under the "`Releases`" link.
+endif::[]
+
+ifndef::publicrelease[]
+The LISF 557WW release {lisfrevision} source code is available both on {lisfurl}[LISF`'s web-site] under the "`Projects / Air Force`" menu and on GitHub under the NASA-LIS organization at {nasalisf} under the "`Releases`" link.
+endif::[]
 
 After downloading the LISF tar-file:
 
@@ -56,7 +62,7 @@ Unzip and untar the tar-file.
 
 [subs="attributes"]
 ....
-% gzip -dc {ldttarball} | tar xf -
+% tar xzf {ldttarball}
 ....
 
 :sectnums: // re-enable section numbers

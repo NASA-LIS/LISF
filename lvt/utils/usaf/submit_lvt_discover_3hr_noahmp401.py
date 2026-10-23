@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.5
+# Version 7.8
 #
-# Copyright (c) 2024 United States Government as represented by the
+# Copyright (c) 2026 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,7 +28,7 @@ _VARS = ['RelSMC_inst', 'SmLiqFrac_inst',
         'CanopInt_inst', 'Elevation_inst', 'Evap_tavg',
         'Greenness_inst',
         'LWdown_f_inst', 'LWdown_f_tavg',
-        'Landcover_inst', 'Landmask_inst',
+         'Landcover_inst', 'Landmask_inst','PotEvap_tavg',
         'Psurf_f_inst', 'Psurf_f_tavg',
         'Qair_f_inst', 'Qair_f_tavg',
         'Qg_tavg', 'Qh_tavg', 'Qle_tavg', 'Qs_acc',
@@ -65,8 +65,8 @@ fi
 
 module purge
 module use --append /home/emkemp/privatemodules/sles15
-module load lisf_7.6_intel_2023.2.1_emk
-
+#module load lisf_7.6_intel_2023.2.1_emk
+module load lisf_7.6_intel_2023.2.1_emk_aiml
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1

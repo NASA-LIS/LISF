@@ -6,7 +6,7 @@ xdef 2560 linear -179.9297 0.140625
 ydef 1920 linear -89.95312 0.09375
 zdef 1 linear 1 1
 * dummy tdef
-tdef 3 linear 00z01may2024 12hr
+tdef 3 linear 00z31jul2024 12hr
 vars 10
 lat=>lat 1 y,x description
 lon=>lon 1 y,x description

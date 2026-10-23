@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.5
+# Version 7.8
 #
-# Copyright (c) 2024 United States Government as represented by the
+# Copyright (c) 2026 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,12 +21,12 @@ import sys
 import time
 
 _VARS = ["SoilMoist_tavg", "SoilTemp_tavg",
-        "RHMin_inst",
-        "Evap_tavg", "LWdown_f_tavg",
-        "SWdown_f_tavg",
-        "Tair_f_max",
-        "Tair_f_tavg",
-        "TotalPrecip_acc", "Wind_f_tavg"]
+         "RHMin_inst",
+         "Evap_tavg", "LWdown_f_tavg", "PotEvap_tavg",
+         "SWdown_f_tavg",
+         "Tair_f_max",
+         "Tair_f_tavg",
+         "TotalPrecip_acc", "Wind_f_tavg"]
 
 def _main():
     """Main driver"""

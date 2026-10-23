@@ -73,6 +73,7 @@
 | GDDP                                   | On
 | GALWEM forecast                        | On
 | GALWEM-GE forecast                     | On
+| MOGREPS-G forecast                     | On
 |====
 
 .Parameters
@@ -113,9 +114,10 @@
 |====
 | Component name | Default state
 
-| NLDAS router   | On
 | HYMAP router   | Off
 | HYMAP2 router  | On
+| HYMAP3 router  | On
+| NLDAS router   | On
 | RAPID router   | Off
 |====
 
@@ -176,6 +178,9 @@
 | DA OBS pildas           | On
 | DA OBS GRACE            | On
 | DA CDF TRANSFER NASA SMAPSM | On
+| DA OBS SWOT WL          | On
+| DA OBS SNIP             | On
+| DA OBS WSF sm           | On
 |====
 
 .Bias estimation
@@ -266,6 +271,7 @@
 | NoahMP-GL.3.9.1.1   | On
 | template glacier    | On
 | template open water | On
+| AquaCrop v7.2       | On
 |====
 
 .Forecast algorithms

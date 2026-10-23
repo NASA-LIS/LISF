@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.8
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2026 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,14 +26,10 @@ subroutine NoahMP401_setup()
     use NoahMP401_lsmMod
     use LIS_logMod,    only: LIS_logunit, LIS_verify, LIS_endrun
     use LIS_fileIOMod, only: LIS_read_param!, LIS_convertParamDataToLocalDomain
-    use LIS_coreMod,   only: LIS_rc, LIS_surface
-    use NOAHMP_TABLES_401, only: read_mp_veg_parameters,     &
-                                 read_mp_soil_parameters,    &
-                                 read_mp_rad_parameters,     &
-                                 read_mp_global_parameters,  &
-                                 read_mp_crop_parameters,    &
-                                 read_mp_optional_parameters
-   
+    use LIS_coreMod,   only: LIS_rc, LIS_surface, LIS_masterproc
+    use LIS_mpiMod
+    use NOAHMP_TABLES_401
+
 !
 ! !DESCRIPTION:
 !
@@ -63,7 +59,13 @@ subroutine NoahMP401_setup()
     integer           :: t, k, n
     integer           :: col, row
     real, allocatable :: placeholder(:,:)
-    integer       :: soilcolor, vegtyp, soiltyp(4), slopetyp, croptype    
+    integer       :: soilcolor, vegtyp, soiltyp(4), slopetyp, croptype
+    integer            :: status
+
+    external :: NOAHMP401_read_MULTILEVEL_param
+    external :: TRANSFER_MP_PARAMETERS
+    external :: NoahMP401_read_OPT_parameters
+
     mtype = LIS_rc%lsm_index
     
     do n=1, LIS_rc%nnest
@@ -230,7 +232,7 @@ subroutine NoahMP401_setup()
         endif
         deallocate(placeholder)
 
-    !!!! read Noah-MP parameter tables  Shugong Wang 11/06/2018 
+        !!!! read Noah-MP parameter tables  Shugong Wang 11/06/2018
         write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 soil parameter table: ", &
              trim(NOAHMP401_struc(n)%soil_tbl_name)       
         write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 general parameter table: ",&
@@ -241,15 +243,225 @@ subroutine NoahMP401_setup()
              trim(NOAHMP401_struc(n)%landuse_scheme_name) 
         write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 Soil classification scheme: ",  &
              "STAS (default, cannot change)" 
-        call read_mp_veg_parameters(trim(NOAHMP401_struc(n)%landuse_scheme_name), &
-             trim(NOAHMP401_struc(n)%noahmp_tbl_name))
-        call read_mp_soil_parameters(trim(NOAHMP401_struc(n)%soil_tbl_name), &
-             trim(NOAHMP401_struc(n)%gen_tbl_name))
-        call read_mp_rad_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
-        call read_mp_global_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
-        call read_mp_crop_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
-        call read_mp_optional_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
 
+        if ( LIS_masterproc ) then
+           write(LIS_logunit,*) "[INFO] masterproc is reading Noah-MP.4.0.1 tables."
+           call read_mp_veg_parameters(trim(NOAHMP401_struc(n)%landuse_scheme_name), &
+                trim(NOAHMP401_struc(n)%noahmp_tbl_name))
+           call read_mp_soil_parameters(trim(NOAHMP401_struc(n)%soil_tbl_name), &
+                trim(NOAHMP401_struc(n)%gen_tbl_name))
+           call read_mp_rad_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
+           call read_mp_global_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
+           call read_mp_crop_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
+           call read_mp_optional_parameters(trim(NOAHMP401_struc(n)%noahmp_tbl_name))
+        else
+           write(LIS_logunit,*) "[INFO] Receiving Noah-MP.4.0.1 tables from masterproc."
+        endif
+
+        ! ====================================================================
+        ! BROADCAST ALL NOAH-MP TABLE VARIABLES TO ALL PROCESSORS
+        ! ====================================================================
+
+        ! ---------------------------------------------------------
+        ! 1. VEGETATION PARAMETERS
+        ! ---------------------------------------------------------
+        ! Integer Scalars
+        call MPI_BCAST(ISURBAN_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ISWATER_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ISBARREN_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ISICE_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ISCROP_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(EBLFOREST_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(NATURAL_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(LOW_DENSITY_RESIDENTIAL_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(HIGH_DENSITY_RESIDENTIAL_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(HIGH_INTENSITY_INDUSTRIAL_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+
+        ! Real Arrays
+        call MPI_BCAST(CH2OP_TABLE, size(CH2OP_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DLEAF_TABLE, size(DLEAF_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(Z0MVT_TABLE, size(Z0MVT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(HVT_TABLE, size(HVT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(HVB_TABLE, size(HVB_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DEN_TABLE, size(DEN_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RC_TABLE, size(RC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(MFSNO_TABLE, size(MFSNO_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SAIM_TABLE, size(SAIM_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(LAIM_TABLE, size(LAIM_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SLA_TABLE, size(SLA_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DILEFC_TABLE, size(DILEFC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DILEFW_TABLE, size(DILEFW_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(FRAGR_TABLE, size(FRAGR_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(LTOVRC_TABLE, size(LTOVRC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(C3PSN_TABLE, size(C3PSN_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(KC25_TABLE, size(KC25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(AKC_TABLE, size(AKC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(KO25_TABLE, size(KO25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(AKO_TABLE, size(AKO_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(VCMX25_TABLE, size(VCMX25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(AVCMX_TABLE, size(AVCMX_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(BP_TABLE, size(BP_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(MP_TABLE, size(MP_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(QE25_TABLE, size(QE25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(AQE_TABLE, size(AQE_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RMF25_TABLE, size(RMF25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RMS25_TABLE, size(RMS25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RMR25_TABLE, size(RMR25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ARM_TABLE, size(ARM_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(FOLNMX_TABLE, size(FOLNMX_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TMIN_TABLE, size(TMIN_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(XL_TABLE, size(XL_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RHOL_TABLE, size(RHOL_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RHOS_TABLE, size(RHOS_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TAUL_TABLE, size(TAUL_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TAUS_TABLE, size(TAUS_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(MRP_TABLE, size(MRP_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(CWPVT_TABLE, size(CWPVT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(WRRAT_TABLE, size(WRRAT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(WDPOOL_TABLE, size(WDPOOL_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TDLEF_TABLE, size(TDLEF_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(NROOT_TABLE, size(NROOT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RGL_TABLE, size(RGL_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RS_TABLE, size(RS_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(HS_TABLE, size(HS_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TOPT_TABLE, size(TOPT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RSMAX_TABLE, size(RSMAX_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+
+        ! ---------------------------------------------------------
+        ! 2. SOIL & GENERAL PARAMETERS
+        ! ---------------------------------------------------------
+        call MPI_BCAST(SLCATS, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(BEXP_TABLE, size(BEXP_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SMCDRY_TABLE, size(SMCDRY_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(F1_TABLE, size(F1_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SMCMAX_TABLE, size(SMCMAX_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SMCREF_TABLE, size(SMCREF_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(PSISAT_TABLE, size(PSISAT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DKSAT_TABLE, size(DKSAT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DWSAT_TABLE, size(DWSAT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SMCWLT_TABLE, size(SMCWLT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(QUARTZ_TABLE, size(QUARTZ_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SLOPE_TABLE, size(SLOPE_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        
+        call MPI_BCAST(CSOIL_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(REFDK_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(REFKDT_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(FRZK_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ZBOT_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(CZIL_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+
+        ! ---------------------------------------------------------
+        ! 3. RADIATION PARAMETERS
+        ! ---------------------------------------------------------
+        call MPI_BCAST(ALBSAT_TABLE, size(ALBSAT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ALBDRY_TABLE, size(ALBDRY_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ALBICE_TABLE, size(ALBICE_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ALBLAK_TABLE, size(ALBLAK_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(OMEGAS_TABLE, size(OMEGAS_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(BETADS_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(BETAIS_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(EG_TABLE, size(EG_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+
+        ! ---------------------------------------------------------
+        ! 4. GLOBAL PARAMETERS
+        ! ---------------------------------------------------------
+        call MPI_BCAST(CO2_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(O2_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TIMEAN_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(FSATMX_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(Z0SNO_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SSI_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(SWEMX_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RSURF_SNOW_TABLE, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+
+        ! ---------------------------------------------------------
+        ! 5. CROP PARAMETERS
+        ! ---------------------------------------------------------
+        call MPI_BCAST(DEFAULT_CROP_TABLE, 1, MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(PLTDAY_TABLE, size(PLTDAY_TABLE), MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(HSDAY_TABLE, size(HSDAY_TABLE), MPI_INTEGER, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(C3C4_TABLE, size(C3C4_TABLE), MPI_INTEGER, 0, LIS_mpi_comm, status)
+        
+        call MPI_BCAST(PLANTPOP_TABLE, size(PLANTPOP_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(IRRI_TABLE, size(IRRI_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GDDTBASE_TABLE, size(GDDTBASE_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GDDTCUT_TABLE, size(GDDTCUT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GDDS1_TABLE, size(GDDS1_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GDDS2_TABLE, size(GDDS2_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GDDS3_TABLE, size(GDDS3_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GDDS4_TABLE, size(GDDS4_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GDDS5_TABLE, size(GDDS5_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(AREF_TABLE, size(AREF_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(PSNRF_TABLE, size(PSNRF_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(I2PAR_TABLE, size(I2PAR_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TASSIM0_TABLE, size(TASSIM0_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TASSIM1_TABLE, size(TASSIM1_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(TASSIM2_TABLE, size(TASSIM2_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(K_TABLE, size(K_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(EPSI_TABLE, size(EPSI_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(Q10MR_TABLE, size(Q10MR_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(FOLN_MX_TABLE, size(FOLN_MX_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(LEFREEZ_TABLE, size(LEFREEZ_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DILE_FC_TABLE, size(DILE_FC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(DILE_FW_TABLE, size(DILE_FW_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(FRA_GR_TABLE, size(FRA_GR_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(LF_OVRC_TABLE, size(LF_OVRC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(ST_OVRC_TABLE, size(ST_OVRC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RT_OVRC_TABLE, size(RT_OVRC_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(LFMR25_TABLE, size(LFMR25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(STMR25_TABLE, size(STMR25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RTMR25_TABLE, size(RTMR25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GRAINMR25_TABLE, size(GRAINMR25_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(LFPT_TABLE, size(LFPT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(STPT_TABLE, size(STPT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(RTPT_TABLE, size(RTPT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(GRAINPT_TABLE, size(GRAINPT_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(BIO2LAI_TABLE, size(BIO2LAI_TABLE), MPI_REAL, 0, LIS_mpi_comm, status)
+
+        ! ---------------------------------------------------------
+        ! 6. OPTIONAL PARAMETERS
+        ! ---------------------------------------------------------
+        call MPI_BCAST(sr2006_theta_1500t_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500t_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500t_c, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500t_d, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500t_e, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500t_f, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500t_g, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_1500_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33t_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33t_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33t_c, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33t_d, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33t_e, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33t_f, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33t_g, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_33_c, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33t_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33t_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33t_c, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33t_d, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33t_e, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33t_f, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33t_g, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_theta_s33_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_et_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_et_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_et_c, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_et_d, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_et_e, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_et_f, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_et_g, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_e_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_e_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_psi_e_c, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_smcmax_a, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        call MPI_BCAST(sr2006_smcmax_b, 1, MPI_REAL, 0, LIS_mpi_comm, status)
+        
         do t=1,LIS_rc%npatch(n,mtype)
            soiltyp = NoahMP401_struc(n)%noahmp401(t)%soiltype
            vegtyp  = NoahMP401_struc(n)%noahmp401(t)%vegetype
@@ -282,7 +494,7 @@ end subroutine NoahMP401_setup
 subroutine NOAHMP401_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 ! !USES:
     use netcdf
-    use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_localPet,   &   
+    use LIS_coreMod, only : LIS_rc, LIS_localPet,   &   
                             LIS_ews_halo_ind, LIS_ewe_halo_ind, &
                             LIS_nss_halo_ind, LIS_nse_halo_ind   
     use LIS_logMod,  only : LIS_logunit, LIS_verify, LIS_endrun
@@ -309,9 +521,8 @@ subroutine NOAHMP401_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 !
 !EOP      
 
-    integer       :: ios1
     integer       :: ios, nid, param_ID, nc_ID, nr_ID, dimids(3)
-    integer       :: nc, nr, t, nlevel, k
+    integer       :: nc, nr, nlevel
     real, pointer :: level_data(:, :, :)
     logical       :: file_exists
 
@@ -399,8 +610,6 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     
   type (noahmp_parameters), intent(inout) :: parameters
     
-  REAL    :: REFDK
-  REAL    :: REFKDT
   REAL    :: FRZK
   REAL    :: FRZFACT
   INTEGER :: ISOIL
