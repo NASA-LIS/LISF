@@ -17,10 +17,12 @@
 subroutine noahmp50_getirrigationstates(n,irrigState)
 ! !USES:
   use ESMF
+#if 0
   use LIS_coreMod
   use LIS_logMod
   use NoahMP50_lsmMod
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
+#endif
 
 ! !DESCRIPTION:
 !
@@ -53,6 +55,10 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
 
 !EOP
   implicit none
+  integer              :: n
+  type(ESMF_State)     :: irrigState
+
+#if 0
   ! Sprinkler parameters
   real, parameter      :: otimess = 6.0 ! local trigger check start time [hour]
   real, parameter      :: irrhrs = 4.   ! duration of irrigation hours
@@ -66,10 +72,8 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
   real, parameter      :: efcor = 0.0      ! Efficiency Correction (%)
   integer, parameter   :: nsoil = 4
 
-  integer              :: n
   integer              :: rc
   integer              :: t,k,gid,vegt,l
-  type(ESMF_State)     :: irrigState
   type(ESMF_Field)     :: irrigRateField,irrigFracField
   type(ESMF_Field)     :: irrigRootDepthField,irrigScaleField
 
@@ -498,5 +502,5 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
         end if
      end do
   end do
-
+#endif
 end subroutine noahmp50_getirrigationstates
