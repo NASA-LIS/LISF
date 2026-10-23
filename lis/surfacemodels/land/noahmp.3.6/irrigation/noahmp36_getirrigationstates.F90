@@ -21,9 +21,7 @@ subroutine noahmp36_getirrigationstates(nest,irrigState)
   use LIS_coreMod
   use LIS_logMod
   use NoahMP36_lsmMod
-#if 0
   use MODULE_SF_NOAHMPLSM_36, only: MAXSMC, REFSMC, WLTSMC
-#endif
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
   use LIS_FORC_AttributesMod
   use LIS_metforcingMod, only : LIS_FORC_State
