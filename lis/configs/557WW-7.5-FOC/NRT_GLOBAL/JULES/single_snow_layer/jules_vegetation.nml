@@ -1,0 +1,17 @@
+&jules_vegetation
+can_model=3
+can_rad_mod=4
+ilayers=10
+l_bvoc_emis=.false.
+l_ht_compete=.false.
+l_landuse=.false.
+!!l_nrun_mid_trif=.false.
+l_phenol=.false.
+l_trait_phys=.false.
+l_trif_crop=.false.
+!!l_trif_eq=.false.
+l_triffid=.false.
+l_vegcan_soilfx=.false.
+!!phenol_period=0
+!!triffid_period=0
+/

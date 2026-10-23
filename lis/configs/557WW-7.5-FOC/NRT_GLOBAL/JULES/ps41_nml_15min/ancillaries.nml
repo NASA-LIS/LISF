@@ -1,0 +1,36 @@
+&jules_frac
+file='./JULES/ps41_nml_15min/tile_fractions.dat',
+!!read_from_dump=.false.,
+/
+&jules_soil_props
+const_val=6.63,0.04946,0.004715,0.45815,0.242433,0.136328,1185676.0,
+          0.226873,0.11,
+const_z=.false.,
+!!file='',
+nvars=9,
+!!read_from_dump=.false.,
+!!tpl_name=9*'',
+use_file=9*.false.,
+var='b','sathh','satcon','sm_sat','sm_crit','sm_wilt','hcap',
+    'hcon','albsoil',
+!!var_name=9*'',
+/
+&jules_top
+const_val=1.0,6.0,2.0,
+!!file='',
+nvars=3,
+!!read_from_dump=.false.,
+!!tpl_name='','','',
+use_file=.false.,.false.,.false.,
+var='fexp','ti_mean','ti_sig',
+!!var_name='','','',
+/
+&jules_agric
+!!read_from_dump=.false.,
+!!zero_agric=.true.,
+!!zero_past=.true.,
+/
+&jules_co2
+co2_mmr=5.94100e-4,
+!!read_from_dump=.false.,
+/

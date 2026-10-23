@@ -1,0 +1,11 @@
+&jules_radiation
+l_albedo_obs=.false.,
+l_cosz=.true.,
+l_embedded_snow=.false.,
+l_mask_snow_orog=.true.,
+!!l_niso_direct=.false.,
+l_snow_albedo=.true.,
+l_spec_alb_bs=.true.,
+l_spec_albedo=.true.,
+wght_alb=0.0,0.5,0.0,0.5,
+/

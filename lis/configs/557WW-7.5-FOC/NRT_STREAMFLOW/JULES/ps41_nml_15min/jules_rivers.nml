@@ -1,0 +1,16 @@
+&jules_rivers
+!!a_thresh=1,
+!!cbland=0.1,
+!!cbriver=0.15,
+!!cland=0.2,
+!!criver=0.62,
+!!l_riv_overbank=.false.,
+l_rivers=.false.,
+!!retl=0.0,
+!!retr=0.005,
+!!rivers_meander=1.4,
+!!rivers_speed=0.4,
+!!rivers_timestep=-32768,
+!!rivers_type='rfm',
+!!runoff_factor=1.0,
+/

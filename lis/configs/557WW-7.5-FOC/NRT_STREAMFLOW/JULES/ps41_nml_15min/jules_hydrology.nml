@@ -1,0 +1,12 @@
+&jules_hydrology
+l_pdm=.false.,
+!!l_spdmvar=.false.,
+l_top=.true.,
+l_wetland_unfrozen=.false.,
+nfita=30,
+!!s_pdm=0.0,
+!!slope_pdm_max=6.0,
+ti_max=10.0,
+ti_wetl=1.5,
+zw_max=6.0,
+/
