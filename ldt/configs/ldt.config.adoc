@@ -1208,7 +1208,7 @@ Assign crop value type:    "none"
 |multiple | force multiple crop type
 |===
 
-By setting `Assign crop value type:` "`single`", you can specify what type of crop you want to assign, like "`maize`" to the user-specified option. 
+By setting `Assign crop value type:` "`single`", you can specify what type of crop you want to assign, like "`maize`" to the user-specified option.
 `Default crop type:`. If "`maize`" was entered, then wherever the landcover map indicated a generic "`cropland`", the crop type field would be given a dominant "`maize`" type.
 
 
@@ -1284,7 +1284,7 @@ Irrigation type map: ../LS_PARAMETERS/irrigation/irrigtype_map.bin
 Irrigation type spatial transform:    mode
 ....
 
-`Assign irrigation type:` specifies irrigation types of sprinkler, drip, and flood for corresponding crop water source information provided by GRIPC. Applicable when GRIPC is chosen for `Irrigation type data source:`.  
+`Assign irrigation type:` specifies irrigation types of sprinkler, drip, and flood for corresponding crop water source information provided by GRIPC. Applicable when GRIPC is chosen for `Irrigation type data source:`.
 
 [cols="<,<",]
 |===
@@ -1413,7 +1413,7 @@ Groundwater irrigation ratio map: ./params/irrigGWratio2000.asc
 Groundwater irrigation ratio spatial transform: bilinear
 ....
 
-`Merge crop and irrigation information:` specifies whether to enable adding another dataset to be merged with those currently selected for `Irrigation fraction data source` and `Crop type data source` (i.e. merge GRIPC with GIA and MIRCA).  The primary irrigation fraction is separated into irrigated and paddy fractions.  Further, non-rice crops and rice fractions are adjusted to match irrigation and paddy, as well as rainfed crops are adjusted to rainfed area fractions. In older code logic, irrigation map was independent of land cover/crop data, thus irrigation fraction had to be scaled and assigned for appropriate vegetation tiles in LIS.  This “Merge” step replaces it and is now done in LDT.  If additional source to be merged is not present, it aligns Irrigation fraction data source with crop type data source and landcover data source via “Crop irrigation merge data source:”. 
+`Merge crop and irrigation information:` specifies whether to enable adding another dataset to be merged with those currently selected for `Irrigation fraction data source` and `Crop type data source` (i.e. merge GRIPC with GIA and MIRCA).  The primary irrigation fraction is separated into irrigated and paddy fractions.  Further, non-rice crops and rice fractions are adjusted to match irrigation and paddy, as well as rainfed crops are adjusted to rainfed area fractions. In older code logic, irrigation map was independent of land cover/crop data, thus irrigation fraction had to be scaled and assigned for appropriate vegetation tiles in LIS.  This “Merge” step replaces it and is now done in LDT.  If additional source to be merged is not present, it aligns Irrigation fraction data source with crop type data source and landcover data source via `Crop irrigation merge data source:`.
 
 .Example _ldt.config_ entry
 ....

@@ -72,7 +72,7 @@ module LDT_PRIV_rcMod
 ! -- LSM/Crop-specific entries:
      logical,   allocatable :: assimcropinfo(:)         ! Incorporate crop information
      character*20, allocatable :: crop_classification(:)   ! Crop classification scheme
-     integer, allocatable   :: numcrop(:)               ! Number crop types 
+     integer, allocatable   :: numcrop(:)               ! Number crop types
 
 ! -- Forcing input parameters:
      integer                :: nf

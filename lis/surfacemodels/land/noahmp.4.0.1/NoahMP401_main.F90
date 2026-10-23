@@ -292,7 +292,7 @@ subroutine NoahMP401_main(n)
 
     if (alarmCheck) Then
 
-        ! HKB -- Get irrigation state variables. 
+        ! HKB -- Get irrigation state variables.
         !     -- Sprinkler needs to subract irrigation from precip before output
         !     -- Concurrent includes Paddy for recycling runoff
         if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &

@@ -10,10 +10,10 @@
 #include "LIS_misc.h"
 
 !BOP
-! 
+!
 ! !ROUTINE: noahmp36_getirrigationstates
 ! \label{noahmp36_getirrigationstates}
-! 
+!
 ! !INTERFACE:
 subroutine noahmp36_getirrigationstates(nest,irrigState)
 ! !USES:
@@ -30,8 +30,8 @@ subroutine noahmp36_getirrigationstates(nest,irrigState)
   use LIS_irrigationMod
   use IRRIGATION_MODULE
 ! use MODULE_SF_NOAHMPLSM_36, only: SMCMAX, PSISAT, DKSAT, BEXP
- 
-! !DESCRIPTION:        
+
+! !DESCRIPTION:
 !
 ! This module is a LSM interface that collects NOAHMP LSM specific states and
 ! parameters needed for the irrigation model.  Root zone soil moisture,
@@ -89,7 +89,7 @@ subroutine noahmp36_getirrigationstates(nest,irrigState)
 ! _______________wanshu  add GW extraction_______________________________
   real                 :: AWS
   real                 :: Dtime
- 
+
 !---------------wanshu readin shdmax and shdmin from map----------------
 
   real, allocatable    :: placeshdmax(:,:), placeshdmin(:,:)
@@ -124,7 +124,7 @@ subroutine noahmp36_getirrigationstates(nest,irrigState)
 
   ! Set global soil  parameters
   sldpth(1) = NOAHMP36_struc(nest)%sldpth(1)
-  sldpth(2) = NOAHMP36_struc(nest)%sldpth(2) 
+  sldpth(2) = NOAHMP36_struc(nest)%sldpth(2)
   sldpth(3) = NOAHMP36_struc(nest)%sldpth(3)
   sldpth(4) = NOAHMP36_struc(nest)%sldpth(4)
   zdpth(1) = sldpth(1)         ! Soil layer depth from top (m)
@@ -240,13 +240,13 @@ subroutine noahmp36_getirrigationstates(nest,irrigState)
                                      LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%row)
                  shdmax =placeshdmax(LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%col,     &
                                      LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%row)
-                 
+
                  ! write(*,*) 'test for greenness fraction value:', shdfac, shdmin, shdmax
                  ! let gsthresh be a function of the range, which means the larger
-                 ! the range is, the higher GVF threshold will be for this grid.                           
+                 ! the range is, the higher GVF threshold will be for this grid.
                  ! JE Gsthresh is a GVF threshold used to identify a growing season for each
                  ! pixel and allow irrigation during that time
-                 gsthresh = shdmin + & 
+                 gsthresh = shdmin + &
                       (LIS_irrig_struc(nest)%irrigation_GVFparam1 + LIS_irrig_struc(nest)%irrigation_GVFparam2*&
                        (shdmax-shdmin)) * (shdmax - shdmin)
 
@@ -373,7 +373,7 @@ subroutine noahmp36_getirrigationstates(nest,irrigState)
                       endif
                       !HKB: make smc and sh2o are consistent 8/7/2026
                       NOAHMP36_struc(nest)%noahmp36(TileNo)%sh2o(l) = &
-                           NOAHMP36_struc(nest)%noahmp36(TileNo)%smc(l) 
+                           NOAHMP36_struc(nest)%noahmp36(TileNo)%smc(l)
                      end do
                      IM%irrigAppRate(TileNo) = totamount/LIS_rc%ts
                    endif
@@ -383,7 +383,7 @@ subroutine noahmp36_getirrigationstates(nest,irrigState)
                 IM%irrigAppRate(TileNo) = 0.0
               endif   IRRON
 
-              ! Remove irrigated water from groundwater 
+              ! Remove irrigated water from groundwater
               !JE Add in flag to turn groundwater abstraction on/off
               if (LIS_irrig_struc(nest)%irrigation_GWabstraction.eq.1) then
                  AWS = NOAHMP36_struc(nest)%noahmp36(TileNo)%wa

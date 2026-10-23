@@ -10,10 +10,10 @@
 #include "LIS_misc.h"
 
 !BOP
-! 
+!
 ! !ROUTINE: noahmp401_getirrigationstates
 ! \label{noahmp401_getirrigationstates}
-! 
+!
 ! !INTERFACE:
 subroutine noahmp401_getirrigationstates(nest,irrigState)
 ! !USES:
@@ -30,7 +30,7 @@ subroutine noahmp401_getirrigationstates(nest,irrigState)
   use IRRIGATION_MODULE
 
 
-! !DESCRIPTION:        
+! !DESCRIPTION:
 !
 ! This module is a LSM interface that collects NOAHMP LSM specific states and
 ! parameters needed for the irrigation model.  Root zone soil moisture,
@@ -48,12 +48,12 @@ subroutine noahmp401_getirrigationstates(nest,irrigState)
 !
 ! Following irrigation settings per Sprinkler, Drip, and Flood are set in
 ! lis.config:
-! Local trigger check start time, 
-! Duration of irrigation hours 
+! Local trigger check start time,
+! Duration of irrigation hours
 ! Frequency of irrigation [days]
 ! Efficiency Correction (%)
 ! Irrigation trigger threshold
-! Growing season threshold (i.e. 40% of GFRAC range) 
+! Growing season threshold (i.e. 40% of GFRAC range)
 !
 ! REVISION HISTORY:
 !
@@ -146,7 +146,7 @@ subroutine noahmp401_getirrigationstates(nest,irrigState)
   !---------------------------------------------------------------
   TILE_LOOP: do i=1,LIS_rc%npatch(nest,LIS_rc%lsm_index)/LIS_rc%nensem(nest)
 
-  !HKB note: *avg works with LIS_rc%nensem = 1 
+  !HKB note: *avg works with LIS_rc%nensem = 1
      sfctemp_avg = 0.
      shdfac_avg  = 0.
      smc_avg     = 0.
@@ -156,13 +156,13 @@ subroutine noahmp401_getirrigationstates(nest,irrigState)
        TileNo = (i-1)*LIS_rc%nensem(nest)+m
 
        sfctemp_avg=sfctemp_avg+tmp(TileNo)
-       shdfac_avg=shdfac_avg+NOAHMP401_struc(nest)%noahmp401(TileNo)%fveg            
+       shdfac_avg=shdfac_avg+NOAHMP401_struc(nest)%noahmp401(TileNo)%fveg
        do k=1,NOAHMP401_struc(nest)%nsoil
            smc_avg(k)=smc_avg(k)+NOAHMP401_struc(nest)%noahmp401(TileNo)%smc(k)
        end do
 
      end do
-  
+
      sfctemp_avg=sfctemp_avg/LIS_rc%nensem(nest)
      shdfac_avg=shdfac_avg/LIS_rc%nensem(nest)
 
@@ -180,7 +180,7 @@ subroutine noahmp401_getirrigationstates(nest,irrigState)
        smcmax = SMCMAX_TABLE(soiltyp)
        smcref = SMCREF_TABLE(soiltyp)
        smcwlt = SMCWLT_TABLE(soiltyp)
-        
+
        if((DVEG == 2 .OR. DVEG == 5 .OR. DVEG == 6) .AND. LIS_irrig_struc(nest)%irrigation_dveg == 1) then
           shdfac = shdfac_avg
        else
@@ -259,12 +259,12 @@ subroutine noahmp401_getirrigationstates(nest,irrigState)
                                         LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%row)
                  shdmax =placeshdmax(LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%col,     &
                                         LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%row)
-                 
+
                ! let gsthresh be a function of the range, which means the larger
-               ! the range is, the higher GVF threshold will be for this grid.                           
+               ! the range is, the higher GVF threshold will be for this grid.
                ! JE Gsthresh is a GVF threshold used to identify a growing season for each
                ! pixel and allow irrigation during that time
-                  gsthresh = shdmin + & 
+                  gsthresh = shdmin + &
                       (LIS_irrig_struc(nest)%irrigation_GVFparam1 + LIS_irrig_struc(nest)%irrigation_GVFparam2*&
                        (shdmax-shdmin)) * (shdmax - shdmin)
 
@@ -405,7 +405,7 @@ subroutine noahmp401_getirrigationstates(nest,irrigState)
                 IM%irrigAppRate(TileNo) = 0.0
               endif   IRRON
 
-              ! Remove irrigated water from groundwater 
+              ! Remove irrigated water from groundwater
               !JE Add in flag to turn groundwater abstraction on/off
               if (LIS_irrig_struc(nest)%irrigation_GWabstraction.eq.1) then
                  AWS = NOAHMP401_struc(nest)%noahmp401(TileNo)%wa

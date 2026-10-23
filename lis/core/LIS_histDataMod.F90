@@ -320,7 +320,7 @@ module LIS_histDataMod
   public :: LIS_MOC_RTM_SM
   ! Irrigation
   public :: LIS_MOC_IRRIGATEDWATER  
-  public :: LIS_MOC_IRRIGWATERINPUT  
+  public :: LIS_MOC_IRRIGWATERINPUT
   public :: LIS_MOC_IRRIGSCALE
   public :: LIS_MOC_IRRIGTSP
   public :: LIS_MOC_IRRIGTDP
@@ -4406,7 +4406,7 @@ contains
             model_patch=.true.)
     endif
 
-!HKB: separate irrigation input vs the actual applied water 
+!HKB: separate irrigation input vs the actual applied water
 !    (sprinkler: input = applied, flood&drip: input /= applied)
     call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigWaterInput:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &

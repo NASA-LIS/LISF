@@ -315,21 +315,21 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                    ! NON-PADDY -- surface only or  multiple layers
                    ! BZ modification 4/2/2015 to account for ippix and all soil layers:
                    ! raise SM to saturation instantly and keep it saturated
-                   ! throughout the irrigation duration 
+                   ! throughout the irrigation duration
                    ! HKB: make sure the rate is high enough to bring it to
                    ! saturation in volmetric
                      totamount = 0.0
                      do l = 1, LIS_irrig_struc(nest)%irrigation_mxsoildpth
                       amount = IM%irrigRate(TileNo)*LIS_rc%ts/sldpth(l)/1000.
                       added = amount + noah33_struc(nest)%noah(TileNo)%smc(l)
-                      if ( added >= noah33_struc(nest)%noah(TileNo)%smcmax ) then  
+                      if ( added >= noah33_struc(nest)%noah(TileNo)%smcmax ) then
                         !add the amount
                         totamount = totamount + amount
                         noah33_struc(nest)%noah(TileNo)%smc(l) =  &
                            IM%IrrigScale(TileNo)*added + &
                            (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(l)
                       else
-                        !bring to saturation 
+                        !bring to saturation
                         totamount = totamount + &
                            IM%IrrigScale(TileNo)* &
                            (noah33_struc(nest)%noah(TileNo)%smcmax - noah33_struc(nest)%noah(TileNo)%smc(l)) &
@@ -337,7 +337,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                         noah33_struc(nest)%noah(TileNo)%smc(l) =  &
                            IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
                            (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(l)
-                      endif 
+                      endif
                      end do
                      IM%irrigAppRate(TileNo) = totamount/LIS_rc%ts
                    endif

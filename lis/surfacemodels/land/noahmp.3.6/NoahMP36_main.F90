@@ -987,7 +987,7 @@ subroutine NoahMP36_main(n)
                LIS_rc%irrigation_type .eq. "Concurrent" ) then
                ! Save total runoff before QRI for all tiles in mm/s as in qs+qsb
                IM%totR(t) =   NOAHMP36_struc(n)%noahmp36(t)%runsrf+ &
-                              NOAHMP36_struc(n)%noahmp36(t)%runsub 
+                              NOAHMP36_struc(n)%noahmp36(t)%runsub
 
                if ( IM%irrigType(t) .eq. 1 ) then  ! Sprinkler
                ! Compute wchange before removing irrigRate from precip - HKB

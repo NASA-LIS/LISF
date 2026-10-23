@@ -11244,7 +11244,7 @@ Acceptable values are:
 |Value     | Description
 
 |single       | assign a single type controlled in LDT
-|dominant     | assign dominant type 
+|dominant     | assign dominant type
 |distribute   | use distribution algorithm in Rodell et al 2026.
 |====
 
@@ -11275,10 +11275,10 @@ Groundwater abstraction for irrigation: 0
 Irrigation source water partition: 0
 Irrigation max root depth file:
 Irrigation type to crop mapping method: "distribute"
-Country level crop irrigtype file: 
-Irrigation runoff recycle input file: 
+Country level crop irrigtype file:
+Irrigation runoff recycle input file:
 Crop Calendar use:   "MIRCA"
-Crop seasons:         2 
+Crop seasons:         2
 ....
 
 The following common options are applied for Sprinker, Drip, and Flood scheme.  They can be varied by scheme and set in the config file to represent different agricultural practices. Irrigation trigger options include 1. soil moisture availability and 2. Schedule where the former is considered soil moisture deficit (natural) and the latter as manamement (human) requirement.  Irrigation amount is determined by 1. Deficit and 2. Prescribed options. For Flood scheme, irrigation water can be applied to either surface layer only or multiple layers. Rodell et al 2026 used Schedule irrigation trigger, Prescribed irrigation amount, and applied irrigation in the surface soil layer for Flood. For Deficit based irrigation, use `on schedule: 0`, `fixed rate: 0`, and `frequency: 0`.
@@ -11301,7 +11301,7 @@ The following common options are applied for Sprinker, Drip, and Flood scheme.  
 |1      | scheduled
 |====
 
-`Irrigation Sprinkler/Drip/Flood fixed rate:` specifies a prescribed irrigation rate in mm/hr.  If it is set to zero, the model uses Deficit irrigation amount that is dynamically computed based on the soil moisture availability and duration.  
+`Irrigation Sprinkler/Drip/Flood fixed rate:` specifies a prescribed irrigation rate in mm/hr.  If it is set to zero, the model uses Deficit irrigation amount that is dynamically computed based on the soil moisture availability and duration.
 
 `Irrigation Sprinkler/Drip/Flood frequency:` specifies the number of days that takes a single irrigation event to complete.  For example, it takes 2.5 days to complete with pivot center irrigation. It also means the sprinkler irrigation event occurs every 2.5 days or longer.
 

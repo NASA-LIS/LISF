@@ -47,7 +47,7 @@ module LDT_paramDataMod
      real          :: valid_max
      character*100 :: standard_name
      real, allocatable :: value(:,:,:)
-     real, allocatable :: value4d(:,:,:,:)  !HKB 
+     real, allocatable :: value4d(:,:,:,:)
      real          :: scale_factor
      real          :: add_offset
      character*100 :: long_name
@@ -107,11 +107,11 @@ module LDT_paramDataMod
      type(LDT_paramEntry) :: curvature
 
    ! Crop type parameters
-     type(LDT_paramEntry) :: croptype 
+     type(LDT_paramEntry) :: croptype
      type(LDT_paramEntry) :: irrigcrop
      type(LDT_paramEntry) :: rainfedcrop
      type(LDT_paramEntry) :: plantday
-     type(LDT_paramEntry) :: harvestday   
+     type(LDT_paramEntry) :: harvestday
      
   end type lsmparam_type_dec
   

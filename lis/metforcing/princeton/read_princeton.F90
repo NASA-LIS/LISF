@@ -152,7 +152,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   external :: princetongrid_2_lisgrid
   external :: bilinear_interp
   external :: conserv_interp
-  
+
   ! ______________________________
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)

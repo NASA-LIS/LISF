@@ -48,7 +48,7 @@ subroutine noah36_main(n)
   use ESMF
   use LIS_irrigationMod, only: LIS_irrig_state
   use IRRIGATION_MODULE
-  
+
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in)  :: n
@@ -215,7 +215,7 @@ subroutine noah36_main(n)
   type(irrigation_model) :: IM
 
   integer                                 :: croptype
-  
+
 #if 0 
   svk_statebf = 0.0
   
@@ -768,11 +768,11 @@ subroutine noah36_main(n)
         if (ice.eq.0) then 
            col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
            row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-!hkb
-           ilat =  LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
+
+           ilat =  LIS_domain(n)%grid(LIS_domain(n)%gindex( &
                 LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
                 LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lat
-           ilon =  LIS_domain(n)%grid(LIS_domain(n)%gindex( & 
+           ilon =  LIS_domain(n)%grid(LIS_domain(n)%gindex( &
                 LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
                 LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row))%lon
            call sflx(                                                                 &
@@ -1128,7 +1128,7 @@ subroutine noah36_main(n)
                           noah36_struc(n)%noah(t)%runoff1 = noah36_struc(n)%noah(t)%runoff1 *(IM%outR(t)/IM%totR(t))
                        endif
                     else
-                       IM%irrigAppRate(t) = IM%irrigRate(t) 
+                       IM%irrigAppRate(t) = IM%irrigRate(t)
                        IM%recR(t) = 0.0
                        IM%outR(t) = IM%totR(t)
                     endif     ! QRI negative

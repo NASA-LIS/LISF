@@ -14,9 +14,9 @@
 
 ! !DESCRIPTION:
 !
-! Irrigation model for single or a combination of irrigation types 
-! (Sprinkler, Drip, Flood, and Rice paddy) that supports calls from 
-! different LSMs.  
+! Irrigation model for single or a combination of irrigation types
+! (Sprinkler, Drip, Flood, and Rice paddy) that supports calls from
+! different LSMs.
 ! The model consists of four main components with multiple configurable options:
 ! 1. Crop growing season determination (vegetation seasonality, crop calendar)
 ! 2. Irrigation trigger (soil moisture deficit, schedule)
@@ -289,18 +289,18 @@ contains
     !                   [seconds since the start, -1 nonactive]
     !
     ! !DESCRIPTION:
-    ! This routine determines if irrigation is on/off for the tile at the timestep and returns 
+    ! This routine determines if irrigation is on/off for the tile at the timestep and returns
     ! the irrigation rate required.
     !
     ! irrigRate is an initial irrigation rate configured in lis.config by prescribing a rate
     ! or dynamically computed based on duration. It is greater than zero if it is during the
-    ! growing season and falls within the irrigation hours/days, otherwize zero. If it is 
+    ! growing season and falls within the irrigation hours/days, otherwize zero. If it is
     ! greater than zero, the model proceeds to application of irrigation via respective irrigation
-    ! types where the actual rate applied is saved as irrigAppRate.  
-    ! For flood and drip, irrigRate /= irrigAppRate because the amount depends on the liq soil 
+    ! types where the actual rate applied is saved as irrigAppRate.
+    ! For flood and drip, irrigRate /= irrigAppRate because the amount depends on the liq soil
     ! moisture content. For sprinkler, irrigRate = irrigAppRate.
-    !       
-    
+    !
+
     implicit none
     class (irrigation_model), intent(inout) :: IM
     integer, intent (in)                    :: nest, TileNo, croptype, soiltype
@@ -405,7 +405,7 @@ contains
     ! ----------------------------------------------------------
     ! Run irrigation model if the crop growing season is active
     ! ----------------------------------------------------------
-    
+
 !    write(LIS_logunit,*) 'at ',LIS_rc%time,TileNo,croptype,season_active,ma,irrigStart,irrigOn
 
     CROP_GROWING_SEASON: if (season_active) then
@@ -1020,7 +1020,7 @@ contains
 
 ! set up the land cover class index range applicable for irrigation
 ! the range include non-forest, grassland, and cropland classes of selected
-! land cover dataset. 
+! land cover dataset.
 ! if MIRCA is appended to the LC, range should be only for croptypes
 !
  implicit none
@@ -1032,7 +1032,7 @@ contains
      veg_index1 = 6
      veg_index2 = 11
      nlctypes   = 13
-  elseif(LIS_rc%lcscheme.eq."UMD+MIRCA") then !UMD+MIRCA 
+  elseif(LIS_rc%lcscheme.eq."UMD+MIRCA") then !UMD+MIRCA
      veg_index1 = 15
      veg_index2 = 40
      nlctypes   = 14

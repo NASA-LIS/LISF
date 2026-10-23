@@ -25,7 +25,7 @@
 !  30 Oct 2014: David Mocko, added Noah-3.6 into LIS-7
 !  30 Oct 2018: Zhuo  Wang , added Noah-3.9 into LIS-7
 !                 with assistance from Shugong Wang and David Mocko
-!   8 Mar 2023: Hiroko Beaudoing, added irrigation 
+!   8 Mar 2023: Hiroko Beaudoing, added irrigation
 !   7 Jan 2026: Hiroko Beaudoing, updated irrigation to be consistent with
 !                                 noah3.6.
 !
