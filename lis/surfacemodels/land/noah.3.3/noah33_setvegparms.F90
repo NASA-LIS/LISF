@@ -20,6 +20,7 @@
 !   9 Sep 2011: David Mocko, changes for Noah3.3 in LIS6.1
 !  14 Jan 2014: David Mocko, reconfirmed Noah3.3 in LIS7.0
 !  24 Oct 2014: David Mocko, ensured max albedo maps used
+!  22 Feb 2022: Hiroko Beaudoing, added land cover schemes with MIRCA crops
 !
 ! !INTERFACE:
 subroutine noah33_setvegparms(mtype)
@@ -63,7 +64,6 @@ subroutine noah33_setvegparms(mtype)
   integer       :: iindex,lumatch
   real          :: interp_fraction
   real          :: topt_data
-  real          :: cmcmax_data
   real          :: cfactr_data
   real          :: rsmax_data
   real          :: bare
@@ -88,6 +88,9 @@ subroutine noah33_setvegparms(mtype)
      if (LIS_rc%lcscheme.eq."IGBPNCEP") mminlu = 'MODI'
      if (LIS_rc%lcscheme.eq."MODIS")    mminlu = 'MODI'
      if (LIS_rc%lcscheme.eq."ECOCLIMAP2") mminlu = 'ECM2'
+     ! New landcover+crop tile combinations:
+     if (LIS_rc%lcscheme.eq."UMD+MIRCA") mminlu = 'MIIU'
+     if (LIS_rc%lcscheme.eq."IGBPNCEP+MIRCA") mminlu = 'MIIM'
 
 !-----------------------------------------------------------------------
 ! Set Noah3.3 vegetation type at tile from the LIS domain
@@ -555,7 +558,7 @@ subroutine noah33_resetvegparms(mtype)
 
   implicit none
   integer :: mtype
-  integer :: n,j,t,m,gid,tid
+  integer :: n,t,m,gid,tid
 !!!!!  character*4      :: lutype,mminlu
 !!!!!  integer          :: iindex,lumatch
   real             :: interp_fraction

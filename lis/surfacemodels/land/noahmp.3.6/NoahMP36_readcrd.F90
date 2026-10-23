@@ -130,6 +130,8 @@ subroutine NoahMP36_readcrd()
           NOAHMP36_struc(n)%landuse_scheme_name = "MODIFIED_IGBP_MODIS_NOAH"
         elseif (trim(landuse_scheme_name) .eq. "UMD") then
           NOAHMP36_struc(n)%landuse_scheme_name = "UMD"
+        elseif (trim(landuse_scheme_name) .eq. "IGBPNCEP+MIRCA") then
+          NOAHMP36_struc(n)%landuse_scheme_name = "MIIMODIFIED_IGBP_MODIS_NOAH"
         else
           write(LIS_logunit, *) "Fatal error: currently, only USGS and IGBPNCEP is supported by Noah-MP!"
           call LIS_endrun()

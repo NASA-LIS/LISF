@@ -923,20 +923,35 @@ contains
             LDT_LSMparam_struc(n)%regmask)
     endif
 
-    call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
-         LDT_rc%lc_type(n)))
+    if( LDT_rc%crop_classification(1) .eq. "none" ) then
+      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
+           LDT_rc%lc_type(n)))
+    else
+      call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"LANDCOVER_SCHEME", &
+           (trim(LDT_rc%lc_type(n))//"+"//LDT_rc%crop_classification(1))))
+    endif
 
-    ! Attributes serving Noah-MP only (at this time):
+  ! Attributes serving Noah-MP only (at this time):
     if ((LDT_rc%lsm.eq."Noah-MP.3.6").or.(LDT_rc%lsm.eq."Noah-MP.4.0.1") &
          .or.(LDT_rc%lsm.eq."Noah-MP.5.0").or. &
          (LDT_rc%lsm.eq."Noah-MP.5.2")) then
-       select case( LDT_rc%lc_type(n) )
+      select case( LDT_rc%lc_type(n) )
        case( "IGBPNCEP" )
-          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
-               20))
+         if( LDT_rc%crop_classification(1) .eq. "MIRCA" ) then
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                46))
+         else
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                20))
+         endif
        case( "USGS" )
-          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
-               27))
+         if( LDT_rc%crop_classification(1) .eq. "MIRCA" ) then
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                53))
+         else
+           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+                27))
+         endif
        case( "USGS-RUC" )
           call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
                28))

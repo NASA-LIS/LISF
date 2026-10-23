@@ -15,12 +15,14 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
+!  17 May 2019: H. Beaudoing; added GRIPC_AQUASTAT irrigation type and
+!                             GIA_GRIPC irrigation fraction sources
 !  11 Apr 2021: Wanshu Nie; add support for reading irrigation groundwater ratio
 !
 ! !INTERFACE:
 subroutine setIrrigParmsFullnames(n,datatype,source)
 
-! !USES:
+  ! !USES:
   use LDT_irrigationMod
   use LDT_logMod
   use LDT_paramDataMod
@@ -30,56 +32,65 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
   character(len=*),intent(in) :: datatype
   character(len=*),intent(in) :: source
 
-! !ARGUMENTS: 
+  ! !ARGUMENTS:
 
-! !DESCRIPTION:
-!
-!  The arguments are:
-!  \begin{description}
-!   \item[n]
-!     index of nest
-!   \item[datatype]
-!     Irrig data type
-!   \item[source]
-!     Irrig dataset source
-!   \end{description}
-!EOP      
-!
+  ! !DESCRIPTION:
+  !
+  !  The arguments are:
+  !  \begin{description}
+  !   \item[n]
+  !     index of nest
+  !   \item[datatype]
+  !     Irrig data type
+  !   \item[source]
+  !     Irrig dataset source
+  !   \end{description}
+  !EOP
+  !
 
-   select case( datatype )
+  select case( datatype )
 
-    case( "irrigtype" )
-      select case( source )
-        case( "GRIPC" )
-          LDT_irrig_struc(n)%irrigtype%standard_name =&
-             "GRIPC (Salmon,2013) Irrigation type (tiles)"
-      end select
+  case( "irrigtype" )
+     select case( source )
+     case( "GRIPC" )
+        LDT_irrig_struc(n)%irrigtype%standard_name =&
+             "GRIPC (Salmon,2013) Irrigation type fraction"
+     case( "AQUASTAT" )
+        LDT_irrig_struc(n)%irrigtype%standard_name =&
+             "AQUASTAT and USGS reported Irrigation type fraction"
+        LDT_irrig_struc(n)%county%standard_name =&
+             "US Census Boundary 2015 GEOID"
+        LDT_irrig_struc(n)%country%standard_name =&
+             "GIS political boundary data"
+     end select
 
-    case( "irrigfrac" )
-      select case( source )
-        case( "GRIPC" )
-          LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "GRIPC (Salmon,2013) Irrig gridcell fraction"
-        case( "MODIS_OG" )
-          LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "MODIS (Ozdogan+Gutman,2008) Irrig gridcell fraction"
+  case( "irrigfrac" )
+     select case( source )
+     case( "GRIPC" )
+        LDT_irrig_struc(n)%irrigfrac%standard_name =&
+             "GRIPC (Salmon,2013) Irrigated gridcell area"
+     case( "MODIS_OG" )
+        LDT_irrig_struc(n)%irrigfrac%standard_name =&
+             "MODIS (Ozdogan+Gutman,2008) Irrigated gridcell area"
+     case( "GIA" )
+        LDT_irrig_struc(n)%irrigfrac%standard_name =&
+             "GIA (Meier et al, 2018) Irrigated gridcell area"
+     case( "UserDerived" )
+        LDT_irrig_struc(n)%irrigfrac%standard_name =&
+             "User Derived Irrigated gridcell area"
+     end select
 
-        case( "UserDerived" )
-          LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "User Derived Irrig gridcell fraction"
-      end select
-
-    case( "irriggwratio" )
-      select case ( source )
-        case( "USGS_Native" )
-          LDT_irrig_struc(n)%irriggwratio%standard_name =&
+  case( "irriggwratio" )
+     select case ( source )
+     case( "USGS_Native" )
+        LDT_irrig_struc(n)%irriggwratio%standard_name =&
              "USGS groundwater irrigation ratio (0.125 deg gridcell) "
-      end select
+     end select
 
-    case default
-      write(LDT_logunit,*) "[ERR] Irrig data type not recognized: ",trim(source)
-      write(LDT_logunit,*) " Program stopping ..."
-      stop
-   end select
+  case default
+     write(LDT_logunit,*) "[ERR] Irrig data type not recognized: ",trim(source)
+     write(LDT_logunit,*) " Program stopping ..."
+     call LDT_endrun()
+  end select
 
 end subroutine setIrrigParmsFullnames
