@@ -370,16 +370,27 @@ class StratifiedSoilMoisturePredictor:
     # Grid mapping
     # =========================================================================
 
+    @staticmethod
+    def _nearest_index(env_coord, target):
+        """Index of the nearest env coordinate for each target coordinate.
+
+        Works whether env_coord is ascending or descending, and for any
+        WSF grid (the WSF grid need not match the env grid).
+        """
+        env = np.asarray(env_coord, dtype=np.float64)
+        tgt = np.asarray(target, dtype=np.float64)
+        order = np.argsort(env)
+        env_sorted = env[order]
+        if env_sorted.size == 1:
+            return np.zeros(tgt.shape, dtype=np.int64)
+        pos = np.clip(np.searchsorted(env_sorted, tgt), 1, env_sorted.size - 1)
+        closer_left = (tgt - env_sorted[pos - 1]) <= (env_sorted[pos] - tgt)
+        return order[pos - closer_left.astype(np.int64)]
+
     def _build_grid_mapping(self, wsf_lats, wsf_lons):
-        """Map WSF grid pixels to environmental grid flat indices."""
-        lat_idx = np.clip(
-            np.searchsorted(self.env_lats, wsf_lats) - 1,
-            0, len(self.env_lats) - 1,
-        )
-        lon_idx = np.clip(
-            np.searchsorted(self.env_lons, wsf_lons) - 1,
-            0, len(self.env_lons) - 1,
-        )
+        """Map WSF grid pixels to environmental grid flat indices (nearest cell)."""
+        lat_idx = self._nearest_index(self.env_lats, wsf_lats)
+        lon_idx = self._nearest_index(self.env_lons, wsf_lons)
 
         wsf_lat_grid, wsf_lon_grid = np.meshgrid(
             np.arange(len(wsf_lats)), np.arange(len(wsf_lons)), indexing='ij'

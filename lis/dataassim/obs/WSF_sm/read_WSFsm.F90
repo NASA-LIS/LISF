@@ -14,6 +14,9 @@
 !
 ! !REVISION HISTORY:
 !  2 Oct 2025; Ehsan Jalilvand, initial specification.
+!  Oct 2026; Ehsan Jalilvand, grid of the WSF files from lis.config (see
+!            WSFsm_Mod); row order from the file's lat variable; files
+!            whose lat/lon do not match the configured grid are skipped.
 !
 ! !INTERFACE:
 subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
@@ -444,7 +447,6 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   real                     :: smobs_inp(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
   real*8                   :: time
 !EOP
-  integer,  parameter     :: nc=2560, nr=1920
   real                    :: sm_in(WSFsm_struc(n)%nc*WSFsm_struc(n)%nr)
   real                    :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
   logical*1               :: sm_data_b(WSFsm_struc(n)%nc*WSFsm_struc(n)%nr)
@@ -457,6 +459,8 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   integer :: ncid, dim_ids(3), var_id
   integer :: ntime, nlat, nlon
   real, allocatable :: tmp(:,:,:)
+  real, allocatable :: flat(:), flon(:)
+  logical :: north_to_south
   integer :: rc
 
   external :: bilinear_interp
@@ -591,6 +595,37 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
      return
   end if
 
+  ! Check the file grid against the configured one and get the row order
+  ! (the WSF resampler writes rows north to south).
+  allocate(flat(nlat), flon(nlon))
+  north_to_south = .true.
+  rc = nf90_inq_varid(ncid=ncid, name='lat', varid=var_id)
+  if (rc == 0) rc = nf90_get_var(ncid=ncid, varid=var_id, values=flat)
+  if (rc == 0) then
+     rc = nf90_inq_varid(ncid=ncid, name='lon', varid=var_id)
+     if (rc == 0) rc = nf90_get_var(ncid=ncid, varid=var_id, values=flon)
+  endif
+  if (rc == 0) then
+     north_to_south = flat(1) > flat(nlat)
+     if (abs(minval(flat) - WSFsm_struc(n)%lat_ll) > 0.5*WSFsm_struc(n)%dlat .or. &
+          abs(minval(flon) - WSFsm_struc(n)%lon_ll) > 0.5*WSFsm_struc(n)%dlon) then
+        write(LIS_logunit,*)'[ERR] Grid of ', trim(fname), &
+             ' does not match "WSF soil moisture grid" in lis.config'
+        write(LIS_logunit,*)'[ERR] File lower left (lat, lon): ', &
+             minval(flat), minval(flon)
+        write(LIS_logunit,*)'[ERR] Config lower left (lat, lon): ', &
+             WSFsm_struc(n)%lat_ll, WSFsm_struc(n)%lon_ll
+        write(LIS_logunit,*)'[ERR] LIS will skip this file...'
+        rc = nf90_close(ncid)
+        deallocate(flat, flon)
+        return
+     end if
+  else
+     write(LIS_logunit,*)'[WARN] No lat/lon variables in ', trim(fname), &
+          '; assuming rows run north to south'
+  end if
+  deallocate(flat, flon)
+
   ! Fetch the variable id
   rc = nf90_inq_varid(ncid=ncid, &
        name='arfs_sm', &
@@ -626,12 +661,16 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
   rc = nf90_close(ncid)
 
   do r = 1, nlat
+     if (north_to_south) then
      r_flip = nlat - r + 1            ! flip N→S to S→N
+     else
+        r_flip = r
+     end if
      do c = 1, nlon
         if (.not. ieee_is_nan(tmp(c,r,1))) then    ! safe NaN check
            if (tmp(c,r,1) >= 0.0 .and. tmp(c,r,1) <= 1.0) then
-              sm_in(c + (r_flip-1)*nc)     = tmp(c,r,1)
-              sm_data_b(c + (r_flip-1)*nc) = .true.
+              sm_in(c + (r_flip-1)*WSFsm_struc(n)%nc)     = tmp(c,r,1)
+              sm_data_b(c + (r_flip-1)*WSFsm_struc(n)%nc) = .true.
            end if
         end if
      end do
@@ -643,7 +682,7 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
 !--------------------------------------------------------------------------
-  if(LIS_rc%obs_gridDesc(k,10).le.0.0937500) then
+  if(WSFsm_struc(n)%use_bilinear) then
      call bilinear_interp(LIS_rc%obs_gridDesc(k,:),&
           sm_data_b, sm_in, smobs_b_ip, smobs_ip, &
           WSFsm_struc(n)%nc*WSFsm_struc(n)%nr, &

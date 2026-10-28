@@ -16,6 +16,9 @@
 !
 ! !REVISION HISTORY:
 !   2025: Ehsan Jalilvand; Initial Specification
+!   Oct 2026: The grid of the WSF SM files is read from ldt.config
+!             ("WSF soil moisture grid ..." entries); defaults to the
+!             ARFS grid (2560 x 1920) when the entries are absent.
 !
 module WSFsm_obsMod
 ! !USES:
@@ -38,6 +41,8 @@ module WSFsm_obsMod
      character(len=LDT_CONST_PATH_LEN) :: odir
      integer                :: nc, nr
      real                   :: gridDesci(50)
+     real                   :: lat_ll, lon_ll   ! lower-left cell centre
+     real                   :: dlat, dlon       ! grid spacing (deg)
      real,    allocatable   :: smobs(:,:)
      integer, allocatable   :: n11(:)
      integer, allocatable   :: n12(:)
@@ -80,7 +85,18 @@ contains
 !EOP
 
     integer          :: status
-    integer          :: n
+    integer          :: n, i
+    real, allocatable :: grid_dd(:,:)
+    character(len=48), parameter :: grid_labels(6) = [character(len=48) :: &
+         'WSF soil moisture grid lower left lat:', &
+         'WSF soil moisture grid lower left lon:', &
+         'WSF soil moisture grid upper right lat:', &
+         'WSF soil moisture grid upper right lon:', &
+         'WSF soil moisture grid resolution (dx):', &
+         'WSF soil moisture grid resolution (dy):' ]
+    ! ARFS grid (cell centres), used when the entries are absent
+    real, parameter :: arfs_dd(6) = (/ -89.953125, -179.9296875, &
+         89.953125, 179.9296875, 0.140625, 0.09375 /)
 
     external :: bilinear_interp_input
     external :: upscaleByAveraging_input
@@ -96,6 +112,27 @@ contains
             'WSF soil moisture data directory: not defined')
     enddo
 
+    ! Grid of the WSF soil moisture files (cell centres). All six
+    ! entries or none; none means the ARFS grid.
+    allocate(grid_dd(LDT_rc%nnest,6))
+    call ESMF_ConfigFindLabel(LDT_config, trim(grid_labels(1)), rc=status)
+    if (status == 0) then
+       do i = 1, 6
+          call ESMF_ConfigFindLabel(LDT_config, trim(grid_labels(i)), rc=status)
+          call LDT_verify(status, trim(grid_labels(i))//' not defined')
+          do n=1,LDT_rc%nnest
+             call ESMF_ConfigGetAttribute(LDT_config, grid_dd(n,i), rc=status)
+             call LDT_verify(status, trim(grid_labels(i))//' not defined')
+          enddo
+       enddo
+    else
+       write(LDT_logunit,*) '[INFO] WSF soil moisture grid not given in '// &
+            'ldt.config; using the ARFS grid (2560 x 1920)'
+       do n=1,LDT_rc%nnest
+          grid_dd(n,:) = arfs_dd
+       enddo
+    endif
+
     do n=1,LDT_rc%nnest
 
        allocate(WSFsmobs(n)%smobs(LDT_rc%lnc(n),LDT_rc%lnr(n)))
@@ -106,22 +143,34 @@ contains
              "m3/m3",1,1)
        LDT_DAobsData(n)%soilmoist_obs%selectStats = 1
 
-       WSFsmobs(n)%nc = 2560
-       WSFsmobs(n)%nr = 1920
+       WSFsmobs(n)%lat_ll = grid_dd(n,1)
+       WSFsmobs(n)%lon_ll = grid_dd(n,2)
+       WSFsmobs(n)%dlon   = grid_dd(n,5)
+       WSFsmobs(n)%dlat   = grid_dd(n,6)
+       WSFsmobs(n)%nc = nint((grid_dd(n,4) - grid_dd(n,2))/grid_dd(n,5)) + 1
+       WSFsmobs(n)%nr = nint((grid_dd(n,3) - grid_dd(n,1))/grid_dd(n,6)) + 1
 
+       WSFsmobs(n)%gridDesci = 0
        WSFsmobs(n)%gridDesci(1) = 0
        WSFsmobs(n)%gridDesci(2) = WSFsmobs(n)%nc
        WSFsmobs(n)%gridDesci(3) = WSFsmobs(n)%nr
-       WSFsmobs(n)%gridDesci(4) = -89.953125
-       WSFsmobs(n)%gridDesci(5) = -179.929688
+       WSFsmobs(n)%gridDesci(4) = grid_dd(n,1)
+       WSFsmobs(n)%gridDesci(5) = grid_dd(n,2)
        WSFsmobs(n)%gridDesci(6) = 128
-       WSFsmobs(n)%gridDesci(7) = 89.953125
-       WSFsmobs(n)%gridDesci(8) = 179.929688
-       WSFsmobs(n)%gridDesci(9) = 0.140570   !dlon
-       WSFsmobs(n)%gridDesci(10) = 0.093701  !dlat
+       WSFsmobs(n)%gridDesci(7) = grid_dd(n,3)
+       WSFsmobs(n)%gridDesci(8) = grid_dd(n,4)
+       WSFsmobs(n)%gridDesci(9) = grid_dd(n,5)   !dlon
+       WSFsmobs(n)%gridDesci(10) = grid_dd(n,6)  !dlat
        WSFsmobs(n)%gridDesci(20) = 64
 
-       if(LDT_isLDTatAfinerResolution(n,0.093701)) then
+       write(LDT_logunit,'(a,i6,a,i6,a,2f12.6,a,2f10.6)') &
+            ' [INFO] WSF SM grid: ', WSFsmobs(n)%nc, ' x ', WSFsmobs(n)%nr, &
+            ', lower left ', grid_dd(n,1), grid_dd(n,2), &
+            ', dx dy ', grid_dd(n,5), grid_dd(n,6)
+
+       ! Bilinear if the LDT grid is finer than the WSF grid, else
+       ! averaging (identity when the two grids are the same).
+       if(LDT_isLDTatAfinerResolution(n,WSFsmobs(n)%dlat)) then
 
           allocate(WSFsmobs(n)%n11(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
           allocate(WSFsmobs(n)%n12(LDT_rc%lnc(n)*LDT_rc%lnr(n)))
@@ -158,6 +207,7 @@ contains
 
        endif
     enddo
+    deallocate(grid_dd)
   end subroutine WSFsmobsinit
 
 end module WSFsm_obsMod

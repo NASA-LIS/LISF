@@ -3223,6 +3223,8 @@ SMAP(NRT) CDF read option:
 `WSF soil moisture data directory:` specifies the directory containing the hourly
 WSF-M soil moisture retrieval files (`ARFS_SM_WSFM_*.nc`)
 
+`WSF soil moisture grid lower left lat:`, `WSF soil moisture grid lower left lon:`, `WSF soil moisture grid upper right lat:`, `WSF soil moisture grid upper right lon:`, `WSF soil moisture grid resolution (dx):` and `WSF soil moisture grid resolution (dy):` specify the lat-lon grid of the WSF soil moisture files (cell centres, in degrees), in the same way as the run domain entries. This is the grid the WSF brightness temperatures were resampled to (the run domain of the `"OPL WSF brightness temperature resampling"` run). Give all six entries or none; without them the ARFS grid (2560 x 1920, lower left -89.953125, -179.9296875, dx = 0.140625, dy = 0.09375) is assumed. Files whose `lat`/`lon` coordinates do not match this grid are skipped with an error message. Use the same entries as in the LDT config that generated the WSF CDF. The row order (north to south or south to north) is taken from the file.
+
 `WSF soil moisture use scaled standard deviation model:` specifies whether the
 observation error standard deviation is to be scaled using the model and observation
 standard deviation.
@@ -3251,6 +3253,12 @@ NOTE: Select 0 for yearly CDF data.
 .Example _lis.config_ entry
 ....
 WSF soil moisture data directory:                        ./wsf_sm_data
+WSF soil moisture grid lower left lat:    -89.95
+WSF soil moisture grid lower left lon:   -179.95
+WSF soil moisture grid upper right lat:    89.95
+WSF soil moisture grid upper right lon:   179.95
+WSF soil moisture grid resolution (dx):     0.1
+WSF soil moisture grid resolution (dy):     0.1
 WSF model CDF file:                                      ./cdf/noah39_cdf_200obs.nc
 WSF observation CDF file:                                ./cdf/cdf_wsfobs.nc
 WSF soil moisture number of bins in the CDF:             100

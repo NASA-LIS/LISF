@@ -17,6 +17,9 @@
 !
 ! !REVISION HISTORY:
 !  2 Oct 2025 Ehsan Jalilvand; initial specification
+!  Oct 2026   Ehsan Jalilvand; grid of the WSF files read from lis.config
+!             ("WSF soil moisture grid ..." entries); defaults to the
+!             ARFS grid (2560 x 1920) when the entries are absent.
 
 module WSFsm_Mod
 ! !USES:
@@ -50,6 +53,9 @@ module WSFsm_Mod
      real, allocatable          :: rlat(:)
      real, allocatable          :: rlon(:)
      real                       :: gridDesci(50)
+     real                       :: lat_ll, lon_ll  ! lower-left cell centre
+     real                       :: dlat, dlon      ! grid spacing (deg)
+     logical                    :: use_bilinear
      integer, allocatable       :: n11(:)
      integer, allocatable       :: n12(:)
      integer, allocatable       :: n21(:)
@@ -137,6 +143,17 @@ contains
     real, pointer                     ::  obs_temp(:,:)
     real, allocatable                 ::  ssdev(:)
     integer                           ::  ngrid
+    real, allocatable                 ::  grid_dd(:,:)
+    character(len=48), parameter      ::  grid_labels(6) = [character(len=48) :: &
+         'WSF soil moisture grid lower left lat:', &
+         'WSF soil moisture grid lower left lon:', &
+         'WSF soil moisture grid upper right lat:', &
+         'WSF soil moisture grid upper right lon:', &
+         'WSF soil moisture grid resolution (dx):', &
+         'WSF soil moisture grid resolution (dy):' ]
+    ! ARFS grid (cell centres), used when the entries are absent
+    real, parameter                   ::  arfs_dd(6) = (/ -89.953125, &
+         -179.9296875, 89.953125, 179.9296875, 0.140625, 0.09375 /)
 
     external :: bilinear_interp_input_withgrid
     external :: upscaleByAveraging_input
@@ -336,21 +353,58 @@ contains
     write(LIS_logunit,*) &
          '[INFO] Created the States to hold the WSF observations data'
 
+    ! Grid of the WSF soil moisture files (cell centres). All six
+    ! entries or none; none means the ARFS grid.
+    allocate(grid_dd(LIS_rc%nnest,6))
+    call ESMF_ConfigFindLabel(LIS_config, trim(grid_labels(1)), rc=status)
+    if (status == 0) then
+       do i = 1, 6
+          call ESMF_ConfigFindLabel(LIS_config, trim(grid_labels(i)), rc=status)
+          call LIS_verify(status, trim(grid_labels(i))//' not defined')
     do n=1,LIS_rc%nnest
-       WSFsm_struc(n)%nc = 2560
-       WSFsm_struc(n)%nr = 1920
+             call ESMF_ConfigGetAttribute(LIS_config, grid_dd(n,i), rc=status)
+             call LIS_verify(status, trim(grid_labels(i))//' not defined')
+          enddo
+       enddo
+    else
+       write(LIS_logunit,*) '[INFO] WSF soil moisture grid not given in '// &
+            'lis.config; using the ARFS grid (2560 x 1920)'
+       do n=1,LIS_rc%nnest
+          grid_dd(n,:) = arfs_dd
+       enddo
+    endif
 
+    do n=1,LIS_rc%nnest
+       WSFsm_struc(n)%lat_ll = grid_dd(n,1)
+       WSFsm_struc(n)%lon_ll = grid_dd(n,2)
+       WSFsm_struc(n)%dlon   = grid_dd(n,5)
+       WSFsm_struc(n)%dlat   = grid_dd(n,6)
+       WSFsm_struc(n)%nc = nint((grid_dd(n,4) - grid_dd(n,2))/grid_dd(n,5)) + 1
+       WSFsm_struc(n)%nr = nint((grid_dd(n,3) - grid_dd(n,1))/grid_dd(n,6)) + 1
+
+       WSFsm_struc(n)%gridDesci = 0
        WSFsm_struc(n)%gridDesci(1) = 0
        WSFsm_struc(n)%gridDesci(2) = WSFsm_struc(n)%nc
        WSFsm_struc(n)%gridDesci(3) = WSFsm_struc(n)%nr
-       WSFsm_struc(n)%gridDesci(4) = -89.953125
-       WSFsm_struc(n)%gridDesci(5) = -179.929688
+       WSFsm_struc(n)%gridDesci(4) = grid_dd(n,1)
+       WSFsm_struc(n)%gridDesci(5) = grid_dd(n,2)
        WSFsm_struc(n)%gridDesci(6) = 128
-       WSFsm_struc(n)%gridDesci(7) = 89.953125
-       WSFsm_struc(n)%gridDesci(8) = 179.929688
-       WSFsm_struc(n)%gridDesci(9) = 0.140570  !dlon
-       WSFsm_struc(n)%gridDesci(10) = 0.093701 !dlat
+       WSFsm_struc(n)%gridDesci(7) = grid_dd(n,3)
+       WSFsm_struc(n)%gridDesci(8) = grid_dd(n,4)
+       WSFsm_struc(n)%gridDesci(9) = grid_dd(n,5)   !dlon
+       WSFsm_struc(n)%gridDesci(10) = grid_dd(n,6)  !dlat
        WSFsm_struc(n)%gridDesci(20) = 64
+
+       ! Bilinear if the obs domain is finer than the WSF grid, else
+       ! averaging (identity when the two grids are the same). Same rule
+       ! as the LDT reader used for the CDF.
+       WSFsm_struc(n)%use_bilinear = &
+            LIS_rc%obs_gridDesc(k,10) < WSFsm_struc(n)%dlat
+
+       write(LIS_logunit,'(a,i6,a,i6,a,2f12.6,a,2f10.6)') &
+            ' [INFO] WSF SM grid: ', WSFsm_struc(n)%nc, ' x ', WSFsm_struc(n)%nr, &
+            ', lower left ', grid_dd(n,1), grid_dd(n,2), &
+            ', dx dy ', grid_dd(n,5), grid_dd(n,6)
 
        allocate(WSFsm_struc(n)%smobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
        allocate(WSFsm_struc(n)%smtime(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k)))
@@ -358,6 +412,7 @@ contains
        WSFsm_struc(n)%smtime = -1
 
     enddo
+    deallocate(grid_dd)
 
     do n=1,LIS_rc%nnest
        allocate(ssdev(LIS_rc%obs_ngrid(k)))
@@ -486,7 +541,7 @@ contains
 
     do n=1,LIS_rc%nnest
 
-       if(LIS_rc%obs_gridDesc(k,10).le.0.0937500) then
+       if(WSFsm_struc(n)%use_bilinear) then
 
           allocate(WSFsm_struc(n)%rlat(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
           allocate(WSFsm_struc(n)%rlon(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))

@@ -83,6 +83,7 @@ contains
     character(len=100) :: history_str
     character(len=200) :: qf_desc_str
     integer :: hour_value
+    character(len=100) :: res_str
 
     ! Only master process writes the file
     if (LDT_masterproc) then
@@ -406,7 +407,7 @@ contains
        ! =====================================================================
 
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'title', &
-            'WSF Brightness Temperature Data Resampled to ARFS Grid (Hourly Stitched)'), &
+            'WSF Brightness Temperature Data Resampled to a Lat-Lon Grid (Hourly Stitched)'), &
             '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'institution', &
             'NASA GSFC'), '[ERR] nf90_put_att failed')
@@ -415,10 +416,13 @@ contains
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'sensor', &
             'WSF Microwave Radiometer'), '[ERR] nf90_put_att failed')
 
+       ! Grid spacing (dlat x dlon) from the coordinates
+       write(res_str, '(f10.6,a,f10.6,a)') abs(lat(min(2,nr)) - lat(1)), ' x ', &
+            abs(lon(min(2,nc)) - lon(1)), ' degrees (lat x lon)'
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'grid_resolution', &
-            '0.09375 x 0.140625 degrees'), '[ERR] nf90_put_att failed')
+            trim(adjustl(res_str))), '[ERR] nf90_put_att failed')
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'grid_type', &
-            'ARFS (Air Force) Grid'), '[ERR] nf90_put_att failed')
+            'Lat-lon (LDT run domain)'), '[ERR] nf90_put_att failed')
 
        call LDT_verify(nf90_put_att(ncid, NF90_GLOBAL, 'processing_date', &
             yyyymmdd), '[ERR] nf90_put_att failed')

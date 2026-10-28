@@ -14,6 +14,9 @@
 !
 ! !REVISION HISTORY:
 ! 10 Oct 2025: Ehsan Jalilvand; Initial Specification
+! Oct 2026: Ehsan Jalilvand; the output grid is the LDT run domain
+!           (lat-lon) from ldt.config instead of the hard-coded ARFS
+!           grid. Output rows still run north to south, as before.
 !
 ! !INTERFACE:
 subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
@@ -41,8 +44,11 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     integer, intent(in) :: filter_snow_precip  ! 1=filter snow/precip, 0=keep all footprints
 ! !EOP
 
-    ! ARFS grid arrays
+    ! Output grid (LDT run domain): cell-centre coordinates
     real*8, allocatable :: ARFS_LAT(:), ARFS_LON(:)
+    integer :: nc, nr            ! number of columns (lon) and rows (lat)
+    real*8  :: lat_ll, lon_ll    ! lower-left cell centre
+    real*8  :: dlon, dlat        ! grid spacing (deg)
 
     ! Accumulated data arrays
     real*8, allocatable :: ARFS_TIME_SUM(:,:)
@@ -111,7 +117,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     character(len=LDT_CONST_PATH_LEN) :: output_filename
 
     integer*4, allocatable :: ARFS_COUNT_QF(:,:)
-    integer*4, allocatable :: ARFS_QUALITY_FLAG_SUM(:,:,:)  ! (2560, 1920, 8) for each bit
+    integer*4, allocatable :: ARFS_QUALITY_FLAG_SUM(:,:,:)  ! (nc, nr, 8) for each bit
 
     ! Band-specific sensor quality counters
     INTEGER, ALLOCATABLE :: sensor_10ghz_count(:,:)
@@ -132,51 +138,72 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     write(LDT_logunit,*)'[INFO] Number of files: ', n_files
     write(LDT_logunit,*)'[INFO] ========================================='
 
-    ! Setup ARFS grid
-    allocate(ARFS_LAT(1920))
-    allocate(ARFS_LON(2560))
+    ! Setup the output grid from the LDT run domain in ldt.config
+    ! ("Run domain lower left lat:" ... "Run domain resolution (dy):").
+    ! This run mode is serial, so the local domain is the whole domain.
+    if (nint(LDT_rc%gridDesc(n,1)) /= 0) then
+        write(LDT_logunit,*)'[ERR] WSF resampling needs a lat-lon run domain'
+        write(LDT_logunit,*)'[ERR] ("Map projection of the LIS domain: latlon")'
+        call LDT_endrun()
+    endif
+    nc     = nint(LDT_rc%gridDesc(n,2))
+    nr     = nint(LDT_rc%gridDesc(n,3))
+    lat_ll = LDT_rc%gridDesc(n,4)
+    lon_ll = LDT_rc%gridDesc(n,5)
+    dlon   = LDT_rc%gridDesc(n,9)
+    dlat   = LDT_rc%gridDesc(n,10)
 
-    do r = 1, 1920
-        ARFS_LAT(r) = 90.0 - (r - 0.5) * 0.09375
+    write(LDT_logunit,*)'[INFO] Output grid (LDT run domain):'
+    write(LDT_logunit,*)'[INFO]   nc x nr     = ', nc, ' x ', nr
+    write(LDT_logunit,*)'[INFO]   lower left  = ', lat_ll, lon_ll
+    write(LDT_logunit,*)'[INFO]   dlat, dlon  = ', dlat, dlon
+
+    allocate(ARFS_LAT(nr))
+    allocate(ARFS_LON(nc))
+
+    ! Row 1 is the northernmost row (north-to-south order, as before)
+    do r = 1, nr
+        ARFS_LAT(r) = lat_ll + (nr - r) * dlat
     end do
 
-    do c = 1, 2560
-        ARFS_LON(c) = -180.0 + (c - 0.5) * 0.140625
+    do c = 1, nc
+        ARFS_LON(c) = lon_ll + (c - 1) * dlon
+        if (ARFS_LON(c) > 180.0d0) ARFS_LON(c) = ARFS_LON(c) - 360.0d0
     end do
 
     ! Allocate accumulation arrays
-    allocate(ARFS_TIME_SUM(2560,1920))
-    allocate(ARFS_TB_10H_SUM(2560,1920), ARFS_TB_10V_SUM(2560,1920))
-    allocate(ARFS_TB_18H_SUM(2560,1920), ARFS_TB_18V_SUM(2560,1920))
-    allocate(ARFS_TB_23H_SUM(2560,1920), ARFS_TB_23V_SUM(2560,1920))
-    allocate(ARFS_TB_36H_SUM(2560,1920), ARFS_TB_36V_SUM(2560,1920))
-    allocate(ARFS_TB_89H_SUM(2560,1920), ARFS_TB_89V_SUM(2560,1920))
-    allocate(ARFS_LAND_FRAC_SUM(2560,1920))
+    allocate(ARFS_TIME_SUM(nc,nr))
+    allocate(ARFS_TB_10H_SUM(nc,nr), ARFS_TB_10V_SUM(nc,nr))
+    allocate(ARFS_TB_18H_SUM(nc,nr), ARFS_TB_18V_SUM(nc,nr))
+    allocate(ARFS_TB_23H_SUM(nc,nr), ARFS_TB_23V_SUM(nc,nr))
+    allocate(ARFS_TB_36H_SUM(nc,nr), ARFS_TB_36V_SUM(nc,nr))
+    allocate(ARFS_TB_89H_SUM(nc,nr), ARFS_TB_89V_SUM(nc,nr))
+    allocate(ARFS_LAND_FRAC_SUM(nc,nr))
 
-    allocate(ARFS_COUNT_TIME(2560,1920))
-    allocate(ARFS_COUNT_10H(2560,1920), ARFS_COUNT_10V(2560,1920))
-    allocate(ARFS_COUNT_18H(2560,1920), ARFS_COUNT_18V(2560,1920))
-    allocate(ARFS_COUNT_23H(2560,1920), ARFS_COUNT_23V(2560,1920))
-    allocate(ARFS_COUNT_36H(2560,1920), ARFS_COUNT_36V(2560,1920))
-    allocate(ARFS_COUNT_89H(2560,1920), ARFS_COUNT_89V(2560,1920))
-    allocate(ARFS_COUNT_LAND(2560,1920))
+    allocate(ARFS_COUNT_TIME(nc,nr))
+    allocate(ARFS_COUNT_10H(nc,nr), ARFS_COUNT_10V(nc,nr))
+    allocate(ARFS_COUNT_18H(nc,nr), ARFS_COUNT_18V(nc,nr))
+    allocate(ARFS_COUNT_23H(nc,nr), ARFS_COUNT_23V(nc,nr))
+    allocate(ARFS_COUNT_36H(nc,nr), ARFS_COUNT_36V(nc,nr))
+    allocate(ARFS_COUNT_89H(nc,nr), ARFS_COUNT_89V(nc,nr))
+    allocate(ARFS_COUNT_LAND(nc,nr))
 
-    allocate(TEMP_TIME(2560,1920))
-    allocate(TEMP_TB_10H(2560,1920), TEMP_TB_10V(2560,1920))
-    allocate(TEMP_TB_18H(2560,1920), TEMP_TB_18V(2560,1920))
-    allocate(TEMP_TB_23H(2560,1920), TEMP_TB_23V(2560,1920))
-    allocate(TEMP_TB_36H(2560,1920), TEMP_TB_36V(2560,1920))
-    allocate(TEMP_TB_89H(2560,1920), TEMP_TB_89V(2560,1920))
-    allocate(TEMP_LAND_FRAC(2560,1920))
-    allocate(TEMP_QUALITY_FLAG(2560,1920))
-    allocate(TEMP_SAMPLE_V(2560,1920), TEMP_SAMPLE_H(2560,1920))
-    allocate(ARFS_COUNT_QF(2560,1920))
-    allocate(ARFS_QUALITY_FLAG_SUM(2560,1920,8))  ! Track each bit separately
-    allocate(sensor_10ghz_count(2560,1920))
-    allocate(sensor_18ghz_count(2560,1920))
-    allocate(sensor_23ghz_count(2560,1920))
-    allocate(sensor_36ghz_count(2560,1920))
-    allocate(sensor_89ghz_count(2560,1920))    ! Initialize accumulation arrays
+    allocate(TEMP_TIME(nc,nr))
+    allocate(TEMP_TB_10H(nc,nr), TEMP_TB_10V(nc,nr))
+    allocate(TEMP_TB_18H(nc,nr), TEMP_TB_18V(nc,nr))
+    allocate(TEMP_TB_23H(nc,nr), TEMP_TB_23V(nc,nr))
+    allocate(TEMP_TB_36H(nc,nr), TEMP_TB_36V(nc,nr))
+    allocate(TEMP_TB_89H(nc,nr), TEMP_TB_89V(nc,nr))
+    allocate(TEMP_LAND_FRAC(nc,nr))
+    allocate(TEMP_QUALITY_FLAG(nc,nr))
+    allocate(TEMP_SAMPLE_V(nc,nr), TEMP_SAMPLE_H(nc,nr))
+    allocate(ARFS_COUNT_QF(nc,nr))
+    allocate(ARFS_QUALITY_FLAG_SUM(nc,nr,8))  ! Track each bit separately
+    allocate(sensor_10ghz_count(nc,nr))
+    allocate(sensor_18ghz_count(nc,nr))
+    allocate(sensor_23ghz_count(nc,nr))
+    allocate(sensor_36ghz_count(nc,nr))
+    allocate(sensor_89ghz_count(nc,nr))    ! Initialize accumulation arrays
 
     ARFS_TIME_SUM = 0.0
     ARFS_TB_10H_SUM = 0.0
@@ -374,7 +401,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
 
         write(LDT_logunit,*)'[INFO] Calling inverse distance resampler...'
         write(LDT_logunit,*)'[INFO]   Input:  (nScanR, nFOVR) = (', nscans, ',', nfovs, ')'
-        write(LDT_logunit,*)'[INFO]   Output: (2560, 1920)'
+        write(LDT_logunit,*)'[INFO]   Output: (', nc, ',', nr, ')'
 
         ! Transpose lat/lon and other 2D arrays to match invdist signature
         ! invdist expects (nscans, nfovs) but TOOLSUBS gives (nfovs, nscans)
@@ -401,8 +428,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
             do_filter)
 
         ! ACCUMULATE DATA
-        do r = 1, 1920
-            do c = 1, 2560
+        do r = 1, nr
+            do c = 1, nc
                 ! ===========================================================
                 ! TB ACCUMULATION (unchanged)
                 ! ===========================================================
@@ -493,15 +520,15 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ! =====================================================================
     ! CALCULATE MEANS
     ! =====================================================================
-    allocate(ARFS_TIME(2560,1920))
-    allocate(ARFS_TB_10H(2560,1920), ARFS_TB_10V(2560,1920))
-    allocate(ARFS_TB_18H(2560,1920), ARFS_TB_18V(2560,1920))
-    allocate(ARFS_TB_23H(2560,1920), ARFS_TB_23V(2560,1920))
-    allocate(ARFS_TB_36H(2560,1920), ARFS_TB_36V(2560,1920))
-    allocate(ARFS_TB_89H(2560,1920), ARFS_TB_89V(2560,1920))
-    allocate(ARFS_LAND_FRAC(2560,1920))
-    allocate(ARFS_QUALITY_FLAG(2560,1920))
-    allocate(ARFS_SAMPLE_V(2560,1920), ARFS_SAMPLE_H(2560,1920))
+    allocate(ARFS_TIME(nc,nr))
+    allocate(ARFS_TB_10H(nc,nr), ARFS_TB_10V(nc,nr))
+    allocate(ARFS_TB_18H(nc,nr), ARFS_TB_18V(nc,nr))
+    allocate(ARFS_TB_23H(nc,nr), ARFS_TB_23V(nc,nr))
+    allocate(ARFS_TB_36H(nc,nr), ARFS_TB_36V(nc,nr))
+    allocate(ARFS_TB_89H(nc,nr), ARFS_TB_89V(nc,nr))
+    allocate(ARFS_LAND_FRAC(nc,nr))
+    allocate(ARFS_QUALITY_FLAG(nc,nr))
+    allocate(ARFS_SAMPLE_V(nc,nr), ARFS_SAMPLE_H(nc,nr))
 
     ARFS_TIME = 0.0
     ARFS_TB_10H = 0.0
@@ -519,8 +546,8 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     ARFS_SAMPLE_V = 0
     ARFS_SAMPLE_H = 0
 
-    do r = 1, 1920
-        do c = 1, 2560
+    do r = 1, nr
+        do c = 1, nc
             if (ARFS_COUNT_10H(c,r) > 0) then
                 ARFS_TB_10H(c,r) = ARFS_TB_10H_SUM(c,r) / real(ARFS_COUNT_10H(c,r))
                 ARFS_SAMPLE_H(c,r) = ARFS_COUNT_10H(c,r)
@@ -614,7 +641,7 @@ subroutine WSF_ARFS_RESAMPLE_HOURLY(hour_files, n_files, output_dir, &
     write(LDT_logunit,*)'[INFO] Output file: ', trim(output_filename)
     write(LDT_logunit,*)'[INFO] ========================================='
 
-    call LDT_WSF_ARFS_write_netcdf_hourly(2560, 1920, &
+    call LDT_WSF_ARFS_write_netcdf_hourly(nc, nr, &
         ARFS_TB_10H, ARFS_TB_10V, ARFS_TB_18H, ARFS_TB_18V, &
         ARFS_TB_23H, ARFS_TB_23V, ARFS_TB_36H, ARFS_TB_36V, &
         ARFS_TB_89H, ARFS_TB_89V, ARFS_LAND_FRAC, &
