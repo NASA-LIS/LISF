@@ -4155,7 +4155,24 @@ SMOS L2 soil moisture observation directory:  ./SMOS_SM/
 
 `SMOPS soil moisture observation directory:` specifies the location of the data directory containing the real time SMOPS soil moisture data.
 
-`SMOPS soil moisture use ASCAT data:` specifies if the ASCAT layer of SMOPS is to be used.
+`SMOPS soil moisture use realtime data:` specifies whether to read the 6-hourly SMOPS files (1) or the daily files (0). Optional; defaults to 0.
+
+* 0: daily files, `<dir>/YYYY/NPR_SMOPS_CMAP_DYYYYMMDD.gr2`.
+* 1: 6-hourly files, named as given by `SMOPS soil moisture naming convention:`. Every 6-hourly window that starts within the current LDT time step is read. With "`LIS output timestep: 1da`", the four windows of a day are combined into one daily field, the latest valid retrieval winning. With "`LIS output timestep: 6hr`", each window is logged separately and "`Temporal averaging interval:`" averages them. The time step must be a multiple of 6 hours.
+
+`SMOPS soil moisture naming convention:` specifies the names of the 6-hourly SMOPS files, as in LIS. Optional; defaults to "`AGRMET`".
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`AGRMET`" |Files directly in the observation directory: `smops_dYYYYMMDD_sHH0000_cness.gr2` before 2017-10-05, `NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2` from 2017-10-05 to 2024-07-04T18, and `NPR-SMOPS-CMAP-6hrly_v4r0_blend_sYYYYMMDDHH*.grib2` from 2024-07-04T18. (default)
+|"`LIS`" |`<dir>/YYYY/NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2` for all dates.
+|===
+
+The `NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2` files hold the 6 hours before HH; the other files hold the 6 hours starting at HH.
+
+`SMOPS soil moisture use ASCAT data:` specifies if the ASCAT layer of SMOPS is to be used. ASCAT-A and ASCAT-B are read up to SMOPS version 3.0, and ASCAT-B and ASCAT-C from version 4.0. Where more than one satellite has a valid retrieval, the later one (B over A, C over B) is used.
 
 `SMOPS soil moisture use SMOS data:` specifies if the SMOS layer of SMOPS is to be used.
 
@@ -4173,31 +4190,35 @@ SMOS L2 soil moisture observation directory:  ./SMOS_SM/
 |"`1.3`" |Treat the dataset as version 1.3.
 |"`2.0`" |Treat the dataset as version 2.0.
 |"`3.0`" |Treat the dataset as version 3.0.
+|"`4.0`" |Treat the dataset as version 4.0.
 |"`NESDIS V3.0 REGEN`" |Assume the version of the dataset based on the NESDIS version 3.0 regeneration date.
 |===
 
-There are three versions of the SMOPS datasets. According to the use by the 557th Weather Wing:
+There are four versions of the SMOPS datasets. According to the use by the 557th Weather Wing:
 
 ....
                           version_1.3 <  2016-10-31T12:00:00
    2016-10-31T12:00:00 <= version_2.0 <  2017-08-24T12:00:00
-                          version_3.0 >= 2017-08-24T12:00:00
+   2017-08-24T12:00:00 <= version_3.0 <  2024-07-04T18:00:00
+                          version_4.0 >= 2024-07-04T18:00:00
  
 ....
 
 Also, NESDIS has regenerated SMOPS version 3.0 datasets starting from 2012-08-01.
 
-The value "`date-based`" will use the dates 2016-10-31 and 2017-08-24 to determine the version of the SMOPS datasets.
+The value "`date-based`" will use the dates 2016-10-31, 2017-08-24 and 2024-07-04 to determine the version of the SMOPS datasets.
 
 The value "`NESDIS V3.0 REGEN`" will use the date 2012-08-01 to determine the version of the SMOPS datasets.
 
-Should you need to explicitly state the version of the SMOPS datasets, then you may specify their version with either "`1.3`", "`2.0`", or "`3.0`".
+Should you need to explicitly state the version of the SMOPS datasets, then you may specify their version with either "`1.3`", "`2.0`", "`3.0`", or "`4.0`".
 
 `SMOPS search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
 
 .Example _ldt.config_ entry
 ....
 SMOPS soil moisture observation directory:  ./RTSMOPS
+SMOPS soil moisture use realtime data:    1
+SMOPS soil moisture naming convention:    "AGRMET"
 SMOPS soil moisture use ASCAT data:       1
 SMOPS soil moisture use SMOS data:        0
 SMOPS soil moisture use AMSR2 data:       0
