@@ -109,11 +109,6 @@ contains
 
     external :: routinginit
 
-#if (defined SPMD)
-    external :: MPI_GATHERV
-    external :: MPI_Bcast
-#endif
-
     call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%routingmodel, &
          label="Routing model:",default="none", rc=rc)
 
