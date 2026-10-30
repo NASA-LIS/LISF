@@ -20,7 +20,8 @@ module LIS_lsmrouting_pluginMod
 !  01 Jun 17    Augusto Getirana: Add HyMAP2
 !  12 Sep 19    Augusto Getirana: Add 2-way coupling
 !  17 Mar 21    Yeosang Yoon: Add RAPID
-!  16 Sep 26    Cenlin He:  Added NoahMP 5.0
+!  16 Sep 26    Cenlin He:    Added NoahMP 5.0
+!  16 Oct 26    David Mocko:  Added NoahMP 5.2
 !
   implicit none
 
@@ -116,6 +117,14 @@ contains
    external noahmp50_getrunoffs_rapid
 #endif
 
+#if ( defined SM_NOAHMP_5_2 )
+   external noahmp52_getrunoffs
+   external noahmp52_getrunoffs_mm
+   external noahmp52_getrunoffs_hymap2
+   external noahmp52_getsws_hymap2
+   external noahmp52_getrunoffs_rapid
+#endif
+
 #if ( defined SM_RUC_3_7 )
     external ruc37_getrunoffs
     external ruc37_getrunoffs_mm
@@ -208,6 +217,12 @@ contains
    call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
         noahmp50_getrunoffs_mm)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
+        trim(LIS_HYMAProuterId)//char(0), &
+        noahmp52_getrunoffs_mm)
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -316,6 +331,15 @@ contains
    call registerlsmroutinggetsws(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
         noahmp50_getsws_hymap2)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        noahmp52_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noahmp52Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        noahmp52_getsws_hymap2)
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -484,6 +508,12 @@ contains
         noahmp50_getrunoffs)
 #endif
 
+#if ( defined SM_NOAHMP_5_2 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
+        trim(LIS_NLDASrouterId)//char(0), &
+        noahmp52_getrunoffs)
+#endif
+
 #if ( defined SM_RUC_3_7 )
     call registerlsmroutinggetrunoff(trim(LIS_ruc37Id)//"+"//&
          trim(LIS_NLDASrouterId)//char(0), &
@@ -526,6 +556,12 @@ contains
    call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_RAPIDrouterId)//char(0), &
         noahmp50_getrunoffs_rapid)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        noahmp52_getrunoffs_rapid)
 #endif
 
 #if ( defined SM_JULES_5_0 )
