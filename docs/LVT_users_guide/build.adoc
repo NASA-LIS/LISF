@@ -45,6 +45,7 @@ Set the appropriate LVT environment variables.  These are used to control the co
 | `LVT_FORTRANGIS` | path to FortranGIS library | optional (required to use GDAL)
 | `LVT_JPEG`       | path to JPEG library       | optional (use system libjpeg by default)
 | `LVT_RPC`        | path to RPC library        | optional (use system RPC library by default)
+| `LVT_PIO`        | path to PIO library        | optional (only for NASA Land Coupler (NLC) and NASA Water Insight projects)
 |===
 
 Set the `LVT_ARCH` environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
@@ -134,6 +135,7 @@ Use HDFEOS? (1-yes, 0-no, default=1):
 Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0):
 Enable GeoTIFF support? (1-yes, 0-no, default=1):
 Use MATLAB support? (1-yes, 0-no, default=0):
+Use PIO? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lvt file generated successfully
 -----------------------------------------------------
@@ -174,6 +176,8 @@ IMPORTANT: GRIB-API support is now deprecated.  Future releases will support onl
 
 * for `Enable GeoTIFF support? (1-yes, 0-no, default=1):`,
 GeoTIFF means the GeoTIFF support provided by the GDAL library.
+
+* for `Use PIO? (1-yes, 0-no, default=0):`, if you wish to enable PIO support, then you must either set the `LVT_PIO` environment variable or the `LVT_PIO_IN_ESMF` environment variable.  If you are using the PIO library, then set `LVT_PIO` to the path of the PIO library.  If you are using PIO included in ESMF, then set `LVT_PIO_IN_ESMF=1`.
 
 Note that due to an issue involving multiple definitions within the NetCDF 3 and HDF 4 libraries, you cannot compile LVT with support for both NetCDF 3 and HDF 4 together.
 

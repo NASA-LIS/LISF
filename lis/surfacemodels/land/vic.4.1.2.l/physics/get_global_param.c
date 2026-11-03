@@ -956,9 +956,9 @@ void  get_global_param(filenames_struct *names,
     Output major options to stderr
   *********************************/
 #if VERBOSE
-  display_current_settings(DISP_ALL,names,&global);
+  display_current_settings(DISP_ALL,names,global);
 #else
-  display_current_settings(DISP_VERSION,names,&global);
+  display_current_settings(DISP_VERSION,names,global);
 #endif
 
 #if VERBOSE

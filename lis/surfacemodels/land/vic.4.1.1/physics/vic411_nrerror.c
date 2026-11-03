@@ -7,7 +7,7 @@ static char vcid[] = "$Id: vic411_nrerror.c,v 3.2 1999/08/23 23:59:06 vicadmin E
 void vic411_nrerror(char error_text[])
 /* Numerical Recipes standard error handler */
 {
-	void _exit();
+	void _exit(int);
 
 	fprintf(stderr,"Model run-time error...\n");
 	fprintf(stderr,"%s\n",error_text);

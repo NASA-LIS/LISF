@@ -85,7 +85,7 @@ Acceptable values are:
 |polar    | Polar stereographic projection with SW to NE data ordering
 |UTM      | UTM domain
 |hrap     | Hydrologic Rainfall Analysis Project (HRAP) grid
-|           coordinate system
+            coordinate system
 |====
 
 .Example _lis.config_ entry
@@ -572,7 +572,7 @@ Acceptable values are:
 |"`2d gridspace`" | Write output in a 2-D grid domain
 |"`1d gridspace`" | Write output in a 1-D grid domain
 |"`2d ensemble gridspace`" | Write individual ensemble member output
-|                            in a 2-D grid domain
+                             in a 2-D grid domain
 |====
 
 When writing output using the "`2d gridspace`" setting with ensembles enabled,
@@ -2099,6 +2099,8 @@ USAFSI netcdf filename prefix:         usafsi
 [[sssec_snipda,SNIP Assimilation]]
 ==== SNIP Assimilation
 
+The Noah-MP.5.0 LSM supports SNIP snow depth assimilation.
+
 `SNIP data directory:` specifies the directory for the
 SNIP data.
 
@@ -2108,6 +2110,8 @@ be "`SNIP_yyyymmddhh.nc.`"
 
 .Example _lis.config_ entry
 ....
+Land surface model:                    "Noah-MP.5.0"
+Data assimilation set:                 "SNIP"
 SNIP data directory:                  ./FORCING/SNIP
 SNIP netcdf filename prefix:         SNIP
 ....

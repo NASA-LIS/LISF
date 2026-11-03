@@ -22,6 +22,7 @@ module LDT_rstTransformProcMod
 ! !REVISION HISTORY:
 !  26 Jan 2016    Sujay Kumar  Initial Specification
 !   9 Sep 2026    David Mocko  Added Noah-MP-5.0
+!  29 Sep 2026    Jim Geiger, miscellaneous bug fixes
 !   9 Oct 2026    David Mocko  Added Noah-MP-5.2
 !
   use ESMF
@@ -207,10 +208,10 @@ contains
     real   ,     allocatable  :: w12(:)
     real   ,     allocatable  :: w21(:)
     real   ,     allocatable  :: w22(:)
-    real   ,     allocatable  :: n11(:)
-    real   ,     allocatable  :: n12(:)
-    real   ,     allocatable  :: n21(:)
-    real   ,     allocatable  :: n22(:)
+    integer,     allocatable  :: n11(:)
+    integer,     allocatable  :: n12(:)
+    integer,     allocatable  :: n21(:)
+    integer,     allocatable  :: n22(:)
 
     external :: neighbor_interp_input_withgrid
     external :: neighbor_interp

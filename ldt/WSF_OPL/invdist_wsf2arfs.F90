@@ -70,6 +70,7 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
    logical :: has_snow, has_precip, has_water
    logical :: band1_bad, band2_bad, band3_bad, band4_bad, band5_bad
    logical :: skip_snow_precip  ! combined condition: skip this footprint due to snow/precip
+   integer*2 :: arfs_quality_flag2(2560,1920) ! 2-byte version of the arfs quality flag for performing IOR logic
 
    ! Weight arrays for accumulation
    real*4, allocatable :: arfs_wt_tb10h(:,:), arfs_wt_tb10v(:,:)
@@ -127,6 +128,7 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
    arfs_tb_89v = 0.0
    arfs_land_water_frac = 0.0
    arfs_quality_flag = 0
+   arfs_quality_flag2 = 0
    arfs_sample_v = 0
    arfs_sample_h = 0
 
@@ -412,52 +414,53 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
    do rr = 1, 2560
       do cc = 1, 1920
          if (total_count(rr,cc) > 0) then
-            arfs_quality_flag(rr,cc) = 0
+            arfs_quality_flag2(rr,cc) = 0
 
             ! Bit 0: Ocean
             if (ocean_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 1)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 1_2)
             endif
 
             ! Bit 1: Precipitation
             if (precip_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 2)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 2_2)
             endif
 
             ! Bit 2: Snow
             if (snow_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 4)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 4_2)
             endif
 
             ! Bit 3: Band 1 (10 GHz) quality
             if (band1_bad_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 8)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 8_2)
             endif
 
             ! Bit 4: Band 2 (18 GHz) quality
             if (band2_bad_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 16)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 16_2)
             endif
 
             ! Bit 5: Band 3 (23 GHz) quality
             if (band3_bad_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 32)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 32_2)
             endif
 
             ! Bit 6: Band 4 (36 GHz) quality
             if (band4_bad_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 64)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 64_2)
             endif
 
             ! Bit 7: Band 5 (89 GHz) quality
             if (band5_bad_count(rr,cc) > total_count(rr,cc)/2) then
-               arfs_quality_flag(rr,cc) = IOR(arfs_quality_flag(rr,cc), 128)
+               arfs_quality_flag2(rr,cc) = IOR(arfs_quality_flag2(rr,cc), 128_2)
             endif
          else
-            arfs_quality_flag(rr,cc) = -1  ! No data
+            arfs_quality_flag2(rr,cc) = -1  ! No data
          endif
       end do
    end do
+   arfs_quality_flag = arfs_quality_flag2
 
    ! Report statistics
    write(LDT_logunit,*)'[INFO] ========================================'

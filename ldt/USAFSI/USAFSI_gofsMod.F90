@@ -15,6 +15,7 @@
 ! 09 May 2019  Eric Kemp  Rename to LDTSI
 ! 13 Dec 2019  Eric Kemp  Rename to USAFSI
 ! 10 Mar 2022  Eric Kemp  Added array initialization.
+! 29 Sep 2026  Jim Geiger Bug fixes.
 !
 ! DESCRIPTION:
 ! Source code for reading US Navy GOFS data.
@@ -32,7 +33,7 @@ module USAFSI_gofsMod
    ! Public routines
    public :: process_gofs_sst
    public :: process_gofs_cice
-   
+
 contains
 
    ! Find GOFS CICE file on file system
@@ -302,9 +303,12 @@ contains
       logical*1, allocatable :: lb(:)
       logical*1, allocatable :: lo(:)
       real :: griddesci(50)
-      real, allocatable :: n11(:)
+      integer, allocatable :: n11(:)
       integer :: gindex
       real :: rlat
+
+      external :: upscaleByAveraging_input
+      external :: upscaleByAveraging
 
       ! Find a valid file on the file system
       call find_gofs_sst_file(rootdir, yyyy, mm, dd, hh, fh, filename)
@@ -565,8 +569,11 @@ contains
       logical*1, allocatable :: lb(:)
       logical*1, allocatable :: lo(:)
       real :: griddesci(50)
-      real, allocatable :: n11(:)
+      integer, allocatable :: n11(:)
       integer :: gindex, nlat
+
+      external :: upscaleByAveraging_input
+      external :: upscaleByAveraging
 
       ! Sanity check the region
       if (region .eq. 'ARC') then

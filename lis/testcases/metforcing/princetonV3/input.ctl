@@ -1,4 +1,4 @@
-dset ^lis_input_testcase.d01.nc
+dset ^lis_input.d01.nc
 dtype netcdf
 options template
 undef -9999

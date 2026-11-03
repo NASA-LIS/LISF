@@ -26,7 +26,7 @@ vic411_filenames_struct vic411_cmd_proc(int argc, char *argv[])
 #if LINK_DEBUG
   extern vic411_debug_struct debug;
 #endif
-  extern int getopt();
+  extern int getopt(int, char *[], char *);
   extern char *optarg;
   extern char *vic411_optstring;
 

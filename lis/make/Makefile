@@ -5,8 +5,8 @@
 RM := rm -f
 
 # Define functions
-make-clean := $(RM) *.o *.mod LIS
-make-real-clean := $(RM) *.o *.mod LIS *.d Filepath
+make-clean := $(RM) LIS *.o *.mod *_genmod.f90
+make-real-clean := $(RM) LIS Filepath *.o *.mod *_genmod.f90 *.d
 COUPLED:=$(shell grep -E '^\#[[:space:]]*define[[:space:]]+COUPLED' LIS_misc.h)
 append_offline := $(if $(COUPLED),,vim -X -N -u NONE -i NONE -e -s -c '$$s;$$; ../offline;|wq' Filepath)
 
