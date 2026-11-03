@@ -17,7 +17,8 @@ module LIS_lsmirrigation_pluginMod
 !
 ! !REVISION HISTORY:
 !  13 Nov 2012    Sujay Kumar  Initial Specification
-!  16 Sep 2026    Cenlin He  Added NoahMP 5.0
+!  16 Sep 2026    Cenlin He    Added NoahMP 5.0
+!  16 Oct 2026    David Mocko  Added NoahMP 5.2
 !
   implicit none
 
@@ -67,6 +68,10 @@ contains
     external noahmp50_getirrigationstates
 #endif
 
+#if ( defined SM_NOAHMP_5_2 )
+    external noahmp52_getirrigationstates
+#endif
+
 #if ( defined IRR_SPRINKLER )
 #if ( defined SM_NOAH_3_3 )
     call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
@@ -97,6 +102,11 @@ contains
 #if ( defined SM_NOAHMP_5_0 )
     call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_sprinklerIrrigationId)//char(0),NoahMP50_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsmirrigationgetstates(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_sprinklerIrrigationId)//char(0),noahmp52_getirrigationstates)
 #endif
 #endif
 
@@ -129,6 +139,11 @@ contains
 #if ( defined SM_NOAHMP_5_0 )
     call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_floodIrrigationId)//char(0),NoahMP50_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsmirrigationgetstates(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_floodIrrigationId)//char(0),noahmp52_getirrigationstates)
 #endif
 #endif
 
@@ -166,6 +181,11 @@ contains
 #if ( defined SM_NOAHMP_5_0 )
     call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_dripIrrigationId)//char(0),NoahMP50_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsmirrigationgetstates(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_dripIrrigationId)//char(0),noahmp52_getirrigationstates)
 #endif
 #endif
 

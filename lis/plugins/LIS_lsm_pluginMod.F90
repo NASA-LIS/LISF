@@ -21,7 +21,8 @@ module LIS_lsm_pluginMod
 !
 ! !REVISION HISTORY:
 !  09 Oct 03    Sujay Kumar  Initial Specification
-!  16 Sep 26    Cenlin He  Updated for NoahMP5.0.
+!  16 Sep 26    Cenlin He    Updated for NoahMP5.0
+!  16 Oct 26    David Mocko  Updated for NoahMP5.2
 !
 !EOP
   implicit none
@@ -154,6 +155,10 @@ contains
 
 #if ( defined SM_NOAHMP_5_0 )
     use NoahMP50_lsmMod, only : noahmp50_ini
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    use noahmp52_lsmMod, only : noahmp52_ini
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -409,6 +414,17 @@ contains
     external noahmp50_writerst
     external noahmp50_finalize
     external noahmp50_reset
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    external noahmp52_main
+    external noahmp52_setup
+    external noahmp52_readrst
+    external noahmp52_dynsetup
+    external noahmp52_f2t
+    external noahmp52_writerst
+    external noahmp52_finalize
+    external noahmp52_reset
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -773,6 +789,23 @@ contains
     call registerlsmwrst(trim(LIS_noahmp50Id)//char(0),noahmp50_writerst)
     call registerlsmfinalize(trim(LIS_noahmp50Id)//char(0),noahmp50_finalize)
     call registerlsmreset(trim(LIS_noahmp50Id)//char(0),noahmp50_reset)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsminit(trim(LIS_noahmp52Id)//char(0),noahmp52_ini)
+    call registerlsmsetup(trim(LIS_noahmp52Id)//char(0),noahmp52_setup)
+    call registerlsmf2t(trim(LIS_noahmp52Id)//"+"&
+         //trim(LIS_retroId)//char(0),noahmp52_f2t)
+    call registerlsmf2t(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_agrmetrunId)//char(0),noahmp52_f2t)
+    call registerlsmf2t(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_smootherDAId)//char(0),noahmp52_f2t)
+    call registerlsmrun(trim(LIS_noahmp52Id)//char(0),noahmp52_main)
+    call registerlsmrestart(trim(LIS_noahmp52Id)//char(0),noahmp52_readrst)
+    call registerlsmdynsetup(trim(LIS_noahmp52Id)//char(0),noahmp52_dynsetup)
+    call registerlsmwrst(trim(LIS_noahmp52Id)//char(0),noahmp52_writerst)
+    call registerlsmfinalize(trim(LIS_noahmp52Id)//char(0),noahmp52_finalize)
+    call registerlsmreset(trim(LIS_noahmp52Id)//char(0),noahmp52_reset)
 #endif
 
 #if ( defined SM_RUC_3_7 )

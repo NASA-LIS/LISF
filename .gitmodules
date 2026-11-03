@@ -1,4 +1,8 @@
 [submodule "lis/surfacemodels/land/noahmp.5.0/phys/noahmp"]
-	path = lis/surfacemodels/land/noahmp.5.0/phys/noahmp
-	url = https://github.com/NCAR/noahmp
+        path = lis/surfacemodels/land/noahmp.5.0/phys/noahmp
+        url = https://github.com/NCAR/noahmp
         branch = release-v5.0-LIS 
+[submodule "lis/surfacemodels/land/noahmp.5.2/phys/noahmp"]
+        path = lis/surfacemodels/land/noahmp.5.2/phys/noahmp
+        url = https://github.com/NCAR/noahmp
+        branch = master
