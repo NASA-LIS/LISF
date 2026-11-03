@@ -6073,6 +6073,9 @@ USAFSI netcdf filename prefix:         usafsi</pre>
 <div class="sect3">
 <h4 id="sssec_snipda">9.5.15. SNIP Assimilation</h4>
 <div class="paragraph">
+<p>The Noah-MP.5.0 LSM supports SNIP snow depth assimilation.</p>
+</div>
+<div class="paragraph">
 <p><code>SNIP data directory:</code> specifies the directory for the
 SNIP data.</p>
 </div>
@@ -6084,7 +6087,9 @@ be &#8220;SNIP_yyyymmddhh.nc.&#8221;</p>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>SNIP data directory:                  ./FORCING/SNIP
+<pre>Land surface model:                    "Noah-MP.5.0"
+Data assimilation set:                 "SNIP"
+SNIP data directory:                  ./FORCING/SNIP
 SNIP netcdf filename prefix:         SNIP</pre>
 </div>
 </div>
@@ -26712,7 +26717,7 @@ See LIS' Developer&#8217;s Guide for more details.</p>
 <div id="footer">
 <div id="footer-text">
 Version 7.0<br>
-Last updated 2026-10-16 18:19:20 UTC
+Last updated 2026-11-03 17:24:31 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
