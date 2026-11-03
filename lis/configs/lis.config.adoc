@@ -2097,6 +2097,8 @@ USAFSI netcdf filename prefix:         usafsi
 [[sssec_snipda,SNIP Assimilation]]
 ==== SNIP Assimilation
 
+The Noah-MP.5.0 LSM supports SNIP snow depth assimilation.
+
 `SNIP data directory:` specifies the directory for the
 SNIP data.
 
@@ -2106,6 +2108,8 @@ be "`SNIP_yyyymmddhh.nc.`"
 
 .Example _lis.config_ entry
 ....
+Land surface model:                    "Noah-MP.5.0"
+Data assimilation set:                 "SNIP"
 SNIP data directory:                  ./FORCING/SNIP
 SNIP netcdf filename prefix:         SNIP
 ....

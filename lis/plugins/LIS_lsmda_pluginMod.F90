@@ -35,6 +35,7 @@ module LIS_lsmda_pluginMod
 !  06 Jun 2022: Yonghwan Kwon, added SMAP_E_OPL soil moisture Assimilation
 !                              added GVF data assimilation
 !  19 Sep 2026: Cenlin He: Added NoahMP.5.0
+!  19 Oct 2026: Yeosang Yoon; Added SNIP assimilation for NoahMP.5.0.
 !
 !EOP
   implicit none
@@ -217,6 +218,7 @@ contains
       use noahmp50_dasnow_Mod
       use noahmp50_dasnodep_Mod
       use noahmp50_dausafsi_Mod
+      use noahmp50_dasnip_Mod
       use noahmp50_tws_DAlogMod, only : noahmp50_tws_DAlog
       use noahmp50_datws_Mod
       use noahmp50_daveg_Mod
@@ -645,6 +647,20 @@ contains
       external noahmp50_scale_usafsi
       external noahmp50_descale_usafsi
       external noahmp50_qc_usafsiobs
+#endif
+
+#if ( defined DA_OBS_SNIP )
+! NoahMP.5 SNIP
+      external noahmp50_getsnipvars
+      external noahmp50_transform_snip
+      external noahmp50_map_snip
+      external noahmp50_updatesnipvars
+      external noahmp50_qcsnip
+      external noahmp50_setsnipvars
+      external noahmp50_getsnippred
+      external noahmp50_scale_snip
+      external noahmp50_descale_snip
+      external noahmp50_qc_snipobs
 #endif
 
 #endif
@@ -3684,6 +3700,30 @@ contains
            trim(LIS_usafsiobsId)//char(0),noahmp50_scale_usafsi)
       call registerlsmdadescalestatevar(trim(LIS_noahmp50Id)//"+"//&
            trim(LIS_usafsiobsId)//char(0),noahmp50_descale_usafsi)
+#endif
+
+#if ( defined DA_OBS_SNIP )
+! DA + SNIP wirings
+      call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_dasnip_init)
+      call registerlsmdagetstatevar(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_getsnipvars)
+      call registerlsmdaobstransform(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_transform_snip)
+      call registerlsmdaupdatestate(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_updatesnipvars)
+      call registerlsmdasetstatevar(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_setsnipvars)
+      call registerlsmdagetobspred(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_getsnippred)
+      call registerlsmdaqcstate(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_qcsnip)
+      call registerlsmdaqcobsstate(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_qc_snipobs)
+      call registerlsmdascalestatevar(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_scale_snip)
+      call registerlsmdadescalestatevar(trim(LIS_noahmp50Id)//"+"//&
+           trim(LIS_snipobsId)//char(0),noahmp50_descale_snip)
 #endif
 
 #if ( defined DA_OBS_ASO_SWE)
