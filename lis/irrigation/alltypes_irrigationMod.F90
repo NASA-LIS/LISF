@@ -28,6 +28,8 @@ module alltypes_irrigationMod
   !  29 Oct 2021: Sarith Mahanama; Added mapping croptypes to irrigation types.
   !  14 Jul 2023: Hiroko Beaudoing; Changed from IRRIGFRAC to IRRIGATEDAREA
   !  31 Aug 2024: Hiroko Beaudoing; Added QRI for runoff recycle in paddy
+  !  02 Nov 2026: Hiroko Beaudoing; Update get_qri routine, moved optimized QRI 
+  !               files into lis.config.
   !
   !
   ! !USES:
@@ -83,7 +85,7 @@ contains
     real*8, pointer      :: scheduleStart(:)
     character(len=LIS_CONST_PATH_LEN)        :: maxrootdepthfile
     character*50         :: irrigtypetocrop
-    character(len=LIS_CONST_PATH_LEN)        :: runofffile
+    character(len=LIS_CONST_PATH_LEN)        :: runofffile, pifile, oqfile
     integer              :: nlctypes ! non-crop land cover types
     ! __________________________________________________________
 
@@ -309,8 +311,16 @@ contains
             label="Irrigation runoff recycle input file:",rc=rc)
        call LIS_verify(rc,&
             'Irrigation runoff recycle input file: option not specified in the config file')
+       call ESMF_ConfigGetAttribute(LIS_config,pifile,&
+            label="Irrigation optimized runoff recycle country file:",rc=rc)
+       call LIS_verify(rc,&
+            'Irrigation optimized runoff recycle country file: not specified in the config file')
+       call ESMF_ConfigGetAttribute(LIS_config,oqfile,&
+            label="Irrigation optimized runoff recycle index file:",rc=rc)
+       call LIS_verify(rc,&
+            'Irrigation optimized runoff recycle index file: not specified in the config file')
        allocate(irrigQRI(LIS_rc%npatch(n,LIS_rc%lsm_index)))
-       call get_qri(n, irrigQRI, runofffile)
+       call get_qri(n, irrigQRI, runofffile, pifile, oqfile)
 
        irrigQRIField = ESMF_FieldCreate(&
             grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
@@ -1291,18 +1301,30 @@ contains
 #endif
   end subroutine get_irrigType
 
-  subroutine get_qri(n, irrigQRI, runofffile)
-    ! Read in preprocessed country-level runoff fields from Irrigation and No irrigation LIS
-    ! simulations. Compute runoff recycle to irrigation ratio (QRI).
-    ! Irrigation Runoff input must be prepared for each run domain and set in config file.
-    ! In case of Noah, qs is very small and qsb is much larger, so use just qsb.
+  subroutine get_qri(n, irrigQRI, runofffile, pifile, oqfile)
+    ! This routine reads in preprocessed country-level runoff fields from Irrigation 
+    ! and No irrigation LIS simulations and compute runoff recycle to irrigation ratio (QRI).
+    ! Further, it reads in optimized QRI for selected countries and overwrites QRI.
+    ! QRI inputmust be prepared for each run domain and set in config file.
+    !
+    ! QRI is based on country total surface (Qs) and subsurface runoff (Qsb) annual total 
+    ! over irrigated area for the no-irrigation simulation and an irrigation simulation using 
+    ! one year simulation outputs.  In Noah and Noah-MP, qs is very small while qsb is much larger, 
+    ! thus QRI is computed as:
     !
     ! QRI = 1 – [total qsb from GLNoIrr (km3) / total qsb from GLIrr (km3)]
     !
-    ! 2025-05-13: reduce the unrecycled runoff fraction to 40% of the present value.
-    !             unrecycled runoff fraction = 1 – QRI
-    ! 2025-06-07: moved runofffile into config
-    ! 2025-07-08: added using optimized QRI read in from a CSV file
+    ! Initial QRI was unable to close a gap in irrigation water volume (IWV) 
+    ! compared to AQUASTAT data across dominantly paddy countries.  Optimization of QRI was 
+    ! performed using a test simulation and extrapolating a formula for QRI and 
+    ! IWV relationship.  In the test simulation, we reduced the unrecycled runoff 
+    ! fraction to 40% of the present value.  The unrecycled runoff fraction = 1 – QRI.  
+    ! For example, if QRI is initially 0.9, then the new QRI would be 0.96.  
+    ! The final QRI is saved in a CSV spreadsheet that contains country ID, QRI, and 
+    ! ancillary information for the top 53 countries with high rice crop % and sizable IWV.  
+    ! For minimizing complication in reading with the Fortran routine, the country ID and QRI 
+    ! are split to separate CSV files each containing single variable.  
+    ! The csv file name and paths are specified in lis.config
     !
     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_fileIOMod
@@ -1385,8 +1407,8 @@ contains
        deallocate(country)
 
 !      read in Optimized QRI: optQRI(polyid)-- currently for 53 countries
-       pifile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/polyid.csv"
-       oqfile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/optQRI.csv"
+!       pifile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/polyid.csv"
+!       oqfile = "/discover/nobackup/projects/nca/GLDAS_MODEL/IRRIGATION/optQRI.csv"
        inquire(file=oqfile,exist=file_exists2)
        if(file_exists2) then
           write(LIS_logunit,*) "[INFO] Reading in optimized QRI file: ",trim(oqfile)

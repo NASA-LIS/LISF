@@ -11169,9 +11169,9 @@ Acceptable values are:
 |Value     | Description
 
 |none      | No irrigation scheme
-|Sprinkler | sprinkler scheme
-|Flood     | flood scheme
-|Drip      | drip scheme
+|Sprinkler | sprinkler scheme only
+|Flood     | flood scheme only
+|Drip      | drip scheme only
 |Concurrent  | sprinkler, drip, flood, and paddy simultaneously
 |====
 
@@ -11251,6 +11251,8 @@ Acceptable values are:
 `Country level crop irrigtype file:` specifies the location of the US county and World countries irrigation type file. Invoked with `distribute` mapping method.
 
 `Irrigation runoff recycle input file:` specifies the location of the precomputed runoff recycling index data file. Invoked with `concurrent` irrigation scheme used in the paddy scheme.
+`Irrigation optimized runoff recycle country file:` specifies the location of the precomputed optimized runoff recycling country index data file. Invoked with `concurrent` irrigation scheme used in the paddy scheme.
+`Irrigation optimized runoff recycle index file:` specifies the location of the precomputed optimized runoff recycling index data file. Invoked with `concurrent` irrigation scheme used in the paddy scheme.
 
 `Crop Calendar use:` specifies the mothod for growing season determination.
 Acceptable values are:
@@ -11277,6 +11279,8 @@ Irrigation max root depth file:
 Irrigation type to crop mapping method: "distribute"
 Country level crop irrigtype file:
 Irrigation runoff recycle input file:
+Irrigation optimized runoff recycle country file:
+Irrigation optimized runoff recycle index file:
 Crop Calendar use:   "MIRCA"
 Crop seasons:         2
 ....
