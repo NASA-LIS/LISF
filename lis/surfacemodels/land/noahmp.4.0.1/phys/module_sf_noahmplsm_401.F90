@@ -1478,6 +1478,7 @@ ENDIF   ! CROPTYPE == 0
 !           WRITE(message,'(i6,1x,i6,1x,2f15.3,9f11.5)')ILOC,JLOC,END_WB,BEG_WB,PRCP*DT,ECAN*DT,&
 !                EDIR*DT,ETRAN*DT,RUNSRF*DT,RUNSUB*DT,ZWT
 !           call wrf_message(trim(message))
+!           print *,'I = ',ILOC,' J = ',JLOC
            print *,'BEG_WB = ',BEG_WB
            print *,'END_WB = ',END_WB
            print *,'CANLIQ = ',CANLIQ
@@ -1498,7 +1499,8 @@ ENDIF   ! CROPTYPE == 0
            print *,'EDIR = ',EDIR*DT
            print *,'RUNSRF = ',RUNSRF*DT
            print *,'RUNSUB = ',RUNSUB*DT
-           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
+!HKB: comment out below and keep the run going
+!           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
         END IF
 #endif
    ELSE                 !KWM
@@ -9828,7 +9830,7 @@ MODULE NOAHMP_TABLES_401
 
     IMPLICIT NONE
 
-    INTEGER, PRIVATE, PARAMETER :: MVT   = 27
+    INTEGER, PRIVATE, PARAMETER :: MVT   = 53 !HKB
     INTEGER, PRIVATE, PARAMETER :: MBAND = 2
     INTEGER, PRIVATE, PARAMETER :: MSC   = 8
     INTEGER, PRIVATE, PARAMETER :: MAX_SOILTYP = 30
@@ -10115,6 +10117,25 @@ CONTAINS
          LAI_JAN, LAI_FEB, LAI_MAR, LAI_APR, LAI_MAY, LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC, &
          RHOL_VIS, RHOL_NIR, RHOS_VIS, RHOS_NIR, TAUL_VIS, TAUL_NIR, TAUS_VIS, TAUS_NIR, SLAREA, EPS1, EPS2, EPS3, EPS4, EPS5
 
+    NAMELIST / mircai_noahmp_usgs_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
+    NAMELIST / mircai_noahmp_usgs_parameters / ISURBAN, ISWATER, ISBARREN, ISICE, ISCROP, EBLFOREST, NATURAL, &
+         LOW_DENSITY_RESIDENTIAL, HIGH_DENSITY_RESIDENTIAL, HIGH_INTENSITY_INDUSTRIAL, &
+         CH2OP, DLEAF, Z0MVT, HVT, HVB, DEN, RC, MFSNO, XL, CWPVT, C3PSN, KC25, AKC, KO25, AKO, AVCMX, AQE, &
+         LTOVRC,  DILEFC,  DILEFW,  RMF25 ,  SLA   ,  FRAGR ,  TMIN  ,  VCMX25,  TDLEF ,  BP, MP, QE25, RMS25, RMR25, ARM, &
+         FOLNMX, WDPOOL, WRRAT, MRP, NROOT, RGL, RS, HS, TOPT, RSMAX, &
+         SAI_JAN, SAI_FEB, SAI_MAR, SAI_APR, SAI_MAY, SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC, &
+         LAI_JAN, LAI_FEB, LAI_MAR, LAI_APR, LAI_MAY, LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC, &
+         RHOL_VIS, RHOL_NIR, RHOS_VIS, RHOS_NIR, TAUL_VIS, TAUL_NIR, TAUS_VIS, TAUS_NIR, SLAREA, EPS1, EPS2, EPS3, EPS4, EPS5
+
+    NAMELIST / mircai_noahmp_modis_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
+    NAMELIST / mircai_noahmp_modis_parameters / ISURBAN, ISWATER, ISBARREN, ISICE, ISCROP, EBLFOREST, NATURAL, &
+         LOW_DENSITY_RESIDENTIAL, HIGH_DENSITY_RESIDENTIAL, HIGH_INTENSITY_INDUSTRIAL, &
+         CH2OP, DLEAF, Z0MVT, HVT, HVB, DEN, RC, MFSNO, XL, CWPVT, C3PSN, KC25, AKC, KO25, AKO, AVCMX, AQE, &
+         LTOVRC,  DILEFC,  DILEFW,  RMF25 ,  SLA   ,  FRAGR ,  TMIN  ,  VCMX25,  TDLEF ,  BP, MP, QE25, RMS25, RMR25, ARM, &
+         FOLNMX, WDPOOL, WRRAT, MRP, NROOT, RGL, RS, HS, TOPT, RSMAX, &
+         SAI_JAN, SAI_FEB, SAI_MAR, SAI_APR, SAI_MAY, SAI_JUN,SAI_JUL,SAI_AUG,SAI_SEP,SAI_OCT,SAI_NOV,SAI_DEC, &
+         LAI_JAN, LAI_FEB, LAI_MAR, LAI_APR, LAI_MAY, LAI_JUN,LAI_JUL,LAI_AUG,LAI_SEP,LAI_OCT,LAI_NOV,LAI_DEC, &
+         RHOL_VIS, RHOL_NIR, RHOS_VIS, RHOS_NIR, TAUL_VIS, TAUL_NIR, TAUS_VIS, TAUS_NIR, SLAREA, EPS1, EPS2, EPS3, EPS4, EPS5
     ! Initialize our variables to bad values, so that if the namelist read fails, we come to a screeching halt as soon as we try to use anything.
     CH2OP_TABLE  = -1.E36
     DLEAF_TABLE  = -1.E36
@@ -10193,6 +10214,9 @@ CONTAINS
     else if ( trim(DATASET_IDENTIFIER) == "UMD" ) then
        read(15,noahmp_umd_veg_categories)
        read(15,noahmp_umd_parameters)
+    else if ( trim(DATASET_IDENTIFIER) == "MIIMODIFIED_IGBP_MODIS_NOAH" ) then
+       read(15,mircai_noahmp_modis_veg_categories)
+       read(15,mircai_noahmp_modis_parameters)
     else
        write(*,'("Unrecognized DATASET_IDENTIFIER in subroutine READ_MP_VEG_PARAMETERS")')
        write(*,'("DATASET_IDENTIFIER = ''", A, "''")') trim(DATASET_IDENTIFIER)

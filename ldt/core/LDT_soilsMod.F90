@@ -2056,6 +2056,7 @@ contains
 !EOP
     integer      :: n
     integer      :: ftn
+    integer      :: ierr
 
     if(LDT_LSMparam_struc(n)%texture%selectOpt.eq.1) then
        call LDT_writeNETCDFdata(n,ftn,LDT_LSMparam_struc(n)%texture)
@@ -2110,6 +2111,7 @@ contains
     integer      :: ftn
     integer      :: flag
     integer      :: nc,nr
+    integer      :: ierr
 
     !write SCT_DOM
     nr=size(LDT_LSMparam_struc(n)%sctdom%value,1)

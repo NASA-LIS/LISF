@@ -17,6 +17,7 @@ module LIS_lsmirrigation_pluginMod
 !
 ! !REVISION HISTORY:
 !  13 Nov 2012    Sujay Kumar  Initial Specification
+!  18 Mar 2020    Sarith Mahanam  Added concurrent method
 !  16 Sep 2026    Cenlin He  Added NoahMP 5.0
 !
   implicit none
@@ -47,6 +48,14 @@ contains
     external noah33_getirrigationstates
 #endif
 
+#if ( defined SM_NOAH_3_6 )
+   external noah36_getirrigationstates
+#endif
+
+#if ( defined SM_NOAH_3_9 )
+   external noah39_getirrigationstates
+#endif
+
 #if ( defined SM_CLSM_F2_5 )
     external clsmf25_getirrigationstates
 #endif
@@ -67,10 +76,48 @@ contains
     external noahmp50_getirrigationstates
 #endif
 
+#if ( defined IRR_CONCURRENT )
+#if ( defined SM_NOAH_3_3 )
+   call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),noah33_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),noah39_getirrigationstates)
+#endif
+
+#if ( defined SM_CLSM_F2_5 )
+   call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),clsmf25_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),NoahMP36_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsmirrigationgetstates(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),NoahMP401_getirrigationstates)
+#endif
+#endif
+
 #if ( defined IRR_SPRINKLER )
 #if ( defined SM_NOAH_3_3 )
     call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
          trim(LIS_sprinklerIrrigationId)//char(0),noah33_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_sprinklerIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_sprinklerIrrigationId)//char(0),noah39_getirrigationstates)
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -105,6 +152,14 @@ contains
     call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
          trim(LIS_floodIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_floodIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_floodIrrigationId)//char(0),noah39_getirrigationstates)
+#endif
 
 #if ( defined SM_CLSM_F2_5 )
     call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
@@ -137,6 +192,14 @@ contains
     call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
          trim(LIS_dripIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_dripIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_dripIrrigationId)//char(0),noah39_getirrigationstates)
+#endif
 
 #if ( defined SM_CLSM_F2_5 )
     call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
@@ -146,11 +209,6 @@ contains
 #if ( defined SM_RUC_3_7 )
     call registerlsmirrigationgetstates(trim(LIS_ruc37Id)//"+"//&
          trim(LIS_dripIrrigationId)//char(0),ruc37_getirrigationstates)
-#endif
-
-#if ( defined SM_NOAHMP_3_6 )
-    call registerlsmirrigationgetstates(trim(LIS_noahmp36Id)//"+"//&
-         trim(LIS_dripIrrigationId)//char(0),NoahMP36_getirrigationstates)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
