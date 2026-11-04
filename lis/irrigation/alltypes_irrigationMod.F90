@@ -1363,7 +1363,8 @@ contains
        ios = nf90_open(path=trim(runofffile),mode=NF90_NOWRITE,ncid=nid)
        call LIS_verify(ios,'Error in nf90_open in the lis input netcdf file')
 
-       write(LIS_logunit,*) "[INFO] Reading in the runoff ratio field ... "
+       write(LIS_logunit,*) "[INFO] Reading in the runoff ratio field ", &
+          trim(runofffile)
 
        allocate(irr_qsb(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        allocate(noirr_qsb(LIS_rc%gnc(n),LIS_rc%gnr(n)))
