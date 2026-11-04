@@ -3332,6 +3332,10 @@ Regional mask resolution (dy):        0.01</pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CONSTANT</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Ability to set a constant crop type for a set classification.</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MIRCA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MIRCA2000 crop type maps. For more info, please refer to Portmann et al. (2010).</p></td>
+</tr>
 </tbody>
 </table>
 <div class="literalblock">
@@ -3371,6 +3375,14 @@ Regional mask resolution (dy):        0.01</pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">FAOSTAT05</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">175 classes; Used by Monfreda et al. (2008)</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MIRCA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">26 classes; Used by Portmann et al. (2010)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MIRCA52</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">26 classes for irrigated and rainfed, total of 52 classes.</p></td>
+</tr>
 </tbody>
 </table>
 <div class="literalblock">
@@ -3389,16 +3401,13 @@ Regional mask resolution (dy):        0.01</pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>Assign crop value type:</code> specifies the type of crop presence, such as a &#8220;single&#8221; crop or &#8220;multiple&#8221; crops given within a gridcell.  Currently, only the &#8220;single&#8221; option is supported.</p>
+<p><code>Assign crop value type:</code> specifies the type of crop presence, such as a &#8220;single&#8221; crop or &#8220;multiple&#8221; crops given within a gridcell.  Currently, only the &#8220;single&#8221; option is supported. &#8220;none&#8221; assigns crop types specified by <code>Crop type data source:</code>.</p>
 </div>
 <div class="literalblock">
 <div class="title">Example <em>ldt.config</em> entry</div>
 <div class="content">
 <pre>Assign crop value type:    "none"</pre>
 </div>
-</div>
-<div class="paragraph">
-<p><code>Assign single crop value:</code> specifies whether to assign a single crop value from an actual crop library inventory, such as FAOSTAT01, which is also known as the CROPMAP classification used in Ozdogan et al. (2010).  By turning on this option (.true.), you can they specify what type of crop you want to assign, like &#8220;maize&#8221; to the user-specified option, <code>Default crop type:</code>. If &#8220;maize&#8221; was entered, then wherever the landcover map indicated a generic &#8220;cropland&#8221;, the crop type field would be given a dominant &#8220;maize&#8221; type.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -3413,20 +3422,22 @@ Regional mask resolution (dy):        0.01</pre>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">.false.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Do not assign a single crop class to the crop type field.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">no crop type</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">.true.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Assign a single crop type, like &#8220;maize&#8221; to the crop type field.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">single</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">force single crop type</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">multiple</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">force multiple crop type</p></td>
 </tr>
 </tbody>
 </table>
-<div class="literalblock">
-<div class="title">Example <em>ldt.config</em> entry</div>
-<div class="content">
-<pre>Assign single crop value:     .true.</pre>
-</div>
+<div class="paragraph">
+<p>By setting <code>Assign crop value type:</code> &#8220;single&#8221;, you can specify what type of crop you want to assign, like &#8220;maize&#8221; to the user-specified option.
+<code>Default crop type:</code>. If &#8220;maize&#8221; was entered, then wherever the landcover map indicated a generic &#8220;cropland&#8221;, the crop type field would be given a dominant &#8220;maize&#8221; type.</p>
 </div>
 <div class="paragraph">
 <p><code>Default crop type:</code> specifies the default crop type that the user can enter and can be used in conjunction with assigning a single crop type value (see above).</p>
@@ -3473,22 +3484,12 @@ Regional mask resolution (dy):        0.01</pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">tile</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Read in tiled data or upscale by estimating gridcell fractions</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">average</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Upscale by averaging pixels for each gridcell</p></td>
+</tr>
 </tbody>
 </table>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-LIS will be expecting &#8220;mode&#8221; or dominant crop type per
-gridcell at this time. Future versions will include landcover-crop tile
-options.
-</td>
-</tr>
-</table>
-</div>
 <div class="literalblock">
 <div class="title">Example <em>ldt.config</em> entry</div>
 <div class="content">
@@ -3503,16 +3504,22 @@ options.
 <col style="width: 50%;">
 <col style="width: 50%;">
 </colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">not used</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">GRIPC</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Irrigation map, by Salmon (2013).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AQUASTAT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Irrigated areas by type (drip, flood, and sprinkler), by FAO.</p></td>
 </tr>
 </tbody>
 </table>
@@ -3526,7 +3533,7 @@ options.
 <p><code>Irrigation type map:</code> specifies the location of an irrigation type file. This file contains different irrigation categories (types) that can be used in conjunction with an irrigation fraction map.</p>
 </div>
 <div class="paragraph">
-<p>A special land-use/irrigation-related map, known as the Global Rain-Fed, Irrigated, and Paddy Croplands (GRIPC) Dataset (Salmon, 2013), has also been implemented as an option to LDT. Currently, no models in LIS utilize this map but opportunities exist for the user community to utilize for their landcover and irrigation modeling needs.</p>
+<p>A special land-use/irrigation-related map, known as the Global Rain-Fed, Irrigated, and Paddy Croplands (GRIPC) Dataset (Salmon, 2013), has also been implemented as an option to LDT. GRIPC provides crop water resources whose pixels are labeled as 1 = Rain-fed croplands, 2 = Irrigated croplands, 3 = Paddy croplands, and 4 = Not cropped.  The Irrigated croplands need to be mapped into irrigation method types via <code>Assign irrigation type:</code> and <code>Assign sprinkler fraction:</code>.</p>
 </div>
 <div class="literalblock">
 <div class="title">Example <em>ldt.config</em> entry</div>
@@ -3574,7 +3581,49 @@ options.
 </div>
 </div>
 <div class="paragraph">
-<p><code>Irrigation fraction data source:</code> specifies the irrigation method type dataset source to be read in. Current source options include:</p>
+<p><code>Assign irrigation type:</code> specifies irrigation types of sprinkler, drip, and flood for corresponding crop water source information provided by GRIPC. Applicable when GRIPC is chosen for <code>Irrigation type data source:</code>.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sprinkler</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">assign as sprinkler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">drip</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">assign as drip</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sprinkler+drip</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">assign a fraction as sprinkler specified in <code>Assign sprinkler fraction</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Assign irrigation type:  "sprinkler"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Assign sprinkler fraction:</code> specifies a fraction of sprinkler+drip, ranging 0-1.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Assign sprinkler fraction:  0.5</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Irrigation fraction data source:</code> specifies the irrigation area dataset source to be read in. Current source options include:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -3599,6 +3648,10 @@ options.
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">UserDerived</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">User derived irrigation fraction map</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GIA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Irrigation area fraction map by Meier et al (2018)</p></td>
 </tr>
 </tbody>
 </table>
@@ -3694,6 +3747,41 @@ Irrigation fraction resolution (dy):       0.2500</pre>
 </div>
 </div>
 <div class="paragraph">
+<p><code>Irrigation fraction type option:</code> specifies the irrigation method type if GRIPC is selected as <code>Irrigation fraction data source</code>. GRIPC pixels are labeled as 1 = Rain-fed croplands, 2 = Irrigated croplands, 3 = Paddy croplands, and 4 = Not cropped. Irrigation fraction is computed based on the fraction of Irrigated croplands (= sprinkler), Paddy Croplands (= paddy), or a sum of Irrigated and Paddy croplands ove the total pixels.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sprinkler</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sprinkler irrigation type, default.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">paddy</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">paddy irrigation type.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sprinkler+paddy</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">a sum of sprinkler and paddy irrigation types.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Irrigation fraction type option:  "sprinkler+paddy"</pre>
+</div>
+</div>
+<div class="paragraph">
 <p><code>Groundwater irrigation ratio map:</code> specifies the location of a groundwater irrigation fraction map file. This file contains the ratio (gridcell-based) that partitions the simulated irrigation water amount into groundwater source.</p>
 </div>
 <div class="literalblock">
@@ -3739,6 +3827,103 @@ Irrigation fraction resolution (dy):       0.2500</pre>
 <div class="title">Example ldt.config entry</div>
 <div class="content">
 <pre>Groundwater irrigation ratio spatial transform: bilinear</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Merge crop and irrigation information:</code> specifies whether to enable adding another dataset to be merged with those currently selected for <code>Irrigation fraction data source</code> and <code>Crop type data source</code> (i.e. merge GRIPC with GIA and MIRCA).  The primary irrigation fraction is separated into irrigated and paddy fractions.  Further, non-rice crops and rice fractions are adjusted to match irrigation and paddy, as well as rainfed crops are adjusted to rainfed area fractions. In older code logic, irrigation map was independent of land cover/crop data, thus irrigation fraction had to be scaled and assigned for appropriate vegetation tiles in LIS.  This “Merge” step replaces it and is now done in LDT.  If additional source to be merged is not present, it aligns Irrigation fraction data source with crop type data source and landcover data source via <code>Crop irrigation merge data source:</code>.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Merge crop and irrigation information:   .false.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Crop irrigation merge data source:</code> specifies the additional dataset to be merged with the irrigation fraction and crop type data.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GRIPC</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">originally designed for merging GIA, GRIPC, and MIRCA datasets.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Crop irrigation merge data source:  "GRIPC"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Crop irrigation merge data map:</code> specifies the additional irrigation map file.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Crop irrigation merge data map:   ./irrigtype_salmon2013_gia_ricemask.flt</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Crop irrigation merge data spatial transform:</code> specifies spatial trasformation method for the additional irrigation map file. Currently, tile is the default.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Crop irrigation merge data spatial trasform:   tile</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Crop Calendar information:</code> specifies whether to enable processing crop calendar information.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Crop Calendar information: .false.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Crop Calendar data source:</code> specifies crop calendar data to be processed. Currently, only MIRCA is supported.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Crop Calendar data source:  "MIRCA"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Crop Calendar data map:</code> specifies crop calendar map to be read in. It is a place holder for future option.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Crop Calendar data map:  "none"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Crop Calendar data spatial transform:</code> specifies spatial transformation method for crop calendar data processing. It is a place holder for future option.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Crop Calendar data spatial transform:  "average"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Multiple Cropping Max Seasons:</code> specifies the number of seasons for multiple cropping.  Currently, the routine is hard-coded for 2 seasons.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Multiple Cropping Max Seasons:  2</pre>
 </div>
 </div>
 </div>
@@ -18502,7 +18687,7 @@ There were no public releases for versions 7.6 or 7.7.
 <div id="footer">
 <div id="footer-text">
 Version 7.0<br>
-Last updated 2026-11-03 17:24:31 UTC
+Last updated 2026-11-04 12:46:35 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

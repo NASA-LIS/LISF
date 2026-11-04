@@ -20219,11 +20219,19 @@ Acceptable values are:</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Sprinkler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Demand sprinkler scheme</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sprinkler scheme only</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Flood</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Demand flood scheme</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">flood scheme only</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Drip</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">drip scheme only</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Concurrent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sprinkler, drip, flood, and paddy simultaneously</p></td>
 </tr>
 </tbody>
 </table>
@@ -20236,23 +20244,7 @@ interval for irrigation.</p>
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
-<p><code>Irrigation threshold:</code> defines the irrigation trigger
-threshold for the flood and sprinkler irrigation schemes.</p>
-</div>
-<div class="paragraph">
-<p><code>Irrigation max soil layer depth:</code> specifies the maximum soil layer depth.  Defaults to 1 layer.</p>
-</div>
-<div class="paragraph">
-<p><code>Sprinkler irrigation max root depth file:</code> specifies the
-location of the max root depth file for sprinkler irrigation.</p>
-</div>
-<div class="paragraph">
-<p><code>Flood irrigation max root depth file:</code> specifies the
-location of the max root depth file for flood irrigation.</p>
-</div>
-<div class="paragraph">
-<p><code>Drip irrigation max root depth file:</code> specifies the
-location of the max root depth file for drip irrigation.</p>
+<p><code>Irrigation max root depth file:</code> specifies the location of the max root depth file. One file applies for all irrigation schemes.</p>
 </div>
 <div class="paragraph">
 <p><code>Irrigation GVF parameter 1:</code> specifies growing season for
@@ -20362,22 +20354,141 @@ Acceptable values are:</p>
 <div class="paragraph">
 <p>Defaults to 0.</p>
 </div>
+<div class="paragraph">
+<p><code>Irrigation type to crop mapping method:</code> specifies the mothod for mapping irrigation type grid fractions onto crop tiles.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">single</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">assign a single type controlled in LDT</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">dominant</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">assign dominant type</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">distribute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use distribution algorithm in Rodell et al 2026.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>Country level crop irrigtype file:</code> specifies the location of the US county and World countries irrigation type file. Invoked with <code>distribute</code> mapping method.</p>
+</div>
+<div class="paragraph">
+<p><code>Irrigation runoff recycle input file:</code> specifies the location of the precomputed runoff recycling index data file. Invoked with <code>concurrent</code> irrigation scheme used in the paddy scheme.
+<code>Irrigation optimized runoff recycle country file:</code> specifies the location of the precomputed optimized runoff recycling country index data file. Invoked with <code>concurrent</code> irrigation scheme used in the paddy scheme.
+<code>Irrigation optimized runoff recycle index file:</code> specifies the location of the precomputed optimized runoff recycling index data file. Invoked with <code>concurrent</code> irrigation scheme used in the paddy scheme.</p>
+</div>
+<div class="paragraph">
+<p><code>Crop Calendar use:</code> specifies the mothod for growing season determination.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vegetation based as in Ozdogan et al 2010.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MIRCA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">crop calendar from MIRCA</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>Crop seasons:</code> specifies the number of multiple cropping seasons when using crop calendar. It must match the value set for <code>Multiple Cropping Max Seasons</code> in LDT configuration. Default is 2.</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
 <pre>Irrigation scheme:            "none"
 Irrigation output interval:   "1da"
-Irrigation threshold:          0.50
-Irrigation max soil layer depth: 1
-Sprinkler irrigation max root depth file:
-Flood irrigation max root depth file:
-Drip irrigation max root depth file:
 Irrigation GVF parameter 1: 0.40
 Irrigation GVF parameter 2: 0.00
 Irrigation scheduling based on dynamic vegetation: 0
 Groundwater abstraction for irrigation: 0
-Irrigation source water partition: 0</pre>
+Irrigation source water partition: 0
+Irrigation max root depth file:
+Irrigation type to crop mapping method: "distribute"
+Country level crop irrigtype file:
+Irrigation runoff recycle input file:
+Irrigation optimized runoff recycle country file:
+Irrigation optimized runoff recycle index file:
+Crop Calendar use:   "MIRCA"
+Crop seasons:         2</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The following common options are applied for Sprinker, Drip, and Flood scheme.  They can be varied by scheme and set in the config file to represent different agricultural practices. Irrigation trigger options include 1. soil moisture availability and 2. Schedule where the former is considered soil moisture deficit (natural) and the latter as manamement (human) requirement.  Irrigation amount is determined by 1. Deficit and 2. Prescribed options. For Flood scheme, irrigation water can be applied to either surface layer only or multiple layers. Rodell et al 2026 used Schedule irrigation trigger, Prescribed irrigation amount, and applied irrigation in the surface soil layer for Flood. For Deficit based irrigation, use <code>on schedule: 0</code>, <code>fixed rate: 0</code>, and <code>frequency: 0</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>Irrigation threshold for Sprinkler/Drip/Flood:</code> defines the irrigation trigger threshold (fraction) for each irrigation scheme. Required for all.</p>
+</div>
+<div class="paragraph">
+<p><code>Irrigation Sprinkler/Drip/Flood start time:</code> specifies local time of start for irrigation, for example 6 am. Checked daily. Required for all.</p>
+</div>
+<div class="paragraph">
+<p><code>Irrigation Sprinkler/Drip/Flood duration:</code> specifies duration of irrigation per day, for example 4 hours.  It is used to compute the rate of irrigation if the amount is based on Deficit. If the amount is prescribed, the irrigation occurs for the duration of time since <code>start time</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>Irrigation Sprinkler/Drip/Flood efficiency:</code> specifies the % loss due to field or equipment.  Applicble values range from 0 to 100 (%) where 0 means no loss, 25 means 75 % efficient, which would increase the irrigation water amount by apply 125% of water to offset 25% loss.</p>
+</div>
+<div class="paragraph">
+<p><code>Irrigation Sprinkler/Drip/Flood on schedule:</code> specifies option for irrigation trigger.  Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">deficit based on soil moisture availability</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scheduled</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>Irrigation Sprinkler/Drip/Flood fixed rate:</code> specifies a prescribed irrigation rate in mm/hr.  If it is set to zero, the model uses Deficit irrigation amount that is dynamically computed based on the soil moisture availability and duration.</p>
+</div>
+<div class="paragraph">
+<p><code>Irrigation Sprinkler/Drip/Flood frequency:</code> specifies the number of days that takes a single irrigation event to complete.  For example, it takes 2.5 days to complete with pivot center irrigation. It also means the sprinkler irrigation event occurs every 2.5 days or longer.</p>
+</div>
+<div class="paragraph">
+<p>`Irrigation Flood max soil layer depth:`specifies the maximum soil layer depth.  Defaults to 1 layer. Applicable to Flood scheme only.</p>
 </div>
 </div>
 <div class="sect2">
@@ -26717,7 +26828,7 @@ See LIS' Developer&#8217;s Guide for more details.</p>
 <div id="footer">
 <div id="footer-text">
 Version 7.0<br>
-Last updated 2026-11-03 17:24:31 UTC
+Last updated 2026-11-04 12:46:35 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
