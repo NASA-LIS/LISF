@@ -1,0 +1,21 @@
+LIS Test Case for "Add multiple irrigation scheme support in LIS"-- Github issue #107
+-------------------------------------------------------------------------------------------------
+
+This test-case performs a global 0.25 degree simulation with the
+Noah 3.6 land surface model from 2000-01-01 through 2000-01-10 using
+Princeton forcing data. This case demonstrates the concurrent irrigation 
+without the new groundwater abstraction features. Test cases are provided for
+the GLIrr simulation used in Rodell et al. 2026 JAMES paper.
+
+This directory contains:
+
+* this README file.
+* it requres LIS to be compiled in multiple processor mode and the testcase used 120 processors for the global domain. See the job script run_lis.job.
+* the lis.config file used for this test case.
+* input directory with all input files that are needed to run this test case.
+* TARGET_OUTPUT directory with LIS model output and log files by this test case.
+* output_lsm.ctl GrADS description files for viewing the LSM output data.
+* output_irr.ctl GrADS description files for viewing the irrigation output data.
+* testcase_lsm.ctl GrADS description files for viewing the LSM output data in the TARGET_OUTPUT directory.
+* testcase_irr.ctl GrADS description files for viewing the irrigation output data in the TARGET_OUTPUT directory.
+* lis.config_sprinkler shows the configuration of Ozdogan et al 2010 case using previously avaiable options (i.e. Sprinkler).
