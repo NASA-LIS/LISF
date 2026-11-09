@@ -10,17 +10,17 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 module LDT_paramProcMod
-!BOP
-!
-! !MODULE: LDT_paramProcMod
-! 
-! !DESCRIPTION: 
-!   The code in this file provides interfaces to manages different running
-!   domain implementations
-!
-! !REVISION HISTORY: 
-!  02 Apr 2012:  Sujay Kumar;  Initial Specification
-! 
+  !BOP
+  !
+  ! !MODULE: LDT_paramProcMod
+  !
+  ! !DESCRIPTION:
+  !   The code in this file provides interfaces to manages different running
+  !   domain implementations
+  !
+  ! !REVISION HISTORY:
+  !  02 Apr 2012:  Sujay Kumar;  Initial Specification
+  !
   use ESMF
   use LDT_SurfaceTypeMod
   use LDT_LMLCMod
@@ -31,21 +31,15 @@ module LDT_paramProcMod
   use LDT_vegdataMod
   use LDT_topoMod
   use LDT_glacierMod
-  use LDT_glacierFractionMod 
-
+  use LDT_glacierFractionMod
   use LDT_LSMparamProcMod
   use LDT_routingParamProcMod
   use LDT_lakeParamProcMod
   use LDT_openwaterMod
-
   use LDT_metforcingParmsMod
-
   use LDT_climateParmsMod
   use LDT_irrigationMod
   use LDT_LSMCropModifier_Mod
-
-!  use LDT_metforcingParmsMod
-
   use LDT_logMod
   use LDT_paramDataMod
   use LDT_OPTUEMod
@@ -56,170 +50,165 @@ module LDT_paramProcMod
 
   implicit none
   PRIVATE
-!-----------------------------------------------------------------------------
-! !PUBLIC MEMBER FUNCTIONS:
-!-----------------------------------------------------------------------------
+  !-----------------------------------------------------------------------------
+  ! !PUBLIC MEMBER FUNCTIONS:
+  !-----------------------------------------------------------------------------
   public :: LDT_paramProcConfig
-  public :: LDT_paramProcInit   
-  public :: LDT_readProcParamInit   
+  public :: LDT_paramProcInit
+  public :: LDT_readProcParamInit
   public :: LDT_paramProcWriteHeader
   public :: LDT_paramProcWrite
   public :: LDT_paramProcWriteFinalize
-!EOP
+  !EOP
 
-!BOP 
-! 
-! !ROUTINE: LDT_paramProcWriteHeader 
-! \label{LDT_paramProcWriteHeader}
-! 
-! !INTERFACE:
+  !BOP
+  !
+  ! !ROUTINE: LDT_paramProcWriteHeader
+  ! \label{LDT_paramProcWriteHeader}
+  !
+  ! !INTERFACE:
   interface LDT_paramProcWriteHeader
-! !PRIVATE MEMBER FUNCTIONS: 
+     ! !PRIVATE MEMBER FUNCTIONS:
      module procedure paramProcWriteHeader_LIS
      module procedure paramProcWriteHeader_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for writing NETCDF header both 
-! in the standard preprocessing mode for LIS  as well as in the 
-! LISHydro(WRFHydro) preprocessing mode.
-!EOP 
-  end interface
+     !
+     ! !DESCRIPTION:
+     ! This interface provides routines for writing NETCDF header both
+     ! in the standard preprocessing mode for LIS  as well as in the
+     ! LISHydro(WRFHydro) preprocessing mode.
+     !EOP
+  end interface LDT_paramProcWriteHeader
 
-
-!BOP 
-! 
-! !ROUTINE: writeParamHeaders 
-! \label{writeParamHeaders}
-! 
-! !INTERFACE:
+  !BOP
+  !
+  ! !ROUTINE: writeParamHeaders
+  ! \label{writeParamHeaders}
+  !
+  ! !INTERFACE:
   interface writeParamHeaders
-! !PRIVATE MEMBER FUNCTIONS: 
+     ! !PRIVATE MEMBER FUNCTIONS:
      module procedure writeParamHeaders_LIS
      module procedure writeParamHeaders_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for writing NETCDF parameter headers both 
-! in the standard preprocessing mode for LIS  as well as in the 
-! LISHydro(WRFHydro) preprocessing mode. 
-!EOP 
-  end interface
+     !
+     ! !DESCRIPTION:
+     ! This interface provides routines for writing NETCDF parameter headers both
+     ! in the standard preprocessing mode for LIS  as well as in the
+     ! LISHydro(WRFHydro) preprocessing mode.
+     !EOP
+  end interface writeParamHeaders
 
-!BOP 
-! 
-! !ROUTINE: writeParamData
-! \label{writeParamData}
-! 
-! !INTERFACE:
+  !BOP
+  !
+  ! !ROUTINE: writeParamData
+  ! \label{writeParamData}
+  !
+  ! !INTERFACE:
   interface writeParamData
-! !PRIVATE MEMBER FUNCTIONS: 
+     ! !PRIVATE MEMBER FUNCTIONS:
      module procedure writeParamData_LIS
      module procedure writeParamData_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for writing parameter data both 
-! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
-! preprocessing mode. 
-!EOP 
-  end interface
+     !
+     ! !DESCRIPTION:
+     ! This interface provides routines for writing parameter data both
+     ! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro)
+     ! preprocessing mode.
+     !EOP
+  end interface writeParamData
 
-
-!BOP 
-! 
-! !ROUTINE: LDT_readParamSpecs 
-! \label{LDT_readParamSpecs}
-! 
-! !INTERFACE:
+  !BOP
+  !
+  ! !ROUTINE: LDT_readParamSpecs
+  ! \label{LDT_readParamSpecs}
+  !
+  ! !INTERFACE:
   interface LDT_readParamSpecs
-! !PRIVATE MEMBER FUNCTIONS: 
+     ! !PRIVATE MEMBER FUNCTIONS:
      module procedure readParamSpecs_LIS
      module procedure readParamSpecs_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for reading parameter specifications
-! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
-! preprocessing mode. 
-!EOP 
-  end interface
+     !
+     ! !DESCRIPTION:
+     ! This interface provides routines for reading parameter specifications
+     ! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro)
+     ! preprocessing mode.
+     !EOP
+  end interface LDT_readParamSpecs
 
-
-!BOP 
-! 
-! !ROUTINE: LDT_paramProcInit 
-! \label{LDT_paramProcInit}
-! 
-! !INTERFACE:
+  !BOP
+  !
+  ! !ROUTINE: LDT_paramProcInit
+  ! \label{LDT_paramProcInit}
+  !
+  ! !INTERFACE:
   interface LDT_paramProcInit
-! !PRIVATE MEMBER FUNCTIONS: 
+     ! !PRIVATE MEMBER FUNCTIONS:
      module procedure paramProcInit_LIS
      module procedure paramProcInit_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for parameter processing 
-! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
-! preprocessing mode.
-!EOP 
-  end interface
+     !
+     ! !DESCRIPTION:
+     ! This interface provides routines for parameter processing
+     ! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro)
+     ! preprocessing mode.
+     !EOP
+  end interface LDT_paramProcInit
 
-
-!BOP 
-! 
-! !ROUTINE: LDT_readProcParamInit 
-! \label{LDT_readProcParamInit}
-! 
-! !INTERFACE:
+  !BOP
+  !
+  ! !ROUTINE: LDT_readProcParamInit
+  ! \label{LDT_readProcParamInit}
+  !
+  ! !INTERFACE:
   interface LDT_readProcParamInit
-! !PRIVATE MEMBER FUNCTIONS: 
+     ! !PRIVATE MEMBER FUNCTIONS:
      module procedure readProcParamInit_LIS
      module procedure readProcParamInit_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for reading the configuration
-! options in the standard in LIS preprocessing mode as well as
-! in the LISHydro(WRFHydro) preprocessing mode. 
-!EOP 
-  end interface
+     !
+     ! !DESCRIPTION:
+     ! This interface provides routines for reading the configuration
+     ! options in the standard in LIS preprocessing mode as well as
+     ! in the LISHydro(WRFHydro) preprocessing mode.
+     !EOP
+  end interface LDT_readProcParamInit
 
-!BOP 
-! 
-! !ROUTINE: LDT_readProcParamWrite
-! \label{LDT_readProcParamWrite}
-! 
-! !INTERFACE:
+  !BOP
+  !
+  ! !ROUTINE: LDT_readProcParamWrite
+  ! \label{LDT_readProcParamWrite}
+  !
+  ! !INTERFACE:
   interface LDT_paramProcWrite
-! !PRIVATE MEMBER FUNCTIONS: 
+     ! !PRIVATE MEMBER FUNCTIONS:
      module procedure paramProcWrite_LIS
      module procedure paramProcWrite_LISHydro
-! 
-! !DESCRIPTION:
-! This interface provides routines for writing parameter data 
-! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro) 
-! preprocessing mode.
-!EOP 
-  end interface
+     !
+     ! !DESCRIPTION:
+     ! This interface provides routines for writing parameter data
+     ! in the standard LIS preprocessing mode as well as in the LISHydro(WRFHydro)
+     ! preprocessing mode.
+     !EOP
+  end interface LDT_paramProcWrite
 
 contains
 
-  
-!BOP
-! !ROUTINE: LDT_paramProcConfig
-! \label{LDT_paramProcConfig}
-!
-!  This subroutine handles reading in the path/name
-!   of the file to be written out containing processed
-!   parameters.  Also top allocate statements for 
-!   LSM parameter and forcing structures are set.
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: LDT_paramProcConfig
+  ! \label{LDT_paramProcConfig}
+  !
+  !  This subroutine handles reading in the path/name
+  !   of the file to be written out containing processed
+  !   parameters.  Also top allocate statements for
+  !   LSM parameter and forcing structures are set.
+  !
+  ! !INTERFACE:
   subroutine LDT_paramProcConfig()
 
-! !USES:
+    ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
     use LDT_logMod,  only : LDT_logunit, LDT_verify
     use LDT_paramMaskCheckMod
 
-    integer   :: n 
+    integer   :: n
     integer   :: rc
-! ____________________________________________
+    ! ____________________________________________
 
     allocate(LDT_LSMparam_struc(LDT_rc%nnest))
     allocate(LDT_rc%nmaskpts(LDT_rc%nnest))  ! Used mainly for CLSMF2.5
@@ -237,42 +226,43 @@ contains
 
   end subroutine LDT_paramProcConfig
 
-
-!BOP
-! !ROUTINE: paramProcInit_LIS
-! \label{paramProcInit_LIS}
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: paramProcInit_LIS
+  ! \label{paramProcInit_LIS}
+  !
+  ! !INTERFACE:
   subroutine paramProcInit_LIS()
 
-! !USES:
+    ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
     use LDT_logMod,  only : LDT_logunit, LDT_verify
     use LDT_paramMaskCheckMod
-!
-! !DESCRIPTION: 
-!
-! This subroutine specifies the iniitalization steps for parameter processing 
-! in the standard LIS preprocessing mode. 
-!  
-!EOP
+    !
+    ! !DESCRIPTION:
+    !
+    ! This subroutine specifies the iniitalization steps for parameter processing
+    ! in the standard LIS preprocessing mode.
+    !
+    !EOP
 
-    integer   :: n 
-! ____________________________________________
+    integer   :: n
+    ! ____________________________________________
 
     write(LDT_logunit,*) "LSM User-selected:  ",trim(LDT_rc%lsm)
 
     write(LDT_logunit,*) " - - - - - - MODEL PARAMETERS (NOT Selected) - - - - - - - "
 
- !- Read Parameter Source Options:
+    !- Read Parameter Source Options:
     call LDT_readParamSpecs()
 
- !- Set/read-in Parameter-Mask Fill Log File Path:
+    !- Set/read-in Parameter-Mask Fill Log File Path:
     call LDT_ParamMaskFill_Log()
 
-!-- Initialize and/or read in each parameter selected in ldt.config:
+    !-- Initialize and/or read in each parameter selected in ldt.config:
     call LDT_surfacetype_init
     call LDT_LMLC_init
+    call LDT_irrigation_init   !HKB: moved up before crop mapping
+    call LDT_LSMCropMod_init
     call LDT_lakeparams_init
     call LDT_openwater_init
     call LDT_glacier_init
@@ -285,49 +275,47 @@ contains
     call LDT_topo_init
     call LDT_LSMparams_init
 
- !- Meteorological forcing setup:
+    !- Meteorological forcing setup:
     call LDT_forcingparms_init
     call LDT_climateParms_init
 
     call LDT_routingParams_init
-    call LDT_irrigation_init
-    call LDT_LSMCropMod_init
 
   end subroutine ParamProcInit_LIS
 
-!BOP
-! !ROUTINE: paramProcInit_LISHydro
-! \label{paramProcInit_LISHydro}
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: paramProcInit_LISHydro
+  ! \label{paramProcInit_LISHydro}
+  !
+  ! !INTERFACE:
   subroutine paramProcInit_LISHydro(flag)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
     use LDT_logMod,  only : LDT_logunit, LDT_verify
     use LDT_paramMaskCheckMod
-!
-! !DESCRIPTION:
-! This subroutine specifies the iniitalization steps for parameter processing 
-! in the standard LIS preprocessing mode. 
-!EOP
+    !
+    ! !DESCRIPTION:
+    ! This subroutine specifies the iniitalization steps for parameter processing
+    ! in the standard LIS preprocessing mode.
+    !EOP
 
-    integer   :: n 
+    integer   :: n
     integer   :: rc
     integer   :: flag
-! ____________________________________________
+    ! ____________________________________________
 
     write(LDT_logunit,*) "LSM User-selected:  ",trim(LDT_rc%lsm)
 
     write(LDT_logunit,*) " - - - - - - MODEL PARAMETERS (NOT Selected) - - - - - - - "
 
- !- Read Parameter Source Options:
+    !- Read Parameter Source Options:
     call LDT_readParamSpecs(flag)
 
- !- Set/read-in Parameter-Mask Fill Log File Path:
+    !- Set/read-in Parameter-Mask Fill Log File Path:
     call LDT_ParamMaskFill_Log()
 
-!-- Initialize and/or read in each parameter selected in ldt.config:
+    !-- Initialize and/or read in each parameter selected in ldt.config:
     call LDT_surfacetype_init
     call LDT_LMLC_init(flag)
     call LDT_lakeparams_init
@@ -342,50 +330,49 @@ contains
     call LDT_topo_init
     call LDT_LSMparams_init(flag)
 
- !- Meteorological forcing setup:
+    !- Meteorological forcing setup:
     call LDT_forcingparms_init
     call LDT_climateParms_init
 
     call LDT_routingParams_init
     call LDT_irrigation_init
     call LDT_LSMCropMod_init
-    
 
   end subroutine paramProcInit_LISHydro
 
-!BOP
-! !ROUTINE: readProcParamInit_LIS
-! \label{readProcParamProcInit_LIS}
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: readProcParamInit_LIS
+  ! \label{readProcParamProcInit_LIS}
+  !
+  ! !INTERFACE:
   subroutine readProcParamInit_LIS()
 
-! !USES:
+    ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
     use LDT_logMod,  only : LDT_logunit, LDT_verify
     use LDT_paramMaskCheckMod
-!
-! !DESCRIPTION:
-!   This routine looks for which data sources to be
-!   read in, setting the filepath/name of the 
-!   parameter-mask data fill log, and sets the main
-!   non-LSM type parameters required to run LDT, in
-!   the standard preprocessing mode for LIS. 
-!
-!EOP
+    !
+    ! !DESCRIPTION:
+    !   This routine looks for which data sources to be
+    !   read in, setting the filepath/name of the
+    !   parameter-mask data fill log, and sets the main
+    !   non-LSM type parameters required to run LDT, in
+    !   the standard preprocessing mode for LIS.
+    !
+    !EOP
     integer   :: n
     integer   :: rc
-! ____________________________________________
+    ! ____________________________________________
 
     write(LDT_logunit,*) "[INFO] - - - - - - MODEL PARAMETERS (NOT Selected) - - - - - - - "
 
- !- Read Parameter Source Options:
+    !- Read Parameter Source Options:
     call LDT_readParamSpecs()
 
- !- Set/read-in Parameter-Mask Fill Log File Path:
+    !- Set/read-in Parameter-Mask Fill Log File Path:
     call LDT_ParamMaskFill_Log()
 
-!-- Initialize and/or read in each parameter selected in ldt.config:
+    !-- Initialize and/or read in each parameter selected in ldt.config:
     call LDT_surfacetype_init
     call LDT_LMLC_init
     call LDT_lakeparams_init
@@ -395,40 +382,40 @@ contains
 
   end subroutine ReadProcParamInit_LIS
 
-!BOP
-! !ROUTINE: readProcParamInit_LISHydro
-! \label{readProcParamInit_LISHydro}
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: readProcParamInit_LISHydro
+  ! \label{readProcParamInit_LISHydro}
+  !
+  ! !INTERFACE:
   subroutine readProcParamInit_LISHydro(flag)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
     use LDT_logMod,  only : LDT_logunit, LDT_verify
     use LDT_paramMaskCheckMod
-!
-! !DESCRIPTION:
-!   This routine looks for which data sources to be
-!    read in, setting the filepath/name of the 
-!    parameter-mask data fill log, and sets the main
-!    non-LSM type parameters required to run LDTm in
-!    the LIShydro preprocessing mode. 
-!
-!EOP
+    !
+    ! !DESCRIPTION:
+    !   This routine looks for which data sources to be
+    !    read in, setting the filepath/name of the
+    !    parameter-mask data fill log, and sets the main
+    !    non-LSM type parameters required to run LDTm in
+    !    the LIShydro preprocessing mode.
+    !
+    !EOP
     integer   :: n
     integer   :: rc
     integer   :: flag
-! ____________________________________________
+    ! ____________________________________________
 
     write(LDT_logunit,*) "[INFO] - - - - - - MODEL PARAMETERS (NOT Selected) - - - - - - - "
 
- !- Read Parameter Source Options:
+    !- Read Parameter Source Options:
     call LDT_readParamSpecs(flag)
 
- !- Set/read-in Parameter-Mask Fill Log File Path:
+    !- Set/read-in Parameter-Mask Fill Log File Path:
     call LDT_ParamMaskFill_Log()
 
-!-- Initialize and/or read in each parameter selected in ldt.config:
+    !-- Initialize and/or read in each parameter selected in ldt.config:
     call LDT_surfacetype_init
     call LDT_LMLC_init
     call LDT_lakeparams_init
@@ -438,33 +425,34 @@ contains
 
   end subroutine readProcParamInit_LISHydro
 
-!BOP
-! !ROUTINE: readParamSpecs_LIS
-! \label{readParamSpecs_LIS}
-!
-! !INTERFACE:
+  !BOP
+  ! !ROUTINE: readParamSpecs_LIS
+  ! \label{readParamSpecs_LIS}
+  !
+  ! !INTERFACE:
   subroutine readParamSpecs_LIS()
 
-! !DESCRIPTION:
-!   This routine specifies the names of the data 
-!   sources for each parameter type, in the standard
-!   preprocessing mode for LIS. 
-!
-! !USES:
+    ! !DESCRIPTION:
+    !   This routine specifies the names of the data
+    !   sources for each parameter type, in the standard
+    !   preprocessing mode for LIS.
+    !
+    ! !USES:
     use LDT_coreMod,  only : LDT_rc, LDT_config
     use LDT_domainMod,only : isSurfaceTypeSelected
 
-    integer             :: n 
+    integer             :: n
     integer             :: rc
     integer             :: m
     logical             :: const_lc
+    logical             :: crop_select
     character*50        :: const_lctype
     character*100       :: source
-! _________________________________________
+    ! _________________________________________
 
-! - Universal LSM-based parameters -
+    ! - Universal LSM-based parameters -
 
- !- Read in Landmask Data Source Option:
+    !- Read in Landmask Data Source Option:
     call ESMF_ConfigFindLabel(LDT_config,"Landmask data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
@@ -483,7 +471,7 @@ contains
             "REGIONMASK",source)
     enddo
 
- !- Read in Landcover Data Source option: 
+    !- Read in Landcover Data Source option:
     call ESMF_ConfigFindLabel(LDT_config,"Landcover data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
@@ -492,49 +480,49 @@ contains
           call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%landcover,&
                "LANDCOVER",source)
           call setLandcoverCategories(n,source)
-        ! Note: Landcover source/classification options will be merged 
-        !        and new options to be specified in future LDT versions.
+          ! Note: Landcover source/classification options will be merged
+          !        and new options to be specified in future LDT versions.
        endif
     enddo
-  ! CONSTANT LC Option: Read in associated landcover classification type: 
+    ! CONSTANT LC Option: Read in associated landcover classification type:
     const_lc = .false.
     do n=1,LDT_rc%nnest
-      if( LDT_LSMparam_struc(n)%landcover%source == "CONSTANT" ) then
-        const_lc = .true.
-      endif
+       if( LDT_LSMparam_struc(n)%landcover%source == "CONSTANT" ) then
+          const_lc = .true.
+       endif
     end do
     if( const_lc ) then
        call ESMF_ConfigFindLabel(LDT_config,"Landcover classification:",rc=rc)
        do n=1,LDT_rc%nnest
           if( LDT_LSMparam_struc(n)%landcover%source == "CONSTANT" ) then
-            call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lc_type(n),rc=rc)
-            call LDT_verify(rc,'Landcover classification: not specified')
-            select case( LDT_rc%lc_type(n) )
+             call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lc_type(n),rc=rc)
+             call LDT_verify(rc,'Landcover classification: not specified in config file')
+             select case( LDT_rc%lc_type(n) )
              case( "UMD" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 14
+                LDT_LSMparam_struc(n)%landcover%num_bins = 14
              case( "IGBPNCEP" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 20
+                LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case( "IGBP" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 17
+                LDT_LSMparam_struc(n)%landcover%num_bins = 17
              case( "USGS" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 24
+                LDT_LSMparam_struc(n)%landcover%num_bins = 24
              case( "MOSAIC" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 7
+                LDT_LSMparam_struc(n)%landcover%num_bins = 7
              case( "ISA" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 13
+                LDT_LSMparam_struc(n)%landcover%num_bins = 13
              case( "CLM45" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 36
+                LDT_LSMparam_struc(n)%landcover%num_bins = 36
              case( "Bondville" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 20
+                LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case default
-               print *, "[ERR] CONSTANT Landcover classification not recognized."
-               print *, "  Options:  UMD, IGBPNCEP, IGBP, USGS, MOSAIC, ISA "
-               print *, " Stopping ..."
-               call LDT_endrun
-            end select
+                write(LDT_logunit,*) "[ERR] CONSTANT Landcover classification not recognized."
+                write(LDT_logunit,*) "  Options:  UMD, IGBPNCEP, IGBP, USGS, MOSAIC, ISA "
+                write(LDT_logunit,*) " Stopping ..."
+                call LDT_endrun
+             end select
           else
-            call ESMF_ConfigGetAttribute(LDT_config,const_lctype,rc=rc)
-            call LDT_verify(rc,'Landcover classification: not specified')
+             call ESMF_ConfigGetAttribute(LDT_config,const_lctype,rc=rc)
+             call LDT_verify(rc,'Landcover classification: not specified in config file')
           endif
        enddo
     endif
@@ -544,81 +532,107 @@ contains
        LDT_rc%nt = LDT_LSMparam_struc(n)%landcover%num_bins
     enddo
 
- !- Read in Lakecover data source option:
+    !- Lakecover data source check:
     call ESMF_ConfigFindLabel(LDT_config,"Lakecover data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-      if( isSurfaceTypeSelected(2) ) then
-         call LDT_verify(rc,"Lakecover data source: not defined")
-         call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%lakecover,&
-              "LAKECOVER",source)
-         call setLakecoverCategories(n,source)
-      endif
+       if( isSurfaceTypeSelected(2) ) then
+          call LDT_verify(rc,"Lakecover data source: not defined")
+          call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%lakecover,&
+               "LAKECOVER",source)
+          call setLakecoverCategories(n,source)
+       endif
     enddo
 
-    !- glacier mask data source check:
+    !- Glacier mask data source check:
     call ESMF_ConfigFindLabel(LDT_config,"Glacier mask data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-       if(isSurfaceTypeSelected(3)) then 
+       if(isSurfaceTypeSelected(3)) then
           call LDT_verify(rc,"Glacier mask data source: not defined")
           call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%glaciermask,&
-             "GLACIERMASK",source)
+               "GLACIERMASK",source)
           call setGlacierMaskCategories(n,source)
        endif
-     enddo
+    enddo
 
- !- Read in Soil texture data source option:
+    !- Crop data source check and crop classification number of types:
+    allocate(LDT_rc%crop_classification(LDT_rc%nnest))
+    LDT_rc%crop_classification = "none"
+    allocate ( LDT_rc%numcrop(LDT_rc%nnest) )
+    LDT_rc%numcrop = 0
+    if( isSurfaceTypeSelected(1) .and. LDT_rc%assimcropinfo(1) .eqv. .true. ) then
+       call ESMF_ConfigFindLabel(LDT_config,"Crop classification:",rc=rc)
+       do n=1,LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%crop_classification(n),rc=rc)
+          call LDT_verify(rc,'Crop classification: not specified in the config file')
+       enddo
+       ! Determine number of crop types for classification specified:
+       do n=1,LDT_rc%nnest
+          call setCropClassCategories(n,LDT_rc%crop_classification(n))
+          write(LDT_logunit,*) "[INFO]  Number of crop types for, ", &
+               trim(LDT_rc%crop_classification(n)),", is :: ",LDT_rc%numcrop(n)
+          !
+          ! Note: CROPMAP classification only works with 13-class UMD (minus water class):
+          ! Putting check in place:
+          if( LDT_rc%lc_type(n) .ne. "UMD" .and. &
+               LDT_rc%crop_classification(n) == "CROPMAP" ) then
+             write(LDT_logunit,*) "[ERR] CROPMAP CLASSIFICATION ONLY WORKS ",&
+                  " WITH UMD LAND CLASSIFICATION (13-land classes)."
+             write(LDT_logunit,*) "  Stopping ..."
+             call LDT_endrun
+          endif
+       enddo
+    endif
+
+    !- Read in Soil texture data source option:
     call ESMF_ConfigFindLabel(LDT_config,"Soil texture data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       call LDT_warning(rc,"Soil texture data source: not defined")
+       !       call LDT_warning(rc,"Soil texture data source: not defined")
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%texture,&
             "TEXTURE",source)
        if(rc.eq.0) call setTextureCategories(n,source)
     enddo
-  ! LSM-required parameter check:
+    ! LSM-required parameter check:
     if( index(LDT_rc%lsm,"Noah") == 1 .or. &
-        index(LDT_rc%lsm,"RDHM") == 1 .or. &
-        index(LDT_rc%lsm,"SACHTET") == 1 ) then
-      if( rc /= 0 ) then
-         call LDT_warning(rc,"WARNING: Soil texture data source: not defined")
-         print *, "WARNING: Soil texture data source: not defined"
-      endif
+         index(LDT_rc%lsm,"RDHM") == 1 .or. &
+         index(LDT_rc%lsm,"SACHTET") == 1 ) then
+       if( rc /= 0 ) then
+          call LDT_warning(rc,"WARNING: Soil texture data source: not defined")
+          write(LDT_logunit,*) "WARNING: Soil texture data source: not defined"
+       endif
     endif
 
- !- Read in Soil Fraction Data Source Option:
+    !- Read in Soil Fraction Data Source Option:
     call ESMF_ConfigFindLabel(LDT_config,"Soil fraction data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%sand,&
             "SAND",source)
     enddo
-  ! LSM-required parameter check:
-!    if( index(LDT_rc%lsm,"Noah") == 1 .or. &
-!        index(LDT_rc%lsm,"CLM" )) then
-      if( rc /= 0 .and. LDT_LSMparam_struc(1)%sand%selectOpt .ne. 1) then
-         call LDT_warning(rc,"WARNING: Soil fraction data source: not defined")
-      endif
-!    endif
+    ! LSM-required parameter check:
+    if( rc /= 0 .and. LDT_LSMparam_struc(1)%sand%selectOpt .ne. 1) then
+       call LDT_warning(rc,"WARNING: Soil fraction data source: not defined")
+    endif
 
- !- Read in elevation, slope, aspect Data Source Options:
+    !- Read in elevation, slope, aspect Data Source Options:
     call ESMF_ConfigFindLabel(LDT_config,"Elevation data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       call LDT_warning(rc,"Elevation data source: not defined")
+       !       call LDT_warning(rc,"Elevation data source: not defined")
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%elevation,&
             "ELEVATION",source)
     enddo
-  ! CHECK: If Metforcing lapse-rate correction is turned on:
+    ! CHECK: If Metforcing lapse-rate correction is turned on:
     if( LDT_rc%nmetforc > 0 .and. rc /= 0 ) then
-      do m=1,LDT_rc%nmetforc
-        if( LDT_rc%met_ecor(m) == "lapse-rate" ) then
-          write(LDT_logunit,*) "Lapse-rate adjustment turned on for Metforcing: ",&
-                m,", ",trim(LDT_rc%metforc(m))
-          call LDT_warning(rc,"WARNING: Elevation data source: not defined")
-        endif
-      enddo
+       do m=1,LDT_rc%nmetforc
+          if( LDT_rc%met_ecor(m) == "lapse-rate" ) then
+             write(LDT_logunit,*) "Lapse-rate adjustment turned on for Metforcing: ",&
+                  m,", ",trim(LDT_rc%metforc(m))
+             call LDT_warning(rc,"WARNING: Elevation data source: not defined")
+          endif
+       enddo
     endif
 
     call ESMF_ConfigFindLabel(LDT_config,"Slope data source:",rc=rc)
@@ -640,19 +654,19 @@ contains
     call ESMF_ConfigFindLabel(LDT_config,"Curvature data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       call LDT_warning(rc,"Curvature data source: not defined")
+       !       call LDT_warning(rc,"Curvature data source: not defined")
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%curvature,&
             "CURVATURE",source)
     enddo
 
     LDT_rc%create_soilparms_option = "readin"
     if( index(LDT_rc%lsm,"RDHM") == 1 .or. &
-        index(LDT_rc%lsm,"SACHTET") == 1 ) then
-      call ESMF_ConfigGetAttribute(LDT_config, LDT_rc%create_soilparms_option, &
-                label="Create or readin soil parameters:",rc=rc)
-      call LDT_verify(rc,"Create or readin soil parameters: option not specified in the config file")
+         index(LDT_rc%lsm,"SACHTET") == 1 ) then
+       call ESMF_ConfigGetAttribute(LDT_config, LDT_rc%create_soilparms_option, &
+            label="Create or readin soil parameters:",rc=rc)
+       call LDT_verify(rc,"Create or readin soil parameters: option not specified in the config file")
     endif
-    
+
     call LDT_soils_readParamSpecs()
     call LDT_gfrac_readParamSpecs()
     call LDT_albedo_readParamSpecs()
@@ -665,24 +679,23 @@ contains
     call LDT_glacierfrac_readParamSpecs()
 
   end subroutine ReadParamSpecs_LIS
-  
 
-!BOP
-! !ROUTINE: readParamSpecs_LISHydro
-! \label{readParamSpecs_LISHydro}
-!
-! !INTERFACE:
+  !BOP
+  ! !ROUTINE: readParamSpecs_LISHydro
+  ! \label{readParamSpecs_LISHydro}
+  !
+  ! !INTERFACE:
   subroutine readParamSpecs_LISHydro(flag)
-! !DESCRIPTION:
-!   This routine specifies the names of the data 
-!   sources for each parameter type, in the 
-!   LISHydro preprocessing mode 
-!
-! !USES:
+    ! !DESCRIPTION:
+    !   This routine specifies the names of the data
+    !   sources for each parameter type, in the
+    !   LISHydro preprocessing mode
+    !
+    ! !USES:
     use LDT_coreMod,  only : LDT_rc, LDT_config
     use LDT_domainMod,only : isSurfaceTypeSelected
 
-    integer             :: n 
+    integer             :: n
     integer             :: rc
     integer             :: m
     logical             :: const_lc
@@ -691,11 +704,11 @@ contains
     character*100       :: HGT_M
     character*100       :: LANDUSEF
     integer             :: flag
-! _________________________________________
+    ! _________________________________________
 
-! - Universal LSM-based parameters -
+    ! - Universal LSM-based parameters -
 
- !- Read in Landmask Data Source Option:
+    !- Read in Landmask Data Source Option:
     call ESMF_ConfigFindLabel(LDT_config,"Landmask data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
@@ -719,8 +732,8 @@ contains
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
     enddo
-!
-    LANDUSEF = "LANDCOVER"    
+    !
+    LANDUSEF = "LANDCOVER"
     call ESMF_ConfigFindLabel(LDT_config,"Landcover metadata variable name:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,LANDUSEF,rc=rc)
@@ -729,44 +742,43 @@ contains
           call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%landcover,&
                "LANDUSEF",source)
           call setLandcoverCategories(n,source)
-!        ! Note: Landcover source/classification options will be merged 
-!        !        and new options to be specified in future LDT versions.
+          !        ! Note: Landcover source/classification options will be merged
+          !        !        and new options to be specified in future LDT versions.
        endif
     enddo
-!    print *, "LANDUSEF", source
-  ! CONSTANT LC Option: Read in associated landcover classification type: 
+    ! CONSTANT LC Option: Read in associated landcover classification type:
     const_lc = .false.
     do n=1,LDT_rc%nnest
-      if( LDT_LSMparam_struc(n)%landcover%source == "CONSTANT" ) then
-        const_lc = .true.
-      endif
+       if( LDT_LSMparam_struc(n)%landcover%source == "CONSTANT" ) then
+          const_lc = .true.
+       endif
     end do
     if( const_lc ) then
        call ESMF_ConfigFindLabel(LDT_config,"Landcover classification:",rc=rc)
        do n=1,LDT_rc%nnest
           if( LDT_LSMparam_struc(n)%landcover%source == "CONSTANT" ) then
-            call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lc_type(n),rc=rc)
-            call LDT_verify(rc,'Landcover classification: not specified')
-            select case( LDT_rc%lc_type(n) )
+             call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%lc_type(n),rc=rc)
+             call LDT_verify(rc,'Landcover classification: not specified')
+             select case( LDT_rc%lc_type(n) )
              case( "UMD" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 14
+                LDT_LSMparam_struc(n)%landcover%num_bins = 14
              case( "IGBPNCEP" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 20
+                LDT_LSMparam_struc(n)%landcover%num_bins = 20
              case( "USGS" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 24
+                LDT_LSMparam_struc(n)%landcover%num_bins = 24
              case( "MOSAIC" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 7
+                LDT_LSMparam_struc(n)%landcover%num_bins = 7
              case( "ISA" )
-               LDT_LSMparam_struc(n)%landcover%num_bins = 13
+                LDT_LSMparam_struc(n)%landcover%num_bins = 13
              case default
-               print *, "[ERR] CONSTANT Landcover classification not recognized."
-               print *, "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
-               print *, " Stopping ..."
-               call LDT_endrun
-            end select
+                write(LDT_logunit,*) "[ERR] CONSTANT Landcover classification not recognized."
+                write(LDT_logunit,*) "  Options:  UMD, IGBPNCEP, USGS, MOSAIC, ISA "
+                write(LDT_logunit,*) " Stopping ..."
+                call LDT_endrun
+             end select
           else
-            call ESMF_ConfigGetAttribute(LDT_config,const_lctype,rc=rc)
-            call LDT_verify(rc,'Landcover classification: not specified')
+             call ESMF_ConfigGetAttribute(LDT_config,const_lctype,rc=rc)
+             call LDT_verify(rc,'Landcover classification: not specified')
           endif
        enddo
     endif
@@ -776,89 +788,88 @@ contains
        LDT_rc%nt = LDT_LSMparam_struc(n)%landcover%num_bins
     enddo
 
- !- Read in Lakecover data source option:
+    !- Read in Lakecover data source option:
     call ESMF_ConfigFindLabel(LDT_config,"Lakecover data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-      if( isSurfaceTypeSelected(2) ) then
-         call LDT_verify(rc,"Lakecover data source: not defined")
-         call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%lakecover,&
-              "LAKECOVER",source)
-         call setLakecoverCategories(n,source)
-      endif
+       if( isSurfaceTypeSelected(2) ) then
+          call LDT_verify(rc,"Lakecover data source: not defined")
+          call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%lakecover,&
+               "LAKECOVER",source)
+          call setLakecoverCategories(n,source)
+       endif
     enddo
-   
+
     !- glacier mask data source check:
     call ESMF_ConfigFindLabel(LDT_config,"Glacier mask data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-       if(isSurfaceTypeSelected(3)) then 
+       if(isSurfaceTypeSelected(3)) then
           call LDT_verify(rc,"Glacier mask data source: not defined")
           call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%glaciermask,&
-             "GLACIERMASK",source)
+               "GLACIERMASK",source)
           call setGlacierMaskCategories(n,source)
        endif
-     enddo
+    enddo
 
-
- !- Read in Soil texture data source option:
+    !- Read in Soil texture data source option:
     call ESMF_ConfigFindLabel(LDT_config,"Soil texture data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       call LDT_warning(rc,"Soil texture data source: not defined")
+       !       call LDT_warning(rc,"Soil texture data source: not defined")
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%texture,&
             "TEXTURE",source)
        if(rc.eq.0) call setTextureCategories(n,source)
     enddo
-  ! LSM-required parameter check:
+    ! LSM-required parameter check:
     if( index(LDT_rc%lsm,"Noah") == 1 .or. &
-        index(LDT_rc%lsm,"RDHM") == 1 .or. &
-        index(LDT_rc%lsm,"SACHTET") == 1 ) then
-      if( rc /= 0 ) then
-         call LDT_warning(rc,"WARNING: Soil texture data source: not defined")
-         print *, "WARNING: Soil texture data source: not defined"
-      endif
+         index(LDT_rc%lsm,"RDHM") == 1 .or. &
+         index(LDT_rc%lsm,"SACHTET") == 1 ) then
+       if( rc /= 0 ) then
+          call LDT_warning(rc,"WARNING: Soil texture data source: not defined")
+          write(LDT_logunit,*) "WARNING: Soil texture data source: not defined"
+       endif
     endif
 
- !- Read in Soil Fraction Data Source Option:
+    !- Read in Soil Fraction Data Source Option:
     call ESMF_ConfigFindLabel(LDT_config,"Soil fraction data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%sand,&
             "SAND",source)
     enddo
-  ! LSM-required parameter check:
-!    if( index(LDT_rc%lsm,"Noah") == 1 .or. &
-!        index(LDT_rc%lsm,"CLM" )) then
-      if( rc /= 0 .and. LDT_LSMparam_struc(1)%sand%selectOpt .ne. 1) then
-         call LDT_warning(rc,"WARNING: Soil fraction data source: not defined")
-      endif
-!    endif
+    ! LSM-required parameter check:
+    !    if( index(LDT_rc%lsm,"Noah") == 1 .or. &
+    !        index(LDT_rc%lsm,"CLM" )) then
+    if( rc /= 0 .and. LDT_LSMparam_struc(1)%sand%selectOpt .ne. 1) then
+       call LDT_warning(rc,"WARNING: Soil fraction data source: not defined")
+    endif
+    !    endif
 
- !- Read in elevation, slope, aspect Data Source Options:
+    !- Read in elevation, slope, aspect Data Source Options:
     call ESMF_ConfigFindLabel(LDT_config,"Elevation data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       call LDT_warning(rc,"Elevation data source: not defined")
+       !       call LDT_warning(rc,"Elevation data source: not defined")
     enddo
 
-    HGT_M = "ELEVATION"    
+    HGT_M = "ELEVATION"
     call ESMF_ConfigFindLabel(LDT_config,"Elevation metadata variable name:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,HGT_M,rc=rc)
-!       call LDT_warning(rc,"Elevation data source: not defined")
+       !       call LDT_warning(rc,"Elevation data source: not defined")
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%elevation,&
             "HGT_M",source)
     enddo
-  ! CHECK: If Metforcing lapse-rate correction is turned on:
+    ! CHECK: If Metforcing lapse-rate correction is turned on:
     if( LDT_rc%nmetforc > 0 .and. rc /= 0 ) then
-      do m=1,LDT_rc%nmetforc
-        if( LDT_rc%met_ecor(m) == "lapse-rate" ) then
-          write(LDT_logunit,*) "Lapse-rate adjustment turned on for Metforcing: ",&
-                m,", ",trim(LDT_rc%metforc(m))
-          call LDT_warning(rc,"WARNING: Elevation data source: not defined")
-        endif
-      enddo
+       do m=1,LDT_rc%nmetforc
+          if( LDT_rc%met_ecor(m) == "lapse-rate" ) then
+             write(LDT_logunit,*) "Lapse-rate adjustment turned on for Metforcing: ",&
+                  m,", ",trim(LDT_rc%metforc(m))
+             call LDT_warning(rc,"WARNING: Elevation data source: not defined")
+          endif
+       enddo
     endif
 
     call ESMF_ConfigFindLabel(LDT_config,"Slope data source:",rc=rc)
@@ -880,19 +891,19 @@ contains
     call ESMF_ConfigFindLabel(LDT_config,"Curvature data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       call LDT_warning(rc,"Curvature data source: not defined")
+       !       call LDT_warning(rc,"Curvature data source: not defined")
        call LDT_set_param_attribs(rc,LDT_LSMparam_struc(n)%curvature,&
             "CURVATURE",source)
     enddo
 
     LDT_rc%create_soilparms_option = "readin"
     if( index(LDT_rc%lsm,"RDHM") == 1 .or. &
-        index(LDT_rc%lsm,"SACHTET") == 1 ) then
-      call ESMF_ConfigGetAttribute(LDT_config, LDT_rc%create_soilparms_option, &
-                label="Create or readin soil parameters:",rc=rc)
-      call LDT_verify(rc,"Create or readin soil parameters: option not specified in the config file")
+         index(LDT_rc%lsm,"SACHTET") == 1 ) then
+       call ESMF_ConfigGetAttribute(LDT_config, LDT_rc%create_soilparms_option, &
+            label="Create or readin soil parameters:",rc=rc)
+       call LDT_verify(rc,"Create or readin soil parameters: option not specified in the config file")
     endif
-    
+
     call LDT_soils_readParamSpecs()
     call LDT_gfrac_readParamSpecs(flag)
     call LDT_albedo_readParamSpecs(flag)
@@ -906,25 +917,25 @@ contains
 
   end subroutine readParamSpecs_LISHydro
 
-!BOP
-! !ROUTINE: paramProcWriteHeader_LIS
-! \label{paramProcWriteHeader_LIS}
-!
-! !DESCRIPTION:
-!  This routine writes the header information
-!  for the output parameter file in netcdf format,
-!  in the standard preprocessing mode for LIS
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: paramProcWriteHeader_LIS
+  ! \label{paramProcWriteHeader_LIS}
+  !
+  ! !DESCRIPTION:
+  !  This routine writes the header information
+  !  for the output parameter file in netcdf format,
+  !  in the standard preprocessing mode for LIS
+  !
+  ! !INTERFACE:
   subroutine paramProcWriteHeader_LIS(n)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod
     use LDT_logMod
     use map_utils
     use CLM45_parmsMod
-    
-    integer, intent(in)   :: n 
+
+    integer, intent(in)   :: n
 
     integer               :: iret
     integer               :: m
@@ -940,46 +951,43 @@ contains
 
     integer               :: shuffle, deflate, deflate_level
     integer               :: bufsize
-! ________________________________________________________
+    ! ________________________________________________________
 
     bufsize = 4
 
-!    LDT_rc%gnc_buf(n) = LDT_rc%gnc(n) + bufsize
-!    LDT_rc%gnr_buf(n) = LDT_rc%gnr(n) + bufsize
-
-!SVK-edit
-    if(LDT_masterproc) then 
+    !SVK-edit
+    if(LDT_masterproc) then
        shuffle = NETCDF_shuffle
        deflate = NETCDF_deflate
        deflate_level =NETCDF_deflate_level
-    
+
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
-#if(defined USE_NETCDF3) 
+#if(defined USE_NETCDF3)
        iret=nf90_create(path=trim(LDT_LSMparam_struc(n)%param_filename),&
             cmode=nf90_clobber, ncid=LDT_LSMparam_struc(n)%param_file_ftn)
        call LDT_verify(iret,'creating netcdf file failed in LDT_paramProcWrite')
 #endif
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        iret=nf90_create(path=trim(LDT_LSMparam_struc(n)%param_filename),&
             cmode=nf90_netcdf4, ncid=LDT_LSMparam_struc(n)%param_file_ftn)
        call LDT_verify(iret,'creating netcdf file failed in LDT_paramProcWrite')
-#endif    
+#endif
 
-!-- General header:
+       !-- General header:
        call date_and_time(date,time,zone,values)
 
-!-- Write out dimensions headers:
+       !-- Write out dimensions headers:
        allocate( met_dimID(LDT_rc%nmetforc_parms,3) )
-       
+
        !- Grid-domain dimensions:
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'east_west',LDT_rc%gnc(n),dimID(1)))
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'north_south',LDT_rc%gnr(n),dimID(2)))
-       
+
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'east_west_b',LDT_rc%gnc_buf(n),bdimID(1)))
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'north_south_b',LDT_rc%gnr_buf(n),bdimID(2)))
-    
-  ! Forcing domain:
+
+       ! Forcing domain:
        if( LDT_rc%nmetforc > 0 ) then
           do m = 1, LDT_rc%nmetforc_parms
              call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,&
@@ -991,62 +999,54 @@ contains
           end do
        end if
 
- !- Time-based dimensions:
-       if(LDT_rc%monthlyData(n)) then 
+       !- Time-based dimensions:
+       if(LDT_rc%monthlyData(n)) then
           call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'month',12,monthID))
        endif
-       if(LDT_rc%quarterlyData(n)) then 
+       if(LDT_rc%quarterlyData(n)) then
           call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'quarter',4,qID))
        endif
-       
+
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'time',1,tdimID))
        call LDT_verify(nf90_def_var(LDT_LSMparam_struc(n)%param_file_ftn,'time',nf90_float,dimids=tdimID,&
             varID=LDT_LSMparam_struc(n)%xtimeID))
-       
- !- LIS-Domain Grid file attributes:
+
+       !- LIS-Domain Grid file attributes:
        select case ( LDT_rc%lis_map_proj(n) )
-          
+
        case ( "latlon" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                "EQUIDISTANT CYLINDRICAL"))
-!Hiroko: special handling for CLM-4.5 testcase to make output identical
-! to Yudong's input_lis for 0.9x1.25 global resolution; latitude has to
-! be as the below specified corner values for LIS.
-    if (index(LDT_rc%lsm,"CLM.4.5") == 1 .and. &
-        LDT_rc%gridDesc(n,9) == 1.25     .and. &
-        LDT_rc%gridDesc(n,2) == 288      .and. &
-        LDT_rc%gridDesc(n,3) == 192) then
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
-               -89.529))
-!          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
-!               0.625))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
-               LDT_rc%gridDesc(n,5)))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LAT", &
-               90.393))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LON", &
-               LDT_rc%gridDesc(n,8)))
-!          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX", &
-!               1.25))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX", &
-               LDT_rc%gridDesc(n,9)))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
-               0.942))       
-    else  ! all other resolutions and domains
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
-               LDT_rc%gridDesc(n,4)))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
-               LDT_rc%gridDesc(n,5)))
-!          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LAT", &
-!               LDT_rc%gridDesc(n,7)))
-!          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LON", &
-!               LDT_rc%gridDesc(n,8)))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX", &
-               LDT_rc%gridDesc(n,9)))
-          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
-               LDT_rc%gridDesc(n,10)))       
-    endif
-          
+          !Hiroko: special handling for CLM-4.5 testcase to make output identical
+          ! to Yudong's input_lis for 0.9x1.25 global resolution; latitude has to
+          ! be as the below specified corner values for LIS.
+          if (index(LDT_rc%lsm,"CLM.4.5") == 1 .and. &
+               LDT_rc%gridDesc(n,9) == 1.25     .and. &
+               LDT_rc%gridDesc(n,2) == 288      .and. &
+               LDT_rc%gridDesc(n,3) == 192) then
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
+                  -89.529))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
+                  LDT_rc%gridDesc(n,5)))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LAT", &
+                  90.393))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LON", &
+                  LDT_rc%gridDesc(n,8)))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX", &
+                  LDT_rc%gridDesc(n,9)))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
+                  0.942))
+          else  ! all other resolutions and domains
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT", &
+                  LDT_rc%gridDesc(n,4)))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
+                  LDT_rc%gridDesc(n,5)))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX", &
+                  LDT_rc%gridDesc(n,9)))
+             call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
+                  LDT_rc%gridDesc(n,10)))
+          endif
+
        case ( "mercator" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                "MERCATOR"))
@@ -1062,7 +1062,7 @@ contains
                LDT_rc%gridDesc(n,8)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
                LDT_rc%gridDesc(n,9)))
-          
+
        case ( "lambert" )    ! Lambert conformal
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                "LAMBERT CONFORMAL"))
@@ -1099,7 +1099,7 @@ contains
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
                LDT_rc%gridDesc(n,9)))
 
-       case ( "hrap" )        ! HRAP - Grid 240 
+       case ( "hrap" )        ! HRAP - Grid 240
           !    -- HRAP Grid over the Contiguous United States and Puerto Rico (polar stereographic)
           !     - Grid 240 (based on http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html)
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
@@ -1123,17 +1123,14 @@ contains
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION","GAUSSIAN"))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT",LDT_rc%gridDesc(n,4)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON",LDT_rc%gridDesc(n,5)))
-          !       call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"TRUELAT1",LDT_rc%gridDesc(n,10)))
-          !       call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"ORIENT",LDT_rc%gridDesc(n,7)))
-          !       call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"STANDARD_LON",LDT_rc%gridDesc(n,11)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX",LDT_rc%gridDesc(n,9)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NUMBER OF LAT CIRCLES",LDT_rc%gridDesc(n,10)))
        end select
-       
- !- Forcing-Domain Grid file attributes:
+
+       !- Forcing-Domain Grid file attributes:
        do m = 1, LDT_rc%nmetforc_parms
           select case ( LDT_rc%met_proj(m) )
-             
+
           case ( "latlon" )
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION_"//LDT_rc%metforc_parmsrc(m), &
                   "EQUIDISTANT CYLINDRICAL"))
@@ -1149,7 +1146,7 @@ contains
                   LDT_rc%met_gridDesc(m,9)))
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY_"//LDT_rc%metforc_parmsrc(m), &
                   LDT_rc%met_gridDesc(m,10)))
-             
+
           case ( "mercator" )
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION_"//LDT_rc%metforc_parmsrc(m), &
                   "MERCATOR"))
@@ -1165,7 +1162,7 @@ contains
                   LDT_rc%met_gridDesc(m,8)))
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY_"//LDT_rc%metforc_parmsrc(m), &
                   LDT_rc%met_gridDesc(m,9)))
-             
+
           case ( "lambert" )    ! Lambert conformal
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION_"//LDT_rc%metforc_parmsrc(m), &
                   "LAMBERT CONFORMAL"))
@@ -1267,94 +1264,90 @@ contains
             "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007"))
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"comment", &
             "website: http://lis.gsfc.nasa.gov/"))
-       
-! - write lat, lon:
+
+       ! - write lat, lon:
        LDT_LSMparam_struc(n)%xlat%short_name    = "lat"
        LDT_LSMparam_struc(n)%xlat%standard_name = "latitude"
        LDT_LSMparam_struc(n)%xlat%units         = "degrees_north"
-       
+
        LDT_LSMparam_struc(n)%xlon%short_name    = "lon"
        LDT_LSMparam_struc(n)%xlon%standard_name = "longitude"
        LDT_LSMparam_struc(n)%xlon%units         = "degrees_east"
        allocate(LDT_LSMparam_struc(n)%xlat%value(LDT_rc%gnc(n),LDT_rc%gnr(n),1))
        allocate(LDT_LSMparam_struc(n)%xlon%value(LDT_rc%gnc(n),LDT_rc%gnr(n),1))
-       
-!Hiroko: special handling for CLM-4.5 to make output identical to Yudong's input_lis
-    if( index(LDT_rc%lsm,"CLM.4.5") == 1 ) then
-       do r=1,LDT_rc%gnr(n)
-          do c=1,LDT_rc%gnc(n)
-             LDT_LSMparam_struc(n)%xlat%value(c,r,1) = &
-                           real(CLM45_struc(n)%yc%dvalue(c,r,1,1)) 
-             LDT_LSMparam_struc(n)%xlon%value(c,r,1) = &
-                           real(CLM45_struc(n)%xc%dvalue(c,r,1,1)) 
-             !correction for CLM-4.5 lon range 0-360
-             if (LDT_LSMparam_struc(n)%xlon%value(c,r,1) .ge. 180.0 ) then
-              LDT_LSMparam_struc(n)%xlon%value(c,r,1) = &
-                LDT_LSMparam_struc(n)%xlon%value(c,r,1) - 360.0
-             endif
+
+       !Hiroko: special handling for CLM-4.5 to make output identical to Yudong's input_lis
+       if( index(LDT_rc%lsm,"CLM.4.5") == 1 ) then
+          do r=1,LDT_rc%gnr(n)
+             do c=1,LDT_rc%gnc(n)
+                LDT_LSMparam_struc(n)%xlat%value(c,r,1) = &
+                     real(CLM45_struc(n)%yc%dvalue(c,r,1,1))
+                LDT_LSMparam_struc(n)%xlon%value(c,r,1) = &
+                     real(CLM45_struc(n)%xc%dvalue(c,r,1,1))
+                !correction for CLM-4.5 lon range 0-360
+                if (LDT_LSMparam_struc(n)%xlon%value(c,r,1) .ge. 180.0 ) then
+                   LDT_LSMparam_struc(n)%xlon%value(c,r,1) = &
+                        LDT_LSMparam_struc(n)%xlon%value(c,r,1) - 360.0
+                endif
+             enddo
           enddo
-       enddo
-    else
-       do r=1,LDT_rc%gnr(n)
-          do c=1,LDT_rc%gnc(n)
-             call ij_to_latlon(LDT_domain(n)%ldtglbproj,&
-                  real(c), real(r), LDT_LSMparam_struc(n)%xlat%value(c,r,1),&
-                  LDT_LSMparam_struc(n)%xlon%value(c,r,1))
+       else
+          do r=1,LDT_rc%gnr(n)
+             do c=1,LDT_rc%gnc(n)
+                call ij_to_latlon(LDT_domain(n)%ldtglbproj,&
+                     real(c), real(r), LDT_LSMparam_struc(n)%xlat%value(c,r,1),&
+                     LDT_LSMparam_struc(n)%xlon%value(c,r,1))
+             enddo
           enddo
-       enddo
-    endif
-       
+       endif
+
        ! - write lat_b, lon_b:
        LDT_LSMparam_struc(n)%xlat_b%short_name    = "lat_b"
        LDT_LSMparam_struc(n)%xlat_b%standard_name = "latitude_b"
        LDT_LSMparam_struc(n)%xlat_b%units         = "degrees_north"
-       
+
        LDT_LSMparam_struc(n)%xlon_b%short_name    = "lon_b"
        LDT_LSMparam_struc(n)%xlon_b%standard_name = "longitude_b"
        LDT_LSMparam_struc(n)%xlon_b%units         = "degrees_east"
-   
-!    allocate(LDT_LSMparam_struc(n)%xlat_b%value(&
-!         -1:LDT_rc%gnc(n)+2,-1:LDT_rc%gnr(n)+2,1))
-!    allocate(LDT_LSMparam_struc(n)%xlon_b%value(&
-!         -1:LDT_rc%gnc(n)+2,-1:LDT_rc%gnr(n)+2,1))
+
        allocate(LDT_LSMparam_struc(n)%xlat_b%value(&
             LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n),1))
        allocate(LDT_LSMparam_struc(n)%xlon_b%value(&
             LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n),1))
-       
-!Hiroko: special handling for CLM-4.5 to make output identical to Yudong's input_lis
-    if( index(LDT_rc%lsm,"CLM.4.5") == 1 ) then
-       do r=-1,LDT_rc%gnr(n)+2
-          do c=-1,LDT_rc%gnc(n)+2
-             call ij_to_latlon(LDT_domain(n)%ldtproj,&
-                  real(c), real(r), LDT_LSMparam_struc(n)%xlat_b%value(c+2,r+2,1),&
-                  LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1))
-             !correction for CLM-4.5 lon range 0-360
-             if (LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1) .ge. 180.0) then
-              LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1) = &
-                LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1) - 360.0
-             endif
-          enddo
-       enddo
-    else
-       do r=-1,LDT_rc%gnr(n)+2
-          do c=-1,LDT_rc%gnc(n)+2
-             call ij_to_latlon(LDT_domain(n)%ldtproj,&
-                  real(c), real(r), LDT_LSMparam_struc(n)%xlat_b%value(c+2,r+2,1),&
-                  LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1))
-          enddo
-       enddo
-    endif
-       
-!! Xlat field attributes: !!
 
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)    
+       !Hiroko: special handling for CLM-4.5 to make output identical to Yudong's input_lis
+       if( index(LDT_rc%lsm,"CLM.4.5") == 1 ) then
+          do r=-1,LDT_rc%gnr(n)+2
+             do c=-1,LDT_rc%gnc(n)+2
+                call ij_to_latlon(LDT_domain(n)%ldtproj,&
+                     real(c), real(r), LDT_LSMparam_struc(n)%xlat_b%value(c+2,r+2,1),&
+                     LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1))
+                !correction for CLM-4.5 lon range 0-360
+                if (LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1) .ge. 180.0) then
+                   LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1) = &
+                        LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1) - 360.0
+                endif
+             enddo
+          enddo
+       else
+          do r=-1,LDT_rc%gnr(n)+2
+             do c=-1,LDT_rc%gnc(n)+2
+                call ij_to_latlon(LDT_domain(n)%ldtproj,&
+                     real(c), real(r), LDT_LSMparam_struc(n)%xlat_b%value(c+2,r+2,1),&
+                     LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1))
+             enddo
+          enddo
+       endif
+
+       !! Xlat field attributes: !!
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
        call LDT_verify(nf90_def_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             trim(LDT_LSMparam_struc(n)%xlat%short_name),&
             nf90_float, dimids=dimID(1:2),varid=LDT_LSMparam_struc(n)%xlatid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlat')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlat')
@@ -1387,7 +1380,7 @@ contains
             nf90_float, dimids=dimID(1:2),varid=LDT_LSMparam_struc(n)%xlonid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlon')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlon')
@@ -1420,7 +1413,7 @@ contains
             nf90_float, dimids=bdimID(1:2),varid=LDT_LSMparam_struc(n)%xlatbid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlat_b')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatbid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlat_b')
@@ -1454,7 +1447,7 @@ contains
             nf90_float, dimids=bdimID(1:2),varid=LDT_LSMparam_struc(n)%xlonbid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlon_b')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonbid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlon_b')
@@ -1482,28 +1475,28 @@ contains
             'nf90_put_att failed for xlon_b:vmax')
 
 #endif
-!End netcdf USE directives
+       !End netcdf USE directives
     endif
   end subroutine ParamProcWriteHeader_LIS
 
-!BOP
-! !ROUTINE: paramProcWriteHeader_LISHydro
-! \label{paramProcWriteHeader_LISHydro}
-!
-! !DESCRIPTION:
-!  This routine writes the header information
-!  for the output parameter file in netcdf format,
-!  in the LISHydro preprocessing mode.  
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: paramProcWriteHeader_LISHydro
+  ! \label{paramProcWriteHeader_LISHydro}
+  !
+  ! !DESCRIPTION:
+  !  This routine writes the header information
+  !  for the output parameter file in netcdf format,
+  !  in the LISHydro preprocessing mode.
+  !
+  ! !INTERFACE:
   subroutine paramProcWriteHeader_LISHydro(n, flag)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod
     use LDT_logMod
     use map_utils
-    
-    integer, intent(in)   :: n 
+
+    integer, intent(in)   :: n
 
     integer               :: iret
     integer               :: m
@@ -1521,48 +1514,48 @@ contains
     integer               :: bufsize
     integer               :: flag    ! Dummy variables
     character(len=10)     :: XLAT_M  !replaced the variable "lat"
-    character(len=10)     :: XLONG_M !replaced the variable "lon" 
-! ________________________________________________________
+    character(len=10)     :: XLONG_M !replaced the variable "lon"
+    ! ________________________________________________________
 
     bufsize = 4
 
-!    LDT_rc%gnc_buf(n) = LDT_rc%gnc(n) + bufsize
-!    LDT_rc%gnr_buf(n) = LDT_rc%gnr(n) + bufsize
+    !    LDT_rc%gnc_buf(n) = LDT_rc%gnc(n) + bufsize
+    !    LDT_rc%gnr_buf(n) = LDT_rc%gnr(n) + bufsize
 
-!SVK-edit
-    if(LDT_masterproc) then 
+    !SVK-edit
+    if(LDT_masterproc) then
        shuffle = NETCDF_shuffle
        deflate = NETCDF_deflate
        deflate_level =NETCDF_deflate_level
-    
+
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
-#if(defined USE_NETCDF3) 
+#if(defined USE_NETCDF3)
        iret=nf90_create(path=trim(LDT_LSMparam_struc(n)%param_filename),&
             cmode=nf90_clobber, ncid=LDT_LSMparam_struc(n)%param_file_ftn)
        call LDT_verify(iret,'creating netcdf file failed in LDT_paramProcWrite')
 #endif
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        iret=nf90_create(path=trim(LDT_LSMparam_struc(n)%param_filename),&
             cmode=nf90_netcdf4, ncid=LDT_LSMparam_struc(n)%param_file_ftn)
        call LDT_verify(iret,'creating netcdf file failed in LDT_paramProcWrite')
-#endif    
+#endif
 
-!-- General header:
+       !-- General header:
        call date_and_time(date,time,zone,values)
 
-!-- Write out dimensions headers:
+       !-- Write out dimensions headers:
        allocate( met_dimID(LDT_rc%nmetforc_parms,3) )
-       
+
        !- Grid-domain dimensions:
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'west_east',LDT_rc%gnc(n),dimID(1)))   ! changed from east_west to west_east
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'south_north',LDT_rc%gnr(n),dimID(2))) ! changed from north_south to south_north
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'Time',nf90_unlimited,dimID(4)))    !nf90_unlimited or 1               ! Introduced 'Time' variable here as dimID(4)
-      
+
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'west_east_b',LDT_rc%gnc_buf(n),bdimID(1))) ! changed east_west to west_east
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'south_north_b',LDT_rc%gnr_buf(n),bdimID(2))) !changed north_south to south_north
-    
-  ! Forcing domain:
+
+       ! Forcing domain:
        if( LDT_rc%nmetforc > 0 ) then
           do m = 1, LDT_rc%nmetforc_parms
              call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,&
@@ -1574,21 +1567,21 @@ contains
           end do
        end if
 
- !- Time-based dimensions:
-       if(LDT_rc%monthlyData(n)) then 
+       !- Time-based dimensions:
+       if(LDT_rc%monthlyData(n)) then
           call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'month',12,monthID))
        endif
-       if(LDT_rc%quarterlyData(n)) then 
+       if(LDT_rc%quarterlyData(n)) then
           call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'quarter',4,qID))
        endif
-       
+
        call LDT_verify(nf90_def_dim(LDT_LSMparam_struc(n)%param_file_ftn,'time',1,tdimID))
        call LDT_verify(nf90_def_var(LDT_LSMparam_struc(n)%param_file_ftn,'time',nf90_float,dimids=tdimID,&
             varID=LDT_LSMparam_struc(n)%xtimeID))
-       
- !- LIS-Domain Grid file attributes:
+
+       !- LIS-Domain Grid file attributes:
        select case ( LDT_rc%lis_map_proj(n) )
-          
+
        case ( "latlon" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                "EQUIDISTANT CYLINDRICAL"))
@@ -1596,15 +1589,11 @@ contains
                LDT_rc%gridDesc(n,4)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON", &
                LDT_rc%gridDesc(n,5)))
-!          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LAT", &
-!               LDT_rc%gridDesc(n,7)))
-!          call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NORTH_EAST_CORNER_LON", &
-!               LDT_rc%gridDesc(n,8)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX", &
                LDT_rc%gridDesc(n,9)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
-               LDT_rc%gridDesc(n,10)))       
-          
+               LDT_rc%gridDesc(n,10)))
+
        case ( "mercator" )
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
                "MERCATOR"))
@@ -1620,7 +1609,7 @@ contains
                LDT_rc%gridDesc(n,8)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
                LDT_rc%gridDesc(n,9)))
-          
+
        case ( "lambert" )    ! Lambert conformal
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJ", &
                1))
@@ -1663,7 +1652,7 @@ contains
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY", &
                LDT_rc%gridDesc(n,9)))
 
-       case ( "hrap" )        ! HRAP - Grid 240 
+       case ( "hrap" )        ! HRAP - Grid 240
           !    -- HRAP Grid over the Contiguous United States and Puerto Rico (polar stereographic)
           !     - Grid 240 (based on http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html)
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION", &
@@ -1687,17 +1676,14 @@ contains
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION","GAUSSIAN"))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LAT",LDT_rc%gridDesc(n,4)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"SOUTH_WEST_CORNER_LON",LDT_rc%gridDesc(n,5)))
-          !       call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"TRUELAT1",LDT_rc%gridDesc(n,10)))
-          !       call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"ORIENT",LDT_rc%gridDesc(n,7)))
-          !       call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"STANDARD_LON",LDT_rc%gridDesc(n,11)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DX",LDT_rc%gridDesc(n,9)))
           call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"NUMBER OF LAT CIRCLES",LDT_rc%gridDesc(n,10)))
        end select
-       
- !- Forcing-Domain Grid file attributes:
+
+       !- Forcing-Domain Grid file attributes:
        do m = 1, LDT_rc%nmetforc_parms
           select case ( LDT_rc%met_proj(m) )
-             
+
           case ( "latlon" )
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION_"//LDT_rc%metforc_parmsrc(m), &
                   "EQUIDISTANT CYLINDRICAL"))
@@ -1713,7 +1699,7 @@ contains
                   LDT_rc%met_gridDesc(m,9)))
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY_"//LDT_rc%metforc_parmsrc(m), &
                   LDT_rc%met_gridDesc(m,10)))
-             
+
           case ( "mercator" )
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION_"//LDT_rc%metforc_parmsrc(m), &
                   "MERCATOR"))
@@ -1729,7 +1715,7 @@ contains
                   LDT_rc%met_gridDesc(m,8)))
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY_"//LDT_rc%metforc_parmsrc(m), &
                   LDT_rc%met_gridDesc(m,9)))
-             
+
           case ( "lambert" )    ! Lambert conformal
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION_"//LDT_rc%metforc_parmsrc(m), &
                   "LAMBERT CONFORMAL"))
@@ -1766,7 +1752,7 @@ contains
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"DY_"//LDT_rc%metforc_parmsrc(m), &
                   LDT_rc%met_gridDesc(m,9)))
 
-          case ( "hrap" )        ! HRAP - Grid 240 
+          case ( "hrap" )        ! HRAP - Grid 240
              !    -- HRAP Grid over the Contiguous United States and Puerto Rico (polar stereographic)
              !     - Grid 240 (based on http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html)
              call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"MAP_PROJECTION_"//LDT_rc%metforc_parmsrc(m), &
@@ -1832,18 +1818,18 @@ contains
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,NF90_GLOBAL,"comment", &
             "website: http://lis.gsfc.nasa.gov/"))
 
-! - write XLAT_M, XLONG_M:
-! - This is just a replacement of lat, lon short_names       
+       ! - write XLAT_M, XLONG_M:
+       ! - This is just a replacement of lat, lon short_names
        LDT_LSMparam_struc(n)%xlat%short_name    = "XLAT_M"
        LDT_LSMparam_struc(n)%xlat%standard_name = "latitude"
        LDT_LSMparam_struc(n)%xlat%units         = "degrees_north"
-       
+
        LDT_LSMparam_struc(n)%xlon%short_name    = "XLONG_M"
        LDT_LSMparam_struc(n)%xlon%standard_name = "longitude"
        LDT_LSMparam_struc(n)%xlon%units         = "degrees_east"
        allocate(LDT_LSMparam_struc(n)%xlat%value(LDT_rc%gnc(n),LDT_rc%gnr(n),1))
        allocate(LDT_LSMparam_struc(n)%xlon%value(LDT_rc%gnc(n),LDT_rc%gnr(n),1))
-       
+
        do r=1,LDT_rc%gnr(n)
           do c=1,LDT_rc%gnc(n)
              call ij_to_latlon(LDT_domain(n)%ldtglbproj,&
@@ -1851,25 +1837,21 @@ contains
                   LDT_LSMparam_struc(n)%xlon%value(c,r,1))
           enddo
        enddo
-       
+
        ! - write lat_b, lon_b:
        LDT_LSMparam_struc(n)%xlat_b%short_name    = "lat_b"
        LDT_LSMparam_struc(n)%xlat_b%standard_name = "latitude_b"
        LDT_LSMparam_struc(n)%xlat_b%units         = "degrees_north"
-       
+
        LDT_LSMparam_struc(n)%xlon_b%short_name    = "lon_b"
        LDT_LSMparam_struc(n)%xlon_b%standard_name = "longitude_b"
        LDT_LSMparam_struc(n)%xlon_b%units         = "degrees_east"
-   
-!    allocate(LDT_LSMparam_struc(n)%xlat_b%value(&
-!         -1:LDT_rc%gnc(n)+2,-1:LDT_rc%gnr(n)+2,1))
-!    allocate(LDT_LSMparam_struc(n)%xlon_b%value(&
-!         -1:LDT_rc%gnc(n)+2,-1:LDT_rc%gnr(n)+2,1))
+
        allocate(LDT_LSMparam_struc(n)%xlat_b%value(&
             LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n),1))
        allocate(LDT_LSMparam_struc(n)%xlon_b%value(&
             LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n),1))
-       
+
        do r=-1,LDT_rc%gnr(n)+2
           do c=-1,LDT_rc%gnc(n)+2
              call ij_to_latlon(LDT_domain(n)%ldtproj,&
@@ -1877,15 +1859,15 @@ contains
                   LDT_LSMparam_struc(n)%xlon_b%value(c+2,r+2,1))
           enddo
        enddo
-       
-!! Xlat field attributes: !!
+
+       !! Xlat field attributes: !!
 
        call LDT_verify(nf90_def_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             trim(LDT_LSMparam_struc(n)%xlat%short_name),&
             nf90_float, dimids=(/dimID(1:2),dimID(4)/),varid=LDT_LSMparam_struc(n)%xlatid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlat')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlat')
@@ -1902,9 +1884,6 @@ contains
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlatid, &
             "add_offset",0.0),&
             'nf90_put_att failed for xlat:add_offset')
-       !call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlatid, &
-       !     "missing_value",LDT_rc%udef),&
-       !     'nf90_put_att failed for xlat:missing_value')
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlatid, &
             "vmin",0.0),&
             'nf90_put_att failed for xlat:vmin')
@@ -1921,7 +1900,7 @@ contains
             nf90_float, dimids=(/dimID(1:2),dimID(4)/),varid=LDT_LSMparam_struc(n)%xlonid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlon')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlon')
@@ -1938,9 +1917,6 @@ contains
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlonid, &
             "add_offset",0.0),&
             'nf90_put_att failed for xlon:add_offset')
-       !call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlonid, &
-       !     "missing_value",LDT_rc%udef),&
-       !     'nf90_put_att failed for xlon:missing_value')
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlonid, &
             "vmin",0.0),&
             'nf90_put_att failed for xlon:vmin')
@@ -1957,7 +1933,7 @@ contains
             nf90_float, dimids=(/bdimID(1:2),dimID(4)/),varid=LDT_LSMparam_struc(n)%xlatbid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlat_b')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatbid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlat_b')
@@ -1975,9 +1951,6 @@ contains
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlatbid, &
             "add_offset",0.0),&
             'nf90_put_att failed for xlat_b:add_offset')
-       !call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlatbid, &
-       !     "missing_value",LDT_rc%udef),&
-       !     'nf90_put_att failed for xlat_b:missing_value')
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlatbid, &
             "vmin",0.0),&
             'nf90_put_att failed for xlat_b:vmin')
@@ -1991,7 +1964,7 @@ contains
             nf90_float, dimids=(/bdimID(1:2),dimID(4)/),varid=LDT_LSMparam_struc(n)%xlonbid),&
             'nf90_def_var failed for LDT_LSMparam_struc(n)%xlon_b')
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
        call LDT_verify(nf90_def_var_deflate(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonbid, shuffle, deflate, deflate_level),&
             'nf90_def_var_deflate failed for LDT_LSMparam_struc(n)%xlon_b')
@@ -2008,9 +1981,6 @@ contains
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlonbid, &
             "add_offset",0.0),&
             'nf90_put_att failed for xlon_b:add_offset')
-       !call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlonbid, &
-       !     "missing_value",LDT_rc%udef),&
-       !     'nf90_put_att failed for xlon_b:missing_value')
        call LDT_verify(nf90_put_att(LDT_LSMparam_struc(n)%param_file_ftn,LDT_LSMparam_struc(n)%xlonbid, &
             "vmin",0.0),&
             'nf90_put_att failed for xlon_b:vmin')
@@ -2019,36 +1989,36 @@ contains
             'nf90_put_att failed for xlon_b:vmax')
 
 #endif
-!End netcdf USE directives
+       !End netcdf USE directives
     endif
   end subroutine paramProcWriteHeader_LISHydro
 
-!BOP
-! !ROUTINE: paramProcWrite_LIS
-! \label{paramProcWrite_LIS}
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: paramProcWrite_LIS
+  ! \label{paramProcWrite_LIS}
+  !
+  ! !INTERFACE:
   subroutine paramProcWrite_LIS(n)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod
     use LDT_logMod
     use map_utils
-! 
-! !DESCRIPTION: 
-!  This subroutine writes the parameter data in 
-!  the standard preprocessing mode for LIS
-!EOP
-   
-    integer, intent(in)   :: n 
+    !
+    ! !DESCRIPTION:
+    !  This subroutine writes the parameter data in
+    !  the standard preprocessing mode for LIS
+    !EOP
+
+    integer, intent(in)   :: n
 
     integer               :: m
     integer               :: dimID(3), monthID, qID
     integer,allocatable   :: met_dimID(:,:)
     integer               :: tdimID, xtimeID
 
-!SVK-edit    
-    if(LDT_masterproc) then 
+    !SVK-edit
+    if(LDT_masterproc) then
 
        call LDT_verify(nf90_enddef(LDT_LSMparam_struc(n)%param_file_ftn))
 
@@ -2066,41 +2036,41 @@ contains
             LDT_LSMparam_struc(n)%xlatbid, LDT_LSMparam_struc(n)%xlat_b%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n)/)),&
             'nf90_put_att failed for xlat_b')
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonbid, LDT_LSMparam_struc(n)%xlon_b%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n)/)),&
             'nf90_put_att failed for xlon_b')
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xtimeID,0.0))
 
     endif
 
-! - Write Parameter Output Data:
+    ! - Write Parameter Output Data:
     call writeParamData(n,LDT_LSMparam_struc(n)%param_file_ftn)
 
-#endif    
+#endif
 
   end subroutine ParamProcWrite_LIS
 
-!BOP
-! !ROUTINE: paramProcWrite_LISHydro
-! \label{paramProcWrite_LISHydro}
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: paramProcWrite_LISHydro
+  ! \label{paramProcWrite_LISHydro}
+  !
+  ! !INTERFACE:
   subroutine paramProcWrite_LISHydro(n,flag)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod
     use LDT_logMod
     use map_utils
-! !DESCRIPTION: 
-!  This subroutine writes the parameter data in 
-!  the standard preprocessing mode for LISHydro
-!EOP
-    
-    integer, intent(in)   :: n 
+    ! !DESCRIPTION:
+    !  This subroutine writes the parameter data in
+    !  the standard preprocessing mode for LISHydro
+    !EOP
+
+    integer, intent(in)   :: n
 
     integer               :: iret
     integer               :: m
@@ -2109,17 +2079,17 @@ contains
     integer               :: tdimID, xtimeID
     integer               :: flag
 
-!SVK-edit    
+    !SVK-edit
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
-    if(LDT_masterproc) then 
+    if(LDT_masterproc) then
        call LDT_verify(nf90_enddef(LDT_LSMparam_struc(n)%param_file_ftn))
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlatid, LDT_LSMparam_struc(n)%xlat%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
             'nf90_put_att failed for xlat')
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonid, LDT_LSMparam_struc(n)%xlon%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc(n),LDT_rc%gnr(n)/)),&
@@ -2129,54 +2099,53 @@ contains
             LDT_LSMparam_struc(n)%xlatbid, LDT_LSMparam_struc(n)%xlat_b%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n)/)),&
             'nf90_put_att failed for xlat_b')
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xlonbid, LDT_LSMparam_struc(n)%xlon_b%value(:,:,1),&
             (/1,1/),(/LDT_rc%gnc_buf(n),LDT_rc%gnr_buf(n)/)),&
             'nf90_put_att failed for xlon_b')
-       
+
        call LDT_verify(nf90_put_var(LDT_LSMparam_struc(n)%param_file_ftn,&
             LDT_LSMparam_struc(n)%xtimeID,0.0))
 
     endif
 
-! - Write Parameter Output Data:
+    ! - Write Parameter Output Data:
     call writeParamData(n,LDT_LSMparam_struc(n)%param_file_ftn,flag)
 
-#endif    
+#endif
 
   end subroutine paramProcWrite_LISHydro
 
-!BOP
-! !ROUTINE: LDT_paramProcWriteFinalize
-! \label{LDT_paramProcWriteFinalize}
-!
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: LDT_paramProcWriteFinalize
+  ! \label{LDT_paramProcWriteFinalize}
+  !
+  ! !INTERFACE:
   subroutine LDT_paramProcWriteFinalize(n)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod
     use LDT_logMod
     use map_utils
 #if ( defined SPMD )
     use mpi
 #endif
-! !DESCRIPTION:
-!  Finalizes the parameter processing routines
-!  
-!EOP
-    
-    integer, intent(in)   :: n 
+    ! !DESCRIPTION:
+    !  Finalizes the parameter processing routines
+    !
+    !EOP
+
+    integer, intent(in)   :: n
     integer               :: ierr
-! ________________________________________________________
+    ! ________________________________________________________
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
     if(LDT_masterproc) then 
-! - Close file:
+       ! - Close file:
        call LDT_verify(nf90_close(LDT_LSMparam_struc(n)%param_file_ftn))
     endif
-#endif    
-!    print*, 'reached finalize ', LDT_localPet
+#endif
 #if ( defined SPMD )
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -2185,28 +2154,28 @@ contains
 
   end subroutine LDT_paramProcWriteFinalize
 
-!BOP
-! 
-! !ROUTINE: writeParamHeaders_LIS
-! \label{writeParamHeaders_LIS}
-! 
-! !INTERFACE: 
-  subroutine writeParamHeaders_LIS(n, ftn, dimID, met_dimID, monthID, qID)    
-! !USES:
+  !BOP
+  !
+  ! !ROUTINE: writeParamHeaders_LIS
+  ! \label{writeParamHeaders_LIS}
+  !
+  ! !INTERFACE:
+  subroutine writeParamHeaders_LIS(n, ftn, dimID, met_dimID, monthID, qID)
+    ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
-! 
-! !DESCRIPTION: 
-!  This subroutine invokes the routines to write the data headers
-!  in the standard parameter preprocessing mode for LIS. 
-!
-!EOP
-    integer     :: n 
+    !
+    ! !DESCRIPTION:
+    !  This subroutine invokes the routines to write the data headers
+    !  in the standard parameter preprocessing mode for LIS.
+    !
+    !EOP
+    integer     :: n
     integer     :: ftn
     integer     :: dimID(3)
     integer     :: met_dimID(LDT_rc%nmetforc_parms,3)
     integer     :: monthID
     integer     :: qID
-    
+
     call LDT_LMLC_writeHeader(n,ftn,dimID)
     call LDT_surfacetype_writeHeader(n,ftn,dimID)
     call LDT_LSMCropMod_writeHeader(n,ftn,dimID)
@@ -2224,33 +2193,30 @@ contains
     call LDT_climateParms_writeHeader(n,ftn,dimID,met_dimID,monthID)
     call LDT_glacierfrac_writeHeader(n,ftn,dimID)
 
-
-
-
-! - Forcing-specific parameter headers
+    ! - Forcing-specific parameter headers
     call LDT_forcingParms_writeHeader(n,ftn,dimID,met_dimID)
 
-!OPT/UE parameters
+    !OPT/UE parameters
     if (LDT_rc%runmode.eq."OPTUE parameter processing") then
        call LDT_optue_writeHeader(n,ftn,dimID)
     endif
 
   end subroutine writeParamHeaders_LIS
 
-!BOP
-! !ROUTINE: writeParamHeaders_LISHydro
-! \label{writeParamHeaders_LISHydro}
-! 
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: writeParamHeaders_LISHydro
+  ! \label{writeParamHeaders_LISHydro}
+  !
+  ! !INTERFACE:
   subroutine writeParamHeaders_LISHydro(n, ftn, dimID, met_dimID, monthID, qID, flag)
-    
-! !USES:
+
+    ! !USES:
     use LDT_coreMod, only : LDT_rc, LDT_config
-! !DESCRIPTION: 
-!  This subroutine invokes the routines to write the data headers
-!  in the parameter preprocessing mode for LISHydro. 
-!EOP
-    integer     :: n 
+    ! !DESCRIPTION:
+    !  This subroutine invokes the routines to write the data headers
+    !  in the parameter preprocessing mode for LISHydro.
+    !EOP
+    integer     :: n
     integer     :: ftn
     integer     :: dimID(4)
     integer     :: met_dimID(LDT_rc%nmetforc_parms,3)
@@ -2258,7 +2224,7 @@ contains
     integer     :: qID
     integer     :: k
     integer     :: flag
- 
+
     call LDT_LMLC_writeHeader(n,ftn,dimID,flag)
     call LDT_surfacetype_writeHeader(n,ftn,dimID,flag)
     call LDT_LSMCropMod_writeHeader(n,ftn,dimID,flag)
@@ -2276,27 +2242,27 @@ contains
     call LDT_climateParms_writeHeader(n,ftn,dimID,met_dimID,monthID)
     call LDT_glacierfrac_writeHeader(n,ftn,dimID)
 
-! - Forcing-specific parameter headers
+    ! - Forcing-specific parameter headers
     call LDT_forcingParms_writeHeader(n,ftn,dimID,met_dimID)
 
   end subroutine writeParamHeaders_LISHydro
 
-!BOP
-! !ROUTINE: writeParamData_LIS
-!\label{writeParamData_LIS}
-! 
-! !INTERFACE: 
+  !BOP
+  ! !ROUTINE: writeParamData_LIS
+  !\label{writeParamData_LIS}
+  !
+  ! !INTERFACE:
   subroutine writeParamData_LIS(n, ftn)
-! !USES:
+    ! !USES:
     use LDT_coreMod
-! 
-! !DESCRIPTION: 
-! 
-! This routine writes the parameter data to file
-!  in the standard preprocessing mode for LIS. 
-!EOP
+    !
+    ! !DESCRIPTION:
+    !
+    ! This routine writes the parameter data to file
+    !  in the standard preprocessing mode for LIS.
+    !EOP
 
-    integer  :: n 
+    integer  :: n
     integer  :: ftn
 
     call LDT_LMLC_writeData(n,ftn)
@@ -2317,33 +2283,33 @@ contains
     call LDT_climateParms_writeData(n,ftn)
     call LDT_glacierfrac_writeData(n,ftn)
 
-! - Forcing-specific data
+    ! - Forcing-specific data
     call LDT_forcingParms_writeData(n,ftn)
 
-! OPT/UE parameters
+    ! OPT/UE parameters
     if (LDT_rc%runmode.eq."OPTUE parameter processing") then
        call LDT_optue_writeData(n,ftn)
     endif
 
   end subroutine writeParamData_LIS
 
-!BOP
-!
-! !ROUTINE: writeParamData_LISHydro
-! \label{writeParamData_LISHydro}
-! 
-! !INTERFACE: 
+  !BOP
+  !
+  ! !ROUTINE: writeParamData_LISHydro
+  ! \label{writeParamData_LISHydro}
+  !
+  ! !INTERFACE:
   subroutine writeParamData_LISHydro(n, ftn,flag)
 
-! !USES:
+    ! !USES:
     use LDT_coreMod
-! !DESCRIPTION: 
-! 
-!  This routine writes the parameter data to file
-!  in the preprocessing mode for LIShydro
-!EOP
+    ! !DESCRIPTION:
+    !
+    !  This routine writes the parameter data to file
+    !  in the preprocessing mode for LIShydro
+    !EOP
 
-    integer  :: n 
+    integer  :: n
     integer  :: ftn
 
     integer :: ierr
@@ -2367,92 +2333,90 @@ contains
     call LDT_climateParms_writeData(n,ftn)
     call LDT_glacierfrac_writeData(n,ftn)
 
-
-! - Forcing-specific data
+    ! - Forcing-specific data
     call LDT_forcingParms_writeData(n,ftn)
 
   end subroutine writeParamData_LISHydro
 
-
   subroutine setLakecoverCategories(n,source)
-    integer          :: n 
+    integer          :: n
     character(len=*) :: source
 
     select case( source )
-     case ( "GLDBv1", "GLDBv2" ) 
+    case ( "GLDBv1", "GLDBv2" )
        LDT_LSMparam_struc(n)%lakecover%num_bins = 1
        LDT_LSMparam_struc(n)%lakecover%standard_name = &
             "(FLake) GLDB lake fraction map"
-     case default
-       print*, "The Lake Cover Type, ",trim(source),", is not known. "
-       print*, "[ERR] Please define setLakecoverCategories" 
-       print*, "Stopping ..."
-       stop
+    case default
+       write(LDT_logunit,*) "The Lake Cover Type, ",trim(source),", is not known. "
+       write(LDT_logunit,*) "[ERR] Please define setLakecoverCategories"
+       write(LDT_logunit,*) "Stopping ..."
+       call LDT_endrun()
     end select
 
   end subroutine setLakecoverCategories
 
   subroutine setGlacierMaskCategories(n,source)
-    integer          :: n 
+    integer          :: n
     character(len=*) :: source
 
     select case( source )
-     case ( "GLIMS", "MODIS_Native" ) 
+    case ( "GLIMS", "MODIS_Native" )
        LDT_LSMparam_struc(n)%glaciermask%num_bins = 1
        LDT_LSMparam_struc(n)%glaciermask%standard_name = &
             "GLIMS glacier mask map"
-     case default
-       print*, "The glaciermask source ",trim(source),", is not known. "
-       print*, "Please define setGlaciermaskCategories" 
-       print*, "Stopping ..."
-       stop
+    case default
+       write(LDT_logunit,*) "The glaciermask source ",trim(source),", is not known. "
+       write(LDT_logunit,*) "Please define setGlaciermaskCategories"
+       write(LDT_logunit,*) "Stopping ..."
+       call LDT_endrun()
     end select
 
   end subroutine setGlaciermaskCategories
 
   subroutine setTextureCategories(n,source)
-    integer          :: n 
+    integer          :: n
     character(len=*) :: source
 
-    if(source.ne."none") then 
-       if(source.eq."STATSGOFAO_Native") then 
+    if(source.ne."none") then
+       if(source.eq."STATSGOFAO_Native") then
           LDT_LSMparam_struc(n)%texture%num_bins = 16
           LDT_LSMparam_struc(n)%texture%standard_name = &
-            "(NCAR) STATSGO+FAO blended soil texture map"
+               "(NCAR) STATSGO+FAO blended soil texture map"
 
-       elseif(source.eq."STATSGOFAO_LIS") then 
+       elseif(source.eq."STATSGOFAO_LIS") then
           LDT_LSMparam_struc(n)%texture%num_bins = 16
           LDT_LSMparam_struc(n)%texture%standard_name = &
-            "(LIS-modified) STATSGO+FAO blended soil texture map"
+               "(LIS-modified) STATSGO+FAO blended soil texture map"
 
-       elseif(source.eq."STATSGOv1") then 
+       elseif(source.eq."STATSGOv1") then
           LDT_LSMparam_struc(n)%texture%num_bins = 16
           LDT_LSMparam_struc(n)%texture%standard_name = &
-            "(USDA/PSU) STATSGOv1 CONUS-only soil texture map"
+               "(USDA/PSU) STATSGOv1 CONUS-only soil texture map"
 
-       elseif(source.eq."ZOBLER_GFS") then 
+       elseif(source.eq."ZOBLER_GFS") then
           LDT_LSMparam_struc(n)%texture%num_bins = 9
           LDT_LSMparam_struc(n)%texture%standard_name = &
-            "ZOBLER GFS soil texture map"
+               "ZOBLER GFS soil texture map"
 
        elseif(source.eq."CONSTANT") then
           LDT_LSMparam_struc(n)%texture%num_bins = 16
           LDT_LSMparam_struc(n)%texture%standard_name = &
-            "CONSTANT soil texture map"
+               "CONSTANT soil texture map"
 
        elseif(source.eq."ISRIC") then
           LDT_LSMparam_struc(n)%texture%num_bins = 13
           LDT_LSMparam_struc(n)%texture%standard_name = &
-            "ISRIC soil texture map"
+               "ISRIC soil texture map"
 
-       elseif(source.eq."Special") then  
+       elseif(source.eq."Special") then
           LDT_LSMparam_struc(n)%texture%num_bins = 14
           LDT_LSMparam_struc(n)%texture%standard_name = &
-            "Special soil texture map"
+               "Special soil texture map"
 
        else
-          print*, 'Please define setTextureCategories for '//trim(source)
-          stop
+          write(LDT_logunit,*) 'Please define setTextureCategories for '//trim(source)
+          call LDT_endrun()
        endif
     endif
   end subroutine setTextureCategories
@@ -2460,106 +2424,141 @@ contains
   subroutine setLandcoverCategories(n,source)
 
     use LDT_coreMod, only : LDT_rc
-    integer          :: n 
+    integer          :: n
     character(len=*) :: source
 
- ! Note: landcover "source" options will be updated in future
+    ! Note: landcover "source" options will be updated in future
 
     LDT_LSMparam_struc(:)%landcover%vlevels = 1
 
     select case( source )
 
-      case( "AVHRR", "AVHRR_GFS", "SACHTET.3.5.6", "RDHM.3.5.6" )
-        LDT_rc%lc_type(n) = "UMD"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 14
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "AVHRR", "AVHRR_GFS", "SACHTET.3.5.6", "RDHM.3.5.6" )
+       LDT_rc%lc_type(n) = "UMD"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 14
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "AVHRR UMD landcover map"
 
-      case( "MODIS_Native", "MODIS_LIS", "MCD12Q1" )
-        LDT_rc%lc_type(n) = "IGBPNCEP"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 20
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "MODIS_Native", "MODIS_LIS", "MCD12Q1" )
+       LDT_rc%lc_type(n) = "IGBPNCEP"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 20
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "MODIS-IGBP (NCEP-modified) landcover map"
 
-      case( "MODIS_Native_PFT" )
-        LDT_rc%lc_type(n) = "JULES_PFT"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 9
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "MODIS_Native_PFT" )
+       LDT_rc%lc_type(n) = "JULES_PFT"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 9
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "JULES PFT landcover map based on MODIS-IGBP (NCEP-modified)"
-      
-      case( "UKMO_IGBP_Native_PFT" )
-        LDT_rc%lc_type(n) = "JULES_PFT"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 9
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+
+    case( "UKMO_IGBP_Native_PFT" )
+       LDT_rc%lc_type(n) = "JULES_PFT"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 9
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "JULES PFT landcover map based on UKMO IGBP "
 
-      case( "UM_Native_Ancillary" )
-        LDT_rc%lc_type(n) = "JULES_PFT"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 10
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "UM_Native_Ancillary" )
+       LDT_rc%lc_type(n) = "JULES_PFT"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 10
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "UM CAP generated land cover data "
 
-
-      case( "USGS_Native", "USGS_LIS" ) 
-        LDT_rc%lc_type(n) = "USGS"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 24
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "USGS_Native", "USGS_LIS" )
+       LDT_rc%lc_type(n) = "USGS"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 24
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "USGS landcover map"
 
-      case( "MOSAIC", "CLSMF2.5" ) 
-        LDT_rc%lc_type(n) = "MOSAIC"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 7
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "MOSAIC", "CLSMF2.5" )
+       LDT_rc%lc_type(n) = "MOSAIC"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 7
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "CLSMF2.5/MOSAIC landcover map"
 
-      case( "ISA" ) 
-        LDT_rc%lc_type(n) = "ISA"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 13
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "ISA" )
+       LDT_rc%lc_type(n) = "ISA"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 13
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "ISA landcover map"
 
-      case( "ALMIPII" ) 
-        LDT_rc%lc_type(n) = "ECOCLIMAP2"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 12
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "ALMIPII" )
+       LDT_rc%lc_type(n) = "ECOCLIMAP2"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 12
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "ECOCLIMAP2 landcover map"
 
-      case( "VIC411", "VIC412" ) 
-        LDT_rc%lc_type(n) = "UMD"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 14
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "VIC411", "VIC412" )
+       LDT_rc%lc_type(n) = "UMD"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 14
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "VIC-based AVHRR/UMD landcover map"
 
-      case( "CLM45" ) 
-        LDT_rc%lc_type(n) = "CLM45"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 36
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "CLM45" )
+       LDT_rc%lc_type(n) = "CLM45"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 36
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "CLM-4.5 PFT and landunits landcover map"
 
-      case( "NALCMS_SM" )
-        LDT_rc%lc_type(n) = "NALCMS_SM"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 24
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "NALCMS_SM" )
+       LDT_rc%lc_type(n) = "NALCMS_SM"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 24
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "SnowModel-mapped NALCMS landcover classes map"
 
-      case( "NALCMS_SM_IGBPNCEP" )
-        LDT_rc%lc_type(n) = "NALCMS_SM_IGBPNCEP"
-        LDT_LSMparam_struc(n)%landcover%num_bins = 20
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "NALCMS_SM_IGBPNCEP" )
+       LDT_rc%lc_type(n) = "NALCMS_SM_IGBPNCEP"
+       LDT_LSMparam_struc(n)%landcover%num_bins = 20
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "NALCMS/SnowModel landcover classes mapped to IGBP/NCEP"
 
-      case( "CONSTANT" ) 
-        LDT_LSMparam_struc(n)%landcover%num_bins = 13
-        LDT_LSMparam_struc(n)%landcover%standard_name = &
+    case( "CONSTANT" )
+       LDT_LSMparam_struc(n)%landcover%num_bins = 13
+       LDT_LSMparam_struc(n)%landcover%standard_name = &
             "'CONSTANT' landcover field"
-     case default
-       print*, 'Please define setLandcoverCategories '
-       print*, ' Stopping ... '
-       stop
+    case default
+       write(LDT_logunit,*) 'Please define setLandcoverCategories '
+       write(LDT_logunit,*) ' Stopping ... '
+       call LDT_endrun()
     end select
 
-
   end subroutine setLandcoverCategories
+
+  subroutine setCropClassCategories(n,source)
+
+    use LDT_coreMod, only : LDT_rc
+    integer          :: n
+    character(len=*) :: source
+
+    ! Specify number of crop types by source:
+
+    select case( source )
+
+    case( "CROPMAP" )
+       LDT_rc%numcrop(n) = 19
+    case( "FAOSTAT01" )
+       LDT_rc%numcrop(n) = 18
+    case( "FAOSTAT05" )
+       LDT_rc%numcrop(n) = 175
+    case( "MIRCA" )
+       LDT_rc%numcrop(n) = 26
+    case( "MIRCA52" )
+       LDT_rc%numcrop(n) = 52
+
+    case default
+       write(LDT_logunit,*) "[ERR] THE CROP CLASSIFICATION TYPE, ",&
+            trim(source),", IS NOT RECOGNIZED."
+       write(LDT_logunit,*) "  Please enter one of the following options: "
+       write(LDT_logunit,*) "   -- CROPMAP   "
+       write(LDT_logunit,*) "   -- FAOSTAT01 "
+       write(LDT_logunit,*) "   -- FAOSTAT05 "
+       write(LDT_logunit,*) "   -- MIRCA "
+       write(LDT_logunit,*) "   -- MIRCA52 "
+       write(LDT_logunit,*) "  Stopping ..."
+       call LDT_endrun()
+
+    end select
+
+  end subroutine setCropClassCategories
 
 end module LDT_paramProcMod
 

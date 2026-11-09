@@ -1,0 +1,19 @@
+#!/bin/csh
+
+#SBATCH -J ldt_test
+#SBATCH --ntasks=4
+#SBATCH --constraint=mil
+#SBATCH --time=1:00:00
+#SBATCH -o output.%j
+#SBATCH -e error.%j
+#SBATCH --account=s1189
+#SBATCH --chdir=/discover/nobackup/hkato/IRRIGATION/testcase/issue106
+
+source /home/hkato/.cshrc
+module use --append $HOME/privatemodules
+module purge
+module load lisf_7.5_intel_2023.2.1
+limit stacksize unlimited
+
+mpirun -np 4 ./LDT ldt.config
+
