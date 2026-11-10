@@ -79,6 +79,8 @@ contains
 
 #if ( defined SM_NOAHMP_5_2 )
     external noahmp52_getirrigationstates
+#endif
+
 #if ( defined IRR_CONCURRENT )
 #if ( defined SM_NOAH_3_3 )
    call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
