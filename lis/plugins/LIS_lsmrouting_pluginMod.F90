@@ -110,19 +110,19 @@ contains
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   external noahmp50_getrunoffs
-   external noahmp50_getrunoffs_mm
-   external noahmp50_getrunoffs_hymap2
-   external noahmp50_getsws_hymap2
-   external noahmp50_getrunoffs_rapid
+    external noahmp50_getrunoffs
+    external noahmp50_getrunoffs_mm
+    external noahmp50_getrunoffs_hymap2
+    external noahmp50_getsws_hymap2
+    external noahmp50_getrunoffs_rapid
 #endif
 
 #if ( defined SM_NOAHMP_5_2 )
-   external noahmp52_getrunoffs
-   external noahmp52_getrunoffs_mm
-   external noahmp52_getrunoffs_hymap2
-   external noahmp52_getsws_hymap2
-   external noahmp52_getrunoffs_rapid
+    external noahmp52_getrunoffs
+    external noahmp52_getrunoffs_mm
+    external noahmp52_getrunoffs_hymap2
+    external noahmp52_getsws_hymap2
+    external noahmp52_getrunoffs_rapid
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -214,15 +214,15 @@ contains
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
-        trim(LIS_HYMAProuterId)//char(0), &
-        noahmp50_getrunoffs_mm)
+    call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_HYMAProuterId)//char(0), &
+         noahmp50_getrunoffs_mm)
 #endif
 
 #if ( defined SM_NOAHMP_5_2 )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
-        trim(LIS_HYMAProuterId)//char(0), &
-        noahmp52_getrunoffs_mm)
+    call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_HYMAProuterId)//char(0), &
+         noahmp52_getrunoffs_mm)
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -503,15 +503,15 @@ contains
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
-        trim(LIS_NLDASrouterId)//char(0), &
-        noahmp50_getrunoffs)
+    call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_NLDASrouterId)//char(0), &
+         noahmp50_getrunoffs)
 #endif
 
 #if ( defined SM_NOAHMP_5_2 )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
-        trim(LIS_NLDASrouterId)//char(0), &
-        noahmp52_getrunoffs)
+    call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_NLDASrouterId)//char(0), &
+         noahmp52_getrunoffs)
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -553,15 +553,15 @@ contains
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
-        trim(LIS_RAPIDrouterId)//char(0), &
-        noahmp50_getrunoffs_rapid)
+    call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_RAPIDrouterId)//char(0), &
+         noahmp50_getrunoffs_rapid)
 #endif
 
 #if ( defined SM_NOAHMP_5_2 )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
-        trim(LIS_RAPIDrouterId)//char(0), &
-        noahmp52_getrunoffs_rapid)
+    call registerlsmroutinggetrunoff(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_RAPIDrouterId)//char(0), &
+         noahmp52_getrunoffs_rapid)
 #endif
 
 #if ( defined SM_JULES_5_0 )

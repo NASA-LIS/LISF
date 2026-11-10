@@ -48,7 +48,8 @@ subroutine noahmp52_getsws_hymap2(n)
 
   if(enable2waycpl==1) then
      ! River Storage
-     call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field,rc=status)
+     call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field, &
+          rc=status)
      call LIS_verify(status,'ESMF_StateGet failed for River Storage')
 
      call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivstotmp,rc=status)
@@ -57,7 +58,8 @@ subroutine noahmp52_getsws_hymap2(n)
           NoahMP52_struc(n)%noahmp52(:)%rivsto=rivstotmp/NoahMP52_struc(n)%ts
 
      ! Flood Storage
-     call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field,rc=status)
+     call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field, &
+          rc=status)
      call LIS_verify(status,'ESMF_StateGet failed for Flood Storage')
 
      call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldstotmp,rc=status)
@@ -66,7 +68,8 @@ subroutine noahmp52_getsws_hymap2(n)
           NoahMP52_struc(n)%noahmp52(:)%fldsto=fldstotmp/NoahMP52_struc(n)%ts
 
      ! Flooded Fraction Flag
-     call ESMF_StateGet(LIS_runoff_state(n),"Flooded Fraction",fldfrc_field,rc=status)
+     call ESMF_StateGet(LIS_runoff_state(n),"Flooded Fraction",fldfrc_field, &
+          rc=status)
      call LIS_verify(status,'ESMF_StateGet failed for Flooded Fraction')
 
      call ESMF_FieldGet(fldfrc_field,localDE=0,farrayPtr=fldfrctmp,rc=status)

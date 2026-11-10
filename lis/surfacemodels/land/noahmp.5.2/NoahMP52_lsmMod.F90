@@ -93,15 +93,18 @@ module NoahMP52_lsmMod
 ! \item[btr\_opt]
 !   soil moisture factor for stomatal resistance(1->Noah;2->CLM;3->SSiB)
 ! \item[runsfc\_opt]
-!   surface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF; 6->VIC; 7->XinAnJiang; 8->DynamicVIC)
+!   surface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF;
+!     6->VIC; 7->XinAnJiang; 8->DynamicVIC)
 ! \item[runsub\_opt]
-!   subsurface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF; 6->VIC; 7->XinAnJiang; 8->DynamicVIC)
+!   subsurface runoff (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS; 5->MMF;
+!     6->VIC; 7->XinAnJiang; 8->DynamicVIC)
 ! \item[sfc\_opt]
 !   surface layer drag coeff (CH \& CM) (1->M-O; 2->Chen97)
 ! \item[frz\_opt]
 !   supercooled liquid water (1->NY06; 2->Koren99)
 ! \item[tksno\_opt]
-!   snow thermal conductivity (1->Yen1965; 2->Anderson1976; 3->constant; 4->Verseghy1991; 5->Yen1981)
+!   snow thermal conductivity (1->Yen1965; 2->Anderson1976; 3->constant;
+!     4->Verseghy1991; 5->Yen1981)
 ! \item[inf\_opt]
 !   frozen soil permeability (1->NY06; 2->Koren99)
 ! \item[rad\_opt]
@@ -131,9 +134,11 @@ module NoahMP52_lsmMod
 ! \item[crop\_opt]
 !   crop model option (0->none; 1->Liu2016)
 ! \item[irr\_opt]
-!    irrigation scheme option (0->none; 1->always on; 2->trigger by planting/harvest dates; 3->trigger by LAI)
+!    irrigation scheme option (0->none; 1->always on; 2->trigger by
+!      planting/harvest dates; 3->trigger by LAI)
 ! \item[irrm\_opt]
-!    irrigation method option (0->fraction from input; 1->sprinkler; 2->micro/drip; 3->flood)
+!    irrigation method option (0->fraction from input; 1->sprinkler;
+!      2->micro/drip; 3->flood)
 ! \item[tdrn\_opt]
 !    tile drainage option (0->none; 1->simple drainage; 2->Hooghoudt's scheme)
 ! \item[urban\_opt]
