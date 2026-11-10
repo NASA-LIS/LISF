@@ -132,7 +132,7 @@ _INVOCATIONS = {
 def _usage():
     """Print command line usage"""
     print(f"Usage: {sys.argv[0]} generating_process period yyyymmddhh fhh" + \
-          "[--nospread]")
+          " [--nospread]")
     print("   where:")
     print("        generating_process is GP section of LIS output filename")
     print("        period is time period (hours) for postprocessing (3 or 24)")
