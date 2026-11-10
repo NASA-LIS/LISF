@@ -23,7 +23,8 @@ module LIS_sublsm_pluginMod
 !  09 Oct 2003    Sujay Kumar  Initial Specification
 !  04 Jun 2021    Mahdi Navari Modified for Naoh.3.9
 !  12 Aug 2021    Kristi Arsenault  Added SnowModel
-!  16 Sep 2026    Cenlin He  Added NoahMP 5.0
+!  16 Sep 2026    Cenlin He    Added NoahMP 5.0
+!  16 Oct 2026    David Mocko  Added NoahMP 5.2
 !
 !EOP
   implicit none
@@ -160,6 +161,11 @@ contains
     external NoahMP50_setCROCUSimport
 #endif
 
+#if ( defined SM_NOAHMP_5_2 )
+    external noahmp52_getCROCUSexport
+    external noahmp52_setCROCUSimport
+#endif
+
 #if ( defined SM_NOAH_3_9 )
     external Noah39_getCROCUSexport
     external Noah39_setCROCUSimport
@@ -188,6 +194,11 @@ contains
 #if ( defined SM_NOAHMP_5_0 )
     external NoahMP50_getSnowModelexport
     external NoahMP50_setSnowModelimport
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    external noahmp52_getSnowModelexport
+    external noahmp52_setSnowModelimport
 #endif
 
 #endif
@@ -226,6 +237,15 @@ contains
     call registerlsmsetsublsmimport(trim(LIS_noahmp50Id)//char(0),&
          NoahMP50_setCROCUSimport)
     call registersublsm2lsmgetexport(trim(LIS_noahmp50Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsm2sublsmgetexport(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_Crocus81Id)//char(0),NoahMP50_getCROCUSexport)
+    call registerlsmsetsublsmimport(trim(LIS_noahmp52Id)//char(0),&
+         noahmp52_setCROCUSimport)
+    call registersublsm2lsmgetexport(trim(LIS_noahmp52Id)//"+"//&
          trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
 
@@ -279,6 +299,16 @@ contains
     call registersublsm2lsmgetexport(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
 #endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsm2sublsmgetexport(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_snowmodelId)//char(0),NoahMP50_getSnowModelexport)
+    call registerlsmsetsublsmimport(trim(LIS_noahmp52Id)//char(0),&
+         noahmp52_setSnowModelimport)
+    call registersublsm2lsmgetexport(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
+#endif
+
 #endif
 
   end subroutine LIS_sublsm_plugin
