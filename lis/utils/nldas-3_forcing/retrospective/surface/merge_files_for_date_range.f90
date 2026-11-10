@@ -29,25 +29,28 @@
 !   4. <end_year>     - End year of the processing range (e.g., 2000)
 !   5. <end_month>    - End month of the processing range (e.g., 1 for January)
 !   6. <end_day>      - End day of the processing range (e.g., 31)
+!   7. <indir>        - Directory holding the hourly LIS output
+!                       (YYYYMM/ subfolders)
+!   8. <outdir>       - Directory for the daily output files
 !
 ! Command line arguments to compile this script:
 !   module purge
 !   module use --append $HOME/privatemodules
-!   module load lisf_7_intel_19_1_0_166
+!   module load lisf_7.5_intel_2023.2.1_mapl
+!   (sets LIS_NETCDF=/discover/nobackup/projects/lis/libs/sles-15.4/\
+!     netcdf/4.9.2_intel-2023.2.1)
 !   ifort -c -g -check all -traceback -names lowercase -convert big_endian\
-!     -assume byterecl -I /discover/nobackup/projects/lis/libs/netcdf/\
-!     4.5.0_intel-19.1.0.166_sles12/include merge_files_for_date_range.f90
-!   ifort -o merge_files_for_date_range merge_files_for_date_range.o -L\
-!     /discover/nobackup/projects/lis/libs/netcdf/\
-!     4.5.0_intel-19.1.0.166_sles12/lib/ -lnetcdf -lnetcdff
+!     -assume byterecl -I ${LIS_NETCDF}/include merge_files_for_date_range.f90
+!   ifort -o merge_files_for_date_range merge_files_for_date_range.o\
+!     -L ${LIS_NETCDF}/lib -lnetcdf -lnetcdff
 !
 !
 ! Usage:
 !   ./merge_files_for_date_range <start_year> <start_month> <start_day>\
-!     <end_year> <end_month> <end_day>
+!     <end_year> <end_month> <end_day> <indir> <outdir>
 !
 ! Example:
-!   ./mergefiles 2000 1 1 2000 1 30
+!   ./merge_files_for_date_range 2000 1 1 2000 1 30 <indir> <outdir>
 !   This processes files for the date range January 1–30, 2000.
 !
 ! Steps Performed:
@@ -113,8 +116,9 @@ Program mergefiles
 
   ! Validate the number of arguments
   if (command_argument_count() < 8) then
-     print *, "Usage: ./mergefiles <start_year> <start_month> <start_day> " &
-          //"<end_year> <end_month> <end_day> <indir> <outdir>"
+     print *, "Usage: ./merge_files_for_date_range <start_year> " &
+          //"<start_month> <start_day> <end_year> <end_month> <end_day> " &
+          //"<indir> <outdir>"
      stop "Insufficient arguments provided."
   end if
 
@@ -379,8 +383,8 @@ Program mergefiles
            ! Add time variable attributes
            call check(nf90_put_att(ncid, dt_id, "long_name", "time"))
            call check(nf90_put_att(ncid, dt_id, "units", &
-                "minutes since "//TRIM(year_str)//"-"//TRIM(fmonth(14:15))// &
-                "-"//TRIM(fday(16:17))//" 00:30:00"))
+                "minutes since "//TRIM(year_str)//"-"//TRIM(fmonth(1:2))// &
+                "-"//TRIM(fday(1:2))//" 00:30:00"))
            call check(nf90_put_att(ncid, dt_id, "time_increment", 10000))
            call check(nf90_put_att(ncid, dt_id, "begin_date", &
                 (iyear) * 10000 + imonth * 100 + iday))  ! Correct YYYYMMDD
