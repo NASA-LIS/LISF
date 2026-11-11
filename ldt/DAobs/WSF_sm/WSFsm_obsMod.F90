@@ -17,8 +17,8 @@
 ! !REVISION HISTORY:
 !   2025: Ehsan Jalilvand; Initial Specification
 !   Oct 2026: The grid of the WSF SM files is read from ldt.config
-!             ("WSF soil moisture grid ..." entries); defaults to the
-!             ARFS grid (2560 x 1920) when the entries are absent.
+!             ("WSF soil moisture grid ..." entries). All six entries
+!             are required; there is no default grid.
 !
 module WSFsm_obsMod
 ! !USES:
@@ -94,9 +94,6 @@ contains
          'WSF soil moisture grid upper right lon:', &
          'WSF soil moisture grid resolution (dx):', &
          'WSF soil moisture grid resolution (dy):' ]
-    ! ARFS grid (cell centres), used when the entries are absent
-    real, parameter :: arfs_dd(6) = (/ -89.953125, -179.9296875, &
-         89.953125, 179.9296875, 0.140625, 0.09375 /)
 
     external :: bilinear_interp_input
     external :: upscaleByAveraging_input
@@ -113,25 +110,34 @@ contains
     enddo
 
     ! Grid of the WSF soil moisture files (cell centres). All six
-    ! entries or none; none means the ARFS grid.
+    ! entries are required; there is no default grid.
     allocate(grid_dd(LDT_rc%nnest,6))
-    call ESMF_ConfigFindLabel(LDT_config, trim(grid_labels(1)), rc=status)
-    if (status == 0) then
-       do i = 1, 6
-          call ESMF_ConfigFindLabel(LDT_config, trim(grid_labels(i)), rc=status)
-          call LDT_verify(status, trim(grid_labels(i))//' not defined')
-          do n=1,LDT_rc%nnest
-             call ESMF_ConfigGetAttribute(LDT_config, grid_dd(n,i), rc=status)
-             call LDT_verify(status, trim(grid_labels(i))//' not defined')
-          enddo
-       enddo
-    else
-       write(LDT_logunit,*) '[INFO] WSF soil moisture grid not given in '// &
-            'ldt.config; using the ARFS grid (2560 x 1920)'
+    do i = 1, 6
+       call ESMF_ConfigFindLabel(LDT_config, trim(grid_labels(i)), rc=status)
+       if (status /= 0) then
+          write(LDT_logunit,*) '[ERR] ', trim(grid_labels(i)), &
+               ' not defined in ldt.config'
+          write(LDT_logunit,*) '[ERR] Give the grid of the WSF soil ', &
+               'moisture files with all six entries:'
+          write(LDT_logunit,*) '[ERR]   ', trim(grid_labels(1)), ' ... ', &
+               trim(grid_labels(6))
+       endif
+       call LDT_verify(status, trim(grid_labels(i))//' not defined')
        do n=1,LDT_rc%nnest
-          grid_dd(n,:) = arfs_dd
+          call ESMF_ConfigGetAttribute(LDT_config, grid_dd(n,i), rc=status)
+          call LDT_verify(status, trim(grid_labels(i))//' not defined')
        enddo
-    endif
+    enddo
+    do n=1,LDT_rc%nnest
+       if (grid_dd(n,5) <= 0.0 .or. grid_dd(n,6) <= 0.0 .or. &
+            grid_dd(n,3) <= grid_dd(n,1) .or. &
+            grid_dd(n,4) <= grid_dd(n,2)) then
+          write(LDT_logunit,*) '[ERR] Invalid WSF soil moisture grid in ', &
+               'ldt.config (lower left, upper right, dx, dy):'
+          write(LDT_logunit,*) '[ERR] ', grid_dd(n,:)
+          call LDT_endrun()
+       endif
+    enddo
 
     do n=1,LDT_rc%nnest
 

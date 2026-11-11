@@ -21,8 +21,9 @@
 !          duplicate logging when LDT timestep is sub-daily.
 !          Add diagnostic counters.
 !   2026-10: Grid of the WSF files from ldt.config (see WSFsm_obsMod);
-!            row order taken from the file's lat variable; files whose
-!            lat/lon do not match the configured grid are skipped.
+!            row order taken from the file's lat variable; LDT stops if
+!            a file's grid does not match the configured grid or the
+!            file has no lat/lon variables.
 !
 ! !INTERFACE:
 subroutine readWSFsmObs(n)
@@ -297,21 +298,15 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
      rc = nf90_close(ncid)
      return
   end if
-  if (nlat .ne. WSFsmobs(n)%nr) then
-     write(LDT_logunit,*) '[ERR] Expected lat dimension to be ', &
-          WSFsmobs(n)%nr
-     write(LDT_logunit,*) '[ERR] Found ', nlat, ' from ', trim(fname)
-     write(LDT_logunit,*) '[ERR] LDT will continue...'
-     rc = nf90_close(ncid)
-     return
-  end if
-  if (nlon .ne. WSFsmobs(n)%nc) then
-     write(LDT_logunit,*) '[ERR] Expected lon dimension to be ', &
-          WSFsmobs(n)%nc
-     write(LDT_logunit,*) '[ERR] Found ', nlon, ' from ', trim(fname)
-     write(LDT_logunit,*) '[ERR] LDT will continue...'
-     rc = nf90_close(ncid)
-     return
+  ! A grid mismatch means ldt.config does not describe these files:
+  ! stop rather than build a CDF from the wrong cells.
+  if (nlat .ne. WSFsmobs(n)%nr .or. nlon .ne. WSFsmobs(n)%nc) then
+     write(LDT_logunit,*) '[ERR] Grid size of ', trim(fname), &
+          ' does not match "WSF soil moisture grid" in ldt.config'
+     write(LDT_logunit,*) '[ERR] File   (lon x lat): ', nlon, ' x ', nlat
+     write(LDT_logunit,*) '[ERR] Config (lon x lat): ', &
+          WSFsmobs(n)%nc, ' x ', WSFsmobs(n)%nr
+     call LDT_endrun()
   end if
 
   ! Check the file grid against the configured one and get the row order
@@ -334,14 +329,12 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
              minval(flat), minval(flon)
         write(LDT_logunit,*) '[ERR] Config lower left (lat, lon): ', &
              WSFsmobs(n)%lat_ll, WSFsmobs(n)%lon_ll
-        write(LDT_logunit,*) '[ERR] LDT will skip this file...'
-        rc = nf90_close(ncid)
-        deallocate(flat, flon)
-        return
+        call LDT_endrun()
      end if
   else
-     write(LDT_logunit,*) '[WARN] No lat/lon variables in ', trim(fname), &
-          '; assuming rows run north to south'
+     write(LDT_logunit,*) '[ERR] No lat/lon variables in ', trim(fname)
+     write(LDT_logunit,*) '[ERR] Cannot check the grid or the row order'
+     call LDT_endrun()
   end if
   deallocate(flat, flon)
 

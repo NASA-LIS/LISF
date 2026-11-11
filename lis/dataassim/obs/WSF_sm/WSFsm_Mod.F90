@@ -18,8 +18,8 @@
 ! !REVISION HISTORY:
 !  2 Oct 2025 Ehsan Jalilvand; initial specification
 !  Oct 2026   Ehsan Jalilvand; grid of the WSF files read from lis.config
-!             ("WSF soil moisture grid ..." entries); defaults to the
-!             ARFS grid (2560 x 1920) when the entries are absent.
+!             ("WSF soil moisture grid ..." entries). All six entries
+!             are required; there is no default grid.
 
 module WSFsm_Mod
 ! !USES:
@@ -151,9 +151,6 @@ contains
          'WSF soil moisture grid upper right lon:', &
          'WSF soil moisture grid resolution (dx):', &
          'WSF soil moisture grid resolution (dy):' ]
-    ! ARFS grid (cell centres), used when the entries are absent
-    real, parameter                   ::  arfs_dd(6) = (/ -89.953125, &
-         -179.9296875, 89.953125, 179.9296875, 0.140625, 0.09375 /)
 
     external :: bilinear_interp_input_withgrid
     external :: upscaleByAveraging_input
@@ -354,25 +351,34 @@ contains
          '[INFO] Created the States to hold the WSF observations data'
 
     ! Grid of the WSF soil moisture files (cell centres). All six
-    ! entries or none; none means the ARFS grid.
+    ! entries are required; there is no default grid.
     allocate(grid_dd(LIS_rc%nnest,6))
-    call ESMF_ConfigFindLabel(LIS_config, trim(grid_labels(1)), rc=status)
-    if (status == 0) then
-       do i = 1, 6
-          call ESMF_ConfigFindLabel(LIS_config, trim(grid_labels(i)), rc=status)
-          call LIS_verify(status, trim(grid_labels(i))//' not defined')
-    do n=1,LIS_rc%nnest
-             call ESMF_ConfigGetAttribute(LIS_config, grid_dd(n,i), rc=status)
-             call LIS_verify(status, trim(grid_labels(i))//' not defined')
-          enddo
-       enddo
-    else
-       write(LIS_logunit,*) '[INFO] WSF soil moisture grid not given in '// &
-            'lis.config; using the ARFS grid (2560 x 1920)'
+    do i = 1, 6
+       call ESMF_ConfigFindLabel(LIS_config, trim(grid_labels(i)), rc=status)
+       if (status /= 0) then
+          write(LIS_logunit,*) '[ERR] ', trim(grid_labels(i)), &
+               ' not defined in lis.config'
+          write(LIS_logunit,*) '[ERR] Give the grid of the WSF soil ', &
+               'moisture files with all six entries:'
+          write(LIS_logunit,*) '[ERR]   ', trim(grid_labels(1)), ' ... ', &
+               trim(grid_labels(6))
+       endif
+       call LIS_verify(status, trim(grid_labels(i))//' not defined')
        do n=1,LIS_rc%nnest
-          grid_dd(n,:) = arfs_dd
+          call ESMF_ConfigGetAttribute(LIS_config, grid_dd(n,i), rc=status)
+          call LIS_verify(status, trim(grid_labels(i))//' not defined')
        enddo
-    endif
+    enddo
+    do n=1,LIS_rc%nnest
+       if (grid_dd(n,5) <= 0.0 .or. grid_dd(n,6) <= 0.0 .or. &
+            grid_dd(n,3) <= grid_dd(n,1) .or. &
+            grid_dd(n,4) <= grid_dd(n,2)) then
+          write(LIS_logunit,*) '[ERR] Invalid WSF soil moisture grid in ', &
+               'lis.config (lower left, upper right, dx, dy):'
+          write(LIS_logunit,*) '[ERR] ', grid_dd(n,:)
+          call LIS_endrun()
+       endif
+    enddo
 
     do n=1,LIS_rc%nnest
        WSFsm_struc(n)%lat_ll = grid_dd(n,1)

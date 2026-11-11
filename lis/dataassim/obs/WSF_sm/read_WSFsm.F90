@@ -16,7 +16,8 @@
 !  2 Oct 2025; Ehsan Jalilvand, initial specification.
 !  Oct 2026; Ehsan Jalilvand, grid of the WSF files from lis.config (see
 !            WSFsm_Mod); row order from the file's lat variable; files
-!            whose lat/lon do not match the configured grid are skipped.
+!            whose grid does not match the configured grid, or that
+!            have no lat/lon variables, are skipped with an [ERR] message.
 !
 ! !INTERFACE:
 subroutine read_WSFsm(n, k, OBS_State, OBS_Pert_State)
@@ -621,8 +622,12 @@ subroutine read_WSFsm_data(n, k,fname, smobs_inp, time)
         return
      end if
   else
-     write(LIS_logunit,*)'[WARN] No lat/lon variables in ', trim(fname), &
-          '; assuming rows run north to south'
+     write(LIS_logunit,*)'[ERR] No lat/lon variables in ', trim(fname)
+     write(LIS_logunit,*)'[ERR] Cannot check the grid or the row order'
+     write(LIS_logunit,*)'[ERR] LIS will skip this file...'
+     rc = nf90_close(ncid)
+     deallocate(flat, flon)
+     return
   end if
   deallocate(flat, flon)
 
