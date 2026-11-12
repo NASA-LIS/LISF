@@ -24,6 +24,10 @@
 !               interpolation are split so that the 6-hourly windows of a
 !               time step are combined on the SMOPS grid and interpolated
 !               once.
+!  12 Nov 2026: Ehsan Jalilvand, SMOPS v5: any NPR-SMOPS-CMAP-6hrly
+!               version is found (the newest is read), the version of
+!               these files is taken from the name, and LDT stops on a
+!               version whose GRIB2 parameter numbers it does not have.
 !
 ! !INTERFACE:
 subroutine readSMOPSsmObs(n)
@@ -64,6 +68,7 @@ subroutine readSMOPSsmObs(n)
   real              :: gmt
   real*8            :: wtime
   character(len=LDT_CONST_PATH_LEN) :: fname
+  character(len=16) :: fver
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real,      allocatable :: sm_nat(:), sm_win(:)
   logical*1, allocatable :: b_nat(:), b_win(:)
@@ -90,12 +95,12 @@ subroutine readSMOPSsmObs(n)
      nwin = nint(LDT_rc%ts / 21600.0)
      do iw = 1, nwin
         call create_SMOPSsm_6hrly_filename(n, SMOPSsmobs(n)%odir, &
-             SMOPSsmobs(n)%conv, yr, mo, da, hr, fname)
+             SMOPSsmobs(n)%conv, yr, mo, da, hr, fname, fver)
         if (trim(fname) /= 'NULL') then
            inquire(file=trim(fname), exist=file_exists)
            if (file_exists) then
               write(LDT_logunit,*) '[INFO] Reading ', trim(fname)
-              call read_SMOPS_native(n, fname, wtime, sm_win, b_win, ok)
+              call read_SMOPS_native(n, fname, fver, wtime, sm_win, b_win, ok)
               if (ok) then
                  where (b_win)
                     sm_nat = sm_win
@@ -108,7 +113,7 @@ subroutine readSMOPSsmObs(n)
            endif
         else
            write(LDT_logunit,'(a,i4.4,3i2.2)') &
-                ' [WARN] No SMOPS v4 file found for window starting ', &
+                ' [WARN] No NPR-SMOPS-CMAP-6hrly file found for window starting ', &
                 yr, mo, da, hr
         endif
         ! Next 6-hourly window
@@ -121,7 +126,7 @@ subroutine readSMOPSsmObs(n)
      inquire(file=trim(fname), exist=file_exists)
      if (file_exists) then
         write(LDT_logunit,*) '[INFO] Reading ', trim(fname)
-        call read_SMOPS_native(n, fname, wtime, sm_nat, b_nat, found)
+        call read_SMOPS_native(n, fname, '', wtime, sm_nat, b_nat, found)
         write(LDT_logunit,*) '[INFO] Finished reading ', trim(fname)
      endif
   endif
@@ -151,14 +156,14 @@ end subroutine readSMOPSsmObs
 ! \label{read_SMOPS_native}
 !
 ! !INTERFACE:
-subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
+subroutine read_SMOPS_native(n, fname, fversion, datatime, sm_out, b_out, ok)
 !
 ! !USES:
 #if (defined USE_GRIBAPI)
    use grib_api
 #endif
    use LDT_coreMod,      only : LDT_rc
-   use LDT_logMod,       only : LDT_logunit
+   use LDT_logMod,       only : LDT_logunit, LDT_endrun
    use SMOPSsm_obsMod,   only : SMOPSsmobs
 
    implicit none
@@ -167,6 +172,7 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
 !
    integer,           intent(in)  :: n
    character (len=*), intent(in)  :: fname
+   character (len=*), intent(in)  :: fversion
    real*8,            intent(in)  :: datatime
    real,              intent(out) :: sm_out(SMOPSsmobs(n)%smopsnc*&
                                             SMOPSsmobs(n)%smopsnr)
@@ -180,8 +186,9 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
 !  grid (rows flipped to south-to-north).
 !
 !  The GRIB2 parameter numbers depend on the SMOPS version, which is
-!  taken from "SMOPS soil moisture version:" or, for "date-based", from
-!  the data time:
+!  taken from the file name for the NPR-SMOPS-CMAP-6hrly files (fversion,
+!  e.g. 'v4r0'), and otherwise from "SMOPS soil moisture version:" or,
+!  for "date-based", from the data time:
 !
 !  \begin{tabular}{lll}
 !  version & ASCAT (QA)                       & dates \\
@@ -189,7 +196,13 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
 !  2.0     & A 213 (234), B 214 (235)         & to 2017-08-24T12 \\
 !  3.0     & A 213 (243), B 214 (244)         & to 2024-07-04T18 \\
 !  4.0     & B 214 (244), C 250 (253)         & from 2024-07-04T18 \\
+!  5.0     & not known yet; LDT stops         & from 2026-12-08 \\
 !  \end{tabular}
+!
+!  LDT stops if a file's name gives a version other than v4r0, if it
+!  differs from a version set in "SMOPS soil moisture version:", or if a
+!  file without a version in its name is dated from 2026-12-08 and the
+!  version is "date-based".
 !
 !  For ASCAT, the satellites are merged in the order listed; a later one
 !  replaces an earlier one where it has a valid retrieval (as in LIS).
@@ -216,7 +229,8 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
 !  \begin{description}
 !  \item[n]         index of the nest
 !  \item[fname]     name of the SMOPS file
-!  \item[datatime]  LDT time of the data (selects the version)
+!  \item[fversion]  version from the file name ('v4r0', ...), or blank
+!  \item[datatime]  LDT time of the data (selects the version if blank)
 !  \item[sm\_out]   soil moisture on the SMOPS grid (udef where invalid)
 !  \item[b\_out]    .true. where sm\_out is valid
 !  \item[ok]        .false. if the file could not be read
@@ -256,7 +270,6 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
    integer        :: ftn, iret, igrib, param_num
    integer*2      :: qavalue
    integer*1      :: err
-   real*8         :: timenow
    character(len=3) :: vname
 
    ok = .false.
@@ -266,42 +279,64 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
 #if (defined USE_GRIBAPI)
    nnat = SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr
 
-   ! Time that selects the version (fixed if the version is forced)
-   if ( SMOPSsmobs(n)%version == '1.3' ) then
-      timenow = SMOPSsmobs(n)%version2_time - 1.0
-   elseif ( SMOPSsmobs(n)%version == '2.0' ) then
-      timenow = SMOPSsmobs(n)%version2_time
-   elseif ( SMOPSsmobs(n)%version == '3.0' ) then
-      timenow = SMOPSsmobs(n)%version3_time
-   elseif ( SMOPSsmobs(n)%version == '4.0' ) then
-      timenow = SMOPSsmobs(n)%version4_time
+   ! SMOPS version: from the file name (NPR-SMOPS-CMAP-6hrly files), else
+   ! from "SMOPS soil moisture version:", else from the data time.
+   if ( len_trim(fversion) > 0 ) then
+      select case ( trim(fversion) )
+      case ( 'v4r0' )
+         vname = '4.0'
+      case default
+         ! v5r0 adds AMSR3 and may move the ASCAT layers; the numbers must
+         ! come from a v5 file before v5 is read.
+         write(LDT_logunit,*) '[ERR] ', trim(fname)
+         write(LDT_logunit,*) '[ERR] is SMOPS ', trim(fversion), &
+              '. LDT has the GRIB2 parameter numbers of SMOPS 1.3, 2.0, 3.0'
+         write(LDT_logunit,*) '[ERR] and 4.0 (v4r0) only. Add those of ', &
+              trim(fversion), ' to read_SMOPS_native.'
+         call LDT_endrun()
+      end select
+      if ( SMOPSsmobs(n)%version /= 'date-based' .and. &
+           SMOPSsmobs(n)%version /= 'NESDIS V3.0 REGEN' .and. &
+           SMOPSsmobs(n)%version /= vname ) then
+         write(LDT_logunit,*) '[ERR] ', trim(fname)
+         write(LDT_logunit,*) '[ERR] is SMOPS ', vname, &
+              ', but "SMOPS soil moisture version:" is ', &
+              trim(SMOPSsmobs(n)%version)
+         call LDT_endrun()
+      endif
+   elseif ( SMOPSsmobs(n)%version /= 'date-based' .and. &
+            SMOPSsmobs(n)%version /= 'NESDIS V3.0 REGEN' ) then
+      vname = SMOPSsmobs(n)%version(1:3)   ! checked in SMOPSsm_obsMod
+   elseif ( datatime < SMOPSsmobs(n)%version2_time ) then
+      vname = '1.3'
+   elseif ( datatime < SMOPSsmobs(n)%version3_time ) then
+      vname = '2.0'
+   elseif ( datatime < SMOPSsmobs(n)%version4_time ) then
+      vname = '3.0'
+   elseif ( datatime < SMOPSsmobs(n)%version5_time ) then
+      vname = '4.0'
    else
-      timenow = datatime
+      write(LDT_logunit,*) '[ERR] ', trim(fname)
+      write(LDT_logunit,*) '[ERR] has no version in its name and is dated ', &
+           'from 2026-12-08, when SMOPS v5 starts.'
+      write(LDT_logunit,*) '[ERR] LDT does not have the GRIB2 parameter ', &
+           'numbers of SMOPS v5. If the file is v4,'
+      write(LDT_logunit,*) '[ERR] set "SMOPS soil moisture version: 4.0".'
+      call LDT_endrun()
    endif
 
    param_ASCAT = -1;  param_ASCAT_qa = -1
    param_other = -1;  param_other_qa = -1
    other_name = ''
 
-   if ( timenow < SMOPSsmobs(n)%version2_time ) then
-      ! SMOPS version 1.3
-      vname = '1.3'
+   select case ( vname )
+   case ( '1.3', '2.0' )
       param_ASCAT(1) = 213; param_ASCAT_qa(1) = 234
       param_ASCAT(2) = 214; param_ASCAT_qa(2) = 235
       if ( SMOPSsmobs(n)%useSMOS.eq.1 )  other_name = 'SMOS'
       if ( SMOPSsmobs(n)%useAMSR2.eq.1 ) other_name = 'AMSR2'
       if ( SMOPSsmobs(n)%useSMAP.eq.1 )  other_name = 'SMAP'
-   elseif ( timenow < SMOPSsmobs(n)%version3_time ) then
-      ! SMOPS version 2.0
-      vname = '2.0'
-      param_ASCAT(1) = 213; param_ASCAT_qa(1) = 234
-      param_ASCAT(2) = 214; param_ASCAT_qa(2) = 235
-      if ( SMOPSsmobs(n)%useSMOS.eq.1 )  other_name = 'SMOS'
-      if ( SMOPSsmobs(n)%useAMSR2.eq.1 ) other_name = 'AMSR2'
-      if ( SMOPSsmobs(n)%useSMAP.eq.1 )  other_name = 'SMAP'
-   elseif ( timenow < SMOPSsmobs(n)%version4_time ) then
-      ! SMOPS version 3.0
-      vname = '3.0'
+   case ( '3.0' )
       param_ASCAT(1) = 213; param_ASCAT_qa(1) = 243
       param_ASCAT(2) = 214; param_ASCAT_qa(2) = 244
       if ( SMOPSsmobs(n)%useSMOS.eq.1 ) then
@@ -311,9 +346,8 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
       elseif ( SMOPSsmobs(n)%useSMAP.eq.1 ) then
          param_other = 218; param_other_qa = 248
       endif
-   else
-      ! SMOPS version 4.0: no ASCAT-A, no SMOS
-      vname = '4.0'
+   case ( '4.0' )
+      ! No ASCAT-A, no SMOS
       param_ASCAT(2) = 214; param_ASCAT_qa(2) = 244
       param_ASCAT(3) = 250; param_ASCAT_qa(3) = 253
       if ( SMOPSsmobs(n)%useSMOS.eq.1 ) then
@@ -323,7 +357,7 @@ subroutine read_SMOPS_native(n, fname, datatime, sm_out, b_out, ok)
       elseif ( SMOPSsmobs(n)%useSMAP.eq.1 ) then
          param_other = 218; param_other_qa = 248
       endif
-   endif
+   end select
 
    write(LDT_logunit,*) '[MSG] Reading SMOPS dataset as SMOPS version '// &
         vname
@@ -703,10 +737,10 @@ end subroutine create_SMOPSsm_filename
 !
 ! !INTERFACE:
 subroutine create_SMOPSsm_6hrly_filename(n, ndir, conv, yr, mo, da, hr, &
-     filename)
+     filename, fversion)
 ! !USES:
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
-                               LDT_releaseUnitNumber
+                               LDT_releaseUnitNumber, LDT_endrun
   use LDT_timeMgrMod,   only : LDT_date2time, LDT_tick
   use SMOPSsm_obsMod,   only : SMOPSsmobs
 
@@ -717,6 +751,7 @@ subroutine create_SMOPSsm_6hrly_filename(n, ndir, conv, yr, mo, da, hr, &
   character (len=*), intent(in)  :: conv
   integer,           intent(in)  :: yr, mo, da, hr
   character (len=*), intent(out) :: filename
+  character (len=*), intent(out) :: fversion
 !
 ! !DESCRIPTION:
 !  Creates the name of the 6-hourly SMOPS file that holds the window
@@ -730,25 +765,32 @@ subroutine create_SMOPSsm_6hrly_filename(n, ndir, conv, yr, mo, da, hr, &
 !  \item[2017-10-05 to 2024-07-04T18] NPR\_SMOPS\_CMAP\_DYYYYMMDDHH.gr2,
 !     HH = window start + 6 hours (the file holds the 6 hours before HH)
 !  \item[from 2024-07-04T18]
-!     NPR-SMOPS-CMAP-6hrly\_v4r0\_blend\_sYYYYMMDDHH*\_e*\_c*.grib2,
-!     HH = window start; the end and creation times are found with glob.
-!     If several files match, the last one (latest creation time) is used.
+!     NPR-SMOPS-CMAP-6hrly\_vNrM\_blend\_sYYYYMMDDHH*\_e*\_c*.grib2
+!     (v4r0 from 2024-07-04T18, v5r0 from 2026-12-08), HH = window start;
+!     the version, end and creation times are found with glob. If several
+!     files match, the newest version is used and, within it, the latest
+!     creation time.
 !  \end{description}
 !
 !  "LIS" naming convention: ndir/YYYY/NPR\_SMOPS\_CMAP\_DYYYYMMDDHH.gr2
 !  for all dates, with the same 6-hour offset.
 !
-!  filename is 'NULL' if no v4 file is found.
+!  filename is 'NULL' if no NPR-SMOPS-CMAP-6hrly file is found. fversion
+!  is the version in the name of an NPR-SMOPS-CMAP-6hrly file (e.g.
+!  'v4r0'), and blank for the other names.
 !EOP
   integer, external :: create_filelist ! C function (ldt/DAobs/WSF_sm)
   character (len=4) :: fyr
   character (len=2) :: fmo, fda, fhr
   character (len=*), parameter :: listfile = 'SMOPS_filelist_ldt.dat'
   character (len=len(filename)) :: line
+  character (len=16) :: ver
   real*8            :: t, tfile
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy, rc, ftn, ierr
+  integer           :: vnum, best
   real              :: gmt
 
+  fversion = ''
   yr2 = yr; mo2 = mo; da2 = da; hr2 = hr; mn2 = 0; ss2 = 0
   call LDT_date2time(t, doy, gmt, yr2, mo2, da2, hr2, mn2, ss2)
 
@@ -777,21 +819,77 @@ subroutine create_SMOPSsm_6hrly_filename(n, ndir, conv, yr, mo, da, hr, &
 
   else
      filename = 'NULL'
-     rc = create_filelist(trim(ndir)//'/NPR-SMOPS-CMAP-6hrly_v4r0_blend_s' &
+     rc = create_filelist(trim(ndir)//'/NPR-SMOPS-CMAP-6hrly_v*_blend_s' &
           //fyr//fmo//fda//fhr//'*.grib2'//char(0), listfile//char(0))
      if (rc /= 0) then
-        write(LDT_logunit,*) '[WARN] Problem searching for SMOPS v4 files in ', &
-             trim(ndir)
+        write(LDT_logunit,*) '[WARN] Problem searching for ', &
+             'NPR-SMOPS-CMAP-6hrly files in ', trim(ndir)
      endif
+     best = -1
      ftn = LDT_getNextUnitNumber()
      open(ftn, file=listfile, status='old', iostat=ierr)
      do while (ierr == 0)
         read(ftn, '(a)', iostat=ierr) line
         if (ierr /= 0) exit
-        if (len_trim(line) > 0) filename = line
+        if (len_trim(line) == 0) cycle
+        call SMOPS_6hrly_version(line, ver, vnum)
+        if (vnum < 0) then
+           write(LDT_logunit,*) '[ERR] No SMOPS version (vNrM) in the name ', &
+                trim(line)
+           call LDT_endrun()
+        endif
+        ! glob lists the files by name, so within one version the last
+        ! file has the latest creation time.
+        if (vnum >= best) then
+           best = vnum
+           filename = line
+           fversion = ver
+        endif
      enddo
      close(ftn)
      call LDT_releaseUnitNumber(ftn)
   endif
 
 end subroutine create_SMOPSsm_6hrly_filename
+
+!BOP
+! !ROUTINE: SMOPS_6hrly_version
+! \label{SMOPS_6hrly_version}
+!
+! !INTERFACE:
+subroutine SMOPS_6hrly_version(fname, ver, vnum)
+  implicit none
+! !ARGUMENTS:
+  character (len=*), intent(in)  :: fname
+  character (len=*), intent(out) :: ver
+  integer,           intent(out) :: vnum
+!
+! !DESCRIPTION:
+!  Reads the SMOPS version from the name of an NPR-SMOPS-CMAP-6hrly file,
+!  e.g. NPR-SMOPS-CMAP-6hrly\_v5r0\_blend\_s...grib2 gives ver = 'v5r0'
+!  and vnum = 5000 (1000 * N + M for vNrM, for comparing versions).
+!  vnum is -1 and ver blank if the name has no vNrM.
+!EOP
+  character (len=*), parameter :: tag = '6hrly_v'
+  character (len=*), parameter :: digits = '0123456789'
+  integer :: i, j, k, major, minor, ios
+
+  ver = ''
+  vnum = -1
+  i = index(fname, tag, back=.true.)
+  if (i == 0) return
+  i = i + len(tag) - 1                    ! the 'v'
+  j = index(fname(i:), '_blend')
+  if (j < 5) return                       ! at least 'vNrM'
+  k = index(fname(i:i+j-2), 'r')          ! the 'r', relative to i
+  if (k < 3 .or. k > j - 2) return
+  if (verify(fname(i+1:i+k-2), digits) /= 0) return
+  if (verify(fname(i+k:i+j-2), digits) /= 0) return
+  read(fname(i+1:i+k-2), *, iostat=ios) major
+  if (ios /= 0) return
+  read(fname(i+k:i+j-2), *, iostat=ios) minor
+  if (ios /= 0) return
+  ver = fname(i:i+j-2)
+  vnum = 1000*major + minor
+
+end subroutine SMOPS_6hrly_version

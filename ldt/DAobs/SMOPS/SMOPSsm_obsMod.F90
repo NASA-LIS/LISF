@@ -78,10 +78,18 @@
 !   smops_dYYYYMMDD_sHH0000_cness.gr2                 before 2017-10-05
 !   NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2                    2017-10-05 to
 !                                                     2024-07-04T18
-!   NPR-SMOPS-CMAP-6hrly_v4r0_blend_sYYYYMMDDHH*.grib2  from 2024-07-04T18
+!   NPR-SMOPS-CMAP-6hrly_vNrM_blend_sYYYYMMDDHH*.grib2  from 2024-07-04T18
 !
 ! The NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2 files hold the 6 hours BEFORE HH;
 ! the other two hold the 6 hours starting at HH.
+!
+! The NPR-SMOPS-CMAP-6hrly names carry the SMOPS version: v4r0 from
+! 2024-07-04T18, and v5r0 (AMSR3 added) from 2026-12-08. LDT takes the
+! version of these files from the name. The GRIB2 parameter numbers of
+! v5r0 are not known yet, so LDT stops on a v5r0 file; they are to be
+! added in read_SMOPS_native once confirmed from a v5 file. Files whose
+! names carry no version are dated: from 2026-12-08 (version5_time) LDT
+! stops unless "SMOPS soil moisture version:" is set.
 !
 ! With "SMOPS soil moisture use realtime data: 1", LDT reads every
 ! 6-hourly window that starts within the current LDT time step. With a
@@ -146,6 +154,10 @@
 !  28 Oct 2026: Ehsan Jalilvand, Read the 6-hourly SMOPS archive (three
 !               naming conventions) and SMOPS v4 (ASCAT-B and ASCAT-C),
 !               following the LIS SMOPS ASCAT reader
+!  12 Nov 2026: Ehsan Jalilvand, SMOPS v5: the version of the
+!               NPR-SMOPS-CMAP-6hrly files is read from their names, and
+!               LDT stops on versions whose GRIB2 parameter numbers it
+!               does not have; "SMOPS soil moisture version:" is checked
 !
 module SMOPSsm_obsMod
 ! !USES: 
@@ -178,6 +190,7 @@ module SMOPSsm_obsMod
      integer                :: mo
      integer                :: smopsnc, smopsnr
      real*8                 :: version2_time, version3_time, version4_time
+     real*8                 :: version5_time
      real*8                 :: naming3_time
      real,    allocatable   :: smobs(:,:)
      integer, allocatable   :: n11(:)
@@ -278,6 +291,15 @@ contains
     do n=1, LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,SMOPSsmobs(n)%version,&
           default='date-based', rc=status)
+       select case ( trim(SMOPSsmobs(n)%version) )
+       case ( 'date-based', 'NESDIS V3.0 REGEN', '1.3', '2.0', '3.0', '4.0' )
+       case default
+          write(LDT_logunit,*) '[ERR] SMOPS soil moisture version: "', &
+               trim(SMOPSsmobs(n)%version), '" is not supported.'
+          write(LDT_logunit,*) '[ERR] Use "date-based", "NESDIS V3.0 REGEN", ', &
+               '"1.3", "2.0", "3.0" or "4.0".'
+          call LDT_endrun()
+       end select
     enddo
 
     ! 6-hourly archive (as in LIS). Optional; default is the daily files.
@@ -351,6 +373,12 @@ contains
        ! SMOPS v4 (ASCAT-B and ASCAT-C), same date as in LIS
        yr1 = 2024; mo1 = 7; da1 = 4; hr1 = 18; mn1 = 0; ss1 = 0
        call LDT_date2time(SMOPSsmobs(n)%version4_time,updoy,upgmt,&
+          yr1,mo1,da1,hr1,mn1,ss1)
+
+       ! SMOPS v5 (AMSR3 added) operational from 2026-12-08 (NESDIS notice
+       ! to users). Used only for files whose names carry no version.
+       yr1 = 2026; mo1 = 12; da1 = 8; hr1 = 0; mn1 = 0; ss1 = 0
+       call LDT_date2time(SMOPSsmobs(n)%version5_time,updoy,upgmt,&
           yr1,mo1,da1,hr1,mn1,ss1)
 
        ! Switch from smops_d*_cness.gr2 to NPR_SMOPS_CMAP_D*.gr2 names
