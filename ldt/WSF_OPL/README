@@ -44,6 +44,25 @@ workflow.
    - data/input/wsf_sdr_data/ # Latest WSF-M brightness temperature files
    - data/02_wsfm_sm_retrievals/ # Contains recent WSF-M
 
+Choosing the SDR files to resample (step1_wsf_opl in wsf_opl.json)
+
+The resampled SDR files (*WSFM_01_d<YYYYMMDD>*_res_sdr.nc) can sit in several
+folders: reprocessed archives and the operational feed, with different
+processing versions (the _vNNNN_ tag, e.g. v0522, v0600, v0602).
+"sdr_sources" lists these folders in reading order, each with the
+sub-folder layout of one day ({yyyy}/{mm}/{dd}, {yyyymm}, ...). For every
+hour, wsf_opl.py reads each pass (identified by its start time) in its
+newest processing version found in any of the folders; if several folders
+have that version, the first one listed wins. Files whose names start with
+one of "skip_file_prefixes" (e.g. temp) are ignored. The chosen files are
+linked into a folder per hour under "staging_dir", which LDT reads, and are
+listed in logs/sdr_selection.log. Before a long run, check the choice with
+
+   ./wsf_opl.py START_DT END_DT --step 1 --dry-run
+
+which prints, month by month, the hours with data, the versions and folders
+used, and how many older or duplicate files were dropped.
+
 Combining the cluster Random Forests (step2_prediction in wsf_opl.json)
 
 Each land cell belongs to one of K environmental clusters (KMeans on land

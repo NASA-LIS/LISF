@@ -10,8 +10,16 @@
     "step1_wsf_opl": {
         "ldt_running_mode":    "OPL WSF brightness temperature resampling",
         "ldt_config_template": "./01_ldt_wsfm_resample.ldt.config",
-        "v522_sdr_base":       "./data/input/wsf_sdr_data/v5.2.2/res_sdr_01",
-        "raw_sdr_base":        "./data/input/wsf_sdr_data",
+        "_comment_sdr_sources": "Folders with resampled SDR files (*WSFM_01_d<date>*_res_sdr.nc), in reading order. layout = sub-folder holding one day, with {yyyy} {mm} {dd} {yyyymm} {yyyymmdd}. Each pass (start time) is read in its newest processing version (_vNNNN_) found in any folder; if several folders have that version, the first one listed wins.",
+        "sdr_sources": [
+            {"name": "v6.0.0 reprocessed", "path": "./data/input/wsf_sdr_data/v6.0.0/res_sdr_01", "layout": "{yyyy}/{mm}/{dd}"},
+            {"name": "v5.2.2 reprocessed", "path": "./data/input/wsf_sdr_data/v5.2.2/res_sdr_01", "layout": "{yyyy}/{mm}/{dd}"},
+            {"name": "operational",        "path": "./data/input/wsf_sdr_data",                   "layout": "{yyyymm}"}
+        ],
+        "_comment_skip_file_prefixes": "Files whose names start with these are ignored (e.g. unfinished transfers).",
+        "skip_file_prefixes":  ["temp"],
+        "_comment_staging_dir": "Per-hour folders of links to the chosen files; LDT reads these. Each is removed after its hour.",
+        "staging_dir":         "./data/01_wsfm_staging",
         "resampled_base":      "./data/01_wsfm_resampled"
     },
 

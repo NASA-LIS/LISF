@@ -6,13 +6,26 @@ WSF Soil Moisture Retrieval — Steps 1 & 2
   Step 2: ML prediction   — sequential hours, all cores per hour
 
 Usage:
-  python wsf_opl.py START_DT END_DT [--config FILE] [--batch-size N] [--force] [--step {1,2}]
+  python wsf_opl.py START_DT END_DT [--config FILE] [--batch-size N] [--force]
+                    [--step {1,2}] [--dry-run]
 
   START_DT / END_DT : period to process, format YYYYMMDDHH (e.g. 2024041300)
   --config          : path to pipeline_config.json (default: ./pipeline_config.json)
   --batch-size      : max parallel LDT jobs for step 1 (default: cpu count)
   --force           : ignore checkpoint and reprocess all hours
   --step            : run only step 1 (resampling) or step 2 (prediction); omit to run both
+  --dry-run         : show, month by month, which SDR files step 1 would read; run nothing
+
+Step 1 input (step1_wsf_opl in the config):
+  sdr_sources        ordered list of {"name", "path", "layout"}; layout is the
+                     sub-folder for one day, with {yyyy} {mm} {dd} {yyyymm} {yyyymmdd}
+                     (e.g. "{yyyy}/{mm}/{dd}" or "{yyyymm}")
+  skip_file_prefixes file names starting with these are ignored (e.g. "temp")
+  staging_dir        per-hour folders of links to the chosen files (LDT input)
+  For every hour, each pass (a resampled SDR file, identified by its start
+  time) is read in its newest processing version (_vNNNN_) found in any
+  source; if several sources have that version, the first one listed wins.
+  Every chosen file is written to logs/sdr_selection.log.
 
 Examples:
   # Run both steps
@@ -30,6 +43,9 @@ Examples:
   # Use a config file at a non-default location
   python wsf_opl.py 2024041300 2026041300 --config /path/to/my_config.json
 
+  # See which SDR files would be read, without running anything
+  python wsf_opl.py 2024041300 2026111200 --step 1 --dry-run
+
 SLURM:
   sbatch --export=START_DT=2024041300,END_DT=2026041300 wsf_retrieval.slurm
   sbatch --export=START_DT=2024041300,END_DT=2026041300,STEP=1 wsf_retrieval.slurm
@@ -41,35 +57,155 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 
-V522_LAST  = "2025041323"   # v5.2.2 directory layout ends here
-CHECKPOINT = Path("logs/resampling_checkpoint.txt")
-DT_RE      = re.compile(r"WSFM_01_d(\d{8})_t(\d{2})")
+CHECKPOINT   = Path("logs/resampling_checkpoint.txt")
+SELECTION_LOG = Path("logs/sdr_selection.log")
+# Resampled SDR files the LDT resampler reads: *WSFM_01_d<YYYYMMDD>*_res_sdr.nc
+SDR_RE = re.compile(
+    r"WSFM_01_d(\d{8})_t(\d{6})_e(\d{6}).*_v(\d[\d.]*)_res_sdr\.nc$")
+LAYOUT_KEYS = ("yyyy", "mm", "dd", "yyyymm", "yyyymmdd")
 
 
-def find_hours(base, start, end, lo="0"*10, hi="9"*10):
-    """Scan a directory tree for WSF files; return YYYYMMDDHH strings in range."""
-    if not Path(base).is_dir():
-        return set()
-    hours = set()
-    for f in Path(base).rglob("*WSFM_01_d*_res_sdr.nc"):
-        m = DT_RE.search(f.name)
-        if m:
-            dt = m.group(1) + m.group(2)
-            if start <= dt <= end and lo <= dt <= hi:
-                hours.add(dt)
-    return hours
+# =============================================================================
+# Step 1 — choosing the SDR files for each hour
+# =============================================================================
+def version_key(tag):
+    """Sortable processing version: v0602 -> (6, 0, 2), v051 -> (5, 1, 0), v6.1.0 -> (6, 1, 0)."""
+    if "." in tag:
+        return tuple(int(x) for x in tag.split(".") if x)
+    if len(tag) == 4:
+        return (int(tag[:2]), int(tag[2]), int(tag[3]))
+    if len(tag) == 3:
+        return (int(tag[:2]), int(tag[2]), 0)
+    return (int(tag),)
 
 
-def src_dir(dt, v522_base, flat_base):
-    """Return the raw SDR directory for a given YYYYMMDDHH."""
-    if dt <= V522_LAST:
-        return Path(v522_base) / dt[:4] / dt[4:6] / dt[6:8]
-    return Path(flat_base) / dt[:6]
+def hour_overlaps(t_start, t_end, hour):
+    """Same rule as the LDT resampler: the file's hours [start, end] include hour."""
+    h0, h1 = int(t_start[:2]), int(t_end[:2])
+    if h1 < h0:                               # wraps past midnight
+        return hour >= h0 or hour <= h1
+    return h0 <= hour <= h1
+
+
+class SdrSources:
+    """Ordered SDR folders (from the config) with cached directory listings."""
+
+    def __init__(self, sources, skip_prefixes):
+        self.sources = []
+        for i, src in enumerate(sources):
+            for key in ("name", "path", "layout"):
+                if key not in src:
+                    sys.exit(f"ERROR: sdr_sources[{i}] has no '{key}'")
+            self.sources.append((src["name"], Path(src["path"]), src["layout"]))
+        self.skip_prefixes = tuple(skip_prefixes)
+        self._listing = {}
+
+    def _list(self, folder):
+        if folder not in self._listing:
+            try:
+                self._listing[folder] = os.listdir(folder)
+            except FileNotFoundError:
+                self._listing[folder] = []
+        return self._listing[folder]
+
+    def describe(self):
+        """Lines describing the sources, in reading order."""
+        return [f"{name}: {path}/{layout}" for name, path, layout in self.sources]
+
+    def files_for_day(self, day):
+        """[(rank, source, path, start, end, version)] for one YYYYMMDD."""
+        fields = {"yyyy": day[:4], "mm": day[4:6], "dd": day[6:8],
+                  "yyyymm": day[:6], "yyyymmdd": day}
+        found = []
+        for rank, (name, path, layout) in enumerate(self.sources):
+            folder = path / layout.format(**fields)
+            for fname in self._list(folder):
+                if fname.startswith(self.skip_prefixes):
+                    continue
+                m = SDR_RE.search(fname)
+                if m and m.group(1) == day:
+                    found.append((rank, name, folder / fname, m.group(2), m.group(3),
+                                  m.group(4)))
+        return found
+
+
+def select_hour(day_files, hour):
+    """Files to resample for one hour: the newest version of each pass.
+
+    A pass is identified by its start time (to the minute). Among the files
+    of a pass, only the newest processing version is kept, from the first
+    source (in config order) that has it; several copies of that version
+    (e.g. other ground stations) are all kept, as LDT chooses between them.
+    """
+    passes = {}
+    for entry in day_files:
+        if hour_overlaps(entry[3], entry[4], hour):
+            passes.setdefault(entry[3][:4], []).append(entry)
+    chosen, dropped = [], 0
+    for files in passes.values():
+        best = max(version_key(f[5]) for f in files)
+        newest = [f for f in files if version_key(f[5]) == best]
+        first_rank = min(f[0] for f in newest)
+        keep = [f for f in newest if f[0] == first_rank]
+        chosen.extend(keep)
+        dropped += len(files) - len(keep)
+    return sorted(chosen, key=lambda f: f[2].name), dropped
+
+
+def plan_resampling(sources, start, end):
+    """{YYYYMMDDHH: [chosen files]} for every hour with data, plus monthly stats."""
+    plan, stats = {}, {}
+    day = datetime.strptime(start[:8], "%Y%m%d")
+    while day <= datetime.strptime(end[:8], "%Y%m%d"):
+        yyyymmdd = day.strftime("%Y%m%d")
+        day += timedelta(days=1)
+        day_files = sources.files_for_day(yyyymmdd)
+        month = stats.setdefault(yyyymmdd[:6], {"hours": 0, "files": 0, "dropped": 0,
+                                                "versions": {}, "sources": {}})
+        for hour in range(24):
+            dt = f"{yyyymmdd}{hour:02d}"
+            if not start <= dt <= end:
+                continue
+            chosen, dropped = select_hour(day_files, hour)
+            if not chosen:
+                continue
+            plan[dt] = chosen
+            month["hours"] += 1
+            month["files"] += len(chosen)
+            month["dropped"] += dropped
+            for f in chosen:
+                month["versions"][f"v{f[5]}"] = month["versions"].get(f"v{f[5]}", 0) + 1
+                month["sources"][f[1]] = month["sources"].get(f[1], 0) + 1
+    return plan, stats
+
+
+def print_plan(stats):
+    """Monthly summary of the files chosen for resampling."""
+    print(f"  {'month':<8}{'hours':>6}{'files':>8}{'older/duplicate dropped':>25}"
+          "   versions | sources")
+    for month, st in sorted(stats.items()):
+        vers = ", ".join(f"{k} {v}" for k, v in sorted(st["versions"].items()))
+        srcs = ", ".join(f"{k} {v}" for k, v in st["sources"].items())
+        print(f"  {month:<8}{st['hours']:>6}{st['files']:>8}{st['dropped']:>25}"
+              f"   {vers} | {srcs}")
+
+
+def stage_hour(staging_dir, dt, chosen):
+    """Folder of links to the chosen files: the LDT input directory for this hour."""
+    folder = Path(staging_dir) / dt
+    if folder.exists():
+        shutil.rmtree(folder)
+    folder.mkdir(parents=True)
+    for f in chosen:
+        (folder / f[2].name).symlink_to(f[2].resolve())
+    return folder
 
 
 def write_config(template, dt, src, out):
@@ -93,25 +229,35 @@ def write_config(template, dt, src, out):
 # Step 1 — OPL Resampling
 # =============================================================================
 # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
-def step1_resample(s1, program, template, out_base, start, end, batch_size, force):
+def step1_resample(s1, program, template, out_base, start, end, batch_size, force,
+                   dry_run=False):
     """Run LDT OPL resampling in parallel batches over all pending hours."""
     print("\n=== STEP 1: OPL Resampling ===")
 
+    sources = SdrSources(s1["sdr_sources"], s1["skip_file_prefixes"])
+    print("  SDR sources (a pass is read in its newest version; ties go to the "
+          "first source):")
+    for line in sources.describe():
+        print(f"    {line}")
+    plan, stats = plan_resampling(sources, start, end)
+    print_plan(stats)
+    if dry_run:
+        print("  Dry run: nothing resampled.")
+        return
+
     Path("logs").mkdir(exist_ok=True)
     CHECKPOINT.touch()
-
-    hours  = find_hours(s1["v522_sdr_base"], start, end, hi=V522_LAST)
-    hours |= find_hours(s1["raw_sdr_base"],  start, end, lo=str(int(V522_LAST) + 1))
     done    = set() if force else set(CHECKPOINT.read_text(encoding='utf-8').split())
-    pending = sorted(hours - done)
+    pending = sorted(set(plan) - done)
 
-    print(f"  Hours found: {len(hours)}  done: {len(done & hours)}  pending: {len(pending)}")
+    print(f"  Hours with data: {len(plan)}  done: {len(done & set(plan))}  "
+          f"pending: {len(pending)}")
 
     if not pending:
         print("  All hours already processed.")
         return
 
-    n_ok = n_fail = n_skip = 0
+    n_ok = n_fail = 0
     n_batches = (len(pending) + batch_size - 1) // batch_size
 
     for b, i in enumerate(range(0, len(pending), batch_size)):
@@ -119,27 +265,26 @@ def step1_resample(s1, program, template, out_base, start, end, batch_size, forc
         print(f"\n  Batch {b+1}/{n_batches} ({len(batch)} hours)")
 
         procs = []
-        for dt in batch:
-            sd = src_dir(dt, s1["v522_sdr_base"], s1["raw_sdr_base"])
-            if not sd.is_dir():
-                print(f"    SKIP {dt}: {sd} not found")
-                n_skip += 1
-                continue
-            od = out_base / dt[:6]
-            od.mkdir(parents=True, exist_ok=True)
-            cfg_file = write_config(template, dt, sd, od)
-            # pylint: disable=consider-using-with
-            # Intentional: processes are launched as a batch and waited on
-            # sequentially below — a context manager cannot span both loops.
-            proc = subprocess.Popen(
-                [str(program), str(cfg_file)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            # pylint: enable=consider-using-with
-            procs.append((dt, proc, cfg_file))
+        with SELECTION_LOG.open("a", encoding='utf-8') as log:
+            for dt in batch:
+                for f in plan[dt]:
+                    log.write(f"{dt} {f[1]} v{f[5]} {f[2]}\n")
+                sd = stage_hour(s1["staging_dir"], dt, plan[dt])
+                od = out_base / dt[:6]
+                od.mkdir(parents=True, exist_ok=True)
+                cfg_file = write_config(template, dt, sd.resolve(), od)
+                # pylint: disable=consider-using-with
+                # Intentional: processes are launched as a batch and waited on
+                # sequentially below — a context manager cannot span both loops.
+                proc = subprocess.Popen(
+                    [str(program), str(cfg_file)],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                # pylint: enable=consider-using-with
+                procs.append((dt, proc, cfg_file, sd))
 
-        for dt, proc, cfg_file in procs:
+        for dt, proc, cfg_file, sd in procs:
             rc  = proc.wait()
             log = Path(f"logs/ldtlog_{dt}")
             if rc != 0:
@@ -154,11 +299,12 @@ def step1_resample(s1, program, template, out_base, start, end, batch_size, forc
                 n_ok += 1
             cfg_file.unlink(missing_ok=True)
             Path(f"WSF_filelist_{dt}.dat").unlink(missing_ok=True)
+            shutil.rmtree(sd, ignore_errors=True)
 
-        print(f"    ok={n_ok} fail={n_fail} skip={n_skip}")
+        print(f"    ok={n_ok} fail={n_fail}")
 
     n_out = sum(1 for _ in out_base.rglob("WSF_SDR_resampled_*.nc"))
-    print(f"\n  Resampled files: {n_out}  ok: {n_ok}  fail: {n_fail}  skip: {n_skip}")
+    print(f"\n  Resampled files: {n_out}  ok: {n_ok}  fail: {n_fail}")
     if n_out == 0:
         sys.exit("ERROR: no resampled files produced — check logs/")
 # pylint: enable=too-many-arguments,too-many-positional-arguments,too-many-locals
@@ -257,6 +403,8 @@ def main():
                         help="Ignore checkpoint, reprocess all hours")
     parser.add_argument("--step", type=int, choices=[1, 2], default=None,
                         help="Run only step 1 or 2 (default: both)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Show which SDR files step 1 would read; run nothing")
     args = parser.parse_args()
 
     if not args.start_dt or not args.end_dt:
@@ -264,6 +412,14 @@ def main():
 
     cfg      = json.loads(Path(args.config).read_text(encoding='utf-8'))
     s1       = cfg["step1_wsf_opl"]
+    if "sdr_sources" not in s1 and ("v522_sdr_base" in s1 or "raw_sdr_base" in s1):
+        sys.exit("ERROR: step1_wsf_opl uses v522_sdr_base/raw_sdr_base, which are no "
+                 "longer read. Replace them with sdr_sources, skip_file_prefixes and "
+                 "staging_dir (see wsf_opl.json).")
+    missing = [key for key in ("ldt_config_template", "resampled_base", "sdr_sources",
+                               "skip_file_prefixes", "staging_dir") if key not in s1]
+    if missing:
+        sys.exit("ERROR: step1_wsf_opl in the config file has no " + ", ".join(missing))
     program  = Path(cfg["executables"]["ldt"]).resolve()
     template = Path(s1["ldt_config_template"]).resolve()
     out_base = Path(s1["resampled_base"])
@@ -272,7 +428,10 @@ def main():
 
     if args.step != 2:
         step1_resample(s1, program, template, out_base,
-                       args.start_dt, args.end_dt, args.batch_size, args.force)
+                       args.start_dt, args.end_dt, args.batch_size, args.force,
+                       dry_run=args.dry_run)
+    if args.dry_run:
+        return
 
     if args.step != 1:
         step2_predict(cfg["step2_prediction"], out_base, args.start_dt, args.end_dt, args.force)
