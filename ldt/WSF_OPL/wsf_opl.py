@@ -26,6 +26,8 @@ Step 1 input (step1_wsf_opl in the config):
   For every hour, each pass (a resampled SDR file, identified by its start
   time) is read in its newest processing version (_vNNNN_) found in any
   source; if several sources have that version, the first one listed wins.
+  A file that runs past midnight (e.g. _t235900_e001059) is used for hour 23
+  of its own day and hour 00 of the next day.
   Every chosen file is written to logs/sdr_selection.log.
 
 Examples:
@@ -64,6 +66,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import NamedTuple
 
 CHECKPOINT   = Path("logs/resampling_checkpoint.txt")
 SELECTION_LOG = Path("logs/sdr_selection.log")
@@ -87,12 +90,38 @@ def version_key(tag):
     return (int(tag),)
 
 
-def hour_overlaps(t_start, t_end, hour):
-    """Same rule as the LDT resampler: the file's hours [start, end] include hour."""
-    h0, h1 = int(t_start[:2]), int(t_end[:2])
-    if h1 < h0:                               # wraps past midnight
-        return hour >= h0 or hour <= h1
-    return h0 <= hour <= h1
+class SdrFile(NamedTuple):
+    """One resampled SDR file and where it was found."""
+    rank: int        # position of its source in sdr_sources
+    source: str
+    path: Path
+    day: str         # YYYYMMDD in the file name (_d)
+    start: str       # HHMMSS (_t)
+    end: str         # HHMMSS (_e)
+    version: str     # processing version (_vNNNN_)
+
+
+def belongs_to_hour(sdr, day, hour):
+    """Whether a file has footprints in hour HH of day YYYYMMDD.
+
+    A file that runs past midnight (e.g. _d20240601_t235900_e001059) covers
+    hour 23 of its own day and hour 00 of the next day. The LDT resampler on
+    its own would give it to hour 00 of its own day instead, almost a day
+    early, so the driver decides here and LDT only sees the right files.
+    """
+    h0, h1 = int(sdr.start[:2]), int(sdr.end[:2])
+    wraps = h1 < h0
+    if sdr.day != day:                        # previous day, past midnight
+        return wraps and hour <= h1
+    return hour >= h0 if wraps else h0 <= hour <= h1
+
+
+def link_name(sdr, day):
+    """Name of the link LDT reads: a previous-day file gets this day's _d date,
+    because LDT only lists *WSFM_01_d<day>*_res_sdr.nc."""
+    if sdr.day == day:
+        return sdr.path.name
+    return sdr.path.name.replace(f"_d{sdr.day}_", f"_d{day}_", 1)
 
 
 class SdrSources:
@@ -120,8 +149,8 @@ class SdrSources:
         """Lines describing the sources, in reading order."""
         return [f"{name}: {path}/{layout}" for name, path, layout in self.sources]
 
-    def files_for_day(self, day):
-        """[(rank, source, path, start, end, version)] for one YYYYMMDD."""
+    def _files_named(self, day):
+        """SdrFile entries whose name carries the date YYYYMMDD."""
         fields = {"yyyy": day[:4], "mm": day[4:6], "dd": day[6:8],
                   "yyyymm": day[:6], "yyyymmdd": day}
         found = []
@@ -132,32 +161,40 @@ class SdrSources:
                     continue
                 m = SDR_RE.search(fname)
                 if m and m.group(1) == day:
-                    found.append((rank, name, folder / fname, m.group(2), m.group(3),
-                                  m.group(4)))
+                    found.append(SdrFile(rank, name, folder / fname, day, m.group(2),
+                                         m.group(3), m.group(4)))
         return found
 
+    def files_for_day(self, day):
+        """Files with footprints on YYYYMMDD: that day's files, plus the previous
+        day's files that run past midnight."""
+        prev = (datetime.strptime(day, "%Y%m%d") - timedelta(days=1)).strftime("%Y%m%d")
+        late = [f for f in self._files_named(prev) if f.end[:2] < f.start[:2]]
+        return self._files_named(day) + late
 
-def select_hour(day_files, hour):
+
+def select_hour(day_files, day, hour):
     """Files to resample for one hour: the newest version of each pass.
 
-    A pass is identified by its start time (to the minute). Among the files
-    of a pass, only the newest processing version is kept, from the first
-    source (in config order) that has it; several copies of that version
-    (e.g. other ground stations) are all kept, as LDT chooses between them.
+    A pass is identified by its date and start time (to the minute). Among
+    the files of a pass, only the newest processing version is kept, from the
+    first source (in config order) that has it; several copies of that
+    version (e.g. other ground stations) are all kept, as LDT chooses
+    between them.
     """
     passes = {}
-    for entry in day_files:
-        if hour_overlaps(entry[3], entry[4], hour):
-            passes.setdefault(entry[3][:4], []).append(entry)
+    for sdr in day_files:
+        if belongs_to_hour(sdr, day, hour):
+            passes.setdefault((sdr.day, sdr.start[:4]), []).append(sdr)
     chosen, dropped = [], 0
     for files in passes.values():
-        best = max(version_key(f[5]) for f in files)
-        newest = [f for f in files if version_key(f[5]) == best]
-        first_rank = min(f[0] for f in newest)
-        keep = [f for f in newest if f[0] == first_rank]
+        best = max(version_key(f.version) for f in files)
+        newest = [f for f in files if version_key(f.version) == best]
+        first_rank = min(f.rank for f in newest)
+        keep = [f for f in newest if f.rank == first_rank]
         chosen.extend(keep)
         dropped += len(files) - len(keep)
-    return sorted(chosen, key=lambda f: f[2].name), dropped
+    return sorted(chosen, key=lambda f: (f.day, f.path.name)), dropped
 
 
 def plan_resampling(sources, start, end):
@@ -174,7 +211,7 @@ def plan_resampling(sources, start, end):
             dt = f"{yyyymmdd}{hour:02d}"
             if not start <= dt <= end:
                 continue
-            chosen, dropped = select_hour(day_files, hour)
+            chosen, dropped = select_hour(day_files, yyyymmdd, hour)
             if not chosen:
                 continue
             plan[dt] = chosen
@@ -182,8 +219,8 @@ def plan_resampling(sources, start, end):
             month["files"] += len(chosen)
             month["dropped"] += dropped
             for f in chosen:
-                month["versions"][f"v{f[5]}"] = month["versions"].get(f"v{f[5]}", 0) + 1
-                month["sources"][f[1]] = month["sources"].get(f[1], 0) + 1
+                month["versions"][f"v{f.version}"] = month["versions"].get(f"v{f.version}", 0) + 1
+                month["sources"][f.source] = month["sources"].get(f.source, 0) + 1
     return plan, stats
 
 
@@ -210,7 +247,7 @@ def stage_hour(staging_dir, dt, chosen):
         shutil.rmtree(folder)
     folder.mkdir(parents=True)
     for f in chosen:
-        (folder / f[2].name).symlink_to(f[2].resolve())
+        (folder / link_name(f, dt[:8])).symlink_to(f.path.resolve())
     return folder
 
 
@@ -274,7 +311,8 @@ def step1_resample(s1, program, template, out_base, start, end, batch_size, forc
         with SELECTION_LOG.open("a", encoding='utf-8') as log:
             for dt in batch:
                 for f in plan[dt]:
-                    log.write(f"{dt} {f[1]} v{f[5]} {f[2]}\n")
+                    note = " (previous day, past midnight)" if f.day != dt[:8] else ""
+                    log.write(f"{dt} {f.source} v{f.version} {f.path}{note}\n")
                 sd = stage_hour(s1["staging_dir"], dt, plan[dt])
                 od = out_base / dt[:6]
                 od.mkdir(parents=True, exist_ok=True)

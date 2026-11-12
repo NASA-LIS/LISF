@@ -54,7 +54,9 @@ sub-folder layout of one day ({yyyy}/{mm}/{dd}, {yyyymm}, ...). For every
 hour, wsf_opl.py reads each pass (identified by its start time) in its
 newest processing version found in any of the folders; if several folders
 have that version, the first one listed wins. Files whose names start with
-one of "skip_file_prefixes" (e.g. temp) are ignored. The chosen files are
+one of "skip_file_prefixes" (e.g. temp) are ignored. A file that runs past
+midnight (e.g. _t235900_e001059) is used for hour 23 of its own day and
+hour 00 of the next day. The chosen files are
 linked into a folder per hour under "staging_dir", which LDT reads, and are
 listed in logs/sdr_selection.log. Before a long run, check the choice with
 
