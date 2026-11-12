@@ -21,7 +21,8 @@ Step 1 input (step1_wsf_opl in the config):
                      sub-folder for one day, with {yyyy} {mm} {dd} {yyyymm} {yyyymmdd}
                      (e.g. "{yyyy}/{mm}/{dd}" or "{yyyymm}")
   skip_file_prefixes file names starting with these are ignored (e.g. "temp")
-  staging_dir        per-hour folders of links to the chosen files (LDT input)
+  staging_dir        per-hour folders of links to the chosen files (LDT input),
+                     named <YYYYMMDDHH>_<process id> and removed after each hour
   For every hour, each pass (a resampled SDR file, identified by its start
   time) is read in its newest processing version (_vNNNN_) found in any
   source; if several sources have that version, the first one listed wins.
@@ -198,8 +199,13 @@ def print_plan(stats):
 
 
 def stage_hour(staging_dir, dt, chosen):
-    """Folder of links to the chosen files: the LDT input directory for this hour."""
-    folder = Path(staging_dir) / dt
+    """Folder of links to the chosen files: the LDT input directory for this hour.
+
+    The folder name includes the process id, so two runs that share an hour
+    (e.g. monthly jobs whose periods meet at 00Z of the 1st) never touch
+    each other's folder.
+    """
+    folder = Path(staging_dir) / f"{dt}_{os.getpid()}"
     if folder.exists():
         shutil.rmtree(folder)
     folder.mkdir(parents=True)
