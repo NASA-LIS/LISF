@@ -179,8 +179,10 @@ def step2_predict(s2, out_base, start, end, force=False):
     from predict_sm_stratified import StratifiedSoilMoisturePredictor
     # pylint: enable=import-outside-toplevel
 
-    missing = [key for key in ("model_dir", "cluster_dir", "env_paths", "blending",
-                               "top_k", "temperature") if key not in s2]
+    required = ["model_dir", "cluster_dir", "env_paths", "blending", "top_k"]
+    if s2.get("blending") == "distance":
+        required.append("temperature")
+    missing = [key for key in required if key not in s2]
     if missing:
         sys.exit("ERROR: step2_prediction in the config file has no "
                  + ", ".join(missing))
@@ -191,7 +193,7 @@ def step2_predict(s2, out_base, start, end, force=False):
         env_paths=s2["env_paths"],
         blending=s2["blending"],
         top_k=int(s2["top_k"]),
-        temperature=float(s2["temperature"]),
+        temperature=float(s2["temperature"]) if "temperature" in s2 else None,
     )
 
     files = sorted(

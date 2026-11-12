@@ -43,4 +43,32 @@ workflow.
    - data/input/static_data # Contains static files, e.g., soil types
    - data/input/wsf_sdr_data/ # Latest WSF-M brightness temperature files
    - data/02_wsfm_sm_retrievals/ # Contains recent WSF-M
-    
+
+Combining the cluster Random Forests (step2_prediction in wsf_opl.json)
+
+Each land cell belongs to one of K environmental clusters (KMeans on land
+cover, Koppen climate and clay/sand/silt), and each cluster has its own
+Random Forest. A cell's soil moisture combines the Random Forests of its
+top_k nearest clusters:
+
+   SM = sum_k w_k * RF_k(TB)          (clipped to 0-0.6)
+
+"blending" chooses the weights w_k:
+
+   - distance: d_k is the Euclidean distance between the cell's encoded
+     static features and cluster centre k, and
+
+        w_k = exp(-d_k / T) / sum_j exp(-d_j / T)
+
+     with j over the same top_k clusters and T = "temperature". A small T
+     makes the nearest cluster dominate, so only cells lying between two
+     clusters are blended (T -> 0 is the same as hard); a large T mixes
+     more (the weights approach 1/top_k). For distances 1.0 and 1.5,
+     T = 1 gives weights 0.62/0.38, T = 0.2 gives 0.92/0.08 and T = 0.1
+     gives 0.99/0.01.
+   - hard: the cell's own cluster only (weight 1).
+   - gmm: probabilities from a Gaussian mixture of the static features
+     (gmm_kK.pkl in model_dir). Its most probable component can differ
+     from the cluster the cell was trained in.
+
+"blending" is required, and "temperature" is required with distance.

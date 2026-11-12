@@ -16,13 +16,29 @@ Stratified Soil Moisture Prediction using Per-Cluster Random Forests
 Predicts soil moisture from WSF brightness temperatures using
 per-cluster RF models, blended across clusters at their boundaries.
 
-Each pixel gets weights for its top-K environmental clusters, chosen with
---blending (required, no default):
+Each pixel gets weights w_k for its top-K environmental clusters, and its
+soil moisture is the weighted sum of those clusters' Random Forests:
+
+    SM = sum_k w_k * RF_k(TB)        (k over the top-K clusters, clipped 0-0.6)
+
+The weights are chosen with --blending (required, no default):
+    distance — from the distance between the pixel's encoded static features
+               x (land-cover and climate flags, standardised clay/sand/silt)
+               and each KMeans cluster centre c_k:
+                   d_k = ||x - c_k||                       (Euclidean)
+                   w_k = exp(-d_k / T) / sum_j exp(-d_j / T)
+               with j over the same top-K (nearest) clusters and T the
+               --temperature (required). Small T: the nearest cluster
+               dominates and only pixels between clusters blend (T -> 0 is
+               'hard'); large T: the weights approach 1/K everywhere.
+               Example, d = 1.0 and 1.5: T = 1 gives 0.62/0.38,
+               T = 0.2 gives 0.92/0.08, T = 0.1 gives 0.99/0.01.
+    hard     — the nearest cluster centre only (weight 1): the cluster the
+               pixel was trained in.
     gmm      — posterior probabilities of a Gaussian mixture fitted to the
-               encoded static layers (gmm_kXX.pkl in the model directory)
-    distance — softmax of minus the distance to each KMeans centroid,
-               sharpened or smoothed with --temperature
-    hard     — nearest KMeans centroid only (the labels used in training)
+               encoded static layers (gmm_kXX.pkl in the model directory).
+               Its most probable component can differ from the cluster the
+               pixel was trained in.
 
 Output files are LIS/LDT-compatible NetCDF:
     - Variable:  arfs_sm
@@ -44,7 +60,7 @@ Usage:
         --env-clay       ./static_data/soil/sg_clay_usaf.nc
         --env-sand       ./static_data/soil/sg_sand_usaf.nc
         --env-silt       ./static_data/soil/sg_silt_usaf.nc
-        --blending gmm
+        --blending distance --temperature 0.1
         --output-dir /path/to/out
 
     # From zarr (monthly)
@@ -54,7 +70,7 @@ Usage:
         [same --model-dir / --cluster-dir / --env-* flags as above]
 
     # Distance-based softmax, or hard assignment (no blending)
-    python predict_sm_stratified.py hourly ... --blending distance --temperature 1.0
+    python predict_sm_stratified.py hourly ... --blending distance --temperature 0.1
     python predict_sm_stratified.py hourly ... --blending hard
 
     # As module (called from wsf_opl.py — all paths supplied by caller)
@@ -69,7 +85,8 @@ Usage:
             'sand':       './static_data/soil/sg_sand_usaf.nc',
             'silt':       './static_data/soil/sg_silt_usaf.nc',
         },
-        blending='gmm',
+        blending='distance',
+        temperature=0.1,
     )
     predictor.predict_from_hourly_nc('/path/to/input.nc', output_dir='/path/to/out')
 """
@@ -201,7 +218,10 @@ def cluster_weights(X_valid, cluster_model, gmm, blending, top_k=3,
 
     blending is one of BLENDING_MODES; gmm is the fitted GaussianMixture
     (used only for 'gmm'). 'hard' returns the nearest KMeans centroid with
-    weight 1, i.e. the label KMeans gives the cell.
+    weight 1, i.e. the label KMeans gives the cell. 'distance' uses
+        d_k = ||x - c_k||,   w_k = exp(-d_k / T) / sum_j exp(-d_j / T)
+    over the top_k nearest centroids c_k (softmax of -d/T over all clusters,
+    then the top_k weights renormalised to sum to 1, which is the same).
     """
     if blending not in BLENDING_MODES:
         raise ValueError(f"blending must be one of {BLENDING_MODES}, got {blending!r}")
@@ -226,6 +246,7 @@ def cluster_weights(X_valid, cluster_model, gmm, blending, top_k=3,
             dists = np.zeros((end - start, k))
             for c in range(k):
                 dists[:, c] = np.sqrt(((X_chunk - centroids[c]) ** 2).sum(axis=1))
+            # softmax(-d / T): w_k = exp(-d_k / T) / sum_j exp(-d_j / T)
             probs = softmax(-dists / (temperature if blending == 'distance' else 1.0),
                             axis=1)
         idx = np.argsort(probs, axis=1)[:, ::-1][:, :top_k]
@@ -267,7 +288,8 @@ class StratifiedSoilMoisturePredictor:
     top_k : int
         Number of top clusters to blend (default: 3; 1 for 'hard').
     temperature : float
-        Softmax temperature for 'distance' weights (lower = sharper).
+        T in w_k = exp(-d_k / T) / sum_j exp(-d_j / T) (required for
+        'distance'; lower = sharper, e.g. 0.1). See the module docstring.
     """
 
     # Output conventions — must match LIS/LDT Fortran readers.
@@ -277,10 +299,13 @@ class StratifiedSoilMoisturePredictor:
 
     # pylint: disable=too-many-arguments
     def __init__(self, model_dir, cluster_dir, env_paths, *, blending,
-                 config_path=None, top_k=3, temperature=1.0):
+                 config_path=None, top_k=3, temperature=None):
         """Load all cluster models and precompute the cluster weights."""
         if blending not in BLENDING_MODES:
             raise ValueError(f"blending must be one of {BLENDING_MODES}, got {blending!r}")
+        if blending == 'distance' and (temperature is None or temperature <= 0):
+            raise ValueError("blending 'distance' needs a temperature > 0 "
+                             f"(got {temperature!r}), e.g. 0.1")
         self.model_dir   = model_dir
         self.cluster_dir = cluster_dir
         self.env_paths   = env_paths
@@ -796,12 +821,16 @@ def main():
     parser.add_argument('--env-sand',       required=True, help='Sand fraction .nc path')
     parser.add_argument('--env-silt',       required=True, help='Silt fraction .nc path')
     parser.add_argument('--blending',       required=True, choices=BLENDING_MODES,
-                        help='Cluster weights: gmm, distance (softmax) or hard')
+                        help='How the top-K cluster RFs are combined: distance '
+                             '(weights from the distance to the cluster centres, '
+                             'see --temperature), hard (own cluster only) or gmm')
 
     # Optional arguments.
     parser.add_argument('--top-k',       type=int,   default=3,   help='Top-K clusters to blend')
-    parser.add_argument('--temperature', type=float, default=1.0,
-                        help='Softmax temperature (blending distance only)')
+    parser.add_argument('--temperature', type=float, default=None,
+                        help='T in w_k = exp(-d_k/T) / sum_j exp(-d_j/T), d_k = distance '
+                             'to cluster centre k (required with --blending distance; '
+                             'smaller = sharper, e.g. 0.1)')
     parser.add_argument('--no-qc',       action='store_true',     help='Skip QC masking')
 
     subparsers = parser.add_subparsers(dest='mode', help='Prediction mode')
@@ -816,6 +845,8 @@ def main():
     hourly_parser.add_argument('--output-dir', '-o', required=True, help='Output directory')
 
     args = parser.parse_args()
+    if args.blending == 'distance' and args.temperature is None:
+        parser.error('--blending distance needs --temperature (e.g. 0.1)')
 
     if args.mode is None:
         parser.print_help()
