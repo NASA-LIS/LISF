@@ -20,7 +20,10 @@
         "model_dir":      "./data/input/models/cluster_models",
         "cluster_dir":    "./data/input/models",
         "sm_output_dir":  "./data/02_wsfm_sm_retrievals",
+        "_comment_blending": "gmm | distance | hard; temperature is used by distance only",
+        "blending":       "gmm",
         "top_k":          3,
+        "temperature":    1.0,
         "env_paths": {
             "land_cover": "./data/input/static_data/LC/lc_arfs.nc",
             "climate":    "./data/input/static_data/LC/clm_usaf.nc",

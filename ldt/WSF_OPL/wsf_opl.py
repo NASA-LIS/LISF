@@ -79,7 +79,8 @@ def write_config(template, dt, src, out):
         (r"WSF valid date \(YYYYMMDDHH\):.*", f"WSF valid date (YYYYMMDDHH):            {dt}"),
         (r"WSF input directory:.*",            f"WSF input directory:                    {src}"),
         (r"WSF output directory:.*",           f"WSF output directory:                   {out}"),
-        (r"LDT diagnostic file:.*",            f"LDT diagnostic file:                    logs/ldtlog_{dt}"),
+        (r"LDT diagnostic file:.*",
+         f"LDT diagnostic file:                    logs/ldtlog_{dt}"),
         (r"WSF filelist suffix number:.*",     f"WSF filelist suffix number:             {dt}"),
     ]:
         text = re.sub(pattern, value, text)
@@ -178,11 +179,19 @@ def step2_predict(s2, out_base, start, end, force=False):
     from predict_sm_stratified import StratifiedSoilMoisturePredictor
     # pylint: enable=import-outside-toplevel
 
+    missing = [key for key in ("model_dir", "cluster_dir", "env_paths", "blending",
+                               "top_k", "temperature") if key not in s2]
+    if missing:
+        sys.exit("ERROR: step2_prediction in the config file has no "
+                 + ", ".join(missing))
+
     predictor = StratifiedSoilMoisturePredictor(
         model_dir=s2["model_dir"],
         cluster_dir=s2["cluster_dir"],
         env_paths=s2["env_paths"],
+        blending=s2["blending"],
         top_k=int(s2["top_k"]),
+        temperature=float(s2["temperature"]),
     )
 
     files = sorted(
@@ -207,7 +216,7 @@ def step2_predict(s2, out_base, start, end, force=False):
         if not force and any(sm_out.glob(f"ARFS_SM_WSFM_*{date}*{hhmm}*{orbit}*.nc")):
             n_skip += 1
             continue
-        
+
         t0 = time.time()
 
         try:
