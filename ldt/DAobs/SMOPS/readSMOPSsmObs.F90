@@ -28,6 +28,8 @@
 !               version is found (the newest is read), the version of
 !               these files is taken from the name, and LDT stops on a
 !               version whose GRIB2 parameter numbers it does not have.
+!  12 Nov 2026: Ehsan Jalilvand, check the GRIB2 grid of each layer; flip
+!               the rows only if they are stored north to south.
 !
 ! !INTERFACE:
 subroutine readSMOPSsmObs(n)
@@ -183,7 +185,12 @@ subroutine read_SMOPS_native(n, fname, fversion, datatime, sm_out, b_out, ok)
 ! !DESCRIPTION:
 !  This subroutine reads one SMOPS grib2 file (daily or 6-hourly) and
 !  applies the data quality flags. The result stays on the SMOPS 0.25 deg
-!  grid (rows flipped to south-to-north).
+!  grid, rows south to north.
+!
+!  The grid of every layer read is checked against the SMOPS grid LDT
+!  uses: 1440 x 720 cells of 0.25 deg, row by row, the first column at
+!  -179.875 (180.125 in GRIB2). Rows stored north to south are flipped;
+!  rows stored south to north are kept. Any other grid stops LDT.
 !
 !  The GRIB2 parameter numbers depend on the SMOPS version, which is
 !  taken from the file name for the NPR-SMOPS-CMAP-6hrly files (fversion,
@@ -268,6 +275,7 @@ subroutine read_SMOPS_native(n, fname, fversion, datatime, sm_out, b_out, ok)
 
    integer        :: k, i, nnat
    integer        :: ftn, iret, igrib, param_num
+   logical        :: north_first
    integer*2      :: qavalue
    integer*1      :: err
    character(len=3) :: vname
@@ -412,6 +420,7 @@ subroutine read_SMOPS_native(n, fname, fversion, datatime, sm_out, b_out, ok)
            any(param_ASCAT_qa == param_num) .or. &
            param_num == param_other .or. param_num == param_other_qa ) ) then
 
+         call check_grid(igrib, param_num, north_first)
          call grib_get(igrib, 'values', vals, iret)
          if (iret /= 0) then
             write(LDT_logunit,*) '[WARN] Problem reading values of parameter ', &
@@ -421,7 +430,7 @@ subroutine read_SMOPS_native(n, fname, fversion, datatime, sm_out, b_out, ok)
             deallocate(vals, sm_ascat, qa_ascat, sm_other, qa_other)
             return
          endif
-         call flip_rows(vals)
+         if ( north_first ) call flip_rows(vals)
 
          do k = 1, 3
             if ( param_num == param_ASCAT(k) )    sm_ascat(:,k) = vals
@@ -556,8 +565,51 @@ subroutine read_SMOPS_native(n, fname, fversion, datatime, sm_out, b_out, ok)
 
 contains
 
+#if (defined USE_GRIBAPI)
+subroutine check_grid(igrib, param_num, north_first)
+   ! Stops LDT unless the message is on the SMOPS grid LDT uses (see
+   ! above); north_first tells whether its rows run north to south.
+   implicit none
+   integer, intent(in)  :: igrib, param_num
+   logical, intent(out) :: north_first
+   integer :: ni, nj, jpos, ineg, jcons, st(7)
+   real*8  :: lat1, lon1
+   real*8, parameter :: tol = 1d-3
+
+   call grib_get(igrib, 'Ni', ni, st(1))
+   call grib_get(igrib, 'Nj', nj, st(2))
+   call grib_get(igrib, 'jScansPositively', jpos, st(3))
+   call grib_get(igrib, 'iScansNegatively', ineg, st(4))
+   call grib_get(igrib, 'jPointsAreConsecutive', jcons, st(5))
+   call grib_get(igrib, 'latitudeOfFirstGridPointInDegrees', lat1, st(6))
+   call grib_get(igrib, 'longitudeOfFirstGridPointInDegrees', lon1, st(7))
+   north_first = ( jpos == 0 )
+
+   if ( any(st /= 0) ) then
+      write(LDT_logunit,*) '[ERR] Cannot read the grid of parameter ', &
+           param_num, ' in ', trim(fname)
+      call LDT_endrun()
+   endif
+   if ( ni /= SMOPSsmobs(n)%smopsnc .or. nj /= SMOPSsmobs(n)%smopsnr .or. &
+        ineg /= 0 .or. jcons /= 0 .or. &
+        abs(modulo(lon1, 360d0) - 180.125d0) > tol .or. &
+        abs(lat1 - merge(89.875d0, -89.875d0, north_first)) > tol ) then
+      write(LDT_logunit,*) '[ERR] Parameter ', param_num, ' in ', trim(fname)
+      write(LDT_logunit,*) '[ERR] is not on the SMOPS grid LDT expects.'
+      write(LDT_logunit,'(a,2i6,a,3i3,a,2f10.4)') ' [ERR] Ni Nj', ni, nj, &
+           '  jScansPositively iScansNegatively jPointsAreConsecutive', &
+           jpos, ineg, jcons, '  first lat lon', lat1, lon1
+      write(LDT_logunit,'(a,2i6,a)') ' [ERR] Expected: Ni Nj', &
+           SMOPSsmobs(n)%smopsnc, SMOPSsmobs(n)%smopsnr, &
+           ', iScansNegatively 0, jPointsAreConsecutive 0, first lon'// &
+           ' 180.125 (= -179.875), first lat 89.875 (N to S) or -89.875'
+      call LDT_endrun()
+   endif
+end subroutine check_grid
+#endif
+
 subroutine flip_rows(a)
-   ! GRIB2 rows run north to south; LDT wants south to north.
+   ! Rows north to south -> south to north.
    implicit none
    real, intent(inout) :: a(:)
    integer :: r, nc, nr

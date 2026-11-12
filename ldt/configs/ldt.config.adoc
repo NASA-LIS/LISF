@@ -4216,6 +4216,8 @@ The `NPR-SMOPS-CMAP-6hrly` files carry their version in the name (`v4r0`, `v5r0`
 
 SMOPS version 5 (`v5r0`, with AMSR3 added) is operational from 2026-12-08. LDT does not have its GRIB2 parameter numbers yet, so it stops on a `v5r0` file. With "`date-based`", it also stops on files whose names carry no version (daily files and the "`LIS`" naming convention) dated from 2026-12-08; set "`4.0`" if such files are still version 4.
 
+For every SMOPS layer it reads, LDT checks the GRIB2 grid: 1440 x 720 cells of 0.25 deg with the first column at -179.875. Rows stored north to south or south to north are both read correctly; any other grid stops LDT.
+
 `SMOPS search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
 
 .Example _ldt.config_ entry
