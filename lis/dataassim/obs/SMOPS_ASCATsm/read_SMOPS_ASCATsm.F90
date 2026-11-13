@@ -24,7 +24,13 @@
 !               month.
 !  25 Mar 2022: Eric Kemp; Modified read_SMOPS_ASCATsm to be fault tolerant.
 !  10 May 2024: Mahdi Navari; Updated to read ASCAT Metop-B and C from SMOPS V4
-!                             
+!  13 Nov 2026: Ehsan Jalilvand; SMOPS v5: any NPR-SMOPS-CMAP-6hrly version
+!               is found (the newest is read) and its version is taken from
+!               the file name; a version whose GRIB2 parameter numbers LIS
+!               does not have is skipped with an [ERR] message. The GRIB2
+!               grid of each layer is checked. The 6-hourly window that
+!               starts at 12Z on 2024-07-04 reads the v3 file again.
+!
 ! !INTERFACE:
 subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
 ! !USES:
@@ -511,78 +517,98 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   logical         :: var_found
   integer*2       :: qavalue
   integer*1       :: err, ql
-  integer         :: updoy,yr1,mo1,da1,hr1,mn1,ss1,offset
+  integer         :: updoy,yr1,mo1,da1,hr1,mn1,ss1
   real            :: upgmt
-  real*8          :: file_time
+  real*8          :: wtime
+  character(len=3)  :: vname
+  character(len=16) :: fver
+  integer         :: vnum
+  integer         :: params_used(12)
   integer :: imsg
   character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer, save :: alert_number = 0
   logical :: a_exist,b_exist,c_exist
 
 #if(defined USE_GRIBAPI)
-  ! When we are reading the 6-hourly datasets, we read the file HR+6
-  ! because it contains the previous 6 hours of retrievals.
-  ! Thus we need to add 6 hours to the LIS time do determine the version
-  ! of the SMOPS dataset.
-  ! Otherwise, when reading the daily datasets, there is no need to
-  ! adjust time.
-  if ( SMOPS_ASCATsm_struc(n)%useRealtime == 1 ) then
-     offset = 6 ! EJ only for version 3!
-  else
-     offset = 0
-  endif
+  ! SMOPS version, which sets the GRIB2 parameter numbers:
+  !  - NPR-SMOPS-CMAP-6hrly_vNrM_* files: from the file name (v4r0 = 4.0);
+  !    other versions are skipped until their numbers are added here;
+  !  - other names: from "SMOPS ASCAT version:", or for "date-based" and
+  !    "NESDIS V3.0 REGEN" from the start of the 6-hour window (or day)
+  !    being read, i.e. the LIS time. Undated files from 2026-12-08 (SMOPS
+  !    v5) are skipped unless the version is set.
+  param_ASCAT_A = -1; param_ASCAT_A_qa = -1
+  param_ASCAT_A_hr = -1; param_ASCAT_A_mn = -1
+  param_ASCAT_B = -1; param_ASCAT_B_qa = -1
+  param_ASCAT_B_hr = -1; param_ASCAT_B_mn = -1
+  param_ASCAT_C = -1; param_ASCAT_C_qa = -1
+  param_ASCAT_C_hr = -1; param_ASCAT_C_mn = -1
 
-  if ( SMOPS_ASCATsm_struc(n)%version == '1.3' ) then
-     file_time = SMOPS_ASCATsm_struc(n)%version2_time - 1.0
-  elseif ( SMOPS_ASCATsm_struc(n)%version == '2.0' ) then
-     file_time = SMOPS_ASCATsm_struc(n)%version2_time
-  elseif ( SMOPS_ASCATsm_struc(n)%version == '3.0' ) then
-     file_time = SMOPS_ASCATsm_struc(n)%version3_time
-  else
-     yr1 = LIS_rc%yr
-     mo1 = LIS_rc%mo
-     da1 = LIS_rc%da
-     hr1 = LIS_rc%hr
-     mn1 = LIS_rc%mn
-     ss1 = 0
-     call LIS_date2time(file_time,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
-     if ( file_time >= SMOPS_ASCATsm_struc(n)%version3_time .and. &
-           file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
-           hr1 = LIS_rc%hr+offset
-           call LIS_date2time(file_time,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
+  yr1 = LIS_rc%yr; mo1 = LIS_rc%mo; da1 = LIS_rc%da
+  hr1 = LIS_rc%hr; mn1 = LIS_rc%mn; ss1 = 0
+  call LIS_date2time(wtime,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
+
+  call SMOPS_ASCAT_6hrly_version(fname, fver, vnum)
+  if ( vnum >= 0 ) then
+     select case ( trim(fver) )
+     case ( 'v4r0' )
+        vname = '4.0'
+     case default
+        call report_skip('SMOPS '//trim(fver)//' file skipped: '//trim(fname), &
+             'LIS has the GRIB2 parameter numbers of SMOPS up to v4r0 only.')
+        return
+     end select
+     if ( SMOPS_ASCATsm_struc(n)%version /= 'date-based' .and. &
+          SMOPS_ASCATsm_struc(n)%version /= 'NESDIS V3.0 REGEN' .and. &
+          SMOPS_ASCATsm_struc(n)%version /= vname ) then
+        call report_skip('SMOPS '//trim(fver)//' file skipped: '//trim(fname), &
+             'SMOPS ASCAT version: is '//trim(SMOPS_ASCATsm_struc(n)%version))
+        return
      endif
+  elseif ( SMOPS_ASCATsm_struc(n)%version /= 'date-based' .and. &
+           SMOPS_ASCATsm_struc(n)%version /= 'NESDIS V3.0 REGEN' ) then
+     vname = SMOPS_ASCATsm_struc(n)%version(1:3)  ! checked in SMOPS_ASCATsm_Mod
+  elseif ( wtime < SMOPS_ASCATsm_struc(n)%version2_time ) then
+     vname = '1.3'
+  elseif ( wtime < SMOPS_ASCATsm_struc(n)%version3_time ) then
+     vname = '2.0'
+  elseif ( wtime < SMOPS_ASCATsm_struc(n)%version4_time ) then
+     vname = '3.0'
+  elseif ( wtime < SMOPS_ASCATsm_struc(n)%version5_time ) then
+     vname = '4.0'
+  else
+     call report_skip('SMOPS file skipped: '//trim(fname), &
+          'No version in the name, dated from 2026-12-08 (SMOPS v5); '// &
+          'set SMOPS ASCAT version: 4.0 if it is v4.')
+     return
   endif
 
-  if ( file_time < SMOPS_ASCATsm_struc(n)%version3_time ) then
-     ! SMOPS version 1.3 or 2.0
+  select case ( vname )
+  case ( '1.3', '2.0' )
      param_ASCAT_A = 213; param_ASCAT_A_qa = 234
      param_ASCAT_A_hr = 223; param_ASCAT_A_mn = 224
      param_ASCAT_B = 214; param_ASCAT_B_qa = 235
      param_ASCAT_B_hr = 225; param_ASCAT_B_mn = 226
      a_exist = .true.; b_exist = .true.; c_exist = .false.
-     write(LIS_logunit,*) '[MSG] Reading SMOPS ASCAT dataset '//&
-        'as SMOPS version 1.3/2.0'
-
-  elseif ( file_time >= SMOPS_ASCATsm_struc(n)%version3_time .and. &
-           file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
-     ! SMOPS version 3.0
+  case ( '3.0' )
      param_ASCAT_A = 213; param_ASCAT_A_qa = 243
      param_ASCAT_A_hr = 226; param_ASCAT_A_mn = 227
      param_ASCAT_B = 214; param_ASCAT_B_qa = 244
      param_ASCAT_B_hr = 228; param_ASCAT_B_mn = 229
      a_exist = .true.; b_exist = .true.; c_exist = .false.
-     write(LIS_logunit,*) '[MSG] Reading SMOPS ASCAT dataset '//&
-        'as SMOPS version 3.0'
-  else 
-     ! SMOPS version 4.0    
+  case ( '4.0' )
      param_ASCAT_B = 214; param_ASCAT_B_qa = 244
      param_ASCAT_B_hr = 228; param_ASCAT_B_mn = 229
      param_ASCAT_C = 250; param_ASCAT_C_qa = 253
      param_ASCAT_C_hr = 251; param_ASCAT_C_mn = 252
      a_exist = .false.; b_exist = .true.; c_exist = .true.
-     write(LIS_logunit,*) '[MSG] Reading SMOPS ASCAT dataset '//&
-        'as SMOPS version 4.0'
-  endif
+  end select
+  write(LIS_logunit,*) '[MSG] Reading SMOPS ASCAT dataset '//&
+       'as SMOPS version '//vname
+  params_used = (/ param_ASCAT_A, param_ASCAT_A_qa, param_ASCAT_A_hr, &
+       param_ASCAT_A_mn, param_ASCAT_B, param_ASCAT_B_qa, param_ASCAT_B_hr, &
+       param_ASCAT_B_mn, param_ASCAT_C, param_ASCAT_C_qa, param_ASCAT_C_hr, &
+       param_ASCAT_C_mn /)
 
   call grib_open_file(ftn, trim(fname), 'r', iret)
   if (iret .ne. 0) then
@@ -608,6 +634,14 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
         imsg = -1
         exit
      end if
+
+     if ( any(params_used == param_num) ) then
+        if ( .not. grid_ok(igrib, param_num) ) then
+           call grib_release(igrib, iret)
+           imsg = -1
+           exit
+        endif
+     endif
 
      var_found = .false.
      if (a_exist) then 
@@ -979,7 +1013,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
           enddo
   endif
 
-  if ( file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
+  if ( vname /= '4.0' ) then
      sm_data = sm_ASCAT_A_t
      sm_time = sm_time_ASCAT_A
      where ( sm_ASCAT_B_t /= LIS_rc%udef )
@@ -1017,6 +1051,60 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
 #endif
 
   contains
+
+#if(defined USE_GRIBAPI)
+  logical function grid_ok(igrib, param_num)
+     ! True if the message is on the SMOPS grid this reader assumes: 0.25 deg,
+     ! nc x nr cells, row by row, rows north to south (as all SMOPS files so
+     ! far), first point 89.875 N, -179.875 E (180.125 in GRIB2).
+     implicit none
+     integer, intent(in) :: igrib, param_num
+     integer :: ni, nj, jpos, ineg, jcons, st(7)
+     real*8  :: lat1, lon1
+     character(len=200) :: found
+
+     call grib_get(igrib, 'Ni', ni, st(1))
+     call grib_get(igrib, 'Nj', nj, st(2))
+     call grib_get(igrib, 'jScansPositively', jpos, st(3))
+     call grib_get(igrib, 'iScansNegatively', ineg, st(4))
+     call grib_get(igrib, 'jPointsAreConsecutive', jcons, st(5))
+     call grib_get(igrib, 'latitudeOfFirstGridPointInDegrees', lat1, st(6))
+     call grib_get(igrib, 'longitudeOfFirstGridPointInDegrees', lon1, st(7))
+     grid_ok = all(st == 0) .and. ni == SMOPS_ASCATsm_struc(n)%nc .and. &
+          nj == SMOPS_ASCATsm_struc(n)%nr .and. jpos == 0 .and. &
+          ineg == 0 .and. jcons == 0 .and. abs(lat1 - 89.875d0) < 1d-3 .and. &
+          abs(modulo(lon1, 360d0) - 180.125d0) < 1d-3
+     if ( .not. grid_ok ) then
+        write(found,'(a,i0,a,2i6,a,3i2,a,2f10.4)') 'parameter ', param_num, &
+             ': Ni Nj', ni, nj, ', jScansPositively iScansNegatively '// &
+             'jPointsAreConsecutive', jpos, ineg, jcons, ', first lat lon', &
+             lat1, lon1
+        call report_skip('SMOPS file not on the expected grid, skipped: '// &
+             trim(fname), trim(found)//' (expected 1440 720, 0 0 0, '// &
+             '89.875 180.125)')
+     endif
+  end function grid_ok
+#endif
+
+  subroutine report_skip(line1, line2)
+     ! [ERR] message, and an alert in AGRMET ops runs, for a file not read.
+     implicit none
+     character(len=*), intent(in) :: line1, line2
+     write(LIS_logunit,*) '[ERR] ', trim(line1)
+     write(LIS_logunit,*) '[ERR] ', trim(line2)
+     if (trim(LIS_rc%runmode) .eq. LIS_agrmetrunId) then
+        message(:) = ''
+        message(1) = '[ERR] Program:  LIS'
+        message(2) = '  Routine:  read_SMOPS_ASCAT_data.'
+        message(3) = '  '//trim(line1)
+        message(4) = '  '//trim(line2)
+        alert_number = alert_number + 1
+        if (LIS_masterproc) then
+           call lis_alert('SMOPS_ASCATsm              ', alert_number, &
+                message)
+        end if
+     end if
+  end subroutine report_skip
 
   integer*1 function get_byte1(i)
      implicit none
@@ -1088,6 +1176,17 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
 !  for 12 Oct 2017, hours 12, 13, 14, 15, 16, and 17.
 !  So, when LIS is at hour 12, it must read the SMOPS hour 18 file to
 !  process hours 12, 13, 14, 15, 16, and 17.
+!
+!  From 2024-07-04T18 the files are
+!  NPR-SMOPS-CMAP-6hrly\_vNrM\_blend\_sYYYYMMDDHH*\_e*\_c*.grib2 (v4r0;
+!  v5r0 from 2026-12-08), which hold the 6 hours starting at HH. Any
+!  version is searched for; if several files match, the newest version
+!  is used and, within it, the latest creation time.
+!
+!  The naming convention is chosen by the start of the window (the LIS
+!  time), so the window starting at 12Z on 2024-07-04 reads
+!  NPR_SMOPS_CMAP_D2024070418.gr2. Before, it read the v4 file starting
+!  at 18Z, and the 12-18Z retrievals were never read.
 ! 
 !  The arguments are: 
 !  \begin{description}
@@ -1106,12 +1205,14 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
   logical, save           :: first_time=.true.
   type(ESMF_Time), save   :: naming3_time
   type(ESMF_Time), save   :: Ver4_blended_time
-  type(ESMF_Time)         :: file_time
+  type(ESMF_Time)         :: file_time, window_start
   type(ESMF_TimeInterval) :: six_hours
   integer                 :: rc
   character*8            :: yyyymmdd
   character(len=LIS_CONST_PATH_LEN) :: list_files
-   integer                :: ftn, ierr
+  character(len=LIS_CONST_PATH_LEN) :: line
+  character(len=16)       :: ver
+  integer                 :: ftn, ierr, vnum, best
 
   if ( first_time ) then
      call ESMF_TimeSet(naming3_time, &
@@ -1148,7 +1249,9 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
         s  = 0,  & 
         calendar = LIS_calendar, & 
         rc = rc)
-     if ( file_time >= naming3_time .and. file_time < Ver4_blended_time) then
+     window_start = file_time
+     if ( window_start >= naming3_time .and. &
+          window_start < Ver4_blended_time) then
          file_time = file_time+six_hours
      endif
      call ESMF_TimeGet(file_time, &
@@ -1170,16 +1273,15 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
         filename = trim(ndir)//'/'//trim(fyr)//'/NPR_SMOPS_CMAP_D' &
                    //trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//'.gr2'     
      else
-        if ( file_time >= naming3_time .and. file_time < Ver4_blended_time) then
+        if ( window_start >= naming3_time .and. &
+             window_start < Ver4_blended_time) then
            filename = trim(ndir)//'/'//'/NPR_SMOPS_CMAP_D' &
               //trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//'.gr2'     
-        elseif (file_time >= Ver4_blended_time) then 
-            ! NPR-SMOPS-CMAP-6hrly_v4r0_blend_s202404250600000_e202404251159599_c202404251440470.grib2
-            !filename = trim(ndir)//'/'//'/NPR-SMOPS-CMAP-6hrly_v4r0_blend_s' &
-            !  //trim(yyyymmdd)//'00000_e'//trim(yyyymmdd)//'*_c'//trim(yyyymmdd)//'*.grib2'
+        elseif (window_start >= Ver4_blended_time) then
+           ! e.g. NPR-SMOPS-CMAP-6hrly_v4r0_blend_s202404250600000_e202404251159599_c202404251440470.grib2
            filename = 'NULL' ! EMK Initialize
            if (LIS_masterproc) then
-               list_files = trim(ndir)//'/'//'NPR-SMOPS-CMAP-6hrly_v4r0_blend_s' &
+               list_files = trim(ndir)//'/'//'NPR-SMOPS-CMAP-6hrly_v*_blend_s' &
                  //trim(yyyymmdd)//trim(fhr)//'*.grib2'
 
                write(LIS_logunit,*) &
@@ -1199,16 +1301,28 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
            call mpi_barrier(lis_mpi_comm,ierr)
 #endif
 
+           ! Newest version; within it, the latest creation time (the
+           ! list is sorted by name).
+           best = -1
            ftn = LIS_getNextUnitNumber()
            open(ftn,file="./SMOPS_ASCAT_filelist.sm.dat",status='old',iostat=ierr)
-           ! We do not need do while.Only one file should be available for the selected date
            do while(ierr.eq.0)
-              read(ftn,'(a)',iostat=ierr) filename
+              read(ftn,'(a)',iostat=ierr) line
               if(ierr.ne.0) then
                  exit
               endif
+              if (len_trim(line) == 0) cycle
+              call SMOPS_ASCAT_6hrly_version(line, ver, vnum)
+              if (vnum < 0) then
+                 write(LIS_logunit,*) &
+                      '[WARN] No SMOPS version (vNrM) in the name, ignored: ', &
+                      trim(line)
+              elseif (vnum >= best) then
+                 best = vnum
+                 filename = line
+              endif
            enddo
-           !write(LIS_logunit,*) '[INFO] Will read  ',trim(filename)
+           close(ftn)
            call LIS_releaseUnitNumber(ftn)
         else
            filename = trim(ndir)//'/smops_d' &
@@ -1222,3 +1336,44 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
 
 end subroutine create_SMOPS_ASCATsm_filename
 
+!BOP
+! !ROUTINE: SMOPS_ASCAT_6hrly_version
+! \label{SMOPS_ASCAT_6hrly_version}
+!
+! !INTERFACE:
+subroutine SMOPS_ASCAT_6hrly_version(fname, ver, vnum)
+  implicit none
+! !ARGUMENTS:
+  character (len=*), intent(in)  :: fname
+  character (len=*), intent(out) :: ver
+  integer,           intent(out) :: vnum
+!
+! !DESCRIPTION:
+!  Reads the SMOPS version from the name of an NPR-SMOPS-CMAP-6hrly file,
+!  e.g. NPR-SMOPS-CMAP-6hrly\_v5r0\_blend\_s...grib2 gives ver = 'v5r0'
+!  and vnum = 5000 (1000 * N + M for vNrM, for comparing versions).
+!  vnum is -1 and ver blank if the name has no vNrM.
+!EOP
+  character (len=*), parameter :: tag = '6hrly_v'
+  character (len=*), parameter :: digits = '0123456789'
+  integer :: i, j, k, major, minor, ios
+
+  ver = ''
+  vnum = -1
+  i = index(fname, tag, back=.true.)
+  if (i == 0) return
+  i = i + len(tag) - 1                    ! the 'v'
+  j = index(fname(i:), '_blend')
+  if (j < 5) return                       ! at least 'vNrM'
+  k = index(fname(i:i+j-2), 'r')          ! the 'r', relative to i
+  if (k < 3 .or. k > j - 2) return
+  if (verify(fname(i+1:i+k-2), digits) /= 0) return
+  if (verify(fname(i+k:i+j-2), digits) /= 0) return
+  read(fname(i+1:i+k-2), *, iostat=ios) major
+  if (ios /= 0) return
+  read(fname(i+k:i+j-2), *, iostat=ios) minor
+  if (ios /= 0) return
+  ver = fname(i:i+j-2)
+  vnum = 1000*major + minor
+
+end subroutine SMOPS_ASCAT_6hrly_version
