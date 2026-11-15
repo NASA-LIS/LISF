@@ -620,7 +620,10 @@ class StratifiedSoilMoisturePredictor:
                 if coord in input_ds.coords and coord in out_ds.coords:
                     out_ds[coord].attrs = input_ds[coord].attrs
 
-        out_ds.to_netcdf(output_path)
+        # Compressed: most cells of an hourly swath are NaN, so this cuts the
+        # file from ~26 MB to a small fraction; readers see no difference.
+        out_ds.to_netcdf(output_path, encoding={
+            self.OUTPUT_VAR_NAME: {'zlib': True, 'complevel': 4}})
         return output_path
     # pylint: enable=too-many-arguments,too-many-positional-arguments
 
