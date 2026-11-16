@@ -405,7 +405,10 @@ def step2_predict(s2, out_base, start, end, force=False):
         # Skip if the output SM file already exists (unless --force was given).
         m = re.search(r"WSF_SDR_resampled_(\d{8})_t(\d{4})_(ASC|DES)", f.name)
         date, hhmm, orbit = m.group(1), m.group(2), m.group(3)
-        if not force and any(sm_out.glob(f"ARFS_SM_WSFM_*{date}*{hhmm}*{orbit}*.nc")):
+        # Exact output name (as written by predict_from_hourly_nc). A wildcard
+        # match is not safe here: "*1000*" also matches the 01Z file
+        # (...T010000...), so 10Z and 20Z were skipped once 01Z and 02Z existed.
+        if not force and (sm_out / f"ARFS_SM_WSFM_{date}T{hhmm}00_{orbit}.nc").exists():
             n_skip += 1
             continue
 
@@ -423,7 +426,7 @@ def step2_predict(s2, out_base, start, end, force=False):
             print(f"  [{i+1}/{len(files)}] ok={n_ok} fail={n_fail} "
                   f"last={time.time()-t0:.1f}s total={time.time()-t0_all:.0f}s")
 
-    print(f"\n  Done: {n_ok} ok, {n_fail} failed")
+    print(f"\n  Done: {n_ok} ok, {n_fail} failed, {n_skip} already there (skipped)")
     if n_fail:
         sys.exit(1)
 # pylint: enable=too-many-locals
