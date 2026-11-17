@@ -578,6 +578,8 @@ subroutine NoahMP50_main(n)
         NoahMP50_struc(n)%noahmp50(t)%tauy       = NoahmpIO%tauyyxy(1,1)
         NoahMP50_struc(n)%noahmp50(t)%rhoair     = NoahmpIO%rhoairxy(1,1)
         NoahMP50_struc(n)%noahmp50(t)%qsfcmean   = NoahmpIO%qsfc(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%tsfcmean   = NoahmpIO%tsfcxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%t2mean     = NoahmpIO%t2mxy(1,1)
         NoahMP50_struc(n)%noahmp50(t)%albsfcdir(:) = NoahmpIO%ALBSFCDIRXY(1,:,1)
         NoahMP50_struc(n)%noahmp50(t)%albsfcdif(:) = NoahmpIO%ALBSFCDIFXY(1,:,1)
         NoahMP50_struc(n)%noahmp50(t)%soiltimestep    = NoahmpIO%soiltimestepxy(1,1)
@@ -1342,7 +1344,7 @@ subroutine NoahMP50_main(n)
              value = NoahMP50_struc(n)%noahmp50(t)%zpd, &
              vlevel=1, unit="m", direction="-", &
              surface_type = LIS_rc%lsm_index)
-
+    
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_USTARVEG, &
              value = NoahMP50_struc(n)%noahmp50(t)%ustarveg, &
              vlevel=1, unit="m s-1", direction="-", &
@@ -1372,7 +1374,17 @@ subroutine NoahMP50_main(n)
              value = NoahMP50_struc(n)%noahmp50(t)%qsfcmean, &
              vlevel=1, unit="kg kg-1", direction="-", &
              surface_type = LIS_rc%lsm_index)
-
+       
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_TSFCMEAN, &
+             value = NoahMP50_struc(n)%noahmp50(t)%tsfcmean, &
+             vlevel=1, unit="K", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+        
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_T2MEAN, &
+             value = NoahMP50_struc(n)%noahmp50(t)%t2mean, &
+             vlevel=1, unit="K", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+ 
         ! output variable: albsfcdir(1) (unit=-). *** surface albedo,
         !  direct beam, visible band
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO_DIR_V, &

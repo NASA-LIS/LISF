@@ -377,6 +377,10 @@ module NoahMP50_module
 !     surface air density. unit: kg/m3
 !   \item[qsfcmean]
 !     mean surface specific humidity. unit: kg/kg
+!   \item[tsfcmean]
+!     mean skin temperature. unit: K
+!   \item[t2mean]
+!     mean 2m temperature. unit: K
 !   \item[albsfcdir]
 !     surface albedo, direct beam (1=visible, 2=near-infrared). unit: -
 !   \item[albsfcdif]
@@ -586,6 +590,8 @@ module NoahMP50_module
      real               :: tauy
      real               :: rhoair
      real               :: qsfcmean
+     real               :: t2mean
+     real               :: tsfcmean
      integer            :: soiltimestep
      real, pointer      :: albsfcdir(:)   ! surface albedo direct  (1=vis, 2=nir)
      real, pointer      :: albsfcdif(:)   ! surface albedo diffuse (1=vis, 2=nir) 

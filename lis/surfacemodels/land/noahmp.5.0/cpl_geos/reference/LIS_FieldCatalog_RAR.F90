@@ -71,7 +71,13 @@ LIS_Field( &
                 adExport=.true., &
                 directConn=.false.), &
 
-!conversion needed: CLSM exports runoff_total_flux (RUNOFF) = surface_runoff_amount + subsurface_runoff_amount
+LIS_Field( &
+                stdName='totalrunoff', &         ! RunoffSubsurface + RunoffSurface
+                stateName='Qsum', &						   
+                units='mm/soil_timestep', &					! CLSM exports runoff_total_flux (RUNOFF )
+                adImport=.false., &
+                adExport=.true., &
+                directConn=.false.), &
 
 !!=========================================================================================
 !! exports to Moist / Turbulence / Radiation
@@ -110,16 +116,16 @@ LIS_Field( &
                 stdName='2m_air_temperature', &  ! Noah-MP: TemperatureAir2m
                 stateName='t2_f', &			! NoahMP50_struc(n)%noahmp50(t)%t2mv & NoahMP50_struc(n)%noahmp50(t)%t2mb 
                 units='K', &					! CLSM MOT2M (temperature 2m wind from MO sfc) - conversion needed (weighting with NoahMP50_struc(n)%noahmp50(t)%fveg)
-                adImport=.false., &
+                adImport=.false., &.               
                 adExport=.true., &
                 directConn=.false.), &
 
 !! --- Sensible Heat Flux  ---
 LIS_Field( &
                 stdName='surface_upward_sensible_heat_flux', &        ! Noah-MP: HeatSensibleSfc
-                stateName='Qh', &								  ! NoahMP50_struc(n)%noahmp50(t)%shg, NoahMP50_struc(n)%noahmp50(t)%shc, NoahMP50_struc(n)%noahmp50(t)%shb 
+                stateName='Qh', &								  
                 units='W/m2', &								 ! CLSM: SHOUT (upward_sensible_heat_flux)
-                adImport=.false., &								! conversion needed: SHOUT  = VegFrac * HeatSensibleVegGrd [shg] + (1.0 - VegFrac) * HeatSensibleBareGrd [shb] + HeatSensibleCanopy [shc]
+                adImport=.false., &								
                 adExport=.true., &
                 directConn=.false.), &
 
@@ -135,14 +141,14 @@ LIS_Field( &
 LIS_Field( &
                 stdName='heat_exchange_coefficient_in_air', & ! Noah-MP: ExchCoeffShSfc 
                 stateName='ch_f', &						! NoahMP50_struc(n)%noahmp50(t)%ch
-                units='s/m', &						! (maps to GEOS heat and momentum exchange coefficients: CT(surface_exchange_coefficient_for_heat), CQ(surface_exchange_coefficient_for_moisture)
+                units='m/s', &						! (maps to GEOS heat and momentum exchange coefficients: CT(surface_exchange_coefficient_for_heat), CQ(surface_exchange_coefficient_for_moisture)
                 adImport=.false., &					
                 adExport=.true., &					
                 directConn=.false.), &
 LIS_Field( &
                 stdName='momentum_exchange_coefficient_in_air', & ! Noah-MP: ExchCoeffMomSfc      
                 stateName='cm_f', &						! NoahMP50_struc(n)%noahmp50(t)%cm
-                units='s/m', &						
+                units='m/s', &						
                 adImport=.false., &					
                 adExport=.true., &					
                 directConn=.false.), &
@@ -151,7 +157,7 @@ LIS_Field( &
 LIS_Field( &
                 stdName='2m_specific_humidity', &      ! Noah-MP: SpecificHumidity2m (Derived from CLSM Q2M)
                 stateName='QairT2m', &				  ! NoahMP50_struc(n)%noahmp50(t)%q2mv & %q2mb
-                units='kg/kg', &					!CLSM: Q2M (2-meter_specific_humidity), conversion calculated as weighted average using fveg
+                units='kg/kg', &					!CLSM: Q2M (2-meter_specific_humidity)
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
@@ -184,32 +190,32 @@ LIS_Field( &
 
 !!--- surface albedos ---
 LIS_Field( &
-                stdName='surface_reflectivity_visible_beam', &          ! Noah-MP: AlbedoSfcDir(1)
-                stateName='AlbedoVisDir', &                             ! NoahMP50_struc(n)%noahmp50(t)%albedo (this is the total surface albedo between vis/nir dir and dif)
+                stdName='surface_reflectivity_visible_beam', &          ! gx%albedo_dir(1) = nm%albsfcdir(1)   ! AlbedoVisDir
+                stateName='AlbedoVisDir', &                             
                 units='-', &								  ! CLSM: ALBVR (surface_reflectivity_visible_beam) - conversion needed, select vis dimension of Noah-mp
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
 
 LIS_Field( &
-                stdName='surface_reflectivity_visible_diffuse', &       ! Noah-MP: AlbedoSfcDif(1)
-                stateName='AlbedoVisDif', &                             ! NoahMP50_struc(n)%noahmp50(t)%albedo (this is the total surface albedo between vis/nir dir and dif)
+                stdName='surface_reflectivity_visible_diffuse', &       ! gx%albedo_dif(1) = nm%albsfcdif(1)   ! AlbedoVisDif
+                stateName='AlbedoVisDif', &                             
                 units='-', &								  ! CLSM: ALBVF (surface_reflectivity_visible_diffuse), - conversion needed, select vis dimension of Noah-mp
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
 
 LIS_Field( &
-                stdName='surface_reflectivity_near_infrared_beam', &    ! Noah-MP: AlbedoSfcDir(2)
-                stateName='AlbedoNIRDir', &                             ! NoahMP50_struc(n)%noahmp50(t)%albedo (this is the total surface albedo between vis/nir dir and dif)
+                stdName='surface_reflectivity_near_infrared_beam', &    ! gx%albedo_dir(2) = nm%albsfcdir(2)   ! AlbedoNIRDir
+                stateName='AlbedoNIRDir', &                             
                 units='-', &								  ! CLSM: ALBNR, 'surface_reflectivity_near_infrared_beam' - conversion needed, select nir dimension of Noah-mp
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
 
 LIS_Field( &
-                stdName='surface_reflectivity_near_infrared_diffuse', & ! Noah-MP: AlbedoSfcDif(2)
-                stateName='AlbedoNIRDif', &                             ! NoahMP50_struc(n)%noahmp50(t)%albedo (this is the total surface albedo between vis/nir dir and dif)
+                stdName='surface_reflectivity_near_infrared_diffuse', & ! gx%albedo_dif(2) = nm%albsfcdif(2)   ! AlbedoNIRDif
+                stateName='AlbedoNIRDif', &                             
                 units='-', &								! CLSM: ALBNF, 'surface_reflectivity_near_infrared_diffuse' - conversion needed, select nir dimension of Noah-mp								
                 adImport=.false., &	
                 adExport=.true., &
@@ -231,7 +237,14 @@ LIS_Field( &
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
-!conversion needed: USTAR = UstarVeg * VegFrac + UstarBare * (1 - VegFrac)
+
+LIS_Field( &
+                stdName='friction_velocity', &             
+                stateName='Ustar', &                        ! Calculated from conversion script: gx%ustar = fveg*nm%ustarveg + (1.0-fveg)*nm%ustarbare   
+                units='m/s', &						! GEOS/CLSM Variable: USTAR (friction_velocity)
+                adImport=.false., &
+                adExport=.true., &
+                directConn=.false.), &
 
 LIS_Field( &
                 stdName='eastward_surface_stress_on_air', &     ! Noah-MP: WindStressEwSfc 
@@ -378,7 +391,7 @@ LIS_Field( &
 LIS_Field( &
                 stdName='leaf_area_index', &                   ! Noah-MP: LeafAreaIndex
                 stateName='LAI', &							! NoahMP50_struc(n)%noahmp50(t)%lai
-                units='-', &				!CLSM: LAI, 'leaf_area_index'
+                units='-', &				
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
@@ -386,11 +399,19 @@ LIS_Field( &
 LIS_Field( &
                 stdName='stem_area_index', &                   ! Noah-MP: StemAreaIndex
                 stateName='SAI', &							! NoahMP50_struc(n)%noahmp50(t)%sai
+                units='-', &					
+                adImport=.false., &
+                adExport=.true., &
+                directConn=.false.), &
+
+
+LIS_Field( &
+                stdName='vegetation_area_index', &                   ! Conversion script: gx%lai = nm%LAI + nm%SAI
+                stateName='VAI', &							
                 units='-', &					! CLSM: LAI, 'leaf_area_index'
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
-!conversion needed, CLSM LAI = Noah-MP LAI+SAI = VAI
 
 LIS_Field( &
                 stdName='greenness_fraction', &                ! Noah-MP: VegFrac
@@ -418,8 +439,8 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='canopy_water_content', &              ! Noah-MP: CanopyTotalWater
-                stateName='CanopInt', &						! Conversion needed: NoahMP50_struc(n)%noahmp50(t)%canliq + 
-                units='kg/m2', &							! NoahMP50_struc(n)%noahmp50(t)%canice = 
+                stateName='CanopInt', &						! Conversion calculated as: gx%canopint = nm%canliq + nm%canice
+                units='kg/m2', &							
                 adImport=.false., &							! CLSM: CAPAC, 'vegetation_interception_water_storage'  
                 adExport=.true., &
                 directConn=.false.), &
@@ -472,25 +493,18 @@ LIS_Field( &
                 adExport=.true., &
                 directConn=.false.), &
 
-!!==============================================================================================================================
-!!-------------did not find these variable names from the LIS side (talk to Jim) start--------------------------------------------
-!!==============================================================================================================================
 LIS_Field( &
                 stdName='surface_air_density', &               ! Noah-MP: DensityAirRefHeight
                 stateName='rhos', &						! NoahMP50_struc(n)%noahmp50(t)%rhoair
                 units='-', &						! CLSM: RHOS (Surface air density)
                 adImport=.false., &
                 adExport=.true., &
-                directConn=.false.), &
-
-!!==============================================================================================================================
-!!-------------did not find these variable names from the LIS side (talk to Jim) end--------------------------------------------
-!!==============================================================================================================================
+                directConn=.false.)
 
 !!==============================================================================================================================
 !! Variables that GEOS-surface exports that Noah-MP does not solve for - all of which are for Chem component:
 !!==============================================================================================================================
-! BSTAR (surface buoyancy scale) | No NoahMP equivalent, also not listed as an export from CLSM. This is calculated in Surface GridComp w/ variables that NoahMP does export.
+! BSTAR (surface buoyancy scale) | This is calculated in Surface GridComp w/ variables that NoahMP does export.
 ! Land/ocean fractions (FRLAND, FROCEAN)
 ! U10M / V10M (10-meter wind speed components) - solved with surfacelayer.F90
 ! U10N / V10N (10-meter neutral wind speed components) - solved with GEOS_SurfaceGridComp.F90

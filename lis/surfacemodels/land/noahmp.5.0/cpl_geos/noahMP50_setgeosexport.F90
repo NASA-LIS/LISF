@@ -174,6 +174,12 @@ subroutine NoahMP50_setgeosexport(n)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%ch_f_t,temp)
 
+  ! Momentum Exchange Coefficient (cm_f)
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = NoahMP50_geoscpl(n)%tile(i)%cm_f
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%cm_f_t,temp)
+
   ! 2m Specific Humidity (qair_t2m)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      temp(i) = NoahMP50_geoscpl(n)%tile(i)%qair_t2m
@@ -233,6 +239,12 @@ subroutine NoahMP50_setgeosexport(n)
      temp(i) = NoahMP50_geoscpl(n)%tile(i)%tair_t2m
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%tair_t2m_t,temp)
+
+  ! Mean skin temperature (tsfcmean)
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = NoahMP50_geoscpl(n)%tile(i)%tsfcmean
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%tsfcmean_t,temp)
 
   ! Canopy Water Content (canopint)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
@@ -346,6 +358,13 @@ subroutine NoahMP50_setgeosexport(n)
      temp(i) = NoahMP50_struc(n)%noahmp50(i)%sai
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%sai_t,temp)
+
+  ! Vegetation Area Index (vai = lai + sai)
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%lai + &
+               NoahMP50_struc(n)%noahmp50(i)%sai
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%vai_t,temp)
 
   ! Total Evapotranspiration (evap)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)

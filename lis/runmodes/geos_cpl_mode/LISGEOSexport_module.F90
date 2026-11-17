@@ -70,6 +70,7 @@ module LISGEOSexport_module
      real, allocatable :: totalrunoff(:,:)
      real, allocatable :: qh_shout(:,:)
      real, allocatable :: ch_f(:,:)
+     real, allocatable :: cm_f(:,:)
      real, allocatable :: soilmoist_rz(:,:)
      real, allocatable :: qair_t2m(:,:)
      real, allocatable :: snowdepth_sca(:,:)
@@ -91,6 +92,7 @@ module LISGEOSexport_module
      real, allocatable :: fastcp(:,:)
      real, allocatable :: lai(:,:)
      real, allocatable :: sai(:,:)
+     real, allocatable :: vai(:,:)
      real, allocatable :: evap(:,:)
      real, allocatable :: greenness(:,:)
      real, allocatable :: landcover(:,:)
@@ -98,6 +100,7 @@ module LISGEOSexport_module
      real, allocatable :: avgsurfq(:,:)
      real, allocatable :: canopint(:,:)
      real, allocatable :: tair_t2m(:,:)
+     real, allocatable :: tsfcmean(:,:)
 
      ! --- Standard/Original LIS 1D Tile Arrays ---
      real, allocatable :: avgsurft_t(:)
@@ -145,6 +148,7 @@ module LISGEOSexport_module
      real, allocatable :: totalrunoff_t(:)
      real, allocatable :: qh_shout_t(:)
      real, allocatable :: ch_f_t(:)
+     real, allocatable :: cm_f_t(:)
      real, allocatable :: soilmoist_rz_t(:)
      real, allocatable :: qair_t2m_t(:)
      real, allocatable :: snowdepth_sca_t(:)
@@ -166,6 +170,7 @@ module LISGEOSexport_module
      real, allocatable :: fastcp_t(:)
      real, allocatable :: lai_t(:)
      real, allocatable :: sai_t(:)
+     real, allocatable :: vai_t(:)
      real, allocatable :: evap_t(:)
      real, allocatable :: greenness_t(:)
      real, allocatable :: landcover_t(:)
@@ -173,7 +178,7 @@ module LISGEOSexport_module
      real, allocatable :: avgsurfq_t(:)
      real, allocatable :: canopint_t(:)
      real, allocatable :: tair_t2m_t(:)
-
+     real, allocatable :: tsfcmean_t(:)
 #ifdef GEOS_HYDRO
      real, allocatable :: infxsrt(:,:)
      real, allocatable :: soldrain(:,:)

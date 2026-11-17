@@ -450,6 +450,8 @@ module LIS_histDataMod
   public ::   LIS_MOC_TAUY
   public ::   LIS_MOC_RHOAIR
   public ::   LIS_MOC_QSFCMEAN
+  public ::   LIS_MOC_TSFCMEAN
+  public ::   LIS_MOC_T2MEAN
   ! end Noahmp
 
   ! AquaCrop
@@ -1001,6 +1003,8 @@ module LIS_histDataMod
     integer ::  LIS_MOC_TAUY        = -9999
     integer ::  LIS_MOC_RHOAIR      = -9999
     integer ::  LIS_MOC_QSFCMEAN    = -9999
+    integer ::  LIS_MOC_TSFCMEAN    = -9999
+    integer ::  LIS_MOC_T2MEAN      = -9999
 !  <- end Noah MP  ->
 
 !  <- AquaCrop ->
@@ -5494,6 +5498,30 @@ contains
         call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_ZPD, &
             LIS_histData(n)%head_lsm_list,&
             n, 1, ntiles,(/"m"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "TSFCMEAN:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "TSFCMEAN", &
+         "mean_skin_temperature",   &
+         "mean skin temperature",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_TSFCMEAN, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"K"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "T2MEAN:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "T2MEAN", &
+         "mean_2m_air_temperature",   &
+         "mean 2m air temperature",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_T2MEAN, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"K"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
