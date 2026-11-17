@@ -12,14 +12,14 @@ module NoahMP50_geosCplMod
 
   type :: noahmp50_geoscpl_dec
      real          :: totalrunoff    ! sfcrunoff + udrrunoff        [mm/soil_ts]
-     real          :: qh_shout       ! fveg*shg+(1-fveg)*shb+shc    [W/m2]
-     real          :: ch_f           ! fveg-weighted exchange coeff [s/m]
+     real          :: ch_f           ! heat exchange coeff          [kg m-2 s-1]
+     real          :: cm_f           ! gridcell momentum exchange coeff [kg m-2 s-1] 
      real          :: soilmoist_rz   ! depth-weighted root-zone SM  [m3/m3]
-     real          :: qair_t2m       ! fveg-weighted 2m spec. hum.  [kg/kg]
-     real          :: tair_t2m       ! fveg-weighted 2m air temp    [K]
      real          :: canopint       ! canliq + canice              [kg/m2]
      real          :: snowdepth_sca  ! snowh/snowc (SCA form)       [m]
      real          :: roughness_f    ! z0 (also feeds Z0H)          [m]
+     real          :: lai            ! LAI + SAI                    [m2/m2]
+     real          :: ustar          ! fveg-weighted friction velocity [m/s]
      ! band-resolved albedo (1=vis, 2=nir); harvested from NoahmpIO in main
      real, pointer :: albedo_dir(:)  ! (NBAND): AlbedoVisDir, AlbedoNIRDir
      real, pointer :: albedo_dif(:)  ! (NBAND): AlbedoVisDif, AlbedoNIRDif
