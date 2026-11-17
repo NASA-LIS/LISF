@@ -18,7 +18,8 @@ module LIS_lsmirrigation_pluginMod
 ! !REVISION HISTORY:
 !  13 Nov 2012    Sujay Kumar  Initial Specification
 !  18 Mar 2020    Sarith Mahanam  Added concurrent method
-!  16 Sep 2026    Cenlin He  Added NoahMP 5.0
+!  16 Sep 2026    Cenlin He    Added NoahMP 5.0
+!  16 Oct 2026    David Mocko  Added NoahMP 5.2
 !
   implicit none
 
@@ -49,11 +50,11 @@ contains
 #endif
 
 #if ( defined SM_NOAH_3_6 )
-   external noah36_getirrigationstates
+    external noah36_getirrigationstates
 #endif
 
 #if ( defined SM_NOAH_3_9 )
-   external noah39_getirrigationstates
+    external noah39_getirrigationstates
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -76,33 +77,39 @@ contains
     external noahmp50_getirrigationstates
 #endif
 
+#if ( defined SM_NOAHMP_5_2 )
+    external noahmp52_getirrigationstates
+#endif
+
 #if ( defined IRR_CONCURRENT )
 #if ( defined SM_NOAH_3_3 )
-   call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
-        trim(LIS_concurrentIrrigationId)//char(0),noah33_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
+         trim(LIS_concurrentIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_6 )
-   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
-        trim(LIS_concurrentIrrigationId)//char(0),noah36_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+         trim(LIS_concurrentIrrigationId)//char(0),noah36_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_9 )
-   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_concurrentIrrigationId)//char(0),noah39_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+         trim(LIS_concurrentIrrigationId)//char(0),noah39_getirrigationstates)
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
-   call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
-        trim(LIS_concurrentIrrigationId)//char(0),clsmf25_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
+         trim(LIS_concurrentIrrigationId)//char(0),clsmf25_getirrigationstates)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
-   call registerlsmirrigationgetstates(trim(LIS_noahmp36Id)//"+"//&
-        trim(LIS_concurrentIrrigationId)//char(0),NoahMP36_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noahmp36Id)//"+"//&
+         trim(LIS_concurrentIrrigationId)//char(0), &
+         NoahMP36_getirrigationstates)
 #endif
 
 #if ( defined SM_NOAHMP_4_0_1 )
-   call registerlsmirrigationgetstates(trim(LIS_noahmp401Id)//"+"//&
-        trim(LIS_concurrentIrrigationId)//char(0),NoahMP401_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noahmp401Id)//"+"//&
+         trim(LIS_concurrentIrrigationId)//char(0), &
+         NoahMP401_getirrigationstates)
 #endif
 #endif
 
@@ -112,12 +119,12 @@ contains
          trim(LIS_sprinklerIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_6 )
-   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
-        trim(LIS_sprinklerIrrigationId)//char(0),noah36_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+         trim(LIS_sprinklerIrrigationId)//char(0),noah36_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_9 )
-   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_sprinklerIrrigationId)//char(0),noah39_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+         trim(LIS_sprinklerIrrigationId)//char(0),noah39_getirrigationstates)
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -145,6 +152,11 @@ contains
     call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_sprinklerIrrigationId)//char(0),NoahMP50_getirrigationstates)
 #endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsmirrigationgetstates(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_sprinklerIrrigationId)//char(0),noahmp52_getirrigationstates)
+#endif
 #endif
 
 #if ( defined IRR_FLOOD )
@@ -153,12 +165,12 @@ contains
          trim(LIS_floodIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_6 )
-   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
-        trim(LIS_floodIrrigationId)//char(0),noah36_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+         trim(LIS_floodIrrigationId)//char(0),noah36_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_9 )
-   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_floodIrrigationId)//char(0),noah39_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+         trim(LIS_floodIrrigationId)//char(0),noah39_getirrigationstates)
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -185,6 +197,11 @@ contains
     call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_floodIrrigationId)//char(0),NoahMP50_getirrigationstates)
 #endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsmirrigationgetstates(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_floodIrrigationId)//char(0),noahmp52_getirrigationstates)
+#endif
 #endif
 
 #if ( defined IRR_DRIP )
@@ -193,12 +210,12 @@ contains
          trim(LIS_dripIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_6 )
-   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
-        trim(LIS_dripIrrigationId)//char(0),noah36_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+         trim(LIS_dripIrrigationId)//char(0),noah36_getirrigationstates)
 #endif
 #if ( defined SM_NOAH_3_9 )
-   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
-        trim(LIS_dripIrrigationId)//char(0),noah39_getirrigationstates)
+    call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+         trim(LIS_dripIrrigationId)//char(0),noah39_getirrigationstates)
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -224,6 +241,11 @@ contains
 #if ( defined SM_NOAHMP_5_0 )
     call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_dripIrrigationId)//char(0),NoahMP50_getirrigationstates)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsmirrigationgetstates(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_dripIrrigationId)//char(0),noahmp52_getirrigationstates)
 #endif
 #endif
 

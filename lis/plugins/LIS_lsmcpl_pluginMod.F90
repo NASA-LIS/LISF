@@ -22,7 +22,9 @@ module LIS_lsmcpl_pluginMod
 !  09 Oct 07    Sujay Kumar  Initial Specification
 !  14 Dec 15    Eric Kemp    Added Noah 2.7.1, Noah 3.2, Noah 3.6 WRF coupling.
 !  22 Feb 19    Chandana Gangodagamage  Added NoahMP 3.6 for WRFHydro coupling
-!  16 Sep 26    Cenlin He  Added NoahMP 5.0
+!  16 Sep 26    Cenlin He    Added NoahMP 5.0
+!  16 Oct 26    David Mocko  Added NoahMP 5.2
+!
 !EOP
   implicit none
   PRIVATE
@@ -115,6 +117,10 @@ contains
 
 #if ( defined SM_NOAHMP_5_0 )
     external noahmp50_setwrfexport
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    external noahmp52_setwrfexport
 #endif
 
 #if 0
@@ -269,6 +275,18 @@ contains
     call registerlsmcplsetexport(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_retroId)//char(0), &
          noahmp50_setwrfexport)
+#endif
+
+#if ( defined SM_NOAHMP_5_2 )
+    call registerlsmcplsetexport(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_wrfcplId)//char(0), &
+         noahmp52_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_nuopccplId)//char(0), &
+         noahmp52_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp52Id)//"+"//&
+         trim(LIS_retroId)//char(0), &
+         noahmp52_setwrfexport)
 #endif
 
 #if ( defined SM_NOAH_3_6 )

@@ -20,7 +20,8 @@ module LIS_lsmoptue_pluginMod
 !
 ! !REVISION HISTORY:
 !  16 Jul 09    Sujay Kumar  Initial Specification
-!  16 Sep 26    Cenlin He    Added NoahMP 5.0 
+!  16 Sep 26    Cenlin He    Added NoahMP 5.0
+!  16 Oct 26    David Mocko  Added NoahMP 5.2
 !
   implicit none
 
@@ -80,6 +81,9 @@ contains
 #endif
 #if ( defined SM_NOAHMP_5_0 )
       use NoahMP50_peMod, only : NoahMP50_setup_pedecvars
+#endif
+#if ( defined SM_NOAHMP_5_2 )
+      use noahmp52_peMod, only : noahmp52_setup_pedecvars
 #endif
 
 !    external noah271_f2t
