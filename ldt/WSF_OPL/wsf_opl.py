@@ -10,7 +10,7 @@ Usage:
                     [--step {1,2}] [--dry-run]
 
   START_DT / END_DT : period to process, format YYYYMMDDHH (e.g. 2024041300)
-  --config          : path to pipeline_config.json (default: ./pipeline_config.json)
+  --config          : path to the JSON config, see wsf_opl.json (default: ./pipeline_config.json)
   --batch-size      : max parallel LDT jobs for step 1 (default: cpu count)
   --force           : ignore checkpoint and reprocess all hours
   --step            : run only step 1 (resampling) or step 2 (prediction); omit to run both
@@ -365,7 +365,7 @@ def step2_predict(s2, out_base, start, end, force=False):
     script_path = s2["predict_script"]
     sys.path.insert(0, str(Path(script_path).parent))
     # pylint: disable=import-outside-toplevel
-    # Dynamic import: script location comes from pipeline_config.json at runtime.
+    # Dynamic import: script location is predict_script in the config.
     from predict_sm_stratified import StratifiedSoilMoisturePredictor
     # pylint: enable=import-outside-toplevel
 

@@ -276,8 +276,11 @@ class StratifiedSoilMoisturePredictor:
         Directory containing rf_global.pkl, rf_cluster_XX.pkl, gmm_kXX.pkl,
         and stratified_config.json.
     cluster_dir : str
-        Directory containing environmental_clusters_kXX.nc and
-        clustering_model_kXX.pkl.
+        Directory containing clustering_model_kXX.pkl (KMeans centres and
+        the encoders of the static layers). The cluster map
+        environmental_clusters_kXX.nc may be there too, but it is not read:
+        the cluster weights and the valid-cell mask are computed from the
+        static layers (env_paths) when the predictor is set up.
     env_paths : dict
         Paths to static environmental NetCDF layers keyed by:
         'land_cover', 'climate', 'clay', 'sand', 'silt'.
