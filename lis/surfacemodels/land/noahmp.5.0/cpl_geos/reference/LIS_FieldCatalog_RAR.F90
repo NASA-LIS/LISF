@@ -114,8 +114,8 @@ LIS_Field( &
 !! --- 2-Meter Air Temperature  ---
 LIS_Field( &
                 stdName='2m_air_temperature', &  ! Noah-MP: TemperatureAir2m
-                stateName='t2_f', &			! NoahMP50_struc(n)%noahmp50(t)%t2mv & NoahMP50_struc(n)%noahmp50(t)%t2mb 
-                units='K', &					! CLSM MOT2M (temperature 2m wind from MO sfc) - conversion needed (weighting with NoahMP50_struc(n)%noahmp50(t)%fveg)
+                stateName='t2_f', &			! NoahMP50_struc(n)%noahmp50(t)% t2mean
+                units='K', &					! CLSM MOT2M (temperature 2m wind from MO sfc)
                 adImport=.false., &.               
                 adExport=.true., &
                 directConn=.false.), &
@@ -192,7 +192,7 @@ LIS_Field( &
 LIS_Field( &
                 stdName='surface_reflectivity_visible_beam', &          ! gx%albedo_dir(1) = nm%albsfcdir(1)   ! AlbedoVisDir
                 stateName='AlbedoVisDir', &                             
-                units='-', &								  ! CLSM: ALBVR (surface_reflectivity_visible_beam) - conversion needed, select vis dimension of Noah-mp
+                units='-', &								  ! CLSM: ALBVR (surface_reflectivity_visible_beam) 
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
@@ -200,7 +200,7 @@ LIS_Field( &
 LIS_Field( &
                 stdName='surface_reflectivity_visible_diffuse', &       ! gx%albedo_dif(1) = nm%albsfcdif(1)   ! AlbedoVisDif
                 stateName='AlbedoVisDif', &                             
-                units='-', &								  ! CLSM: ALBVF (surface_reflectivity_visible_diffuse), - conversion needed, select vis dimension of Noah-mp
+                units='-', &								  ! CLSM: ALBVF (surface_reflectivity_visible_diffuse)
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
@@ -208,7 +208,7 @@ LIS_Field( &
 LIS_Field( &
                 stdName='surface_reflectivity_near_infrared_beam', &    ! gx%albedo_dir(2) = nm%albsfcdir(2)   ! AlbedoNIRDir
                 stateName='AlbedoNIRDir', &                             
-                units='-', &								  ! CLSM: ALBNR, 'surface_reflectivity_near_infrared_beam' - conversion needed, select nir dimension of Noah-mp
+                units='-', &								  ! CLSM: ALBNR, 'surface_reflectivity_near_infrared_beam' 
                 adImport=.false., &
                 adExport=.true., &
                 directConn=.false.), &
@@ -216,7 +216,7 @@ LIS_Field( &
 LIS_Field( &
                 stdName='surface_reflectivity_near_infrared_diffuse', & ! gx%albedo_dif(2) = nm%albsfcdif(2)   ! AlbedoNIRDif
                 stateName='AlbedoNIRDif', &                             
-                units='-', &								! CLSM: ALBNF, 'surface_reflectivity_near_infrared_diffuse' - conversion needed, select nir dimension of Noah-mp								
+                units='-', &								! CLSM: ALBNF, 'surface_reflectivity_near_infrared_diffuse' 								
                 adImport=.false., &	
                 adExport=.true., &
                 directConn=.false.), &
