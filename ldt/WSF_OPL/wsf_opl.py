@@ -38,6 +38,7 @@ SLURM:
 
 # --- standard library ---
 import argparse
+import glob
 import json
 import os
 import re
@@ -52,12 +53,17 @@ DT_RE      = re.compile(r"WSFM_01_d(\d{8})_t(\d{2})")
 
 
 def find_hours(base, start, end, lo="0"*10, hi="9"*10):
-    """Scan a directory tree for WSF files; return YYYYMMDDHH strings in range."""
+    """Scan a directory tree for WSF files; return YYYYMMDDHH strings in range.
+
+    glob.glob is used because it follows linked folders (for example a month
+    folder linked to the incoming SDR feed); Path.rglob does not.
+    """
     if not Path(base).is_dir():
         return set()
     hours = set()
-    for f in Path(base).rglob("*WSFM_01_d*_res_sdr.nc"):
-        m = DT_RE.search(f.name)
+    pattern = os.path.join(base, "**", "*WSFM_01_d*_res_sdr.nc")
+    for f in glob.glob(pattern, recursive=True):
+        m = DT_RE.search(os.path.basename(f))
         if m:
             dt = m.group(1) + m.group(2)
             if start <= dt <= end and lo <= dt <= hi:
