@@ -9,7 +9,6 @@ subroutine NoahMP50_convert_to_GEOSexport(n)
   use LIS_coreMod
   use LIS_logMod
   use NoahMP50_lsmMod
-  use NoahMP50_geosCplMod
   use NoahmpIOVarType        ! for NoahmpIO%dzs(:)
 
   implicit none
@@ -22,31 +21,18 @@ subroutine NoahMP50_convert_to_GEOSexport(n)
   real, parameter :: RZ_TGT  = 1.0     ! root-zone target depth [m]
 
   do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-     associate( nm => NoahMP50_struc(n)%noahmp50(t), &
-                gx => NoahMP50_geoscpl(n)%tile(t) )
+  associate( nm => NoahMP50_struc(n)%noahmp50(t) )
 
         fveg = nm%fveg
 
-        ! --- total runoff ---
-        ! This is total runoff, but I think geos needs runoff flux 
-        ! gx%totalrunoff = nm%sfcrunoff + nm%udrrunoff 
-        
-        ! --- Total Runoff flux [unit = kg m-2 s-1] ---
-        ! NoahMP runsf and runsb are timestep runoff amounts [mm]
-        ! ts is the land model time step
-        gx%totalrunoff = (nm%runsf + nm%runsb) / NoahMP50_struc(n)%soiltimestep
+        ! --- Total Runoff flux ---
+        nm%totalrunoff = (nm%runsf + nm%runsb) / nm%soiltimestep
 
-        ! --- Heat and moisture exchange coefficients  ---
-        ! NoahMP ch is in m/s
-        ! GEOS expects kg m-2 s-1
-        ! air density (rhoair in kg/m3) 
-        ! This is heat coefficient. Assume heat and moisture coefficients are equal
-           gx%ch_f = nm%rhoair * nm%ch
+        ! --- Heat and moisture exchange coefficients ---
+        nm%ch_f = nm%rhoair * nm%ch
 
-        ! --- Momentum exchange coefficient (unit = kg m-2 s-1) ---
-        ! Noahmp cm is gridmean in m/s
-        ! Multipy by air density for kg m-2 s-1 
-          gx%cm_f = rm%rhoair * nm%cm
+        ! --- Momentum exchange coefficient ---
+        nm%cm_f = nm%rhoair * nm%cm
 
         ! --- root-zone soil moisture: depth-weighted mean over the top
         !     layers whose cumulative thickness first reaches/exceeds 1 m.
@@ -61,44 +47,34 @@ subroutine NoahMP50_convert_to_GEOSexport(n)
            if (cumdepth >= RZ_TGT - EPS) exit    ! include boundary-crossing layer
         enddo
         if (rzdenom > EPS) then
-           gx%soilmoist_rz = rznumer / rzdenom
+           nm%soilmoist_rz = rznumer / rzdenom
         else
-           gx%soilmoist_rz = LIS_rc%udef
+           nm%soilmoist_rz = LIS_rc%udef
         endif
 
+        ! --- canopy interception water storage ---
+        nm%canopint = nm%canliq + nm%canice
 
-        ! --- canopy interception water storage (unit = kg/m2) ---
-        ! NoahMP canliq and canice are in mm water equivalent
-        ! 1 mm water equiv = 1 kg/m2, so no conversion needed for units 
-        gx%canopint = nm%canliq + nm%canice
-
-        ! --- snow depth, snow-covered-area form (guard snowc=0; unit=m) ---
+        ! --- snow depth, snow-covered-area form ---
         snc = nm%snowc 
         if (snc > EPS) then
-           gx%snowdepth_sca = nm%snowh / snc
+           nm%snowdepth_sca = nm%snowh / snc
         else
-           gx%snowdepth_sca = nm%snowh
+           nm%snowdepth_sca = nm%snowh
         endif
 
-        ! --- band-resolved albedo: direct SELECT from harvested native
-        !     arrays (1=vis, 2=nir). Requires nm%albd(:)/nm%albi(:) to be
-        !     populated in NoahMP50_main (see note). ---
-        ! unit = dimensionless 
-        gx%albedo_dir(1) = nm%albsfcdir(1)   ! AlbedoVisDir
-        gx%albedo_dir(2) = nm%albsfcdir(2)   ! AlbedoNIRDir
-        gx%albedo_dif(1) = nm%albsfcdif(1)   ! AlbedoVisDif
-        gx%albedo_dif(2) = nm%albsfcdif(2)   ! AlbedoNIRDif
+        ! --- band-resolved albedo ---
+        nm%albedo_visdir = nm%albsfcdir(1)   
+        nm%albedo_nirdir = nm%albsfcdir(2)   
+        nm%albedo_visdif = nm%albsfcdif(1)   
+        nm%albedo_nirdif = nm%albsfcdif(2)   
 
-        !---- Vegetation area index (unit = m2/m2)--
-        ! GEOS LAI = NoahMP leaf area index + stem area index
-        gx%lai = nm%LAI + nm%SAI
+        !---- Vegetation area index ---
+        nm%vai = nm%LAI + nm%SAI
 
-        !---- Friction velocity (units = m/s)---
-        ! GEOS USTAR = sum of fveg-weighted vegetated and bare ground
-        ! USTAR = UstarVeg * VegFrac + UstarBare * (1 - VegFrac)
-        gx%ustar = fveg*nm%ustarveg + (1.0-fveg)*nm%ustarbare        
-
-     end associate
+        !---- Friction velocity ---
+        nm%ustar = fveg*nm%ustarveg + (1.0-fveg)*nm%ustarbare        
+    end associate
   enddo
 
 end subroutine NoahMP50_convert_to_GEOSexport

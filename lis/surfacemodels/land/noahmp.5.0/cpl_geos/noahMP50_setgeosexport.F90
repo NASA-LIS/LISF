@@ -23,7 +23,6 @@ subroutine NoahMP50_setgeosexport(n)
   use LIS_logMod
   use LISGEOSGridCompMod, only : LISGEOS_export
   use NoahMP50_lsmMod
-  use NoahMP50_geosCplMod
   
   implicit none
 ! !ARGUMENTS:
@@ -37,7 +36,7 @@ subroutine NoahMP50_setgeosexport(n)
   ! Ensure the GEOS-coupling derived-variable store is allocated, then
   ! refresh it from the latest NoahMP state (idempotent allocation; safe
   ! to call every coupling step).
-  call NoahMP50_geoscpl_init(n)
+  !!call NoahMP50_struc_init(n)
   call NoahMP50_convert_to_GEOSexport(n)
 
   ! =====================================================================
@@ -46,7 +45,7 @@ subroutine NoahMP50_setgeosexport(n)
 
   ! Surface Temperature
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_struc(n)%noahmp50(i)%tg
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%tsfcmean
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%avgsurft_t,temp)
 
@@ -131,9 +130,9 @@ subroutine NoahMP50_setgeosexport(n)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%sh2o4_t,temp)
 
-  ! Snow Water Equivalent (SWE, keeping WRF's * 1000.0 conversion)
+  ! Snow Water Equivalent 
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_struc(n)%noahmp50(i)%sneqv * 1000.0
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%sneqv 
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%snow_t,temp)
 
@@ -143,7 +142,7 @@ subroutine NoahMP50_setgeosexport(n)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%snowh_t,temp)
 
-#ifdef GEOS_HYDRO
+#ifdef WRF_HYDRO
   ! Infiltration Excess
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      temp(i) = NoahMP50_struc(n)%noahmp50(i)%infxs1rt
@@ -159,102 +158,93 @@ subroutine NoahMP50_setgeosexport(n)
 
 
   ! =====================================================================
-  ! 2. DERIVED VARIABLES (From NoahMP50_geosCplMod)
+  ! 2. DERIVED VARIABLES 
   ! =====================================================================
 
-  ! Sensible Heat (qh_shout)
+  ! Sensible Heat (qh_shout) - native NoahMP output, not a weighted/derived
+  ! quantity; sourced directly from the struct (NoahmpIO%hfx).
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%qh_shout
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%hfx
   enddo
-  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%qh_shout_t,temp)
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%qh_t,temp)
 
   ! Exchange Coefficient (ch_f)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%ch_f
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%ch_f
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%ch_f_t,temp)
 
   ! Momentum Exchange Coefficient (cm_f)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%cm_f
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%cm_f
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%cm_f_t,temp)
 
-  ! 2m Specific Humidity (qair_t2m)
+  ! 2m Specific Humidity (qair_t2m) - native NoahMP output, not a weighted/
+  ! derived quantity; sourced directly from the struct (NoahmpIO%qsfc).
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%qair_t2m
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%qsfcmean
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%qair_t2m_t,temp)
 
   ! Snow Depth - Snow-covered-area form (snowdepth_sca)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%snowdepth_sca
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%snowdepth_sca
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%snowdepth_sca_t,temp)
 
-  ! Roughness Length (roughness_f)
-  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%roughness_f
-  enddo
-  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%roughness_f_t,temp)
-
   ! Total Runoff (totalrunoff)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%totalrunoff
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%totalrunoff
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%totalrunoff_t,temp)
 
   ! Root-zone Soil Moisture (soilmoist_rz)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%soilmoist_rz
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%soilmoist_rz
   enddo
-  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%soilmoist_rz_t,temp)
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%rootmoist_t,temp)
 
   ! Albedo Visible Direct (band 1)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%albedo_dir(1)
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%albedo_visdir
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%albedovisdir_t,temp)
 
   ! Albedo Near-Infrared Direct (band 2)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%albedo_dir(2)
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%albedo_nirdir
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%albedonirdir_t,temp)
 
-  ! Albedo Visible Diffuse (band 1)
+  ! Albedo Visible Diffuse (band 1)      
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%albedo_dif(1)
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%albedo_visdif
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%albedovisdif_t,temp)
 
-  ! Albedo Near-Infrared Diffuse (band 2)
+   ! Albedo Near-Infrared Diffuse (band 2) 
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%albedo_dif(2)
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%albedo_nirdif
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%albedonirdif_t,temp)
 
-  ! 2m Air Temperature (tair_t2m)
+  ! 2m Air Temperature (tair_t2m) - native NoahMP output, not a weighted/
+  ! derived quantity; sourced directly from the struct (NoahmpIO%t2mxy).
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%tair_t2m
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%t2mean
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%tair_t2m_t,temp)
 
-  ! Mean skin temperature (tsfcmean)
-  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%tsfcmean
-  enddo
-  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%tsfcmean_t,temp)
-
   ! Canopy Water Content (canopint)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_geoscpl(n)%tile(i)%canopint
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%canopint
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%canopint_t,temp)
 
 
   ! =====================================================================
-  ! 3. NATIVE VARIABLES (From NoahMP50_struc)
+  ! 3. NATIVE VARIABLES 
   ! =====================================================================
 
   ! Surface Runoff (Qs)
@@ -317,6 +307,12 @@ subroutine NoahMP50_setgeosexport(n)
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%ustarbare_t,temp)
 
+  ! Frication Velocity - grid mean (Ustar)
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%ustar
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%ustar_t,temp)
+
   ! Root Mass (rtmass)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      temp(i) = NoahMP50_struc(n)%noahmp50(i)%rtmass
@@ -337,7 +333,7 @@ subroutine NoahMP50_setgeosexport(n)
 
   ! Stable Carbon Pool (stblcp)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_struc(n)%noahmp50(i)% stblcp
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%stblcp
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%stblcp_t,temp)
 
@@ -361,8 +357,7 @@ subroutine NoahMP50_setgeosexport(n)
 
   ! Vegetation Area Index (vai = lai + sai)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_struc(n)%noahmp50(i)%lai + &
-               NoahMP50_struc(n)%noahmp50(i)%sai
+     temp(i) = NoahMP50_struc(n)%noahmp50(i)%vai
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%vai_t,temp)
 
@@ -391,12 +386,6 @@ subroutine NoahMP50_setgeosexport(n)
      temp(i) = NoahMP50_struc(n)%noahmp50(i)%nee
   enddo
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%nee_t,temp)
-
-  ! Mean Surface Specific Humidity (avgsurfq)
-  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     temp(i) = NoahMP50_struc(n)%noahmp50(i)%qsfcmean
-  enddo
-  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%avgsurfq_t,temp)
 
   deallocate(temp)
 

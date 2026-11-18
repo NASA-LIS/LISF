@@ -596,6 +596,19 @@ module NoahMP50_module
      real, pointer      :: albsfcdir(:)   ! surface albedo direct  (1=vis, 2=nir)
      real, pointer      :: albsfcdif(:)   ! surface albedo diffuse (1=vis, 2=nir) 
 
+     ! --- GEOS Coupling Derived Variables ---
+     real               :: totalrunoff
+     real               :: ch_f
+     real               :: cm_f
+     real               :: soilmoist_rz
+     real               :: canopint
+     real               :: snowdepth_sca
+     real               :: roughness_f
+     real               :: vai
+     real               :: ustar
+     real               :: albedo_dir(2)  ! Fixed size array for 2 bands (Vis, NIR)
+     real               :: albedo_dif(2)  ! Fixed size array for 2 bands (Vis, NIR)
+
      !for 557WW
      real :: tair_agl_min
      real :: rhmin

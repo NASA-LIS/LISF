@@ -55,7 +55,6 @@ subroutine NoahMP50_main(n)
 
 ! define variables for NoahMP50
 
-  real                 :: AvgSurfT_out       ! average surface temperature [K]
   real                 :: TWS_out            ! terrestrial water storage [mm]
   real                 :: startsm, startswe, startint, startgw, endsm
 
@@ -792,13 +791,13 @@ subroutine NoahMP50_main(n)
              vlevel=1, unit="K", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: cm (unit=s/m ). ***  bulk momentum drag coefficient
+        ! output variable: cm (unit=m/s). ***  bulk momentum drag coefficient
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CM, &
              value = NoahMP50_struc(n)%noahmp50(t)%cm, &
              vlevel=1, unit="-", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: ch (unit=s/m ). ***  bulk sensible heat exchange
+        ! output variable: ch (unit=m/s ). ***  bulk sensible heat exchange
         !   coefficient
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CH, &
              value = NoahMP50_struc(n)%noahmp50(t)%ch, &
@@ -1131,14 +1130,14 @@ subroutine NoahMP50_main(n)
              vlevel=1, unit="K", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: chv (unit=s/m). ***  sensible heat exchange
+        ! output variable: chv (unit=m/s). ***  sensible heat exchange
         !  coefficient over vegetated fraction
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CHV, &
              value = NoahMP50_struc(n)%noahmp50(t)%chv, &
              vlevel=1, unit="-", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: chb (unit=s/m). ***  sensible heat exchange
+        ! output variable: chb (unit=m/s). ***  sensible heat exchange
         !  coefficient over bare-ground fraction
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CHB, &
              value = NoahMP50_struc(n)%noahmp50(t)%chb, &
@@ -1290,16 +1289,6 @@ subroutine NoahMP50_main(n)
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SUBSNOW, &
              value = NoahmpIO%qsnsubxy(1,1), &
              vlevel=1, unit="kg m-2 s-1", direction="-", &
-             surface_type = LIS_rc%lsm_index)
-
-        ! output variable: AvgSurfT (unit=K). *** average surface temperature
-        AvgSurfT_out = NoahMP50_struc(n)%noahmp50(t)%fveg * &
-             NoahMP50_struc(n)%noahmp50(t)%tv + &
-             (1.0-NoahMP50_struc(n)%noahmp50(t)%fveg) * &
-             NoahMP50_struc(n)%noahmp50(t)%tgb
-        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AVGSURFT, &
-             value = AvgSurfT_out, &
-             vlevel=1, unit="K", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
         ! TWS should be SWE + CanopInt + Soil moisture + WA
