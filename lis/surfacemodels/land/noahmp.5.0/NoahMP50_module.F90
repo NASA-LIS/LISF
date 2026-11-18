@@ -606,8 +606,10 @@ module NoahMP50_module
      real               :: roughness_f
      real               :: vai
      real               :: ustar
-     real               :: albedo_dir(2)  ! Fixed size array for 2 bands (Vis, NIR)
-     real               :: albedo_dif(2)  ! Fixed size array for 2 bands (Vis, NIR)
+     real               :: albedo_visdir
+     real               :: albedo_nirdir
+     real               :: albedo_visdif
+     real               :: albedo_nirdif
 
      !for 557WW
      real :: tair_agl_min

@@ -1344,20 +1344,16 @@ contains
     ! =====================================================================
     ! 2. DERIVED VARIABLES
     ! =====================================================================
-    call LIS_tile2grid(n,LISGEOS_export(n)%qh_shout,LISGEOS_export(n)%qh_shout_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%ch_f,LISGEOS_export(n)%ch_f_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%cm_f,LISGEOS_export(n)%cm_f_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%qair_t2m,LISGEOS_export(n)%qair_t2m_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%snowdepth_sca,LISGEOS_export(n)%snowdepth_sca_t)
-    call LIS_tile2grid(n,LISGEOS_export(n)%roughness_f,LISGEOS_export(n)%roughness_f_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%totalrunoff,LISGEOS_export(n)%totalrunoff_t)
-    call LIS_tile2grid(n,LISGEOS_export(n)%soilmoist_rz,LISGEOS_export(n)%soilmoist_rz_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%albedovisdir,LISGEOS_export(n)%albedovisdir_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%albedonirdir,LISGEOS_export(n)%albedonirdir_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%albedovisdif,LISGEOS_export(n)%albedovisdif_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%albedonirdif,LISGEOS_export(n)%albedonirdif_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%tair_t2m,LISGEOS_export(n)%tair_t2m_t)
-    call LIS_tile2grid(n,LISGEOS_export(n)%tsfcmean,LISGEOS_export(n)%tsfcmean_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%canopint,LISGEOS_export(n)%canopint_t)
 
     ! =====================================================================
@@ -1385,7 +1381,6 @@ contains
     call LIS_tile2grid(n,LISGEOS_export(n)%greenness,LISGEOS_export(n)%greenness_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%landcover,LISGEOS_export(n)%landcover_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%nee,LISGEOS_export(n)%nee_t)
-    call LIS_tile2grid(n,LISGEOS_export(n)%avgsurfq,LISGEOS_export(n)%avgsurfq_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%avgsurft,LISGEOS_export(n)%avgsurft_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%emiss,LISGEOS_export(n)%emiss_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%qle,LISGEOS_export(n)%qle_t)
@@ -1393,10 +1388,8 @@ contains
     call LIS_tile2grid(n,LISGEOS_export(n)%greenness,LISGEOS_export(n)%greenness_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%landcover,LISGEOS_export(n)%landcover_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%nee,LISGEOS_export(n)%nee_t)
-    call LIS_tile2grid(n,LISGEOS_export(n)%avgsurfq,LISGEOS_export(n)%avgsurfq_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%canopint,LISGEOS_export(n)%canopint_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%tair_t2m,LISGEOS_export(n)%tair_t2m_t)
-    call LIS_tile2grid(n,LISGEOS_export(n)%tsfcmean,LISGEOS_export(n)%tsfcmean_t)
 #endif
 
 #if (defined RM_WRF_COUPLING) || (defined RM_GEOS_COUPLING)

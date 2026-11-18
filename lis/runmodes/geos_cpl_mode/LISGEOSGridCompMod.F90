@@ -56,8 +56,6 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_import(n)%data_swd(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_lwd(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_ch(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_import(n)%data_chs2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_import(n)%data_cqs2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_psurf(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_prcp(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_z(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -66,7 +64,6 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_import(n)%data_u(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_v(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_cosz(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_import(n)%data_xice(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_import(n)%data_tmn(LIS_rc%lnc(n),LIS_rc%lnr(n))) 
          allocate(LISGEOS_import(n)%data_co2(1))
          LISGEOS_import(n)%startflag = .true.
@@ -74,12 +71,8 @@ module LISGEOSGridCompMod
          ! Export states - 1D Tile Arrays
          allocate(LISGEOS_export(n)%avgsurft_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%qh_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%eta_kinematic_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%qle_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%qg_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%albedo_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%znt_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%q1_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%smc1_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%smc2_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%smc3_t(LIS_rc%ntiles(n)))
@@ -88,39 +81,24 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_export(n)%stc2_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%stc3_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%stc4_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%chs2_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%cqs2_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%snocvr_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%snow_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%snowh_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%lispor_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%rootmoist_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%soilm_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%qs_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%qsb_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%cmc_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%qsm_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%emiss_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%xice_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%sh2o1_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%sh2o2_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%sh2o3_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%sh2o4_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%relsmc1_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%relsmc2_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%relsmc3_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%relsmc4_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%xland_t(LIS_rc%ntiles(n)))
 
          ! Export states - New GEOS Coupling 1D Tile Arrays
          allocate(LISGEOS_export(n)%rhos_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%totalrunoff_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%qh_shout_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%ch_f_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%soilmoist_rz_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%qair_t2m_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%snowdepth_sca_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%roughness_f_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%albedovisdir_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%albedonirdir_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%albedovisdif_t(LIS_rc%ntiles(n)))
@@ -142,19 +120,14 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_export(n)%greenness_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%landcover_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%nee_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%avgsurfq_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%canopint_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%tair_t2m_t(LIS_rc%ntiles(n)))
 
          ! Export states - 2D Grid Arrays
          allocate(LISGEOS_export(n)%avgsurft(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%qh(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%eta_kinematic(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%qle(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%qg(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%albedo(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%znt(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%q1(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%smc1(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%smc2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%smc3(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -163,39 +136,25 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_export(n)%stc2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%stc3(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%stc4(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%chs2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%cqs2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%snocvr(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%snow(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%snowh(LIS_rc%lnc(n),LIS_rc%lnr(n))) 
-         allocate(LISGEOS_export(n)%lispor(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%rootmoist(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%soilm(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%qs(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%cmc(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%qsm(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%emiss(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%xice(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%sh2o1(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%sh2o2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%sh2o3(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%sh2o4(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%relsmc1(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%relsmc2(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%relsmc3(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%relsmc4(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%xland(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-
+         
          ! Export states - New GEOS Coupling 2D Grid Arrays
          allocate(LISGEOS_export(n)%rhos(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%totalrunoff(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%qh_shout(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%ch_f(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%soilmoist_rz(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%qair_t2m(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%snowdepth_sca(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%roughness_f(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%albedovisdir(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%albedonirdir(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%albedovisdif(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -217,7 +176,6 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_export(n)%greenness(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%landcover(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%nee(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%avgsurfq(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%canopint(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%tair_t2m(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
@@ -255,8 +213,6 @@ module LISGEOSGridCompMod
          LISGEOS_import(n)%data_swd = LIS_rc%udef
          LISGEOS_import(n)%data_lwd = LIS_rc%udef
          LISGEOS_import(n)%data_ch = LIS_rc%udef
-         LISGEOS_import(n)%data_chs2 = LIS_rc%udef
-         LISGEOS_import(n)%data_cqs2 = LIS_rc%udef
          LISGEOS_import(n)%data_psurf = LIS_rc%udef
          LISGEOS_import(n)%data_prcp = LIS_rc%udef
          LISGEOS_import(n)%data_z = LIS_rc%udef
@@ -265,24 +221,15 @@ module LISGEOSGridCompMod
          LISGEOS_import(n)%data_u = LIS_rc%udef
          LISGEOS_import(n)%data_v = LIS_rc%udef
          LISGEOS_import(n)%data_cosz = LIS_rc%udef
-         LISGEOS_import(n)%data_xice = LIS_rc%udef
          LISGEOS_import(n)%data_tmn = LIS_rc%udef
          
          ! Export states - 1D Tile Arrays
          LISGEOS_export(n)%avgsurft_t = LIS_rc%udef
          LISGEOS_export(n)%qh_t = LIS_rc%udef
-         LISGEOS_export(n)%eta_kinematic_t = LIS_rc%udef
          LISGEOS_export(n)%qle_t = LIS_rc%udef
-         LISGEOS_export(n)%qg_t = LIS_rc%udef
          LISGEOS_export(n)%albedo_t = LIS_rc%udef
-         LISGEOS_export(n)%znt_t = LIS_rc%udef
          LISGEOS_export(n)%snocvr_t = LIS_rc%udef
-         LISGEOS_export(n)%q1_t = LIS_rc%udef
          LISGEOS_export(n)%snow_t = LIS_rc%udef
-         LISGEOS_export(n)%cmc_t = LIS_rc%udef
-         LISGEOS_export(n)%qsm_t = LIS_rc%udef
-         LISGEOS_export(n)%chs2_t = LIS_rc%udef
-         LISGEOS_export(n)%cqs2_t = LIS_rc%udef
          LISGEOS_export(n)%smc1_t = LIS_rc%udef
          LISGEOS_export(n)%smc2_t = LIS_rc%udef
          LISGEOS_export(n)%smc3_t = LIS_rc%udef
@@ -296,28 +243,18 @@ module LISGEOSGridCompMod
          LISGEOS_export(n)%qs_t = LIS_rc%udef
          LISGEOS_export(n)%qsb_t = LIS_rc%udef
          LISGEOS_export(n)%snowh_t = LIS_rc%udef
-         LISGEOS_export(n)%lispor_t = LIS_rc%udef
          LISGEOS_export(n)%emiss_t = LIS_rc%udef
-         LISGEOS_export(n)%xice_t = LIS_rc%udef
          LISGEOS_export(n)%sh2o1_t = LIS_rc%udef
          LISGEOS_export(n)%sh2o2_t = LIS_rc%udef
          LISGEOS_export(n)%sh2o3_t = LIS_rc%udef
          LISGEOS_export(n)%sh2o4_t = LIS_rc%udef
-         LISGEOS_export(n)%relsmc1_t = LIS_rc%udef
-         LISGEOS_export(n)%relsmc2_t = LIS_rc%udef
-         LISGEOS_export(n)%relsmc3_t = LIS_rc%udef
-         LISGEOS_export(n)%relsmc4_t = LIS_rc%udef
-         LISGEOS_export(n)%xland_t = LIS_rc%udef
 
          ! Export states - New GEOS Coupling 1D Tile Arrays
          LISGEOS_export(n)%rhos_t = LIS_rc%udef
          LISGEOS_export(n)%totalrunoff_t = LIS_rc%udef
-         LISGEOS_export(n)%qh_shout_t = LIS_rc%udef
          LISGEOS_export(n)%ch_f_t = LIS_rc%udef
-         LISGEOS_export(n)%soilmoist_rz_t = LIS_rc%udef
          LISGEOS_export(n)%qair_t2m_t = LIS_rc%udef
          LISGEOS_export(n)%snowdepth_sca_t = LIS_rc%udef
-         LISGEOS_export(n)%roughness_f_t = LIS_rc%udef
          LISGEOS_export(n)%albedovisdir_t = LIS_rc%udef
          LISGEOS_export(n)%albedonirdir_t = LIS_rc%udef
          LISGEOS_export(n)%albedovisdif_t = LIS_rc%udef
@@ -339,19 +276,14 @@ module LISGEOSGridCompMod
          LISGEOS_export(n)%greenness_t = LIS_rc%udef
          LISGEOS_export(n)%landcover_t = LIS_rc%udef
          LISGEOS_export(n)%nee_t = LIS_rc%udef
-         LISGEOS_export(n)%avgsurfq_t = LIS_rc%udef
          LISGEOS_export(n)%canopint_t = LIS_rc%udef
          LISGEOS_export(n)%tair_t2m_t = LIS_rc%udef
 
          ! Export states - 2D Grid Arrays
          LISGEOS_export(n)%avgsurft = LIS_rc%udef
          LISGEOS_export(n)%qh = LIS_rc%udef
-         LISGEOS_export(n)%eta_kinematic = LIS_rc%udef
          LISGEOS_export(n)%qle = LIS_rc%udef
-         LISGEOS_export(n)%qg = LIS_rc%udef
          LISGEOS_export(n)%albedo = LIS_rc%udef
-         LISGEOS_export(n)%znt = LIS_rc%udef
-         LISGEOS_export(n)%q1 = LIS_rc%udef
          LISGEOS_export(n)%smc1 = LIS_rc%udef
          LISGEOS_export(n)%smc2 = LIS_rc%udef
          LISGEOS_export(n)%smc3 = LIS_rc%udef
@@ -363,36 +295,22 @@ module LISGEOSGridCompMod
          LISGEOS_export(n)%snocvr = LIS_rc%udef
          LISGEOS_export(n)%snow = LIS_rc%udef
          LISGEOS_export(n)%snowh = LIS_rc%udef
-         LISGEOS_export(n)%lispor = LIS_rc%udef
          LISGEOS_export(n)%rootmoist = LIS_rc%udef
          LISGEOS_export(n)%soilm = LIS_rc%udef
          LISGEOS_export(n)%qs = LIS_rc%udef
          LISGEOS_export(n)%qsb = LIS_rc%udef
-         LISGEOS_export(n)%cmc = LIS_rc%udef
-         LISGEOS_export(n)%qsm = LIS_rc%udef
          LISGEOS_export(n)%emiss = LIS_rc%udef
-         LISGEOS_export(n)%xice = LIS_rc%udef
          LISGEOS_export(n)%sh2o1 = LIS_rc%udef
          LISGEOS_export(n)%sh2o2 = LIS_rc%udef
          LISGEOS_export(n)%sh2o3 = LIS_rc%udef
          LISGEOS_export(n)%sh2o4 = LIS_rc%udef
-         LISGEOS_export(n)%relsmc1 = LIS_rc%udef
-         LISGEOS_export(n)%relsmc2 = LIS_rc%udef
-         LISGEOS_export(n)%relsmc3 = LIS_rc%udef
-         LISGEOS_export(n)%relsmc4 = LIS_rc%udef
-         LISGEOS_export(n)%xland = LIS_rc%udef
-         LISGEOS_export(n)%chs2 = LIS_rc%udef
-         LISGEOS_export(n)%cqs2 = LIS_rc%udef
-
+        
          ! Export states - New GEOS Coupling 2D Grid Arrays
          LISGEOS_export(n)%rhos = LIS_rc%udef
          LISGEOS_export(n)%totalrunoff = LIS_rc%udef
-         LISGEOS_export(n)%qh_shout = LIS_rc%udef
          LISGEOS_export(n)%ch_f = LIS_rc%udef
-         LISGEOS_export(n)%soilmoist_rz = LIS_rc%udef
          LISGEOS_export(n)%qair_t2m = LIS_rc%udef
          LISGEOS_export(n)%snowdepth_sca = LIS_rc%udef
-         LISGEOS_export(n)%roughness_f = LIS_rc%udef
          LISGEOS_export(n)%albedovisdir = LIS_rc%udef
          LISGEOS_export(n)%albedonirdir = LIS_rc%udef
          LISGEOS_export(n)%albedovisdif = LIS_rc%udef
@@ -414,7 +332,6 @@ module LISGEOSGridCompMod
          LISGEOS_export(n)%greenness = LIS_rc%udef
          LISGEOS_export(n)%landcover = LIS_rc%udef
          LISGEOS_export(n)%nee = LIS_rc%udef
-         LISGEOS_export(n)%avgsurfq = LIS_rc%udef
          LISGEOS_export(n)%canopint = LIS_rc%udef
          LISGEOS_export(n)%tair_t2m = LIS_rc%udef
 
