@@ -185,7 +185,7 @@ subroutine NoahMP50_setgeosexport(n)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      temp(i) = NoahMP50_struc(n)%noahmp50(i)%qsfcmean
   enddo
-  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%qair_t2m_t,temp)
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISGEOS_export(n)%avgsurfq_t,temp)
 
   ! Snow Depth - Snow-covered-area form (snowdepth_sca)
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)

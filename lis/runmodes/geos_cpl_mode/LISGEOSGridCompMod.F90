@@ -97,7 +97,8 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_export(n)%rhos_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%totalrunoff_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%ch_f_t(LIS_rc%ntiles(n)))
-         allocate(LISGEOS_export(n)%qair_t2m_t(LIS_rc%ntiles(n)))
+         allocate(LISGEOS_export(n)%cm_f_t(LIS_rc%ntiles(n)))
+         allocate(LISGEOS_export(n)%avgsurfq_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%snowdepth_sca_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%albedovisdir_t(LIS_rc%ntiles(n)))
          allocate(LISGEOS_export(n)%albedonirdir_t(LIS_rc%ntiles(n)))
@@ -153,7 +154,8 @@ module LISGEOSGridCompMod
          allocate(LISGEOS_export(n)%rhos(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%totalrunoff(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%ch_f(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-         allocate(LISGEOS_export(n)%qair_t2m(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+         allocate(LISGEOS_export(n)%cm_f(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+         allocate(LISGEOS_export(n)%avgsurfq(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%snowdepth_sca(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%albedovisdir(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(LISGEOS_export(n)%albedonirdir(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -253,7 +255,8 @@ module LISGEOSGridCompMod
          LISGEOS_export(n)%rhos_t = LIS_rc%udef
          LISGEOS_export(n)%totalrunoff_t = LIS_rc%udef
          LISGEOS_export(n)%ch_f_t = LIS_rc%udef
-         LISGEOS_export(n)%qair_t2m_t = LIS_rc%udef
+         LISGEOS_export(n)%cm_f_t = LIS_rc%udef
+         LISGEOS_export(n)%avgsurfq_t = LIS_rc%udef
          LISGEOS_export(n)%snowdepth_sca_t = LIS_rc%udef
          LISGEOS_export(n)%albedovisdir_t = LIS_rc%udef
          LISGEOS_export(n)%albedonirdir_t = LIS_rc%udef
@@ -309,7 +312,8 @@ module LISGEOSGridCompMod
          LISGEOS_export(n)%rhos = LIS_rc%udef
          LISGEOS_export(n)%totalrunoff = LIS_rc%udef
          LISGEOS_export(n)%ch_f = LIS_rc%udef
-         LISGEOS_export(n)%qair_t2m = LIS_rc%udef
+         LISGEOS_export(n)%cm_f = LIS_rc%udef
+         LISGEOS_export(n)%avgsurfq = LIS_rc%udef
          LISGEOS_export(n)%snowdepth_sca = LIS_rc%udef
          LISGEOS_export(n)%albedovisdir = LIS_rc%udef
          LISGEOS_export(n)%albedonirdir = LIS_rc%udef

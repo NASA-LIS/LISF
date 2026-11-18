@@ -72,8 +72,8 @@ LIS_Field( &
                 directConn=.false.), &
 
 LIS_Field( &
-                stdName='totalrunoff', &         ! RunoffSubsurface + RunoffSurface
-                stateName='Qsum', &						   
+                stdName='total_runoff', &         ! RunoffSubsurface + RunoffSurface
+                stateName='totalrunoff', &						   
                 units='mm/soil_timestep', &					! CLSM exports runoff_total_flux (RUNOFF )
                 adImport=.false., &
                 adExport=.true., &
@@ -94,7 +94,7 @@ LIS_Field( &
 
 !! --- Surface Specific Humidity  ---
 LIS_Field( &
-                stdName='mean_surface_specific_humidity', & ! Noah-MP: SpecHumiditySfcMean
+                stdName='mean_surface_specific_humidity', & ! Noah-MP: SpecHumiditySfcMean (2m)
                 stateName='AvgSurfQ', &			! NoahMP50_struc(n)%noahmp50(t)%qsfcmean
                 units='kg/kg', &					! CLSM exports: QH (turbulence_surface_skin_specific_hum)
                 adImport=.false., &			! This is used to calculate QHAT in SurfaceGridComp
@@ -105,7 +105,7 @@ LIS_Field( &
 !! --- Snow Mass ---
 LIS_Field( &
                 stdName='liquid_water_content_of_surface_snow', &     ! Noah-MP: SnowWaterEquiv
-                stateName='SWE', &								  ! NoahMP50_struc(n)%noahmp50(t)%sneqv
+                stateName='snow', &								  ! NoahMP50_struc(n)%noahmp50(t)%sneqv
                 units='kg/m2', &							! CLSM exports: snow_mass  (SNOWMASS)
                 adImport=.false., &
                 adExport=.true., &
@@ -114,7 +114,7 @@ LIS_Field( &
 !! --- 2-Meter Air Temperature  ---
 LIS_Field( &
                 stdName='2m_air_temperature', &  ! Noah-MP: TemperatureAir2m
-                stateName='t2_f', &			! NoahMP50_struc(n)%noahmp50(t)% t2mean
+                stateName='tair_t2m', &			! NoahMP50_struc(n)%noahmp50(t)% t2mean
                 units='K', &					! CLSM MOT2M (temperature 2m wind from MO sfc)
                 adImport=.false., &.               
                 adExport=.true., &
@@ -129,10 +129,9 @@ LIS_Field( &
                 adExport=.true., &
                 directConn=.false.), &
 
-!! --- Surface Roughness, ZPD, Exchange Coefficients (Partitioned) ---
 LIS_Field( &
                 stdName='surface_roughness_length', &          ! Noah-MP: RoughLenMomSfcToAtm (maps to Z0 and Z0H)
-                stateName='roughness_f', &					! NoahMP50_struc(n)%noahmp50(t)%z0 
+                stateName='z0', &					! NoahMP50_struc(n)%noahmp50(t)%z0 
                 units='m', &							!one to many mapping: CLSM Z0 (surface_roughness), Z0H (surface_roughness_for_heat)
                 adImport=.false., &
                 adExport=.true., &
@@ -153,14 +152,6 @@ LIS_Field( &
                 adExport=.true., &					
                 directConn=.false.), &
 
-!! --- 2-Meter Specific Humidity ---
-LIS_Field( &
-                stdName='2m_specific_humidity', &      ! Noah-MP: SpecificHumidity2m (Derived from CLSM Q2M)
-                stateName='QairT2m', &				  ! NoahMP50_struc(n)%noahmp50(t)%q2mv & %q2mb
-                units='kg/kg', &					!CLSM: Q2M (2-meter_specific_humidity)
-                adImport=.false., &
-                adExport=.true., &
-                directConn=.false.), &
 !! --- Evaporation ---
 LIS_Field( &
                 stdName='total_evapotranspiration', &  ! Noah-MP: WaterToAtmosTotal
@@ -182,7 +173,7 @@ LIS_Field( &
 !! --- surface emissivity ---
 LIS_Field( &
                 stdName='emissivity', &                         ! Noah-MP: EmissivitySfc
-                stateName='Emiss_f', &						! NoahMP50_struc(n)%noahmp50(t)%emiss
+                stateName='Emiss', &						! NoahMP50_struc(n)%noahmp50(t)%emiss
                 units='-', &						! CLSM: EMIS, 'surface_emissivity'
                 adImport=.false., &
                 adExport=.true., &
@@ -267,7 +258,7 @@ LIS_Field( &
 !!=========================================================================================
 LIS_Field( &
                 stdName='surface_air_pressure', &                  ! Noah-MP: PressureAirRefHeight
-                stateName='Psurf_f', &						! NoahMP50_struc(n)%noahmp50(t)%psurf
+                stateName='psurf', &						! NoahMP50_struc(n)%noahmp50(t)%psurf
                 units='Pa', &						! CLSM: surface_air_pressure (Psurf_f)
                 adImport=.true., &
                 adExport=.false., &
@@ -275,7 +266,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='air_temperature', &           ! Noah-MP: TemperatureAirRefHeight
-                stateName='Tair_f', &				! NoahMP50_struc(n)%noahmp50(t)%tair
+                stateName='tair', &				! NoahMP50_struc(n)%noahmp50(t)%tair
                 units='K', &						! CLSM: TA (surface_air_temperature)
                 adImport=.true., &
                 adExport=.false., &
@@ -283,7 +274,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='specific_humidity', &     ! Noah-MP: SpecHumidityRefHeight
-                stateName='Qair_f', &				! NoahMP50_struc(n)%noahmp50(t)%qair
+                stateName='Qair', &				! NoahMP50_struc(n)%noahmp50(t)%qair
                 units='kg/kg', &				! CLSM: QA (surface_air_specific_humidity)
                 adImport=.true., &
                 adExport=.false., &
@@ -291,7 +282,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='surface_downwelling_longwave_flux_in_air', &    ! Noah-MP: RadLwDownRefHeight
-                stateName='LWdown_f', &								! NoahMP50_struc(n)%noahmp50(t)%lwdown
+                stateName='lwd', &								! NoahMP50_struc(n)%noahmp50(t)%lwdown
                 units='W/m2', &								! CLSM: LWDNSRF, 'surface_absorbed_longwave_flux' (imported by surface)
                 adImport=.true., &
                 adExport=.false., &
@@ -299,7 +290,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='surface_downwelling_shortwave_flux_in_air', & ! Noah-MP: RadSwDownRefHeight
-                stateName='SWdown_f', &								! NoahMP50_struc(n)%noahmp50(t)%swdown 
+                stateName='swd', &								! NoahMP50_struc(n)%noahmp50(t)%swdown 
                 units='W/m2', &							
                 adImport=.true., &
                 adExport=. true., &						! CLSM: (DRPAR + DFPAR + DRNIR + DFNIR + DRUVR + DFUVR) (from Rad), in CLSM: SWDOWNLAND = DRPAR + DFPAR + DRUVR + DFUVR + DRNIR + DFNIR, conversion needed to bring GEOS SWdown partitions to bulk SWdown required by NoahMP 
@@ -307,7 +298,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='eastward_wind', &        ! Noah-MP: WindEastwardRefHeight
-                stateName='EWind_f', &			! NoahMP50_struc(n)%noahmp50(t)%wind_e
+                stateName='u', &			! NoahMP50_struc(n)%noahmp50(t)%wind_e
                 units='m/s', &				! CLSM: UL (eastward_wind_bottom_level)
                 adImport=.true., &
                 adExport=.false., &
@@ -315,7 +306,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='northward_wind', &       ! Noah-MP: WindNorthwardRefHeight
-                stateName='NWind_f', &				! NoahMP50_struc(n)%noahmp50(t)%wind_n
+                stateName='v', &				! NoahMP50_struc(n)%noahmp50(t)%wind_n
                 units='m/s', &					! CLSM: VL (northward_wind_bottom_level)
                 adImport=.true., &	
                 adExport=.false., &
@@ -325,22 +316,21 @@ LIS_Field( &
                 stdName='snowfall_flux', &                          ! Noah-MP: PrecipSnowRefHeight
                 stateName='snowf_f', &							! NoahMP50_struc(n)%noahmp50(t)%snowf
                 units='kg/m2s', &						! CLSM exports: snowfall_land
-                adImport=.true., &
+                adImport=.true., &							! not listed in LISGEOSimport_module.F90
                 adExport=.false., &
                 directConn=.false.), &
 
 !! --- Precipitation Forcing (All other physics options other than 4) ---
 LIS_Field( &
                 stdName='total_precipitation', &               ! Noah-MP: PrecipTotRefHeight
-                stateName='TotalPrecip', &					! NoahMP50_struc(n)%noahmp50(t)%prcp 
+                stateName='prcp', &					! NoahMP50_struc(n)%noahmp50(t)%prcp 
                 units='kg/m2s', &						! CLSM: TPREC, total_precipitation
                 adImport=.true., &
                 adExport=.false., &
                 directConn=.false.), &
-!!==============================================================================================================================
-!!-------------did not find these variable names from the LIS side (talk to Jim) start--------------------------------------------
-!!==============================================================================================================================
-!! --- Precipitation Forcings (Microphysics Option 4) ---
+
+
+!! --- Precipitation Forcings (Microphysics Option 4) ---------------did not find these variable names from the LIS side
 
 LIS_Field( &
                 stdName='convective_precipitation', &          ! Noah-MP: PrecipConvRefHeight
@@ -382,7 +372,7 @@ LIS_Field( &
                 adExport=.false., &
                 directConn=.false.), &
 !!==============================================================================================================================
-!!-------------did not find these variable names from the LIS side (talk to Jim) end--------------------------------------------
+!!-------------did not find these variable names 
 !!==============================================================================================================================
 
 !!=========================================================================================
@@ -455,7 +445,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='soil_temperature_layer_1', &          ! Noah-MP: TemperatureSoilSnow(1)
-                stateName='SoilTemp1', &					! NoahMP50_struc(n)%noahmp50(t)%tslb(1)
+                stateName='stc1', &					! NoahMP50_struc(n)%noahmp50(t)%tslb(1)
                 units='K', &							! CLSM: TSOIL1, soil_temperature_layer_1
                 adImport=.false., &
                 adExport=.true., &
@@ -463,7 +453,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='soil_moisture_layer_1', &             ! Noah-MP: SoilMoisture(1)
-                stateName='SoilMoist1', &					! NoahMP50_struc(n)%noahmp50(t)%smc(1)
+                stateName='smc1', &					! NoahMP50_struc(n)%noahmp50(t)%smc(1)
                 units='m3/m3', &						! CLSM, WCSF , 'soil_moisture_surface'
                 adImport=.false., &
                 adExport=.true., &
@@ -471,7 +461,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='soil_moisture_rootzone', &             ! Noah-MP: SoilMoisture
-                stateName='SoilMoistRZ', &				! NoahMP50_struc(n)%noahmp50(t)%smc(1)*0.1 + NoahMP50_struc(n)%noahmp50(t)%smc(2)*0.3 + NoahMP50_struc(n)%noahmp50(t)%smc*0.6 =
+                stateName='rootmoist', &				! NoahMP50_struc(n)%noahmp50(t)%smc(1)*0.1 + NoahMP50_struc(n)%noahmp50(t)%smc(2)*0.3 + NoahMP50_struc(n)%noahmp50(t)%smc*0.6 =
                 units='m3/m3', &						!conversion needed for CLSM: WCRZ (soil_moisture_rootzone)
                 adImport=.false., &
                 adExport=.true., &
@@ -479,7 +469,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='snow_depth', &                        ! Noah-MP: SnowDepth
-                stateName='SnowDepth', &					! NoahMP50_struc(n)%noahmp50(t)%snowh
+                stateName='snowh', &					! NoahMP50_struc(n)%noahmp50(t)%snowh
                 units='m', &							! CLSM equivalent: snow_depth_within_snow_covered_area_fraction_on_land, conversion needed using SnowCoverFrac b/c noah-mp represents pixel-mean snow depth.
                 adImport=.false., &
                 adExport=.true., &
@@ -487,7 +477,7 @@ LIS_Field( &
 
 LIS_Field( &
                 stdName='snow_cover_fraction', &               ! Noah-MP: SnowCoverFrac
-                stateName='Snowcover', &					! NoahMP50_struc(n)%noahmp50(t)%snowc
+                stateName='snocvr', &					! NoahMP50_struc(n)%noahmp50(t)%snowc
                 units='-', &							! CLSM exports: fractional_area_of_snow_on_land
                 adImport=.false., &
                 adExport=.true., &

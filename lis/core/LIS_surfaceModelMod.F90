@@ -1346,7 +1346,7 @@ contains
     ! =====================================================================
     call LIS_tile2grid(n,LISGEOS_export(n)%ch_f,LISGEOS_export(n)%ch_f_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%cm_f,LISGEOS_export(n)%cm_f_t)
-    call LIS_tile2grid(n,LISGEOS_export(n)%qair_t2m,LISGEOS_export(n)%qair_t2m_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%avgsurfq,LISGEOS_export(n)%avgsurfq_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%snowdepth_sca,LISGEOS_export(n)%snowdepth_sca_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%totalrunoff,LISGEOS_export(n)%totalrunoff_t)
     call LIS_tile2grid(n,LISGEOS_export(n)%albedovisdir,LISGEOS_export(n)%albedovisdir_t)
