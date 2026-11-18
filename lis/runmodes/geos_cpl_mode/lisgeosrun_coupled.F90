@@ -204,6 +204,77 @@ subroutine lisgeosrun_coupled(n)
 !  call ESMF_FieldGet(co2Field, localDE=0, farrayPtr=co2,rc=status)
 !  call LIS_verify(status, 'lisgeosrun_coupled: error retrieving co2')
 
+call ESMF_FieldGet(tmnField, localDE=0, farrayPtr=tmn,rc=status)
+  call LIS_verify(status, 'lisgeosrun_coupled: error retrieving tmn')
+
+!  call ESMF_FieldGet(co2Field, localDE=0, farrayPtr=co2,rc=status)
+!  call LIS_verify(status, 'lisgeosrun_coupled: error retrieving co2')
+
+  ! ====================================================================
+  ! DEFENSIVE POINTER VALIDATION
+  ! ====================================================================
+  ! Ensure all pointers are properly associated before dereferencing
+  if (.not. associated(tmp)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: tmp pointer not associated')
+  endif
+  if (.not. associated(q2)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: q2 pointer not associated')
+  endif
+  if (.not. associated(swd)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: swd pointer not associated')
+  endif
+  if (.not. associated(lwd)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: lwd pointer not associated')
+  endif
+  if (.not. associated(uwind)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: uwind pointer not associated')
+  endif
+  if (.not. associated(vwind)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: vwind pointer not associated')
+  endif
+  if (.not. associated(psurf)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: psurf pointer not associated')
+  endif
+  if (.not. associated(pcp)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: pcp pointer not associated')
+  endif
+  if (.not. associated(emiss)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: emiss pointer not associated')
+  endif
+  if (.not. associated(ch)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: ch pointer not associated')
+  endif
+  if (.not. associated(chs2)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: chs2 pointer not associated')
+  endif
+  if (.not. associated(cqs2)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: cqs2 pointer not associated')
+  endif
+  if (.not. associated(q2sat)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: q2sat pointer not associated')
+  endif
+  if (.not. associated(zval)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: zval pointer not associated')
+  endif
+  if (.not. associated(cosz)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: cosz pointer not associated')
+  endif
+  if (.not. associated(xice)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: xice pointer not associated')
+  endif
+  if (.not. associated(tmn)) then
+     call LIS_endrun('ERROR lisgeosrun_coupled: tmn pointer not associated')
+  endif
+
+  ! Verify array sizes match expected tile count
+  if (size(tmp) /= LIS_rc%ntiles(n)) then
+     write(LIS_logunit,*) 'ERROR: size(tmp)=', size(tmp), &
+          ' but LIS_rc%ntiles(n)=', LIS_rc%ntiles(n)
+     call LIS_endrun('ERROR lisgeosrun_coupled: tmp array size mismatch')
+  endif
+
+  do t=1,LIS_rc%ntiles(n)
+
   do t=1,LIS_rc%ntiles(n)
 
      c = LIS_domain(n)%tile(t)%col
