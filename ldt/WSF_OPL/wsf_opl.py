@@ -45,6 +45,7 @@ import re
 import subprocess
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
 V522_LAST  = "2025041323"   # v5.2.2 directory layout ends here
@@ -95,10 +96,69 @@ def write_config(template, dt, src, out):
     return cfg
 
 
+HINTS_SHOWN = set()   # failure hints already printed in this run
+
+
+def check_period(parser, start, end):
+    """Stop with a usage error unless START_DT and END_DT are valid YYYYMMDDHH.
+
+    A date without the hour (YYYYMMDD) used to be accepted, and the whole end
+    day was then left out of the period.
+    """
+    for name, value in (("START_DT", start), ("END_DT", end)):
+        if not re.fullmatch(r"\d{10}", value):
+            parser.error(f"{name} must be YYYYMMDDHH (10 digits), not {value!r}")
+        try:
+            datetime.strptime(value, "%Y%m%d%H")
+        except ValueError:
+            parser.error(f"{name} is not a valid date and hour: {value}")
+    if start > end:
+        parser.error(f"START_DT {start} is after END_DT {end}")
+
+
+def ldt_stdout(dt):
+    """File that receives LDT's screen output for hour dt (kept only on failure)."""
+    return Path(f"logs/ldt_stdout_{dt}.txt")
+
+
+def launch_ldt(program, cfg_file, dt):
+    """Start LDT for one hour, with its screen output going to ldt_stdout(dt)."""
+    with open(ldt_stdout(dt), "w", encoding="utf-8") as out:
+        # The process is waited on later, with the rest of its batch; it keeps
+        # its own copy of the output file after this one is closed.
+        return subprocess.Popen(  # pylint: disable=consider-using-with
+            [str(program), str(cfg_file)], stdout=out, stderr=subprocess.STDOUT)
+
+
+def last_line(path, nbytes=4096):
+    """Last non-empty line of a text file ('' if the file is missing or empty)."""
+    try:
+        with open(path, "rb") as fh:
+            fh.seek(0, os.SEEK_END)
+            fh.seek(max(0, fh.tell() - nbytes))
+            lines = fh.read().decode(errors="replace").splitlines()
+    except FileNotFoundError:
+        return ""
+    return next((line.strip()[:200] for line in reversed(lines) if line.strip()), "")
+
+
+def report_failure(dt, rc):
+    """Print why LDT failed for hour dt; its screen output stays in logs/."""
+    print(f"    FAIL {dt}: exit code {rc}")
+    last = last_line(ldt_stdout(dt))
+    if last:
+        print(f"         {last}")
+    if rc == 127 and rc not in HINTS_SHOWN:
+        HINTS_SHOWN.add(rc)
+        print("         LDT could not start (a library or command was not found):"
+              " load the LDT modules, or submit through the batch script.")
+    print(f"         LDT screen output: {ldt_stdout(dt)}")
+
+
 # =============================================================================
 # Step 1 — OPL Resampling
 # =============================================================================
-# pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
+# pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-statements
 def step1_resample(s1, program, template, out_base, start, end, batch_size, force):
     """Run LDT OPL resampling in parallel batches over all pending hours."""
     print("\n=== STEP 1: OPL Resampling ===")
@@ -108,6 +168,9 @@ def step1_resample(s1, program, template, out_base, start, end, batch_size, forc
 
     hours  = find_hours(s1["v522_sdr_base"], start, end, hi=V522_LAST)
     hours |= find_hours(s1["raw_sdr_base"],  start, end, lo=str(int(V522_LAST) + 1))
+    if not hours:
+        sys.exit(f"ERROR: no SDR files (*WSFM_01_d*_res_sdr.nc) for {start} to {end} "
+                 f"under {s1['raw_sdr_base']} or {s1['v522_sdr_base']}")
     done    = set() if force else set(CHECKPOINT.read_text(encoding='utf-8').split())
     pending = sorted(hours - done)
 
@@ -134,22 +197,14 @@ def step1_resample(s1, program, template, out_base, start, end, batch_size, forc
             od = out_base / dt[:6]
             od.mkdir(parents=True, exist_ok=True)
             cfg_file = write_config(template, dt, sd, od)
-            # pylint: disable=consider-using-with
-            # Intentional: processes are launched as a batch and waited on
-            # sequentially below — a context manager cannot span both loops.
-            proc = subprocess.Popen(
-                [str(program), str(cfg_file)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            # pylint: enable=consider-using-with
+            proc = launch_ldt(program, cfg_file, dt)
             procs.append((dt, proc, cfg_file))
 
         for dt, proc, cfg_file in procs:
             rc  = proc.wait()
             log = Path(f"logs/ldtlog_{dt}")
             if rc != 0:
-                print(f"    FAIL {dt}: exit code {rc}")
+                report_failure(dt, rc)
                 n_fail += 1
             elif log.exists() and "No WSF files found" in log.read_text(encoding='utf-8'):
                 print(f"    WARN {dt}: no input files found")
@@ -158,6 +213,8 @@ def step1_resample(s1, program, template, out_base, start, end, batch_size, forc
                 with CHECKPOINT.open("a", encoding='utf-8') as fh:
                     fh.write(dt + "\n")
                 n_ok += 1
+            if rc == 0:
+                ldt_stdout(dt).unlink(missing_ok=True)
             cfg_file.unlink(missing_ok=True)
             Path(f"WSF_filelist_{dt}.dat").unlink(missing_ok=True)
 
@@ -165,9 +222,12 @@ def step1_resample(s1, program, template, out_base, start, end, batch_size, forc
 
     n_out = sum(1 for _ in out_base.rglob("WSF_SDR_resampled_*.nc"))
     print(f"\n  Resampled files: {n_out}  ok: {n_ok}  fail: {n_fail}  skip: {n_skip}")
+    if n_ok == 0:
+        sys.exit(f"ERROR: none of the {len(pending)} pending hours was resampled "
+                 "(see the lines above and logs/)")
     if n_out == 0:
         sys.exit("ERROR: no resampled files produced — check logs/")
-# pylint: enable=too-many-arguments,too-many-positional-arguments,too-many-locals
+# pylint: enable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-statements
 
 
 # =============================================================================
@@ -260,6 +320,7 @@ def main():
 
     if not args.start_dt or not args.end_dt:
         parser.error("START_DT and END_DT required")
+    check_period(parser, args.start_dt, args.end_dt)
 
     cfg      = json.loads(Path(args.config).read_text(encoding='utf-8'))
     s1       = cfg["step1_wsf_opl"]
