@@ -20,8 +20,8 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.noah39.str"
 
-_STARTDT = datetime.datetime(2025, 1, 20, 12)
-_ENDDT = datetime.datetime(2025, 1, 21, 0)
+#_STARTDT = datetime.datetime(2025, 1, 20, 12)
+#_ENDDT = datetime.datetime(2025, 1, 21, 0)
 #_STARTDT = datetime.datetime(2025, 1, 21, 0)
 #_ENDDT = datetime.datetime(2025, 1, 21, 12)
 #_STARTDT = datetime.datetime(2025, 1, 21, 6)
@@ -30,8 +30,8 @@ _ENDDT = datetime.datetime(2025, 1, 21, 0)
 #_ENDDT = datetime.datetime(2025, 1, 22, 0)
 #_STARTDT = datetime.datetime(2025, 1, 21, 18)
 #_ENDDT = datetime.datetime(2025, 1, 22, 6)
-#_STARTDT = datetime.datetime(2025, 1, 22, 0)
-#_ENDDT = datetime.datetime(2025, 1, 22, 12)
+_STARTDT = datetime.datetime(2025, 1, 22, 0)
+_ENDDT = datetime.datetime(2025, 1, 22, 12)
 
 _OUTPUT = "netcdf" # For 557 WW operations, for 2d ensemble gridspace
 
