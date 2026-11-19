@@ -359,6 +359,34 @@ module NoahMP50_module
 !     veg 2m exchange coefficient. unit: -
 !   \item[chb2]
 !     bare 2m exchange coefficient. unit: -
+!   \item[z0]
+!     surface roughness length (momentum). unit: m
+!   \item[znt]
+!     thermal roughness length output to atm. unit: m
+!   \item[zpd]
+!     zero-plane displacement height. unit: m
+!   \item[ustarveg]
+!     friction velocity over vegetated surface. unit: m/s
+!   \item[ustarbare]
+!     friction velocity over bare ground. unit: m/s
+!   \item[taux]
+!     eastward (zonal) surface wind stress. unit: N/m2
+!   \item[tauy]
+!     northward (meridional) surface wind stress. unit: N/m2
+!   \item[rhoair]
+!     surface air density. unit: kg/m3
+!   \item[qsfcmean]
+!     mean surface specific humidity. unit: kg/kg
+!   \item[tsfcmean]
+!     mean skin temperature. unit: K
+!   \item[t2mean]
+!     mean 2m temperature. unit: K
+!   \item[albsfcdir]
+!     surface albedo, direct beam (1=visible, 2=near-infrared). unit: -
+!   \item[albsfcdif]
+!     surface albedo, diffuse (1=visible, 2=near-infrared). unit: -
+!   \item[soiltimestep]
+!     Noah-MP soil timestep. unit: s
 !   \end{description}
 !
 ! !REVISION HISTORY:
@@ -551,6 +579,37 @@ module NoahMP50_module
      real               :: chuc
      real               :: chv2
      real               :: chb2
+     
+     !for GEOS
+     real               :: z0
+     real               :: znt
+     real               :: zpd
+     real               :: ustarveg
+     real               :: ustarbare
+     real               :: taux
+     real               :: tauy
+     real               :: rhoair
+     real               :: qsfcmean
+     real               :: t2mean
+     real               :: tsfcmean
+     integer            :: soiltimestep
+     real, pointer      :: albsfcdir(:)   ! surface albedo direct  (1=vis, 2=nir)
+     real, pointer      :: albsfcdif(:)   ! surface albedo diffuse (1=vis, 2=nir) 
+
+     ! --- GEOS Coupling Derived Variables ---
+     real               :: totalrunoff
+     real               :: ch_f
+     real               :: cm_f
+     real               :: soilmoist_rz
+     real               :: canopint
+     real               :: snowdepth_sca
+     real               :: roughness_f
+     real               :: vai
+     real               :: ustar
+     real               :: albedo_visdir
+     real               :: albedo_nirdir
+     real               :: albedo_visdif
+     real               :: albedo_nirdif
 
      !for 557WW
      real :: tair_agl_min

@@ -1229,22 +1229,26 @@ contains
 
   end subroutine LIS_surfaceModel_reset
 
-
 !BOP
 ! !ROUTINE: surfaceModel_setexport_noesmf
 ! \label{surfaceModel_setexport_noesmf}
 !
 ! !INTERFACE:
   subroutine surfaceModel_setexport_noesmf(n)
-#if (defined RM_WRF_COUPLING)
+#if (defined RM_WRF_COUPLING) || (defined RM_GEOS_COUPLING)
 ! !USES:
     use LIS_LMLCMod
-    use LISWRFGridCompMod, only : LISWRF_export
     use LIS_historyMod, only : LIS_tile2grid
+#endif
+#if (defined RM_WRF_COUPLING)
+    use LISWRFGridCompMod, only : LISWRF_export
+#endif
+#if (defined RM_GEOS_COUPLING)
+    use LISGEOSGridCompMod, only : LISGEOS_export
 #endif
 ! !ARGUMENTS:
     integer, intent(in) :: n
-#if (defined RM_WRF_COUPLING)
+#if (defined RM_WRF_COUPLING) || (defined RM_GEOS_COUPLING)
 ! !DESCRIPTION:
 !
 !EOP
@@ -1262,7 +1266,9 @@ contains
        endif
     enddo
 !building grid space from surface model tiles
+#endif
 
+#if (defined RM_WRF_COUPLING)
     call LIS_tile2grid(n,LISWRF_export(n)%avgsurft, &
          LISWRF_export(n)%avgsurft_t)
     call LIS_tile2grid(n,LISWRF_export(n)%qh,LISWRF_export(n)%qh_t)
@@ -1306,9 +1312,90 @@ contains
     call LIS_tile2grid(n,LISWRF_export(n)%relsmc3,LISWRF_export(n)%relsmc3_t)
     call LIS_tile2grid(n,LISWRF_export(n)%relsmc4,LISWRF_export(n)%relsmc4_t)
     call LIS_tile2grid(n,LISWRF_export(n)%xland,LISWRF_export(n)%xland_t)
-    TRACE_EXIT("sf_setexp")
-
 #endif
+
+#if (defined RM_GEOS_COUPLING)
+    ! =====================================================================
+    ! 1. BASELINE VARIABLES
+    ! =====================================================================
+    call LIS_tile2grid(n,LISGEOS_export(n)%avgsurft,LISGEOS_export(n)%avgsurft_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%emiss,LISGEOS_export(n)%emiss_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%qle,LISGEOS_export(n)%qle_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%albedo,LISGEOS_export(n)%albedo_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%smc1,LISGEOS_export(n)%smc1_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%smc2,LISGEOS_export(n)%smc2_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%smc3,LISGEOS_export(n)%smc3_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%smc4,LISGEOS_export(n)%smc4_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%stc1,LISGEOS_export(n)%stc1_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%stc2,LISGEOS_export(n)%stc2_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%stc3,LISGEOS_export(n)%stc3_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%stc4,LISGEOS_export(n)%stc4_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%sh2o1,LISGEOS_export(n)%sh2o1_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%sh2o2,LISGEOS_export(n)%sh2o2_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%sh2o3,LISGEOS_export(n)%sh2o3_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%sh2o4,LISGEOS_export(n)%sh2o4_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%snow,LISGEOS_export(n)%snow_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%snowh,LISGEOS_export(n)%snowh_t)
+#ifdef GEOS_HYDRO
+    call LIS_tile2grid(n,LISGEOS_export(n)%infxsrt,LISGEOS_export(n)%infxsrt_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%soldrain,LISGEOS_export(n)%soldrain_t)
+#endif
+
+    ! =====================================================================
+    ! 2. DERIVED VARIABLES
+    ! =====================================================================
+    call LIS_tile2grid(n,LISGEOS_export(n)%ch_f,LISGEOS_export(n)%ch_f_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%cm_f,LISGEOS_export(n)%cm_f_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%avgsurfq,LISGEOS_export(n)%avgsurfq_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%snowdepth_sca,LISGEOS_export(n)%snowdepth_sca_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%totalrunoff,LISGEOS_export(n)%totalrunoff_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%albedovisdir,LISGEOS_export(n)%albedovisdir_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%albedonirdir,LISGEOS_export(n)%albedonirdir_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%albedovisdif,LISGEOS_export(n)%albedovisdif_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%albedonirdif,LISGEOS_export(n)%albedonirdif_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%tair_t2m,LISGEOS_export(n)%tair_t2m_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%canopint,LISGEOS_export(n)%canopint_t)
+
+    ! =====================================================================
+    ! 3. NATIVE VARIABLES
+    ! =====================================================================
+    call LIS_tile2grid(n,LISGEOS_export(n)%qs,LISGEOS_export(n)%qs_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%qsb,LISGEOS_export(n)%qsb_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%rhos,LISGEOS_export(n)%rhos_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%snocvr,LISGEOS_export(n)%snocvr_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%zpd,LISGEOS_export(n)%zpd_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%z0,LISGEOS_export(n)%z0_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%taux,LISGEOS_export(n)%taux_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%tauy,LISGEOS_export(n)%tauy_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%ustarveg,LISGEOS_export(n)%ustarveg_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%ustarbare,LISGEOS_export(n)%ustarbare_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%rtmass,LISGEOS_export(n)%rtmass_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%stmass,LISGEOS_export(n)%stmass_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%wood,LISGEOS_export(n)%wood_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%stblcp,LISGEOS_export(n)%stblcp_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%fastcp,LISGEOS_export(n)%fastcp_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%lai,LISGEOS_export(n)%lai_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%sai,LISGEOS_export(n)%sai_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%vai,LISGEOS_export(n)%vai_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%evap,LISGEOS_export(n)%evap_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%greenness,LISGEOS_export(n)%greenness_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%landcover,LISGEOS_export(n)%landcover_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%nee,LISGEOS_export(n)%nee_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%avgsurft,LISGEOS_export(n)%avgsurft_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%emiss,LISGEOS_export(n)%emiss_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%qle,LISGEOS_export(n)%qle_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%evap,LISGEOS_export(n)%evap_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%greenness,LISGEOS_export(n)%greenness_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%landcover,LISGEOS_export(n)%landcover_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%nee,LISGEOS_export(n)%nee_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%canopint,LISGEOS_export(n)%canopint_t)
+    call LIS_tile2grid(n,LISGEOS_export(n)%tair_t2m,LISGEOS_export(n)%tair_t2m_t)
+#endif
+
+#if (defined RM_WRF_COUPLING) || (defined RM_GEOS_COUPLING)
+    TRACE_EXIT("sf_setexp")
+#endif
+
   end subroutine surfaceModel_setexport_noesmf
 
 end module LIS_surfaceModelMod

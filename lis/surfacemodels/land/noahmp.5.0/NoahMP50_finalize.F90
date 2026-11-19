@@ -45,6 +45,9 @@ subroutine NoahMP50_finalize()
             deallocate(NoahMP50_struc(n)%noahmp50(t)%snowliq)
             deallocate(NoahMP50_struc(n)%noahmp50(t)%smoiseq)
             deallocate(NoahMP50_struc(n)%noahmp50(t)%accetrani)
+            ! GEOS coupling: surface albedo partitions (1=vis, 2=nir)
+            deallocate(NoahMP50_struc(n)%noahmp50(t)%albsfcdir)
+            deallocate(NoahMP50_struc(n)%noahmp50(t)%albsfcdif)
         end do  ! tile loop
  
         ! free memory for noahmp50, the data at tile level

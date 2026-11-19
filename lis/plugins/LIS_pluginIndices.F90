@@ -51,6 +51,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_nuopccplId  = "NUOPC coupling"
    character*50, public,  parameter :: LIS_gcecplId    = "GCE coupling"
    character*50, public,  parameter :: LIS_gfscplId    = "GFS coupling"
+   character*50, public, parameter :: LIS_geoscplId = "GEOS coupling"
    character*50, public,  parameter :: LIS_paramEstimRunId = &
         "parameter estimation"
    character*50, public,  parameter :: LIS_smootherDAId    = &

@@ -79,7 +79,7 @@ contains
   subroutine LIS_lsmcpl_plugin
 !EOP
 
-#if ( defined RM_WRF_COUPLING )
+#if ( defined RM_WRF_COUPLING ) || ( defined RM_GEOS_COUPLING )
     use LIS_pluginIndices
 
     external :: registerlsmf2t
@@ -115,6 +115,9 @@ contains
 
 #if ( defined SM_NOAHMP_5_0 )
     external noahmp50_setwrfexport
+    #if ( defined RM_GEOS_COUPLING )
+    	external NoahMP50_setgeosexport
+    #endif
 #endif
 
 #if 0
@@ -269,6 +272,11 @@ contains
     call registerlsmcplsetexport(trim(LIS_noahmp50Id)//"+"//&
          trim(LIS_retroId)//char(0), &
          noahmp50_setwrfexport)
+    #if ( defined RM_GEOS_COUPLING )
+         call registerlsmcplsetexport(trim(LIS_noahmp50Id)//"+"//&
+              trim(LIS_geoscplId)//char(0), &
+              NoahMP50_setgeosexport)
+    #endif
 #endif
 
 #if ( defined SM_NOAH_3_6 )

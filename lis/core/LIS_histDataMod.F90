@@ -441,6 +441,17 @@ module LIS_histDataMod
   public ::   LIS_MOC_QINSUR
   public ::   LIS_MOC_ETRANI
   public ::   LIS_MOC_WTRFLX
+  public ::   LIS_MOC_Z0
+  public ::   LIS_MOC_ZNT
+  public ::   LIS_MOC_ZPD
+  public ::   LIS_MOC_USTARVEG
+  public ::   LIS_MOC_USTARBARE
+  public ::   LIS_MOC_TAUX
+  public ::   LIS_MOC_TAUY
+  public ::   LIS_MOC_RHOAIR
+  public ::   LIS_MOC_QSFCMEAN
+  public ::   LIS_MOC_TSFCMEAN
+  public ::   LIS_MOC_T2MEAN
   ! end Noahmp
 
   ! AquaCrop
@@ -983,6 +994,17 @@ module LIS_histDataMod
     integer ::  LIS_MOC_QINSUR = -9999
     integer ::  LIS_MOC_ETRANI = -9999
     integer ::  LIS_MOC_WTRFLX = -9999
+    integer ::  LIS_MOC_Z0          = -9999
+    integer ::  LIS_MOC_ZNT         = -9999
+    integer ::  LIS_MOC_ZPD         = -9999
+    integer ::  LIS_MOC_USTARVEG    = -9999
+    integer ::  LIS_MOC_USTARBARE   = -9999
+    integer ::  LIS_MOC_TAUX        = -9999
+    integer ::  LIS_MOC_TAUY        = -9999
+    integer ::  LIS_MOC_RHOAIR      = -9999
+    integer ::  LIS_MOC_QSFCMEAN    = -9999
+    integer ::  LIS_MOC_TSFCMEAN    = -9999
+    integer ::  LIS_MOC_T2MEAN      = -9999
 !  <- end Noah MP  ->
 
 !  <- AquaCrop ->
@@ -5440,6 +5462,138 @@ contains
        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_WTRFLX, &
             LIS_histData(n)%head_lsm_list,&
             n, 2, ntiles,(/"kg/m2s","kg/m2 "/),2,(/"UP","DN"/),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "Z0:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Z0", &
+         "roughness_length_for_momentum",   &
+         "roughness length for momentum",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_Z0, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"m"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "ZNT:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "ZNT", &
+         "roughness_length_for_momentum_sfc",   &
+         "roughness length for momentum surface",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_ZNT, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"m"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "ZPD:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "ZPD", &
+         "zero_plane_displacement",   &
+         "zero plane displacement",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_ZPD, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"m"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "TSFCMEAN:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "TSFCMEAN", &
+         "mean_skin_temperature",   &
+         "mean skin temperature",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_TSFCMEAN, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"K"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "T2MEAN:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "T2MEAN", &
+         "mean_2m_air_temperature",   &
+         "mean 2m air temperature",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_T2MEAN, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"K"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "UstarVeg:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "UstarVeg", &
+         "friction_velocity_vegetated",   &
+         "friction velocity vegetated",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_USTARVEG, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "UstarBare:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "UstarBare", &
+         "friction_velocity_bare",   &
+         "friction velocity bare",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_USTARBARE, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"m/s"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "TauX:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "TauX", &
+         "surface_downward_eastward_stress",   &
+         "wind stress east-west",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_TAUX, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"N/m2"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "TauY:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "TauY", &
+         "surface_downward_northward_stress",   &
+         "wind stress north-south",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_TAUY, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"N/m2"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "RhoAir:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "RhoAir", &
+         "air_density_reference_height",   &
+         "air density at reference height",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_RHOAIR, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"kg/m3"/), 1, (/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    Call ESMF_ConfigFindLabel(modelSpecConfig, "QSFCmean:", rc = rc)
+    Call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "QSFCmean", &
+         "mean_surface_specific_humidity",   &
+         "mean surface specific humidity",rc)
+    if ( rc == 1 ) then
+        call register_dataEntry(LIS_MOC_LSM_COUNT, LIS_MOC_QSFCMEAN, &
+            LIS_histData(n)%head_lsm_list,&
+            n, 1, ntiles,(/"kg/kg"/), 1, (/"-"/),1,1,1,&
             model_patch=.true.)
     endif
     !<- end NoahMP ->

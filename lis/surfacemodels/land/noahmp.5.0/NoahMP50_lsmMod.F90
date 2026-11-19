@@ -312,6 +312,10 @@ contains
                Noahmp50_struc(n)%nsoil))
           allocate(Noahmp50_struc(n)%noahmp50(t)%accetrani( &
                Noahmp50_struc(n)%nsoil))
+          ! GEOS coupling: surface albedo partitions (1=vis, 2=nir)
+          allocate(NoahMP50_struc(n)%noahmp50(t)%albsfcdir(2))
+          allocate(NoahMP50_struc(n)%noahmp50(t)%albsfcdif(2))
+
        enddo
 
        ! initialize forcing variables to zeros

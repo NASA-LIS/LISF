@@ -257,6 +257,21 @@ PET_f:         0 kg/m2s  -    0 0 0 1 228 1000    # Average PET rate
 RefET_f:       0 kg/m2s  -    0 0 0 1 256 1000    # Average RefET rate 
 TotalPrecip_f: 0 kg/m2   DN   0 0 0 1 256 1000    # Total precipitation
 
+#Noah-MP Energy Variables for GEOS coupling
+Z0:           0  m       -    1 0 0 1 083 10      # Roughness length for momentum (m)
+ZNT:          0  m       -    1 0 0 1 083 10      # Roughness length for momentum surface (m)
+ZPD:          0  m       -    1 0 0 1 255 10      # Zero plane displacement (m)
+UstarVeg:     0  m/s     -    1 0 0 1 253 10      # Friction velocity vegetated (m/s)
+UstarBare:    0  m/s     -    1 0 0 1 253 10      # Friction velocity bare (m/s)
+TauX:         0  N/m2    -    1 0 0 1 124 10      # Wind stress east-west (N/m2)
+TauY:         0  N/m2    -    1 0 0 1 125 10      # Wind stress north-south (N/m2)
+RhoAir:       0  kg/m3   -    1 0 0 1 089 10      # Air density at reference height (kg/m3)
+QSFCmean:     0  kg/kg   -    1 0 0 1 051  10      # mean surface specific humidity (kg/kg)
+AlbDirVis:    0  -       -    1 0 0 1 084 10      # Surface albedo, direct beam, visible (-)
+AlbDirNIR:    0  -       -    1 0 0 1 084 10      # Surface albedo, direct beam, near-infrared (-)
+AlbDifVis:    0  -       -    1 0 0 1 084 10      # Surface albedo, diffuse, visible (-)
+AlbDifNIR:    0  -       -    1 0 0 1 084 10      # Surface albedo, diffuse, near-infrared (-)
+
 #Parameters
 Landmask:     0  -       -    0 0 0 1  81 1       # Land mask (0 - Water, 1 - Land)
 Landcover:    0  -       -    0 0 0 1 225 1       # Land cover

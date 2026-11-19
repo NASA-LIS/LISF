@@ -54,6 +54,7 @@ Acceptable values are:
 |"`RTM forward`"          | RTM forward mode
 |"`AGRMET ops`"           | AFWA AGRMET mode
 |"`WRF coupling`"         | Coupled WRF mode
+|"`GEOS coupling`"        | Coupled GEOS mode (NoahMP.5.0 only)
 |"`GCE coupling`"         | Coupled GCE mode
 ifdef::devonly[]
 |"`GFS coupling`"         | Coupled GFS mode

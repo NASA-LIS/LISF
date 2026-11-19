@@ -55,7 +55,6 @@ subroutine NoahMP50_main(n)
 
 ! define variables for NoahMP50
 
-  real                 :: AvgSurfT_out       ! average surface temperature [K]
   real                 :: TWS_out            ! terrestrial water storage [mm]
   real                 :: startsm, startswe, startint, startgw, endsm
 
@@ -568,6 +567,22 @@ subroutine NoahMP50_main(n)
         NoahMP50_struc(n)%noahmp50(t)%soldrain1rt = NoahmpIO%soldrain(1,1)
         NoahMP50_struc(n)%noahmp50(t)%sfcheadrt    = NoahmpIO%sfcheadrt(1,1)
 
+        ! variables for GEOS
+        NoahMP50_struc(n)%noahmp50(t)%z0         = NoahmpIO%z0(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%znt        = NoahmpIO%znt(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%zpd        = NoahmpIO%zpdxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%ustarveg   = NoahmpIO%ustarvegxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%ustarbare  = NoahmpIO%ustarbarexy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%taux       = NoahmpIO%tauxxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%tauy       = NoahmpIO%tauyyxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%rhoair     = NoahmpIO%rhoairxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%qsfcmean   = NoahmpIO%qsfc(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%tsfcmean   = NoahmpIO%tsfcxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%t2mean     = NoahmpIO%t2mxy(1,1)
+        NoahMP50_struc(n)%noahmp50(t)%albsfcdir(:) = NoahmpIO%ALBSFCDIRXY(1,:,1)
+        NoahMP50_struc(n)%noahmp50(t)%albsfcdif(:) = NoahmpIO%ALBSFCDIFXY(1,:,1)
+        NoahMP50_struc(n)%noahmp50(t)%soiltimestep    = NoahmpIO%soiltimestepxy(1,1)
+
         ! additional accumulated variables
         NoahMP50_struc(n)%noahmp50(t)%accssoil     = NoahmpIO%ACC_SSOILXY(1,1)
         NoahMP50_struc(n)%noahmp50(t)%accqinsur    = NoahmpIO%ACC_QINSURXY(1,1)
@@ -776,13 +791,13 @@ subroutine NoahMP50_main(n)
              vlevel=1, unit="K", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: cm (unit=s/m ). ***  bulk momentum drag coefficient
+        ! output variable: cm (unit=m/s). ***  bulk momentum drag coefficient
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CM, &
              value = NoahMP50_struc(n)%noahmp50(t)%cm, &
              vlevel=1, unit="-", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: ch (unit=s/m ). ***  bulk sensible heat exchange
+        ! output variable: ch (unit=m/s ). ***  bulk sensible heat exchange
         !   coefficient
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CH, &
              value = NoahMP50_struc(n)%noahmp50(t)%ch, &
@@ -1115,14 +1130,14 @@ subroutine NoahMP50_main(n)
              vlevel=1, unit="K", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: chv (unit=s/m). ***  sensible heat exchange
+        ! output variable: chv (unit=m/s). ***  sensible heat exchange
         !  coefficient over vegetated fraction
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CHV, &
              value = NoahMP50_struc(n)%noahmp50(t)%chv, &
              vlevel=1, unit="-", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: chb (unit=s/m). ***  sensible heat exchange
+        ! output variable: chb (unit=m/s). ***  sensible heat exchange
         !  coefficient over bare-ground fraction
         call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CHB, &
              value = NoahMP50_struc(n)%noahmp50(t)%chb, &
@@ -1276,16 +1291,6 @@ subroutine NoahMP50_main(n)
              vlevel=1, unit="kg m-2 s-1", direction="-", &
              surface_type = LIS_rc%lsm_index)
 
-        ! output variable: AvgSurfT (unit=K). *** average surface temperature
-        AvgSurfT_out = NoahMP50_struc(n)%noahmp50(t)%fveg * &
-             NoahMP50_struc(n)%noahmp50(t)%tv + &
-             (1.0-NoahMP50_struc(n)%noahmp50(t)%fveg) * &
-             NoahMP50_struc(n)%noahmp50(t)%tgb
-        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AVGSURFT, &
-             value = AvgSurfT_out, &
-             vlevel=1, unit="K", direction="-", &
-             surface_type = LIS_rc%lsm_index)
-
         ! TWS should be SWE + CanopInt + Soil moisture + WA
         TWS_out = NoahMP50_struc(n)%noahmp50(t)%sneqv
         if ((NoahMP50_struc(n)%noahmp50(t)%canliq.ge.0.0).and.   &
@@ -1313,6 +1318,90 @@ subroutine NoahMP50_main(n)
              vlevel=1, unit="W m-2",direction="DN", &
              surface_type=LIS_rc%lsm_index)
 
+        ! variables for GEOS
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Z0, &
+             value = NoahMP50_struc(n)%noahmp50(t)%z0, &
+             vlevel=1, unit="m", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ZNT, &
+             value = NoahMP50_struc(n)%noahmp50(t)%znt, &
+             vlevel=1, unit="m", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ZPD, &
+             value = NoahMP50_struc(n)%noahmp50(t)%zpd, &
+             vlevel=1, unit="m", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+    
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_USTARVEG, &
+             value = NoahMP50_struc(n)%noahmp50(t)%ustarveg, &
+             vlevel=1, unit="m s-1", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_USTARBARE, &
+             value = NoahMP50_struc(n)%noahmp50(t)%ustarbare, &
+             vlevel=1, unit="m s-1", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_TAUX, &
+             value = NoahMP50_struc(n)%noahmp50(t)%taux, &
+             vlevel=1, unit="N m-2", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_TAUY, &
+             value = NoahMP50_struc(n)%noahmp50(t)%tauy, &
+             vlevel=1, unit="N m-2", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RHOAIR, &
+             value = NoahMP50_struc(n)%noahmp50(t)%rhoair, &
+             vlevel=1, unit="kg m-3", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSFCMEAN, &
+             value = NoahMP50_struc(n)%noahmp50(t)%qsfcmean, &
+             vlevel=1, unit="kg kg-1", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+       
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_TSFCMEAN, &
+             value = NoahMP50_struc(n)%noahmp50(t)%tsfcmean, &
+             vlevel=1, unit="K", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+        
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_T2MEAN, &
+             value = NoahMP50_struc(n)%noahmp50(t)%t2mean, &
+             vlevel=1, unit="K", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+ 
+        ! output variable: albsfcdir(1) (unit=-). *** surface albedo,
+        !  direct beam, visible band
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO_DIR_V, &
+             value = NoahMP50_struc(n)%noahmp50(t)%albsfcdir(1), &
+             vlevel=1, unit="-", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        ! output variable: albsfcdir(2) (unit=-). *** surface albedo,
+        !  direct beam, near-infrared band
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO_DIR_N, &
+             value = NoahMP50_struc(n)%noahmp50(t)%albsfcdir(2), &
+             vlevel=1, unit="-", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        ! output variable: albsfcdif(1) (unit=-). *** surface albedo,
+        !  diffuse, visible band
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO_DIF_V, &
+             value = NoahMP50_struc(n)%noahmp50(t)%albsfcdif(1), &
+             vlevel=1, unit="-", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
+        ! output variable: albsfcdif(2) (unit=-). *** surface albedo,
+        !  diffuse, near-infrared band
+        call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO_DIF_N, &
+             value = NoahMP50_struc(n)%noahmp50(t)%albsfcdif(2), &
+             vlevel=1, unit="-", direction="-", &
+             surface_type = LIS_rc%lsm_index)
+
         ! Added water balance change terms
         endsm = 0.0
         do i = 1,NoahmpIO%nsoil
@@ -1333,6 +1422,7 @@ subroutine NoahMP50_main(n)
              startint),                                 &
              vlevel=1,unit="kg m-2",direction="INC",           &
              surface_type=LIS_rc%lsm_index)
+
 ! For now, the ALMA standard does not provide a variable for the
 ! change in groundwater storage.  Instead, temporarily writing it
 ! to the DELSURFSTOR (which is the change in surface water storage).
