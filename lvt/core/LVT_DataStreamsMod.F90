@@ -1084,7 +1084,7 @@ contains
           deflate = NETCDF_deflate
           deflate_level =NETCDF_deflate_level
 
-          xlat%short_name = "latitude"
+          xlat%short_name = "lat"
           xlat%long_name = "latitude"
           xlat%standard_name = "latitude"
           xlat%units = "degree_north"
@@ -1099,7 +1099,7 @@ contains
           allocate(xlat%unittypes(1))
           xlat%unittypes(1) = "degree_north"
 
-          xlon%short_name = "longitude"
+          xlon%short_name = "lon"
           xlon%long_name = "longitude"
           xlon%standard_name = "longitude"
           xlon%units = "degree_east"
