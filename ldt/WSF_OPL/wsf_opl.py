@@ -73,10 +73,16 @@ def find_hours(base, start, end, lo="0"*10, hi="9"*10):
 
 
 def src_dir(dt, v522_base, flat_base):
-    """Return the raw SDR directory for a given YYYYMMDDHH."""
+    """Return the raw SDR directory for a given YYYYMMDDHH.
+
+    After V522_LAST the files are read from raw_sdr_base/YYYYMM if that
+    folder exists, and otherwise from raw_sdr_base itself, so raw_sdr_base
+    can point straight at a flat incoming folder (no month folders, no links).
+    """
     if dt <= V522_LAST:
         return Path(v522_base) / dt[:4] / dt[4:6] / dt[6:8]
-    return Path(flat_base) / dt[:6]
+    month = Path(flat_base) / dt[:6]
+    return month if month.is_dir() else Path(flat_base)
 
 
 def write_config(template, dt, src, out):
