@@ -37,8 +37,11 @@ _VAR_ATTRIBUTES = \
 
 def _usage():
     """Print command line usage."""
-    print(f"[INFO] Usage: {sys.argv[0]} restart_dir template yyyymmdd")
+    print(f"[INFO] Usage: {sys.argv[0]} generating_process restart_dir " + \
+          "template yyyymmdd")
     print("[INFO]   where:")
+    print("[INFO]    generating_process is the GP tag in the LIS output " + \
+          "filename")
     print("[INFO]    restart_dir is the directory with the LVT restart file.")
     print("[INFO]    template is input lvt.config template file to customize.")
     print("[INFO]    yyyymmdd is the year/month/day to process.")
@@ -46,34 +49,37 @@ def _usage():
 def _read_cmd_args():
     """Read command line arguments."""
     # Check if argument count is correct.
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
+    # Get generating_process
+    generating_process = sys.argv[1]
+
     # Check if restart_dir exists.
-    restart_dir = sys.argv[1]
+    restart_dir = sys.argv[2]
     if not os.path.exists(restart_dir):
         print(f"[ERR] {restart_dir} does not exist!")
         sys.exit(1)
 
     # Check if lvt.config template exists.
-    template = sys.argv[2]
+    template = sys.argv[3]
     if not os.path.exists(template):
         print(f"[ERR] {template} does not exist!")
         sys.exit(1)
 
     # Parse the valid date
-    yyyymmdd = sys.argv[3]
+    yyyymmdd = sys.argv[4]
     date = datetime.date(year=int(yyyymmdd[0:4]),
                          month=int(yyyymmdd[4:6]),
                          day=int(yyyymmdd[6:8]))
 
-    return restart_dir, template, date
+    return generating_process, restart_dir, template, date
 
 def _main():
     """Main driver"""
-    restart_dir, template, rundate = _read_cmd_args()
+    generating_process, restart_dir, template, rundate = _read_cmd_args()
 
     rundt = datetime.datetime(year=rundate.year,
                               month=rundate.month,
@@ -152,6 +158,9 @@ def _main():
         elif "LIS output attributes file:" in line:
             line = "LIS output attributes file: ./tables/"
             line += "MODEL_OUTPUT_LIST.TBL.lvt_557post.SoilMoist_inst.24hr\n"
+        elif "LIS Streamflow Generating Process:" in line:
+            line = "LIS Streamflow Generating Process: "
+            line += f"{generating_process}\n"
         elif "LIS model timestep:" in line:
             line = "LIS model timestep: 15mn\n"
 
