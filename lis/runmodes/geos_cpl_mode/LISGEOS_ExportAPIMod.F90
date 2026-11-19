@@ -75,8 +75,11 @@ contains
           gridvar(:,:) = LISGEOS_export(n)%soilm(:,:)
        case ('TotalRunoff', 'TOTALRUNOFF', 'totalrunoff')
           gridvar(:,:) = LISGEOS_export(n)%totalrunoff(:,:)
+
+#ifdef WRF_HYDRO
        case ('Infxsrt', 'INFXSRT', 'infxsrt')
           gridvar(:,:) = LISGEOS_export(n)%infxsrt(:,:)
+#endif
           
        ! ==========================================
        ! 2. SOIL LAYER FIELDS
