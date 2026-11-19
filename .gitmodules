@@ -1,4 +1,4 @@
 [submodule "lis/surfacemodels/land/noahmp.5.0/phys/noahmp"]
 	path = lis/surfacemodels/land/noahmp.5.0/phys/noahmp
-	url = https://github.com/RAbolafiaRosenzweig/noahmp.git
-        branch = feature/add-energy-vars-for-geos 
+	url = https://github.com/GEOS-ESM/GEOSgcm.git
+        branch = feature/rabolafi/noahmp50
