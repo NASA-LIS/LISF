@@ -45,7 +45,6 @@ Spatial transform method for generating the LVT analysis domain: "neighbor"
 #model soil moisture vs obs soil moisture
 #model root zone soil moisture vs obs root zone soil moisture
 LVT datastream attributes table::
-SoilMoist   1  4  m3/m3  -  1  4 SoilMoist   1  4  m3/m3  -  1  4
 ::
 
 LVT surface soil layer thickness:  0.10
