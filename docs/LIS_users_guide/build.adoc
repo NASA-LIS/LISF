@@ -48,6 +48,7 @@ Set the appropriate LIS environment variables.  These are used to control the co
 | `LIS_PETSC`     | path to PETSc library            | optional
 | `LIS_JPEG`      | path to JPEG library             | optional (use system libjpeg by default)
 | `LIS_RPC`       | path to RPC library              | optional (use system RPC library by default)
+| `LIS_PIO`       | path to PIO library              | optional (only for NASA Land Coupler (NLC) and NASA Water Insight projects)
 |====
 
 Set the `LIS_ARCH` environment variable based on the system you are using.  The following commands are written using Bash shell syntax.
@@ -141,6 +142,7 @@ Use LIS-CMEM? (1-yes, 0-no, default=0):
 Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):
 Use PETSc? (1-yes, 0-no, default=0):
 Enable USAF LIS75 SM DA codes? (1-yes, 0-no, default=0):
+Use PIO? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
 -----------------------------------------------------
@@ -189,6 +191,8 @@ select the type of LAPACK library that you have installed.  This is used with `U
 |====
 +
 For example, on a Cray system using the Cray compilers, select 0 because the linker will find Cray's LAPACK libraries.
+
+* for `Use PIO? (1-yes, 0-no, default=0):`, if you wish to enable PIO support, then you must either set the `LIS_PIO` environment variable or the `LIS_PIO_IN_ESMF` environment variable.  If you are using the PIO library, then set `LIS_PIO` to the path of the PIO library.  If you are using PIO included in ESMF, then set `LIS_PIO_IN_ESMF=1`.
 
 Note that due to an issue involving multiple definitions within the NetCDF 3 and HDF 4 libraries, you cannot compile LIS with support for both NetCDF 3 and HDF 4 together.
 

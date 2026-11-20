@@ -219,10 +219,6 @@ subroutine HYMAP3_model_core(n, it, mis, nseqall, nz, time, dt,  &
   !ag (5Apr2025)
   real, allocatable    :: sfcelv_glb(:)
 
-#if (defined SPMD)
-  external :: MPI_BCAST
-#endif
-
   ! ================================================
   !convert units [kg m-2 sec-1] to [m3 sec-1] and aggregate surface
   !runoff and baseflow

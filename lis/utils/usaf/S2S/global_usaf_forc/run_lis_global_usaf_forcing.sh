@@ -15,14 +15,6 @@
 #SBATCH --mail-user=[USERNAME]
 #SBATCH --mail-type=ALL
 #
-### Cray -- 480 tasks
-##SBATCH  -N 40
-##SBATCH --ntasks-per-node=12
-##SBATCH --cluster-constraint=blue
-##SBATCH --partition=batch
-##SBATCH --exclusive
-##SBATCH --mem=0
-#
 #------------------------------------------------------------------------------
 #
 # SCRIPT: run_lis_global_usaf_forcing.sh
@@ -44,7 +36,7 @@
 #------------------------------------------------------------------------------
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/ghilis/S2S/GLOBAL/use-cases/LISV7.8/S2S_Daily_Forc/
+SCRIPTDIR=<RUNDIR>/S2S_Daily_Forc/
 
 CFGTMPL=./input/lis.config.template
 OUTDIR=./output
@@ -79,7 +71,7 @@ if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
 else
   # e.g., Cray environment -- Latest for LISV7.8 S2S
   module use --append ~/privatemodules
-  module load lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_s2s
+  module load <MODULE_FILE>
 fi
 ## END OF USER INPUTS ##
 

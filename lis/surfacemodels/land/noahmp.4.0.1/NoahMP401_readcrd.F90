@@ -18,6 +18,7 @@
 !  by Shugong Wang for the NASA Land Information System Version 7. The initial 
 !  specification of the subroutine is defined by Sujay Kumar. 
 !   10/25/18 : Shugong Wang, Zhuo Wang, initial implementation for LIS 7 and NoahMP401
+!   6/26/26:Hiroko Beaudoing; added irrigation scheme of Rodell et al 2026
 !
 ! !INTERFACE:
 subroutine NoahMP401_readcrd()
@@ -143,6 +144,8 @@ subroutine NoahMP401_readcrd()
                                "MODIFIED_IGBP_MODIS_NOAH"
         elseif (trim(landuse_scheme_name) .eq. "UMD") then
           NOAHMP401_struc(n)%landuse_scheme_name = "UMD"
+        elseif (trim(landuse_scheme_name) .eq. "IGBPNCEP+MIRCA") then
+          NOAHMP401_struc(n)%landuse_scheme_name = "MIIMODIFIED_IGBP_MODIS_NOAH"
         else
          write(LIS_logunit,*) &
                          "[ERR] Currently, only USGS, IGBPNCEP, and UMD"

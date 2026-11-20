@@ -8,8 +8,6 @@
 # initialization month
 """
 
-
-
 import os
 import sys
 import calendar
@@ -84,9 +82,16 @@ for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
             FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + relativedelta(months=LEAD_NUM)
             FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
             INFILE = INFILE_TEMPLATE.format(INDIR, MONTH_NAME, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
-                                            config["BCSD"]['source']['metforce'].lower(), FCST_YEAR, FCST_MONTH)
+                                            config["BCSD"]['source']['metforce'].lower(),
+                                            FCST_YEAR, FCST_MONTH)
             logger.info(f"Reading: {INFILE}", subtask=SUBTASK)
-            FCST_TS_LEAD[COUNT_DATA, ] = load_ncdata(INFILE, [logger,SUBTASK], var_name=VAR).values
+            if config['BCSD']['source']['metforce'].lower() == 'geosv3':
+                FCST_TS_LEAD[COUNT_DATA, ] = load_ncdata(
+                    INFILE, [logger,SUBTASK], var_name=VAR,
+                    decode_cf=True, decode_timedelta=True).values
+            else:
+                FCST_TS_LEAD[COUNT_DATA, ] = load_ncdata(
+                    INFILE, [logger,SUBTASK], var_name=VAR).values
             COUNT_DATA+=1
 
     ## Process climatology for this lead time
@@ -122,5 +127,6 @@ CLIM_XR.coords['longitude'] = (('longitude'), LONS)
 SLICED_CLIM_XR = CLIM_XR.sel(longitude=slice(lon1, lon2), latitude=slice(lat1, lat2))
 edict = {}
 for var in SLICED_CLIM_XR.data_vars:
-    edict[var] = {"zlib":True, "complevel":6, "shuffle":True, "missing_value": np.nan, "_FillValue": np.nan}
+    edict[var] = {"zlib":True, "complevel":6, "shuffle":True,
+                  "missing_value": np.nan, "_FillValue": np.nan}
 SLICED_CLIM_XR.to_netcdf(OUTFILE, format="NETCDF4", encoding=edict)

@@ -22,6 +22,8 @@ subroutine clsmf25_getirrigationstates(n,irrigState)
   use LIS_logMod
   use clsmf25_lsmMod
   use LIS_vegDataMod
+  use LIS_irrigationMod
+  use IRRIGATION_MODULE
 
 ! !DESCRIPTION:        
 !
@@ -72,9 +74,12 @@ subroutine clsmf25_getirrigationstates(n,irrigState)
   integer, parameter   :: nsoil = 4
 
   integer              :: n
+#if 0
   integer              :: rc
   integer              :: t,k,gid,tid,vegt
+#endif
   type(ESMF_State)     :: irrigState
+#if 0
   type(ESMF_Field)     :: irrigRateField,irrigFracField
   type(ESMF_Field)     :: irrigRootDepthField,irrigScaleField
   
@@ -94,7 +99,9 @@ subroutine clsmf25_getirrigationstates(n,irrigState)
   integer              :: lroot,veg_index1,veg_index2
   real                 :: laithresh,ltime
   real,      allocatable   :: laimax(:,:),laimin(:,:)
-  
+#endif
+
+#if 0
   if(clsmf25_struc(n)%modelStart) then 
      clsmf25_struc(n)%modelStart = .false. 
 
@@ -383,4 +390,5 @@ subroutine clsmf25_getirrigationstates(n,irrigState)
         end if
      end if
   enddo
+#endif
 end subroutine clsmf25_getirrigationstates

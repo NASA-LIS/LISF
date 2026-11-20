@@ -7,7 +7,7 @@ static char vcid[] = "$Id$";
 void nrerror(char error_text[])
 /* Numerical Recipes standard error handler */
 {
-	void _exit();
+	void _exit(int);
 
 	fprintf(stderr,"Model run-time error...\n");
 	fprintf(stderr,"%s\n",error_text);

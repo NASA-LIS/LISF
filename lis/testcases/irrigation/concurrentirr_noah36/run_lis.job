@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#######################################################################
+#                        Batch Parameters
+#######################################################################
+
+#SBATCH --account=s1189
+#SBATCH --ntasks=120
+#SBATCH --time=1:00:00
+#SBATCH --constraint=mil
+#SBATCH --job-name=lis_run_
+#SBATCH --output lis_run_%j.out
+#SBATCH --error lis_run_%j.err
+#SBATCH --chdir=/discover/nobackup/hkato/IRRIGATION/testcase/issue107
+
+#######################################################################
+#                  Run LIS
+#######################################################################
+
+source /etc/profile.d/modules.sh
+module purge
+module load lisf_7.5_intel_2023.2.1
+ulimit -s unlimited
+
+mpirun -np $SLURM_NTASKS ./LIS -f lis.config || exit 1
+
+
+
+echo "[INFO] Completed uslis_run_!"
+
+/usr/bin/touch DONE
+exit 0

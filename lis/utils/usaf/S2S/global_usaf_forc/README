@@ -1,14 +1,7 @@
 DESCRIPTION OF SCRIPTS
 
 Kristi Arsenault (SAIC) and Eric Kemp (SSAI)
-Last updated 17 Nov 2025
-
-* For running on Discover, you will load the following module:
-  LISF/env/discover/lisf_7.5_intel_2023.2.1_s2s
-
-* On HPC-11, the latest module is:
-    lisf_7.6_prgenv_cray_8.6.0_cpe_25.03_cce_19.0.0_s2s
-  which uses afw-python/3.11-202511
+Last updated 04 Sep 2026
 
 There are 3 scripts used to configure and run LIS to generate USAF global
 atmospheric forcing data via "AGRMET Ops" mode.  These are located in the

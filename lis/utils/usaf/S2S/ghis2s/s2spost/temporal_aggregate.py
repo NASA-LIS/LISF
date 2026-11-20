@@ -40,6 +40,7 @@ import yaml
 
 # Third-party libraries
 import xarray as xr
+import dask
 import numpy as np
 from ghis2s.shared.utils import write_ncfile, load_ncdata
 # pylint: disable=f-string-without-interpolation,too-many-positional-arguments,too-many-arguments,too-many-locals
@@ -265,7 +266,6 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
                                 coords='minimal',
                                 parallel=False,
                                 data_vars=time_varying_vars,
-                                dask_lazy=False,
                                 decode_cf=False))
 
     # Process accumulation variables (sum over time)
@@ -379,12 +379,13 @@ def _create_time_aggregated_file_xarray(varlists, input_dir, output_dir, fcstdat
                                          enddate, model_forcing, config["EXP"]["DOMAIN"])
 
     logger.info(f"Writing: {outfile}", subtask=subtask)
-    write_ncfile(monthly_ds, outfile, encoding, [logger, subtask])
+    with dask.config.set(scheduler='single-threaded'):
+        write_ncfile(monthly_ds, outfile, encoding, [logger, subtask])
 
     try:
         ds_all.close()
     except RuntimeError as e:
-        # Ignore "NetCDF: Not a valid ID" errors on close, as it means the 
+        # Ignore "NetCDF: Not a valid ID" errors on close, as it means the
         # file descriptor was already cleaned up by xarray/Dask.
         if "Not a valid ID" not in str(e):
             logger.error("Closing daily files failed", subtask=subtask)

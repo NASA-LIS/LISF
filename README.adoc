@@ -30,6 +30,28 @@ The software suite consists of three modeling components:
 
 Please visit our website for more information: {url-lis-website}
 
+== Quick start
+
+....
+% git clone --recurse-submodules https://github.com/NASA-LIS/LISF.git
+....
+
+[NOTE]
+====
+The above clone command is required to get the NoahMP-5 physics. If you do not want NoahMP-5, run:
+
+....
+% git clone https://github.com/NASA-LIS/LISF.git
+....
+Then create a file named lis/make/user.cfg and add the following line:
+
+....
+NoahMP.5.0: Off
+....
+
+See our documentation for more information.
+====
+
 == Documentation
 
 Online documentation is available link:https://nasa-lis.github.io/LISF/[here].

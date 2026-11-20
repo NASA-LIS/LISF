@@ -419,8 +419,8 @@ subroutine AGRMET_fldbld_gfs(n,order,julhr,rc)
      found = .true.
      exit
 
-  end do
 #endif     
+  end do
 
   ! Give up if no acceptable GFS files were found
   if (.not. found) then

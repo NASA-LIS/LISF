@@ -552,8 +552,6 @@ contains
     character(len=LDT_CONST_PATH_LEN) :: list_files
     character(len=LDT_CONST_PATH_LEN) :: search_pattern
 
-    external :: system
-
     yyyymmdd = date_curr(1:8)
 
     tmp = trim(suffix)

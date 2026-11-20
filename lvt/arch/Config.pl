@@ -11,21 +11,37 @@
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 # 6 Jan 2012: Sujay Kumar, Initial Specification
 
-#Find the architecture
+#
+# Process environment and configure options
+#
 
 if(defined($ENV{LVT_ARCH})){
    $sys_arch = $ENV{LVT_ARCH};
    # The Cray/Intel environment is almost identical to the Linux/Intel
    # environment.  There are two modifications that must be made to the
    # Linux/Intel configuration settings to make them work on the Cray.
-   # So reset the sys_arch variable to "intel_ifc" and set a flag to 
-   # enable the cray modifications.
+   # So reset the sys_arch variable to "linux_ifc" and set a flag to
+   # enable the Cray modifications.
    if($sys_arch eq "cray_ifc"){
       $sys_arch = "linux_ifc";
       $cray_modifications = 1;
    }
    else{
       $cray_modifications = 0;
+   }
+   # The Intel/ifx environment is almost identical to the Intel/ifort
+   # environment.  There are two compiler flags that must be appropriately
+   # set to share the remaining compiler flags.
+   # So set those two flags here and reset the sys_arch variable
+   # to "linux_ifc" if necessary.
+   if($sys_arch eq "linux_ifc"){
+      $intel_sanitize = " ";
+      $intel_stack_check = " -fp-stack-check ";
+   }
+   if($sys_arch eq "linux_ifx"){
+      $sys_arch = "linux_ifc";
+      $intel_sanitize = " -fsanitize=memory ";
+      $intel_stack_check = " ";
    }
 }
 else{
@@ -78,6 +94,14 @@ if($opt_lev eq "\n"){
    $opt_lev=2;
 }
 
+if($sys_arch eq "linux_ifc"){
+   if($opt_lev > -2) {
+      # $intel_sanitize = " -fsanitize=memory " is for optimization
+      # levels -3 and -2 only.
+      $intel_sanitize = " ";
+   }
+}
+
 if($opt_lev == -3) {
     $sys_opt   = "-g -O0";
     $sys_c_opt = "-g -O0";
@@ -86,8 +110,10 @@ if($opt_lev == -3) {
 	$sys_opt = "-g -O0 -warn";
 	$sys_opt .=
             " -check bounds,format,output_conversion,pointers,stack,";
-        $sys_opt .= "uninit";
-	$sys_opt .= " -fp-stack-check -ftrapuv ";
+   $sys_opt .= "uninit";
+   $sys_opt .= $intel_stack_check;
+	$sys_opt .= "  -ftrapuv ";
+   $sys_opt .= $intel_sanitize;
 
         # C flags
 	$sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wcheck -Wdeprecated";
@@ -98,9 +124,11 @@ if($opt_lev == -3) {
 	$sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
 	$sys_c_opt .= " -Wunused-function -Wunused-parameter";
 	$sys_c_opt .= " -Wunused-variable -Wwrite-strings";
-	$sys_c_opt .= " -fp-stack-check -fp-trap=common";
-        $sys_c_opt .= " -fp-trap-all=common";
+   $sys_c_opt .= $intel_stack_check;
+	$sys_c_opt .= " -fp-trap=common";
+   $sys_c_opt .= " -fp-trap-all=common";
 	$sys_c_opt .= " -ftrapv";
+   $sys_c_opt .= $intel_sanitize;
     }
     elsif($sys_arch eq "linux_pgi") {
 	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
@@ -154,7 +182,9 @@ if($opt_lev == -2) {
         $sys_opt .=
             " -check bounds,format,output_conversion,pointers,stack,";
         $sys_opt .= "uninit";
-        $sys_opt .= " -fp-stack-check -ftrapuv ";
+        $sys_opt .= $intel_stack_check;
+        $sys_opt .= " -ftrapuv ";
+        $sys_opt .= $intel_sanitize;
 
         # C flags
         $sys_c_opt = "-g -O0 -Wall -Wcast-qual -Wdeprecated";
@@ -165,9 +195,11 @@ if($opt_lev == -2) {
         $sys_c_opt .= " -Wstrict-prototypes -Wtrigraphs -Wuninitialized";
         $sys_c_opt .= " -Wunused-function -Wunused-parameter";
         $sys_c_opt .= " -Wunused-variable -Wwrite-strings";
-        $sys_c_opt .= " -fp-stack-check -fp-trap=common";
+        $sys_c_opt .= $intel_stack_check;
+        $sys_c_opt .= " -fp-trap=common";
         $sys_c_opt .= " -fp-trap-all=common";
         $sys_c_opt .= " -ftrapv";
+        $sys_c_opt .= $intel_sanitize;
 
    }
    elsif($sys_arch eq "linux_gfortran") {
@@ -537,6 +569,37 @@ if($use_matlab eq "\n"){
    $use_matlab=0;
 }
 
+print "Use PIO? (1-yes, 0-no, default=0): ";
+$use_pio=<stdin>;
+$use_pio=~s/ *#.*$//;
+chomp($use_pio);
+if($use_pio eq ""){
+   $use_pio=0;
+}
+
+if($use_pio == 1) {
+   if(defined($ENV{LVT_PIO})){
+      $sys_pio_path = $ENV{LVT_PIO};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_pio=$sys_pio_path.$inc;
+      $lib_pio=$sys_pio_path.$lib;
+   }
+   elsif(defined($ENV{LVT_PIO_IN_ESMF}) && $ENV{LVT_PIO_IN_ESMF} eq "1"){
+      $inc_pio=$sys_esmfmod_path;
+      $lib_pio=$sys_esmflib_path;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the PIO path using\n";
+      print "the LVT_PIO variable or set the\n";
+      print "LVT_PIO_IN_ESMF variable if PIO is\n";
+      print "embedded in ESMF.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
 
 if(defined($ENV{LVT_JPEG})){
    $libjpeg = "-L".$ENV{LVT_JPEG}."/lib"." -ljpeg";
@@ -563,7 +626,7 @@ if($sys_arch eq "linux_ifc") {
       $fflags77= "-c ".$sys_opt." -traceback -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
       $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
-   $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt ";
+   $ldflags= $intel_sanitize."  -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt ";
 }
 elsif($sys_arch eq "linux_pgi") {
    $cflags = "-c -DLITTLE_ENDIAN -DPGI";
@@ -663,6 +726,14 @@ if($enable_geotiff== 1){
    }
 }
 
+if($use_pio == 1) {
+   $fflags77 = $fflags77." -I\$(INC_PIO)";
+   $fflags = $fflags." -I\$(INC_PIO)";
+   $ldflags = $ldflags." -L\$(LIB_PIO) -lpioc";
+   $lib_flags= $lib_flags." -lpioc";
+   $lib_paths= $lib_paths." -L\$(LIB_PIO)";
+}
+
 open(conf_file,">configure.lvt");
 printf conf_file "%s%s\n","FC              = $sys_fc";
 printf conf_file "%s%s\n","FC77            = $sys_fc";
@@ -693,6 +764,8 @@ printf conf_file "%s%s\n","INC_FORTRANGIS1 = $inc_fortrangis1";
 printf conf_file "%s%s\n","INC_FORTRANGIS2 = $inc_fortrangis2";
 printf conf_file "%s%s\n","LIB_FORTRANGIS  = $lib_fortrangis";
 printf conf_file "%s%s\n","LIB_GDAL        = $lib_gdal";
+printf conf_file "%s%s\n","INC_PIO         = $inc_pio";
+printf conf_file "%s%s\n","LIB_PIO         = $lib_pio";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";

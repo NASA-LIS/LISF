@@ -27,7 +27,7 @@ void vic411_vicerror(char error_text[])
 #endif
 
         vic411_filenames_struct fnames;
-	void _exit();
+	void _exit(int);
 
         vic411_options.COMPRESS=FALSE;	/* turn off compression of last set of files */
 

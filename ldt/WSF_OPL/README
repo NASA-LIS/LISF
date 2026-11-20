@@ -1,0 +1,46 @@
+DOCUMENTATION FOR WSF-M SOIL MOISTURE RETRIEVALS
+
+Eric Kemp
+Last updated 20 Aug 2026
+
+The WSF-M Soil Moisture retrieval workflow consists of two major steps.
+First, LDT is run to resample WSF-M brightness temperatures via the
+"OPL WSF brightness temperature resampling" runmode.  Second, Python scripts
+are used to retrieve soil moistures from the resampled WSF-M data via a ML
+model.  These retrievals can then be assimilated into LIS.
+
+A single batch script is available for Discover and HPC11 to automate these
+two steps:
+
+   - wsfm_sm_retrieval_{discover|hpc11}.sh
+
+The first step is run via
+
+'sbatch --export=START_DT=yyyymmddhh,END_DT=yyyymmddhh,STEP=1 $scriptname'
+
+and the second step is run via
+
+'sbatch --export=START_DT=yyyymmddhh,END_DT=yyyymmddhh,STEP=2 $scriptname'
+
+Both invocations invoke a lower-level Python script wsf_opl.py, which
+is reponsible for running LDT in the first step, and running the ML retrieval
+code in the second step.
+
+There is a single JSON file used by the Python script:
+
+   - wsf_opl.json
+
+There is a single ldt.config template that the Python script will customize
+in the first step:
+
+   - 01_ldt_wsfm_resample.ldt.config
+
+A number of directories with input data are used by the WSF-M soil moisture
+workflow.
+
+   - data/input/models # Contains settings defining the ML algorithm used for
+                  # soil moisture retrievals
+   - data/input/static_data # Contains static files, e.g., soil types
+   - data/input/wsf_sdr_data/ # Latest WSF-M brightness temperature files
+   - data/02_wsfm_sm_retrievals/ # Contains recent WSF-M
+    

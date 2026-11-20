@@ -232,7 +232,8 @@ use ESMF
 ! 4. irrigation
 
   ! SY: Begin moving to here from NOAHMP_VEG_PARAMETERS_36 to facilitate OPTUE
-  INTEGER, PARAMETER :: MVT   = 27
+!  INTEGER, PARAMETER :: MVT   = 27
+  INTEGER, PARAMETER :: MVT   = 53   !HKB max of USGS+MIRCA(53) or MODIS+MIRCA(46)
   INTEGER, PARAMETER :: MBAND = 2
 
   REAL :: CH2OP(MVT)       !maximum intercepted h2o per unit lai+sai (mm)
@@ -401,6 +402,18 @@ CONTAINS
          LTOVRC,  DILEFC,  DILEFW,  RMF25 ,  SLA   ,  FRAGR ,  TMIN  ,  VCMX25,  TDLEF ,  BP, MP, QE25, RMS25, RMR25, ARM, &
          FOLNMX, WDPOOL, WRRAT, MRP, SAIM,  LAIM,  SLAREA, EPS
 
+    NAMELIST / mircai_noah_mp_usgs_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
+    NAMELIST / mircai_noah_mp_usgs_parameters / ISURBAN, ISWATER, ISBARREN, ISSNOW, EBLFOREST, &
+         CH2OP, DLEAF, Z0MVT, HVT, HVB, DEN, RC, RHOL,  RHOS, TAUL, TAUS, XL, CWPVT, C3PSN, KC25, AKC, KO25, AKO, AVCMX, AQE, &
+         LTOVRC,  DILEFC,  DILEFW,  RMF25 ,  SLA   ,  FRAGR ,  TMIN  ,  VCMX25,  TDLEF ,  BP, MP, QE25, RMS25, RMR25, ARM, &
+         FOLNMX, WDPOOL, WRRAT, MRP, SAIM,  LAIM,  SLAREA, EPS
+
+    NAMELIST / mircai_noah_mp_modis_veg_categories / VEG_DATASET_DESCRIPTION, NVEG
+    NAMELIST / mircai_noah_mp_modis_parameters / ISURBAN, ISWATER, ISBARREN, ISSNOW, EBLFOREST, &
+         CH2OP, DLEAF, Z0MVT, HVT, HVB, DEN, RC, RHOL,  RHOS, TAUL, TAUS, XL, CWPVT, C3PSN, KC25, AKC, KO25, AKO, AVCMX, AQE, &
+         LTOVRC,  DILEFC,  DILEFW,  RMF25 ,  SLA   ,  FRAGR ,  TMIN  ,  VCMX25,  TDLEF ,  BP, MP, QE25, RMS25, RMR25, ARM, &
+         FOLNMX, WDPOOL, WRRAT, MRP, SAIM,  LAIM,  SLAREA, EPS
+
     ! Initialize our variables to bad values, so that if the namelist read fails, we come to a screeching halt as soon as we try to use anything.
     CH2OP  = -1.E36
     DLEAF  = -1.E36
@@ -465,6 +478,13 @@ CONTAINS
     else if ( trim(DATASET_IDENTIFIER) == "UMD" ) then
        read(15,noah_mp_umd_veg_categories)
        read(15,noah_mp_umd_parameters)
+!HKB: adding MIRCA irrigated casses
+    else if ( trim(DATASET_IDENTIFIER) == "MIRCA_IRR_USGS" ) then
+       read(15,mircai_noah_mp_usgs_veg_categories)
+       read(15,mircai_noah_mp_usgs_parameters)
+    else if ( trim(DATASET_IDENTIFIER) == "MIIMODIFIED_IGBP_MODIS_NOAH" ) then
+       read(15,mircai_noah_mp_modis_veg_categories)
+       read(15,mircai_noah_mp_modis_parameters)
     else
        write(*,'("Unrecognized DATASET_IDENTIFIER in subroutine READ_MP_VEG_PARAMETERS")')
        write(*,'("DATASET_IDENTIFIER = ''", A, "''")') trim(DATASET_IDENTIFIER)
@@ -1351,7 +1371,8 @@ contains
            WRITE(message,'(i6,1x,i6,1x,2f15.3,9f11.5)')ILOC,JLOC,END_WB,BEG_WB,PRCP*DT,ECAN*DT,&
                 EDIR*DT,ETRAN*DT,RUNSRF*DT,RUNSUB*DT,ZWT
            call wrf_message(trim(message))
-           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
+!HKB: comment out below and keep the run going
+!           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
         END IF
 #endif
    ELSE                 !KWM

@@ -1345,7 +1345,7 @@ class S2Srun(DownloadForecasts):
                      'TPN': 2*int(self.config["EXP"]["lead_months"]), 'l_sub': 2,'HOURS': str(1)},
             '10km': {'CPT': str(1), 'MEM':'120GB', 'NT': str(1), 'TPN': 2,
                      'l_sub': 2, 'HOURS': str(3)},
-            '5km': {'CPT': str(1), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1,
+            '5km': {'CPT': str(64), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1,
                     'HOURS': str(self.config["EXP"]["lead_months"] + 1)},
         }
         info = resol_info[self._resol]
@@ -1362,8 +1362,10 @@ class S2Srun(DownloadForecasts):
         par_info['TPN'] = info['TPN']
         par_info['MP'] = False
         if self.fcst_model.upper() == 'GEOSV3' and self._resol == '5km':
-            par_info['MEM'] = '480GB'
-            info['HOURS'] = '12'
+            par_info['MEM'] = '400GB'
+            info['HOURS'] = '8'
+            par_info['MP'] = True
+            par_info['SKIP_ARG'] = True
 
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
@@ -1654,6 +1656,7 @@ class S2Srun(DownloadForecasts):
 
     def lis_fcst(self):
         """ LIS forecast """
+
         def check_recommend_nseg(lead_mons, nseg):
             """Check validity and print recommendation if invalid"""
             def check_jobseg(lead_mons, nseg):
@@ -1679,16 +1682,37 @@ class S2Srun(DownloadForecasts):
                 good_nseg = try_these_nseg(lead_mons)
             return is_valid, good_nseg
 
-        # checks validity of JOB_SEGMENTS
+        # Checks validity of JOB_SEGMENTS for each NMME model
         for model in self.models:
+            job_segments = self.config['FCST']['JOB_SEGMENTS'].get(model)
+            if job_segments is None:
+                # Raise an error to halt execution if this is critical
+                sys.exit(
+                    f"[ERROR] Model '{model}' is missing from the JOB_SEGMENTS configuration.\n"
+                    "   Please check your s2s_config file and ensure all NMME_models are mapped.\n"
+                    "   Exiting."
+                )
+
+            # If above check is complete, proceed with segment validity check
             is_valid, good_nseg = check_recommend_nseg(
                 self.config["EXP"]["lead_months"],
-                self.config['FCST']['JOB_SEGMENTS'].get(model))
+                job_segments
+            )
             if not is_valid:
                 print(f"[ERROR] {model} Unsupported nof job segments: "
                       f"{self.config['FCST']['JOB_SEGMENTS'][0].get(model)}")
                 print(f'Try these instead: {good_nseg}')
                 sys.exit()
+
+#        for model in self.models:
+#            is_valid, good_nseg = check_recommend_nseg(
+#                self.config["EXP"]["lead_months"],
+#                self.config['FCST']['JOB_SEGMENTS'].get(model))
+#            if not is_valid:
+#                print(f"[ERROR] {model} Unsupported nof job segments: "
+#                      f"{self.config['FCST']['JOB_SEGMENTS'][0].get(model)}")
+#                print(f'Try these instead: {good_nseg}')
+#                sys.exit()
 
         prev = [job for job in self.schedule
                 if 'ldtics' in job or 'combine_files' in job] or None
@@ -1860,7 +1884,7 @@ class S2Srun(DownloadForecasts):
         # processing monthlies multi tasks per job
         jobname='s2spost_mon_'
         prev = sorted(glob.glob("s2spost_0*_run.j"))
-        l_sub = 6
+        l_sub = 4 
         slurm_sub = self.split_list(monthly_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)
@@ -1880,7 +1904,7 @@ class S2Srun(DownloadForecasts):
 
         # processing dailies multi tasks per job
         jobname='s2spost_weekly_'
-        l_sub = 18
+        l_sub = 12
         slurm_sub = self.split_list(weekly_commands, l_sub)
         for i, sub_val in enumerate(slurm_sub):
             tfile = self.sublist_to_file(sub_val, cwd)

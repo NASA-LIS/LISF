@@ -20,6 +20,10 @@
 == General notes
 
 
+=== `git clone` command
+
+There are many instances of `git clone` commands in this document.  Consider these to be *examples*.  Please see Section <<sec_step3>> for instructions regarding the actual `git clone` command that you should run.
+
 === Terminal session prompts
 
 In the 'terminal sessions' below,
@@ -107,7 +111,7 @@ In your home directory on your local system, create a file named .gitconfig cont
 ....
 
 === Step 1. Set up SSH Access to GitHub
-anchor:sec_step1[Step 1. Set up SSH access to GitHub ]
+anchor:sec_step1[Step 1. Set up SSH access to GitHub]
 
 On link:https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/[August 13, 2021] GitHub disabled password authentication in favor of more secure alternatives: SSH keys and Personal Access Tokens. *All users* must use one of these options to continue to connect to GitHub using `git` (i.e., to clone, push, and pull). We recommend using link:https://www.ssh.com/ssh/protocol/#how-does-the-ssh-protocol-work[SSH keys] and describe how to set up and use them with `git` below.
 
@@ -330,28 +334,43 @@ forked from NASA-LIS/LISF
 ====
 
 === Step 3. Clone the repository in your GitHub work account onto your local machine
-anchor:sec_step3[Step 3]
+anchor:sec_step3[Clone the repository in your GitHub work account onto your local machine]
 
-The correct path to use may be obtained by clicking on the green "Clone or download" button.
+The correct path to use may be obtained by clicking on the green "<> Code" button.
 
 On your local machine run:
+
+[subs="attributes+,-callouts"]
+....
+% git clone --recurse-submodules github:<your-user-name>/{lisf_git} <dir>
+....
+
+[NOTE]
+====
+The above clone command is required to get the NoahMP-5 physics. If you do not want NoahMP-5, run:
 
 [subs="attributes+,-callouts"]
 ....
 % git clone github:<your-user-name>/{lisf_git} <dir>
 ....
 
+Then create a file named _lis/make/user.cfg_ and add the following line:
+....
+NoahMP.5.0: Off
+....
+====
+
 Your local clone refers to your GitHub work account as 'origin'.
 
-[NOTE]
-====
-I would run:
-
-[subs="attributes+,-callouts"]
-....
-% git clone github:jvgeiger/{lisf_git}
-....
-====
+//[NOTE]
+//====
+//I would run:
+//
+//[subs="attributes+,-callouts"]
+//....
+//% git clone --recurse-submodules github:jvgeiger/{lisf_git}
+//....
+//====
 
 === Step 4. Add the NASA-LIS/LISF repository as a remote called 'upstream'.
 anchor:sec_step4[Step 4]
@@ -406,6 +425,7 @@ IMPORTANT: Steps 5A and 5B assume that you are in your local working directory.
 
 ==== Step 5A. Adding a new feature
 anchor:sec_step5a[Step 5A. Adding a new feature]
+
 These are the steps for adding a new feature, such as a new obs reader, or for enhancing an existing component, such as adding soil moisture da support to an LSM.
 
 ==== Step 5A.1. Branch for feature development
@@ -442,6 +462,7 @@ For example, say you are incorporating NoahMP 6.5 into LIS.  You would create a 
 
 ==== Step 5A.2. Work work work
 anchor:sec_work[Step 5A.2]
+
 You are now working on your own branch in your local working directory to perform your software development, using commands like `git add` and `git commit` to track your changes.
 
 In addition to writing code, please update relevant documentation and prepare a testcase for your work.
@@ -487,6 +508,7 @@ Continuing with the example, you would execute:
 
 ==== Step 5B. Fixing a bug
 anchor:sec_step5b[Step 5B. Fixing a bug]
+
 These are the steps for fixing a bug in LISF.
 
 ==== Step 5B.1. Branch for fixes
