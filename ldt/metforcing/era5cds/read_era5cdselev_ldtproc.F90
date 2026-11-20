@@ -43,8 +43,7 @@ subroutine read_era5cdselev_ldtproc(n, findex, change)
 !   index of the nest
 !  \end{description}
 !EOP
-  integer :: c,r,line1,line2,nc_dom,line
-  integer :: glnc, glnr
+  integer :: c,r
   real    :: go(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
   if ( trim(LDT_rc%met_ecor(findex)).eq."lapse-rate")then 

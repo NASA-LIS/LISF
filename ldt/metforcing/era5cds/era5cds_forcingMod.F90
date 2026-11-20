@@ -145,7 +145,7 @@ contains
   subroutine init_era5cds(findex)
 
 ! !USES:
-    use LDT_coreMod,    only : LDT_rc, LDT_domain
+    use LDT_coreMod,    only : LDT_rc
     use LDT_logMod,     only : LDT_logunit, LDT_endrun
     use LDT_timeMgrMod
     use map_utils,      only : proj_latlon
@@ -178,8 +178,12 @@ contains
     integer :: updoy, yr1,mo1,da1,hr1,mn1,ss1
     real :: upgmt
     integer :: n
-    integer :: ftn
     real :: gridDesc(20)
+
+    external :: readcrd_era5cds
+    external :: bilinear_interp_input
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
 
     allocate(era5cds_struc(LDT_rc%nnest))
 

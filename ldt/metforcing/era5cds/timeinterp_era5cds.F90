@@ -52,7 +52,7 @@ subroutine timeinterp_era5cds(n,findex)
 !    zenith-angle based interpolation
 !  \end{description}
 !EOP
-  integer :: t,zdoy,k,kk
+  integer :: t,zdoy
   integer :: index1
   real    :: wt1,wt2,czb,cze,czm,gmt1,gmt2
   real    :: zw1,zw2
@@ -63,6 +63,8 @@ subroutine timeinterp_era5cds(n,findex)
   type(ESMF_Field)   :: psurfField,pcpField,cpcpField
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:)
   real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:)
+
+  external :: zterp
 
 !-----------------------------------------------------------------------
 !  Interpolate Data in Time

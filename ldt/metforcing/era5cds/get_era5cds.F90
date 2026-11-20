@@ -71,16 +71,19 @@ subroutine get_era5cds(n, findex)
   integer           :: ferror
   character(len=LDT_CONST_PATH_LEN) :: instfilename, lmlfilename
   character(len=LDT_CONST_PATH_LEN) :: accfilename, prevaccfilename
-  integer           :: c, r,kk,f,try
+  integer           :: c, kk,f
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
   real*8            :: time1, time2, timenow
-  real*8            :: dtime1, dtime2
   real              :: gmt1, gmt2
   real              :: ts1, ts2
 
   integer           :: movetime  ! Flag to move bookend2 files to bookend1
   logical           :: retrieve_file
+
+  external :: era5cdsfiles
+  external :: read_era5cds
+  external :: read_era5cdselev_ldtproc
 
 ! _________________________________________________________
 
@@ -281,9 +284,6 @@ subroutine era5cdsfiles(n, kk, findex, era5cdsdir, yr, mo, da, hr, &
   character*8  :: cdate
   character*2  :: chour
   integer      :: mn, ss
-  real*8       :: time
-  integer      :: doy
-  real         :: gmt
   integer      :: iyr,imo,ida,ihr,imn,iss,ts,idoy
   real         :: igmt
   real*8       :: itime

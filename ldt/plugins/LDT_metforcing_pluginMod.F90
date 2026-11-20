@@ -143,6 +143,12 @@ contains
 !    use capa_forcingMod
 !    use WRFout_forcingMod
 
+    external :: registerinitmetforc
+    external :: registerretrievemetforc
+    external :: registertimeinterpmetforc
+    external :: registerresetmetforc
+    external :: registerfinalmetforc
+
 !    external get_metForcTemplate
 !    external timeinterp_metForcTemplate
 !    external finalize_metForcTemplate

@@ -22,7 +22,7 @@
 subroutine read_era5cds_elev( n, findex, era5cdselev, elevdiff )
 
 ! !USES:
-  use LDT_coreMod,       only : LDT_rc, LDT_domain
+  use LDT_coreMod,       only : LDT_rc
   use LDT_metforcingMod, only : LDT_forc
   use era5cds_forcingMod, only : era5cds_struc
   use LDT_logMod,        only : LDT_logunit, LDT_verify, &
@@ -61,7 +61,7 @@ subroutine read_era5cds_elev( n, findex, era5cdselev, elevdiff )
 !EOP
    logical :: file_exists
    integer :: ftn_const
-   integer :: i,c,r,k,iret
+   integer :: i,c,r,k
 
    integer :: phisId
    real    :: read_phis(era5cds_struc(n)%ncold, era5cds_struc(n)%nrold)

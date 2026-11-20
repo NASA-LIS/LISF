@@ -58,6 +58,9 @@ subroutine zterp (iflag,lat,lon,btime,etime, &
   real           :: weight1  
   real           :: weight2  
 
+  external :: LDT_localtime
+  external :: coszenith
+
 ! !DESCRIPTION: 
 !  This subroutine is based, in part, on modified subroutines from
 !  Jean C. Morrill of the GSWP project.  The program temporally interpolates
@@ -428,7 +431,7 @@ subroutine coszenith (lon,latd,lhour,zone,julian,czenith,dec,omega)
   czenith=sin(dec)*sin(llat)+cos(dec)*cos(llat)*cos(omega)
   czenith=amax1(0.,czenith)
   if ( czenith > 1.0 ) then
-     write(LDT_logunit,fmt='(a,e16.10,a)') 'czenith > 1 (',czenith,&
+     write(LDT_logunit,fmt='(a,e17.10,a)') 'czenith > 1 (',czenith,&
                                            '). Resetting to 1.'
      czenith = 1.0
   endif

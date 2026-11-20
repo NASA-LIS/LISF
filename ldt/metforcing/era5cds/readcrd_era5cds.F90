@@ -33,7 +33,7 @@ subroutine readcrd_era5cds()
 !EOP
   implicit none
 
-  integer :: n,t,rc
+  integer :: n,rc
 
   call ESMF_ConfigFindLabel(LDT_config,"ERA5CDS forcing directory:",rc=rc)
   do n=1,LDT_rc%nnest
