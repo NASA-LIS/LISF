@@ -144,6 +144,10 @@ subroutine LIS_metforcing_plugin
    use era5_forcingMod
 #endif
 
+#if ( defined MF_ERA5CDS )
+   use era5cds_forcingMod
+#endif
+
 #if ( defined MF_GSWP1 )
    use gswp1_forcingMod
 #endif
@@ -404,6 +408,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_era5
    external finalize_era5
    external reset_era5
+#endif
+
+#if ( defined MF_ERA5CDS )
+   external get_era5cds
+   external timeinterp_era5cds
+   external finalize_era5cds
+   external reset_era5cds
 #endif
 
 #if ( defined MF_GSWP1 )
@@ -833,6 +844,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_era5)
    call registerresetmetforc(trim(LIS_era5Id)//char(0),reset_era5)
    call registerfinalmetforc(trim(LIS_era5Id)//char(0),finalize_era5)
+#endif
+
+#if ( defined MF_ERA5CDS)
+! - ERA5 Reanalysis from Climate Data Store Forcing:
+   call registerinitmetforc(trim(LIS_era5cdsId)//char(0),init_ERA5CDS)
+   call registerretrievemetforc(trim(LIS_era5cdsId)//char(0),get_era5cds)
+   call registertimeinterpmetforc(trim(LIS_era5cdsId)//char(0), &
+                                  timeinterp_era5cds)
+   call registerresetmetforc(trim(LIS_era5cdsId)//char(0),reset_era5cds)
+   call registerfinalmetforc(trim(LIS_era5cdsId)//char(0),finalize_era5cds)
 #endif
 
 #if ( defined MF_GSWP1 )

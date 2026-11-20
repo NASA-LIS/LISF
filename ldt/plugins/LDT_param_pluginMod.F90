@@ -1363,6 +1363,7 @@ contains
     external read_ecmwf_elev
     external read_merra2_elev
     external read_era5_elev
+    external read_era5cds_elev
     external read_wrfoutv2_elev
     external read_wrfak_elev
 
@@ -1396,6 +1397,10 @@ contains
     !- ERA5 forcing:
     call registerreadforcelev(trim(LDT_era5Id)//char(0),&
          read_era5_elev)
+
+    !- ERA5 Climate Data Store forcing:
+    call registerreadforcelev(trim(LDT_era5cdsId)//char(0),&
+         read_era5cds_elev)
 
     !- WRFoutv2 forcing:
     call registerreadforcelev(trim(LDT_wrfoutv2Id)//char(0),&

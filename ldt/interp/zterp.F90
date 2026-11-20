@@ -26,13 +26,16 @@
 !        4/30/15 Hiroko Beaudoing; Changed average solar zenith angle
 !                calculation for iflag=0 case. During sunrise/sunset, weight1
 !                becomes huge due to extremely small avgangle, resulting in
-!                unrealdttically large SWdown flux at the instance. This fix  
+!                unrealistically large SWdown flux at the instance. This fix  
 !                accounts for time interval consisting of fewer than 37 
 !                above-zero czavgdata.
 !        9/24/15 Hiroko Beaudoing; Modified above fix to be applied only when
 !                less than 50% of 37 intervals (arbitary) are day-time.  This
 !                modification is needed to properly interpolate ECMWF data,
 !                where daily peak is too low due to the nature of dataset.
+!        3/4/26  Hiroko Beaudoing; Additional fix for iflag=0 case, when weight1
+!                becomes huge due to extremely small avgangle, resulting in
+!                unrealistically large SWdown flux at the instance.
 !
 ! !INTERFACE:
 subroutine zterp (iflag,lat,lon,btime,etime, & 
@@ -54,6 +57,9 @@ subroutine zterp (iflag,lat,lon,btime,etime, &
   real           :: etime    
   real           :: weight1  
   real           :: weight2  
+
+  external :: LDT_localtime
+  external :: coszenith
 
 ! !DESCRIPTION: 
 !  This subroutine is based, in part, on modified subroutines from
@@ -228,6 +234,11 @@ subroutine zterp (iflag,lat,lon,btime,etime, &
         weight1=0
      else
         weight1=(czmodel/avgangle)
+     endif
+     if ( ldt%zterp_correction ) then
+       if (weight1.gt.5.0) then
+          weight1=1.0
+       endif
      endif
   endif
 !--------------------------------------------------------------------
@@ -420,7 +431,7 @@ subroutine coszenith (lon,latd,lhour,zone,julian,czenith,dec,omega)
   czenith=sin(dec)*sin(llat)+cos(dec)*cos(llat)*cos(omega)
   czenith=amax1(0.,czenith)
   if ( czenith > 1.0 ) then
-     write(LDT_logunit,fmt='(a,e16.10,a)') 'czenith > 1 (',czenith,&
+     write(LDT_logunit,fmt='(a,e17.10,a)') 'czenith > 1 (',czenith,&
                                            '). Resetting to 1.'
      czenith = 1.0
   endif
