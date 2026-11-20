@@ -585,7 +585,9 @@ class StratifiedSoilMoisturePredictor:
         ds = xr.open_zarr(input_path, chunks=chunks) if chunks else xr.open_zarr(input_path)
 
         if apply_qc and 'QUALITY_FLAG' in ds.data_vars:
-            ocean_mask = (ds.QUALITY_FLAG.astype(int) & 1) > 0
+            # No-data cells (fill value, read as NaN) count as flag 0: NaN
+            # cannot be cast to an integer ("invalid value encountered in cast").
+            ocean_mask = (ds.QUALITY_FLAG.fillna(0).astype(int) & 1) > 0
             ds = ds.where(~ocean_mask)
 
         available = [v for v in self.features if v in ds.data_vars]
@@ -678,7 +680,9 @@ class StratifiedSoilMoisturePredictor:
         ds = xr.open_dataset(input_path, decode_timedelta=False)
 
         if apply_qc and 'QUALITY_FLAG' in ds.data_vars:
-            ocean_mask = (ds.QUALITY_FLAG.astype(int) & 1) > 0
+            # No-data cells (fill value, read as NaN) count as flag 0: NaN
+            # cannot be cast to an integer ("invalid value encountered in cast").
+            ocean_mask = (ds.QUALITY_FLAG.fillna(0).astype(int) & 1) > 0
             if 'time' in ocean_mask.dims:
                 ocean_mask = ocean_mask.squeeze('time', drop=True)
             ds = ds.where(~ocean_mask)
