@@ -20,6 +20,10 @@
 !          all hourly files. Add time-of-day guard to prevent
 !          duplicate logging when LDT timestep is sub-daily.
 !          Add diagnostic counters.
+!   2026-10: Grid of the WSF files from ldt.config (see WSFsm_obsMod);
+!            row order taken from the file's lat variable; LDT stops if
+!            a file's grid does not match the configured grid or the
+!            file has no lat/lon variables.
 !
 ! !INTERFACE:
 subroutine readWSFsmObs(n)
@@ -204,7 +208,9 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
   integer                 :: ncid, dim_ids(3), var_id
   integer                 :: ntime, nlat, nlon
   real, allocatable       :: tmp(:,:,:)
-  integer                 :: rc
+  real, allocatable       :: flat(:), flon(:)
+  integer                 :: rc, r_out
+  logical                 :: north_to_south
 
   external :: bilinear_interp
   external :: upscaleByAveraging
@@ -292,22 +298,45 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
      rc = nf90_close(ncid)
      return
   end if
-  if (nlat .ne. WSFsmobs(n)%nr) then
-     write(LDT_logunit,*) '[ERR] Expected lat dimension to be ', &
-          WSFsmobs(n)%nr
-     write(LDT_logunit,*) '[ERR] Found ', nlat, ' from ', trim(fname)
-     write(LDT_logunit,*) '[ERR] LDT will continue...'
-     rc = nf90_close(ncid)
-     return
+  ! A grid mismatch means ldt.config does not describe these files:
+  ! stop rather than build a CDF from the wrong cells.
+  if (nlat .ne. WSFsmobs(n)%nr .or. nlon .ne. WSFsmobs(n)%nc) then
+     write(LDT_logunit,*) '[ERR] Grid size of ', trim(fname), &
+          ' does not match "WSF soil moisture grid" in ldt.config'
+     write(LDT_logunit,*) '[ERR] File   (lon x lat): ', nlon, ' x ', nlat
+     write(LDT_logunit,*) '[ERR] Config (lon x lat): ', &
+          WSFsmobs(n)%nc, ' x ', WSFsmobs(n)%nr
+     call LDT_endrun()
   end if
-  if (nlon .ne. WSFsmobs(n)%nc) then
-     write(LDT_logunit,*) '[ERR] Expected lon dimension to be ', &
-          WSFsmobs(n)%nc
-     write(LDT_logunit,*) '[ERR] Found ', nlon, ' from ', trim(fname)
-     write(LDT_logunit,*) '[ERR] LDT will continue...'
-     rc = nf90_close(ncid)
-     return
+
+  ! Check the file grid against the configured one and get the row order
+  ! (the WSF resampler writes rows north to south).
+  allocate(flat(nlat), flon(nlon))
+  north_to_south = .true.
+  rc = nf90_inq_varid(ncid=ncid, name='lat', varid=var_id)
+  if (rc == 0) rc = nf90_get_var(ncid=ncid, varid=var_id, values=flat)
+  if (rc == 0) then
+     rc = nf90_inq_varid(ncid=ncid, name='lon', varid=var_id)
+     if (rc == 0) rc = nf90_get_var(ncid=ncid, varid=var_id, values=flon)
+  endif
+  if (rc == 0) then
+     north_to_south = flat(1) > flat(nlat)
+     if (abs(minval(flat) - WSFsmobs(n)%lat_ll) > 0.5*WSFsmobs(n)%dlat .or. &
+          abs(minval(flon) - WSFsmobs(n)%lon_ll) > 0.5*WSFsmobs(n)%dlon) then
+        write(LDT_logunit,*) '[ERR] Grid of ', trim(fname), &
+             ' does not match "WSF soil moisture grid" in ldt.config'
+        write(LDT_logunit,*) '[ERR] File lower left (lat, lon): ', &
+             minval(flat), minval(flon)
+        write(LDT_logunit,*) '[ERR] Config lower left (lat, lon): ', &
+             WSFsmobs(n)%lat_ll, WSFsmobs(n)%lon_ll
+        call LDT_endrun()
+     end if
+  else
+     write(LDT_logunit,*) '[ERR] No lat/lon variables in ', trim(fname)
+     write(LDT_logunit,*) '[ERR] Cannot check the grid or the row order'
+     call LDT_endrun()
   end if
+  deallocate(flat, flon)
 
   ! Fetch the variable id
   rc = nf90_inq_varid(ncid=ncid, name='arfs_sm', varid=var_id)
@@ -332,14 +361,20 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
   end if
   rc = nf90_close(ncid)
 
-! Apply QC: valid range 0.0 to 1.0 (guard against NaN)
+! Apply QC: valid range 0.0 to 1.0 (guard against NaN).
+! sm_in rows run south to north.
   do r = 1, nlat
+     if (north_to_south) then
+        r_out = nlat - r + 1
+     else
+        r_out = r
+     end if
      do c = 1, nlon
         if (tmp(c,r,1) .eq. tmp(c,r,1)) then
            if (tmp(c,r,1) >= 0.0 .and. &
                 tmp(c,r,1) <= 1.0) then
-              sm_in(c + (nlat-r)*WSFsmobs(n)%nc) = tmp(c,r,1)
-              sm_data_b(c + (nlat-r)*WSFsmobs(n)%nc) = .true.
+              sm_in(c + (r_out-1)*WSFsmobs(n)%nc) = tmp(c,r,1)
+              sm_data_b(c + (r_out-1)*WSFsmobs(n)%nc) = .true.
            end if
         end if
      end do
@@ -351,7 +386,7 @@ subroutine read_WSFsm_data_ldt(n, fname, smobs_ip)
 !--------------------------------------------------------------------------
 ! Interpolate to the LDT running domain
 !--------------------------------------------------------------------------
-  if(LDT_isLDTatAfinerResolution(n,0.093701)) then
+  if(LDT_isLDTatAfinerResolution(n,WSFsmobs(n)%dlat)) then
      call bilinear_interp(LDT_rc%gridDesc(n,:),&
           sm_data_b, sm_in, smobs_b_ip, smobs_ip, &
           WSFsmobs(n)%nc*WSFsmobs(n)%nr, &

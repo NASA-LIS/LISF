@@ -38,13 +38,18 @@
 ! The SMOPS ASCAT layer is the just the gridded original ASCAT soil moisture 
 ! values.  They only do CDF matching for the blended layer in the product.
 !
-! There are three versions of the SMOPS datasets.
+! There are four versions of the SMOPS datasets.
 !
 ! According to the use by the 557th Weather Wing:
 !
 !                          version_1.3 <  2016-10-31T12:00:00
 !   2016-10-31T12:00:00 <= version_2.0 <  2017-08-24T12:00:00
-!                          version_3.0 >= 2017-08-24T12:00:00
+!   2017-08-24T12:00:00 <= version_3.0 <  2024-07-04T18:00:00
+!                          version_4.0 >= 2024-07-04T18:00:00
+!
+! SMOPS version 4.0 drops ASCAT-A (Metop-A) and SMOS and adds ASCAT-C
+! (Metop-C). For ASCAT, LDT reads ASCAT-A and ASCAT-B up to version 3.0
+! and ASCAT-B and ASCAT-C from version 4.0, as LIS does.
 !
 ! Also, NESDIS has generated SMOPS version 3.0 datasets starting
 ! from 2012-08-01.
@@ -66,6 +71,33 @@
 !   NPR_SMOPS_CMAP_Dyyyymmddhh.gr2 = 6 hour Product   (grib2 format)
 !   NPR_SMOPS_CMAP_Dyyyymmdd.gr2   = Daily Product   (grib2 format)
 !   NPR_SMOPS_CMAP_Dyyyymmdd.nc4   = Archive Product (netcdf4 format)
+!
+! The 6-hourly files archived by the 557th Weather Wing ("AGRMET"
+! naming convention) changed names twice:
+!
+!   smops_dYYYYMMDD_sHH0000_cness.gr2                 before 2017-10-05
+!   NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2                    2017-10-05 to
+!                                                     2024-07-04T18
+!   NPR-SMOPS-CMAP-6hrly_vNrM_blend_sYYYYMMDDHH*.grib2  from 2024-07-04T18
+!
+! The NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2 files hold the 6 hours BEFORE HH;
+! the other two hold the 6 hours starting at HH.
+!
+! The NPR-SMOPS-CMAP-6hrly names carry the SMOPS version: v4r0 from
+! 2024-07-04T18, and v5r0 (AMSR3 added) from 2026-12-08. LDT takes the
+! version of these files from the name. The GRIB2 parameter numbers of
+! v5r0 are not known yet, so LDT stops on a v5r0 file; they are to be
+! added in read_SMOPS_native once confirmed from a v5 file. Files whose
+! names carry no version are dated: from 2026-12-08 (version5_time) LDT
+! stops unless "SMOPS soil moisture version:" is set.
+!
+! With "SMOPS soil moisture use realtime data: 1", LDT reads every
+! 6-hourly window that starts within the current LDT time step. With a
+! 1-day time step ("LIS output timestep: 1da") the four windows of the day
+! are combined into one daily field, the latest valid retrieval winning
+! (as in the NESDIS daily product). With a 6-hour time step each window
+! is logged separately, and "Temporal averaging interval: 1da" then
+! averages them per day.
 !
 ! The product's time latency is about 2.5 ~ 8.5 hours.  
 !  (personal communication with Limin Zhao at NESDIS/OSPO)
@@ -119,6 +151,13 @@
 !  04 May 2013: Sujay Kumar, Initial Specification
 !  05 July 2017 : Mahdi Navari, Modified to read AMSR2, SMAP
 !      Dec 2017 : Mahdi Navari, Condition added to remove pixcls close to openwater
+!  28 Oct 2026: Ehsan Jalilvand, Read the 6-hourly SMOPS archive (three
+!               naming conventions) and SMOPS v4 (ASCAT-B and ASCAT-C),
+!               following the LIS SMOPS ASCAT reader
+!  12 Nov 2026: Ehsan Jalilvand, SMOPS v5: the version of the
+!               NPR-SMOPS-CMAP-6hrly files is read from their names, and
+!               LDT stops on versions whose GRIB2 parameter numbers it
+!               does not have; "SMOPS soil moisture version:" is checked
 !
 module SMOPSsm_obsMod
 ! !USES: 
@@ -145,10 +184,14 @@ module SMOPSsm_obsMod
      integer                :: useSMOS
      integer                :: useAMSR2
      integer                :: useSMAP
+     integer                :: useRealtime
+     character(len=10)      :: conv
      real                   :: search_radius
      integer                :: mo
      integer                :: smopsnc, smopsnr
-     real*8                 :: version2_time, version3_time
+     real*8                 :: version2_time, version3_time, version4_time
+     real*8                 :: version5_time
+     real*8                 :: naming3_time
      real,    allocatable   :: smobs(:,:)
      integer, allocatable   :: n11(:)
      character(len=17)      :: version
@@ -248,7 +291,43 @@ contains
     do n=1, LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,SMOPSsmobs(n)%version,&
           default='date-based', rc=status)
+       select case ( trim(SMOPSsmobs(n)%version) )
+       case ( 'date-based', 'NESDIS V3.0 REGEN', '1.3', '2.0', '3.0', '4.0' )
+       case default
+          write(LDT_logunit,*) '[ERR] SMOPS soil moisture version: "', &
+               trim(SMOPSsmobs(n)%version), '" is not supported.'
+          write(LDT_logunit,*) '[ERR] Use "date-based", "NESDIS V3.0 REGEN", ', &
+               '"1.3", "2.0", "3.0" or "4.0".'
+          call LDT_endrun()
+       end select
     enddo
+
+    ! 6-hourly archive (as in LIS). Optional; default is the daily files.
+    call ESMF_ConfigFindLabel(LDT_config, &
+         'SMOPS soil moisture use realtime data:', rc=status)
+    if (status == 0) then
+       do n=1,LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config, SMOPSsmobs(n)%useRealtime, &
+               rc=status)
+          call LDT_verify(status, &
+               'SMOPS soil moisture use realtime data: not defined')
+       enddo
+    else
+       SMOPSsmobs(:)%useRealtime = 0
+    endif
+
+    call ESMF_ConfigFindLabel(LDT_config, &
+         'SMOPS soil moisture naming convention:', rc=status)
+    if (status == 0) then
+       do n=1,LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config, SMOPSsmobs(n)%conv, &
+               rc=status)
+          call LDT_verify(status, &
+               'SMOPS soil moisture naming convention: not defined')
+       enddo
+    else
+       SMOPSsmobs(:)%conv = 'AGRMET'
+    endif
 
 ! MN: get attribute of the search radious    
     call ESMF_ConfigFindLabel(LDT_config, &
@@ -277,6 +356,9 @@ contains
           yr1 = 2012; mo1 = 8; da1 = 1; hr1 = 0; mn1 = 0; ss1 = 0
           call LDT_date2time(SMOPSsmobs(n)%version3_time,updoy,upgmt,&
              yr1,mo1,da1,hr1,mn1,ss1)
+          ! version2_time was left unset here; data before the regen
+          ! start are read as version 1.3.
+          SMOPSsmobs(n)%version2_time = SMOPSsmobs(n)%version3_time
        else
           ! Actual version dates
           yr1 = 2016; mo1 = 10; da1 = 31; hr1 = 12; mn1 = 0; ss1 = 0
@@ -286,6 +368,38 @@ contains
           yr1 = 2017; mo1 = 8; da1 = 24; hr1 = 12; mn1 = 0; ss1 = 0
           call LDT_date2time(SMOPSsmobs(n)%version3_time,updoy,upgmt,&
              yr1,mo1,da1,hr1,mn1,ss1)
+       endif
+
+       ! SMOPS v4 (ASCAT-B and ASCAT-C), same date as in LIS
+       yr1 = 2024; mo1 = 7; da1 = 4; hr1 = 18; mn1 = 0; ss1 = 0
+       call LDT_date2time(SMOPSsmobs(n)%version4_time,updoy,upgmt,&
+          yr1,mo1,da1,hr1,mn1,ss1)
+
+       ! SMOPS v5 (AMSR3 added) operational from 2026-12-08 (NESDIS notice
+       ! to users). Used only for files whose names carry no version.
+       yr1 = 2026; mo1 = 12; da1 = 8; hr1 = 0; mn1 = 0; ss1 = 0
+       call LDT_date2time(SMOPSsmobs(n)%version5_time,updoy,upgmt,&
+          yr1,mo1,da1,hr1,mn1,ss1)
+
+       ! Switch from smops_d*_cness.gr2 to NPR_SMOPS_CMAP_D*.gr2 names
+       yr1 = 2017; mo1 = 10; da1 = 5; hr1 = 0; mn1 = 0; ss1 = 0
+       call LDT_date2time(SMOPSsmobs(n)%naming3_time,updoy,upgmt,&
+          yr1,mo1,da1,hr1,mn1,ss1)
+
+       if (SMOPSsmobs(n)%useRealtime == 1) then
+          ! Each 6-hourly window must fall in exactly one time step.
+          if (LDT_rc%ts < 21600.0 .or. mod(nint(LDT_rc%ts), 21600) /= 0) then
+             write(LDT_logunit,*) '[ERR] SMOPS 6-hourly files need a time '// &
+                  'step that is a multiple of 6 hours'
+             write(LDT_logunit,*) '[ERR] (LIS output timestep: 6hr or 1da).'
+             write(LDT_logunit,*) '[ERR] Current time step (s): ', LDT_rc%ts
+             call LDT_endrun()
+          endif
+          write(LDT_logunit,*) '[INFO] Reading 6-hourly SMOPS files, '// &
+               'naming convention: ', trim(SMOPSsmobs(n)%conv)
+       else
+          write(LDT_logunit,*) '[INFO] Reading daily SMOPS files '// &
+               '(<dir>/YYYY/NPR_SMOPS_CMAP_DYYYYMMDD.gr2)'
        endif
 
        allocate(SMOPSsmobs(n)%smobs(LDT_rc%lnc(n),LDT_rc%lnr(n)))

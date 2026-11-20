@@ -14,7 +14,31 @@
 Stratified Soil Moisture Prediction using Per-Cluster Random Forests
 =====================================================================
 Predicts soil moisture from WSF brightness temperatures using
-per-cluster RF models with GMM soft blending at cluster boundaries.
+per-cluster RF models, blended across clusters at their boundaries.
+
+Each pixel gets weights w_k for its top-K environmental clusters, and its
+soil moisture is the weighted sum of those clusters' Random Forests:
+
+    SM = sum_k w_k * RF_k(TB)        (k over the top-K clusters, clipped 0-0.6)
+
+The weights are chosen with --blending (required, no default):
+    distance — from the distance between the pixel's encoded static features
+               x (land-cover and climate flags, standardised clay/sand/silt)
+               and each KMeans cluster centre c_k:
+                   d_k = ||x - c_k||                       (Euclidean)
+                   w_k = exp(-d_k / T) / sum_j exp(-d_j / T)
+               with j over the same top-K (nearest) clusters and T the
+               --temperature (required). Small T: the nearest cluster
+               dominates and only pixels between clusters blend (T -> 0 is
+               'hard'); large T: the weights approach 1/K everywhere.
+               Example, d = 1.0 and 1.5: T = 1 gives 0.62/0.38,
+               T = 0.2 gives 0.92/0.08, T = 0.1 gives 0.99/0.01.
+    hard     — the nearest cluster centre only (weight 1): the cluster the
+               pixel was trained in.
+    gmm      — posterior probabilities of a Gaussian mixture fitted to the
+               encoded static layers (gmm_kXX.pkl in the model directory).
+               Its most probable component can differ from the cluster the
+               pixel was trained in.
 
 Output files are LIS/LDT-compatible NetCDF:
     - Variable:  arfs_sm
@@ -36,6 +60,7 @@ Usage:
         --env-clay       ./static_data/soil/sg_clay_usaf.nc
         --env-sand       ./static_data/soil/sg_sand_usaf.nc
         --env-silt       ./static_data/soil/sg_silt_usaf.nc
+        --blending distance --temperature 0.1
         --output-dir /path/to/out
 
     # From zarr (monthly)
@@ -44,8 +69,9 @@ Usage:
         --output-dir ./output/zarr_sm
         [same --model-dir / --cluster-dir / --env-* flags as above]
 
-    # Hard assignment (no blending)
-    python predict_sm_stratified.py hourly ... --hard
+    # Distance-based softmax, or hard assignment (no blending)
+    python predict_sm_stratified.py hourly ... --blending distance --temperature 0.1
+    python predict_sm_stratified.py hourly ... --blending hard
 
     # As module (called from wsf_opl.py — all paths supplied by caller)
     from predict_sm_stratified import StratifiedSoilMoisturePredictor
@@ -59,6 +85,8 @@ Usage:
             'sand':       './static_data/soil/sg_sand_usaf.nc',
             'silt':       './static_data/soil/sg_silt_usaf.nc',
         },
+        blending='distance',
+        temperature=0.1,
     )
     predictor.predict_from_hourly_nc('/path/to/input.nc', output_dir='/path/to/out')
 """
@@ -86,11 +114,156 @@ from scipy.special import softmax
 # pylint: disable=invalid-name
 
 
+# Köppen climate grouping — must match the clustering script.
+KOPPEN_TO_GROUP = {
+    1: 1, 2: 1, 3: 1,
+    4: 2, 5: 2,
+    6: 3, 7: 3,
+    8: 4, 9: 4, 10: 4,
+    11: 5, 12: 5, 13: 5,
+    14: 6, 15: 6, 16: 6,
+    17: 7, 18: 7, 19: 7, 20: 7,
+    21: 8, 22: 8, 23: 8, 24: 8,
+    25: 9, 26: 9, 27: 9, 28: 9,
+    29: 10, 30: 10,
+}
+
+# How the cluster weights of each pixel are computed (see module docstring).
+BLENDING_MODES = ('gmm', 'distance', 'hard')
+
+# Static layers, keyed as in env_paths.
+ENV_LAYER_NAMES = ('land_cover', 'climate', 'clay', 'sand', 'silt')
+
+
+def load_env_layers(env_paths):
+    """Read the five static layers and group the Köppen classes.
+
+    Every layer must exist, have dims (lat, lon) after dropping length-1
+    dims, and share the same lat/lon. Returns a dict of 2-D DataArrays
+    keyed by clustering feature name ('climate' becomes 'climate_group').
+    """
+    missing = [name for name in ENV_LAYER_NAMES if name not in env_paths]
+    if missing:
+        raise KeyError(f"env_paths has no entry for: {', '.join(missing)}")
+
+    layers = {}
+    for name in ENV_LAYER_NAMES:
+        path = env_paths[name]
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Static layer '{name}' not found: {path}")
+        with xr.open_dataset(path) as ds:
+            da = ds[list(ds.data_vars)[0]].squeeze(drop=True).load()
+        if da.dims != ('lat', 'lon'):
+            raise ValueError(f"Static layer '{name}' must have dims (lat, lon), "
+                             f"found {da.dims} in {path}")
+        layers[name] = da
+
+    ref = layers['land_cover']
+    for name, da in layers.items():
+        if (da.shape != ref.shape
+                or not np.allclose(da['lat'].values, ref['lat'].values, atol=1e-4)
+                or not np.allclose(da['lon'].values, ref['lon'].values, atol=1e-4)):
+            raise ValueError(f"Static layer '{name}' ({env_paths[name]}) is not on "
+                             "the same lat/lon grid as 'land_cover'")
+
+    climate = layers.pop('climate')
+    grouped = np.full(climate.shape, np.nan, dtype=np.float64)
+    codes = climate.values
+    for orig, grp in KOPPEN_TO_GROUP.items():
+        grouped[codes == orig] = grp
+    layers['climate_group'] = climate.copy(data=grouped)
+    return layers
+
+
+def encode_env_features(layers, cluster_model):
+    """Encode the static layers into the clustering feature space.
+
+    Uses the encoders stored with the KMeans model. A cell is invalid
+    (NaN row) where any layer is missing, where a soil fraction is outside
+    0-100, or where its class was not used in the clustering (water,
+    snow/ice and polar climate were excluded there, so they are excluded
+    here too). Rows are in (lat, lon) row-major order.
+
+    Returns (X_encoded, valid_mask).
+    """
+    parts = []
+    for name in cluster_model['feature_names']:
+        if name not in layers:
+            raise KeyError(f"Clustering feature '{name}' has no static layer")
+        col = np.asarray(layers[name].values, dtype=np.float64).ravel()
+        enc = cluster_model['encoders'].get(name)
+        if enc is None:
+            parts.append(col.reshape(-1, 1))
+        elif enc['type'] == 'onehot':
+            cats = np.asarray(enc['categories'], dtype=np.float64)
+            onehot = (col[:, None] == cats[None, :]).astype(np.float64)
+            onehot[~onehot.any(axis=1), :] = np.nan   # missing or unused class
+            parts.append(onehot)
+        elif enc['type'] == 'continuous':
+            scaled = np.full(col.shape, np.nan, dtype=np.float64)
+            ok = np.isfinite(col) & (col >= 0) & (col <= 100)
+            if enc['std'] > 0:
+                scaled[ok] = (col[ok] - enc['mean']) / enc['std']
+            parts.append(scaled.reshape(-1, 1))
+        else:
+            raise ValueError(f"Unknown encoder type {enc['type']!r} for '{name}'")
+    X_encoded = np.hstack(parts)
+    return X_encoded, ~np.isnan(X_encoded).any(axis=1)
+
+
+# pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
+def cluster_weights(X_valid, cluster_model, gmm, blending, top_k=3,
+                    temperature=1.0, chunk_size=100_000):
+    """Top-k cluster indices and their normalised weights for each cell.
+
+    blending is one of BLENDING_MODES; gmm is the fitted GaussianMixture
+    (used only for 'gmm'). 'hard' returns the nearest KMeans centroid with
+    weight 1, i.e. the label KMeans gives the cell. 'distance' uses
+        d_k = ||x - c_k||,   w_k = exp(-d_k / T) / sum_j exp(-d_j / T)
+    over the top_k nearest centroids c_k (softmax of -d/T over all clusters,
+    then the top_k weights renormalised to sum to 1, which is the same).
+    """
+    if blending not in BLENDING_MODES:
+        raise ValueError(f"blending must be one of {BLENDING_MODES}, got {blending!r}")
+    if blending == 'gmm' and gmm is None:
+        raise ValueError("blending 'gmm' needs a fitted GMM")
+    if blending == 'distance' and temperature <= 0:
+        raise ValueError(f"temperature must be > 0, got {temperature}")
+
+    centroids = cluster_model['kmeans'].cluster_centers_
+    k = centroids.shape[0]
+    top_k = 1 if blending == 'hard' else min(top_k, k)
+    n_valid = X_valid.shape[0]
+    top_clusters = np.zeros((n_valid, top_k), dtype=np.int64)
+    top_weights = np.zeros((n_valid, top_k), dtype=np.float64)
+
+    for start in range(0, n_valid, chunk_size):
+        end = min(start + chunk_size, n_valid)
+        X_chunk = X_valid[start:end]
+        if blending == 'gmm':
+            probs = gmm.predict_proba(X_chunk)
+        else:
+            dists = np.zeros((end - start, k))
+            for c in range(k):
+                dists[:, c] = np.sqrt(((X_chunk - centroids[c]) ** 2).sum(axis=1))
+            # softmax(-d / T): w_k = exp(-d_k / T) / sum_j exp(-d_j / T)
+            probs = softmax(-dists / (temperature if blending == 'distance' else 1.0),
+                            axis=1)
+        idx = np.argsort(probs, axis=1)[:, ::-1][:, :top_k]
+        weights = np.take_along_axis(probs, idx, axis=1)
+        sums = weights.sum(axis=1, keepdims=True)
+        sums[sums == 0] = 1.0
+        top_clusters[start:end] = idx
+        top_weights[start:end] = weights / sums
+    return top_clusters, top_weights
+# pylint: enable=too-many-arguments,too-many-positional-arguments,too-many-locals
+
+
 # pylint: disable=too-many-instance-attributes
 # The predictor is a stateful object that caches models, grid mappings,
 # and precomputed cluster weights — all attributes are necessary.
 class StratifiedSoilMoisturePredictor:
-    """Soil moisture predictor using per-cluster RF models with GMM soft blending.
+    """Soil moisture predictor using per-cluster RF models with cluster blending.
 
     Each land pixel is assigned to one of K environmental clusters (defined by
     land cover, Köppen climate, and soil texture). A cluster-specific Random
@@ -103,77 +276,65 @@ class StratifiedSoilMoisturePredictor:
         Directory containing rf_global.pkl, rf_cluster_XX.pkl, gmm_kXX.pkl,
         and stratified_config.json.
     cluster_dir : str
-        Directory containing environmental_clusters_kXX.nc and
-        clustering_model_kXX.pkl.
+        Directory containing clustering_model_kXX.pkl (KMeans centres and
+        the encoders of the static layers). The cluster map
+        environmental_clusters_kXX.nc may be there too, but it is not read:
+        the cluster weights and the valid-cell mask are computed from the
+        static layers (env_paths) when the predictor is set up.
     env_paths : dict
         Paths to static environmental NetCDF layers keyed by:
         'land_cover', 'climate', 'clay', 'sand', 'silt'.
     config_path : str, optional
         Path to stratified_config.json. Auto-detected from model_dir if None.
+    blending : str
+        'gmm', 'distance' or 'hard' (required; see module docstring).
     top_k : int
-        Number of top clusters to blend (default: 3).
+        Number of top clusters to blend (default: 3; 1 for 'hard').
     temperature : float
-        Softmax temperature for distance-based weights (lower = sharper).
-    hard : bool
-        If True, use hard single-cluster assignment (no blending).
+        T in w_k = exp(-d_k / T) / sum_j exp(-d_j / T) (required for
+        'distance'; lower = sharper, e.g. 0.1). See the module docstring.
     """
-
-    # Default feature order — must match the order used during training.
-    DEFAULT_FEATURES = [
-        'TB_10V', 'TB_10H', 'TB_18V', 'TB_18H',
-        'TB_23V', 'TB_36V', 'TB_36H', 'TB_89V', 'TB_89H',
-    ]
-
-    # Köppen climate grouping — must match the clustering script.
-    KOPPEN_TO_GROUP = {
-        1: 1, 2: 1, 3: 1,
-        4: 2, 5: 2,
-        6: 3, 7: 3,
-        8: 4, 9: 4, 10: 4,
-        11: 5, 12: 5, 13: 5,
-        14: 6, 15: 6, 16: 6,
-        17: 7, 18: 7, 19: 7, 20: 7,
-        21: 8, 22: 8, 23: 8, 24: 8,
-        25: 9, 26: 9, 27: 9, 28: 9,
-        29: 10, 30: 10,
-    }
 
     # Output conventions — must match LIS/LDT Fortran readers.
     OUTPUT_VAR_NAME    = 'arfs_sm'
     OUTPUT_FILE_PREFIX = 'ARFS_SM_WSFM'
     MAP_PROJECTION     = 'EQUIDISTANT CYLINDRICAL'
 
-    # pylint: disable=too-many-arguments,too-many-positional-arguments
-    def __init__(self, model_dir, cluster_dir, env_paths,
-                 config_path=None, top_k=3, temperature=1.0, hard=False):
-        """Load all cluster models and precompute soft-assignment weights."""
+    # pylint: disable=too-many-arguments
+    def __init__(self, model_dir, cluster_dir, env_paths, *, blending,
+                 config_path=None, top_k=3, temperature=None):
+        """Load all cluster models and precompute the cluster weights."""
+        if blending not in BLENDING_MODES:
+            raise ValueError(f"blending must be one of {BLENDING_MODES}, got {blending!r}")
+        if blending == 'distance' and (temperature is None or temperature <= 0):
+            raise ValueError("blending 'distance' needs a temperature > 0 "
+                             f"(got {temperature!r}), e.g. 0.1")
         self.model_dir   = model_dir
         self.cluster_dir = cluster_dir
         self.env_paths   = env_paths
-        self.top_k       = 1 if hard else top_k
+        self.blending    = blending
+        self.top_k       = 1 if blending == 'hard' else top_k
         self.temperature = temperature
-        self.hard        = hard
 
         if config_path is None:
             config_path = os.path.join(model_dir, 'stratified_config.json')
-
-        if os.path.exists(config_path):
-            with open(config_path, 'r', encoding='utf-8') as fh:
-                self.config = json.load(fh)
-            self.features = self.config.get('features', self.DEFAULT_FEATURES)
-            self.k = self.config.get('k')
-        else:
-            print(f"Config not found at {config_path}, using defaults")
-            self.config   = {}
-            self.features = self.DEFAULT_FEATURES
-            self.k        = None
+        if not os.path.exists(config_path):
+            raise FileNotFoundError(f"Model config not found: {config_path}")
+        with open(config_path, 'r', encoding='utf-8') as fh:
+            self.config = json.load(fh)
+        for key in ('features', 'k'):
+            if key not in self.config:
+                raise KeyError(f"'{key}' missing from {config_path}")
+        self.features = self.config['features']
+        self.k = self.config['k']
 
         self.models = self._load_models()
         self._setup_cluster_assignment()
 
-        mode_str = "HARD" if self.hard else f"SOFT (top-{self.top_k})"
-        print(f"Ready: K={self.k}, mode={mode_str}, features={self.features}")
-    # pylint: enable=too-many-arguments,too-many-positional-arguments
+        mode_str = self.blending if self.blending == 'hard' else \
+            f"{self.blending} (top-{self.top_k})"
+        print(f"Ready: K={self.k}, blending={mode_str}, features={self.features}")
+    # pylint: enable=too-many-arguments
 
     # =========================================================================
     # Model loading
@@ -215,171 +376,83 @@ class StratifiedSoilMoisturePredictor:
     # =========================================================================
 
     def _setup_cluster_assignment(self):
-        """Load env layers, encode features, compute soft weights."""
+        """Load the clustering model (and GMM), encode env layers, compute weights."""
         print("Setting up cluster assignment...")
         t0 = timer.time()
 
         model_path = os.path.join(self.cluster_dir, f'clustering_model_k{self.k}.pkl')
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Clustering model not found: {model_path}")
         self.cluster_model = joblib.load(model_path)
         print(f"  Loaded clustering model: {model_path}")
 
-        gmm_path = os.path.join(self.model_dir, f'gmm_k{self.k}.pkl')
-        if os.path.exists(gmm_path):
+        self.gmm = None
+        if self.blending == 'gmm':
+            gmm_path = os.path.join(self.model_dir, f'gmm_k{self.k}.pkl')
+            if not os.path.exists(gmm_path):
+                raise FileNotFoundError(
+                    f"blending 'gmm' needs {gmm_path}; fit it with "
+                    "build_cluster_map.py, or use blending 'distance' or 'hard'")
             self.gmm = joblib.load(gmm_path)
             print(f"  Loaded GMM: {gmm_path}")
-        else:
-            self.gmm = None
-            print("  No GMM found, using distance-based soft assignment")
 
-        X_encoded, valid_mask, env_lats, env_lons = self._load_and_encode_env()
-        self.env_lats         = env_lats
-        self.env_lons         = env_lons
+        print("  Loading environmental layers...")
+        layers = load_env_layers(self.env_paths)
+        X_encoded, valid_mask = encode_env_features(layers, self.cluster_model)
+        print(f"    Encoded: {X_encoded.shape}, valid: {valid_mask.sum():,}/{valid_mask.size:,}")
+
+        self.env_lats         = layers['land_cover']['lat'].values
+        self.env_lons         = layers['land_cover']['lon'].values
         self.env_valid_mask   = valid_mask
-        self.n_env_lon        = len(env_lons)
+        self.n_env_lon        = len(self.env_lons)
         self.env_valid_cumsum = np.cumsum(valid_mask) - 1
 
-        self.top_clusters, self.top_weights = self._compute_soft_weights(
-            X_encoded, valid_mask
+        print(f"  Computing cluster weights ({self.blending})...")
+        self.top_clusters, self.top_weights = cluster_weights(
+            X_encoded[valid_mask], self.cluster_model, self.gmm, self.blending,
+            top_k=self.top_k, temperature=self.temperature,
         )
+        print(f"    Dominant weight: mean={self.top_weights[:, 0].mean():.3f}, "
+              f"min={self.top_weights[:, 0].min():.3f}")
 
-        del X_encoded
+        del X_encoded, layers
         gc.collect()
-
         print(f"  Setup time: {timer.time() - t0:.1f}s")
-
-    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-    def _load_and_encode_env(self):
-        """Load static env NetCDF layers and encode to the clustering feature space."""
-        print("  Loading environmental layers...")
-
-        layers = {}
-        for name, path in self.env_paths.items():
-            if not os.path.exists(path):
-                print(f"    SKIP {name}: not found at {path}")
-                continue
-            ds = xr.open_dataset(path)
-            var_name = list(ds.data_vars)[0]
-            da = ds[var_name]
-            if da.ndim == 3:
-                da = da.squeeze()
-            layers[name] = da
-
-        if not layers:
-            raise FileNotFoundError(
-                "No environmental layers could be loaded. "
-                "Check env_paths in pipeline_config.json."
-            )
-
-        # Remap raw Köppen codes to broad climate groups.
-        if 'climate' in layers:
-            clm_arr     = layers['climate'].values.copy()
-            clm_grouped = np.full_like(clm_arr, np.nan, dtype=np.float64)
-            for orig, grp in self.KOPPEN_TO_GROUP.items():
-                clm_grouped[clm_arr == orig] = grp
-            layers['climate_group'] = xr.DataArray(
-                clm_grouped,
-                dims=layers['climate'].dims,
-                coords=layers['climate'].coords,
-            )
-            del layers['climate']
-
-        ref      = list(layers.values())[0]
-        env_lats = ref.lat.values
-        env_lons = ref.lon.values
-        n_total  = len(env_lats) * len(env_lons)
-
-        feature_names = self.cluster_model['feature_names']
-        encoders      = self.cluster_model['encoders']
-
-        raw_arrays = []
-        for name in feature_names:
-            arr = layers[name].values
-            if arr.ndim == 3:
-                arr = arr[0]
-            raw_arrays.append(arr.flatten())
-        X_raw = np.column_stack(raw_arrays)
-
-        encoded_parts = []
-        for i, feat_name in enumerate(feature_names):
-            col = X_raw[:, i].astype(np.float64)
-            enc = encoders.get(feat_name, None)
-
-            if enc is None:
-                encoded_parts.append(col.reshape(-1, 1))
-                continue
-
-            if enc['type'] == 'onehot':
-                cats   = enc['categories']
-                onehot = np.zeros((n_total, len(cats)), dtype=np.float64)
-                for j, cat_val in enumerate(cats):
-                    onehot[:, j] = (col == cat_val).astype(np.float64)
-                onehot[np.isnan(col), :] = np.nan
-                encoded_parts.append(onehot)
-
-            elif enc['type'] == 'continuous':
-                scaled = np.full(n_total, np.nan, dtype=np.float64)
-                valid  = ~np.isnan(col) & (col >= 0) & (col <= 100)
-                if enc['std'] > 0:
-                    scaled[valid] = (col[valid] - enc['mean']) / enc['std']
-                encoded_parts.append(scaled.reshape(-1, 1))
-
-        X_encoded  = np.hstack(encoded_parts)
-        valid_mask = ~np.isnan(X_encoded).any(axis=1)
-
-        print(f"    Encoded: {X_encoded.shape}, valid: {valid_mask.sum():,}/{n_total:,}")
-        return X_encoded, valid_mask, env_lats, env_lons
-    # pylint: enable=too-many-locals,too-many-branches,too-many-statements
-
-    # pylint: disable=too-many-locals
-    def _compute_soft_weights(self, X_encoded, valid_mask):
-        """Compute soft cluster membership weights for all valid env pixels."""
-        print("  Computing soft weights...")
-
-        X_valid = X_encoded[valid_mask]
-        n_valid = X_valid.shape[0]
-
-        if self.gmm is not None:
-            probs = self.gmm.predict_proba(X_valid)
-        else:
-            centroids  = self.cluster_model['kmeans'].cluster_centers_
-            k          = centroids.shape[0]
-            chunk_size = 100_000
-            probs      = np.zeros((n_valid, k), dtype=np.float64)
-
-            for start in range(0, n_valid, chunk_size):
-                end     = min(start + chunk_size, n_valid)
-                X_chunk = X_valid[start:end]
-                dists   = np.zeros((end - start, k))
-                for c in range(k):
-                    dists[:, c] = np.sqrt(((X_chunk - centroids[c]) ** 2).sum(axis=1))
-                probs[start:end] = softmax(-dists / self.temperature, axis=1)
-
-        top_clusters = np.argsort(probs, axis=1)[:, -self.top_k:][:, ::-1]
-        top_weights  = np.take_along_axis(probs, top_clusters, axis=1)
-
-        weight_sums = top_weights.sum(axis=1, keepdims=True)
-        weight_sums[weight_sums == 0] = 1.0
-        top_weights = top_weights / weight_sums
-
-        print(f"    Dominant weight: mean={top_weights[:, 0].mean():.3f}, "
-              f"min={top_weights[:, 0].min():.3f}")
-
-        return top_clusters, top_weights
 
     # =========================================================================
     # Grid mapping
     # =========================================================================
 
+    def _blending_label(self):
+        """Blending description written to the output attributes."""
+        if self.blending == 'hard':
+            return 'hard'
+        label = f'{self.blending}_top{self.top_k}'
+        if self.blending == 'distance':
+            label += f'_T{self.temperature:g}'
+        return label
+
+    @staticmethod
+    def _nearest_index(env_coord, target):
+        """Index of the nearest env coordinate for each target coordinate.
+
+        Works whether env_coord is ascending or descending, and for any
+        WSF grid (the WSF grid need not match the env grid).
+        """
+        env = np.asarray(env_coord, dtype=np.float64)
+        tgt = np.asarray(target, dtype=np.float64)
+        order = np.argsort(env)
+        env_sorted = env[order]
+        if env_sorted.size == 1:
+            return np.zeros(tgt.shape, dtype=np.int64)
+        pos = np.clip(np.searchsorted(env_sorted, tgt), 1, env_sorted.size - 1)
+        closer_left = (tgt - env_sorted[pos - 1]) <= (env_sorted[pos] - tgt)
+        return order[pos - closer_left.astype(np.int64)]
+
     def _build_grid_mapping(self, wsf_lats, wsf_lons):
-        """Map WSF grid pixels to environmental grid flat indices."""
-        lat_idx = np.clip(
-            np.searchsorted(self.env_lats, wsf_lats) - 1,
-            0, len(self.env_lats) - 1,
-        )
-        lon_idx = np.clip(
-            np.searchsorted(self.env_lons, wsf_lons) - 1,
-            0, len(self.env_lons) - 1,
-        )
+        """Map WSF grid pixels to environmental grid flat indices (nearest cell)."""
+        lat_idx = self._nearest_index(self.env_lats, wsf_lats)
+        lon_idx = self._nearest_index(self.env_lons, wsf_lons)
 
         wsf_lat_grid, wsf_lon_grid = np.meshgrid(
             np.arange(len(wsf_lats)), np.arange(len(wsf_lons)), indexing='ij'
@@ -539,7 +612,7 @@ class StratifiedSoilMoisturePredictor:
             attrs={
                 'MAP_PROJECTION': self.MAP_PROJECTION,
                 'model':          f'Stratified Random Forest (K={self.k})',
-                'blending':       'hard' if self.hard else f'soft_top{self.top_k}',
+                'blending':       self._blending_label(),
                 'features':       str(self.features),
                 'created':        datetime.now().isoformat(),
             },
@@ -550,7 +623,10 @@ class StratifiedSoilMoisturePredictor:
                 if coord in input_ds.coords and coord in out_ds.coords:
                     out_ds[coord].attrs = input_ds[coord].attrs
 
-        out_ds.to_netcdf(output_path)
+        # Compressed: most cells of an hourly swath are NaN, so this cuts the
+        # file from ~26 MB to a small fraction; readers see no difference.
+        out_ds.to_netcdf(output_path, encoding={
+            self.OUTPUT_VAR_NAME: {'zlib': True, 'complevel': 4}})
         return output_path
     # pylint: enable=too-many-arguments,too-many-positional-arguments
 
@@ -585,7 +661,9 @@ class StratifiedSoilMoisturePredictor:
         ds = xr.open_zarr(input_path, chunks=chunks) if chunks else xr.open_zarr(input_path)
 
         if apply_qc and 'QUALITY_FLAG' in ds.data_vars:
-            ocean_mask = (ds.QUALITY_FLAG.astype(int) & 1) > 0
+            # No-data cells (fill value, read as NaN) count as flag 0: NaN
+            # cannot be cast to an integer ("invalid value encountered in cast").
+            ocean_mask = (ds.QUALITY_FLAG.fillna(0).astype(int) & 1) > 0
             ds = ds.where(~ocean_mask)
 
         available = [v for v in self.features if v in ds.data_vars]
@@ -626,7 +704,7 @@ class StratifiedSoilMoisturePredictor:
                 'long_name':   'Volumetric Soil Moisture',
                 'valid_range': [0.0, 0.6],
                 'model':       f'Stratified Random Forest (K={self.k})',
-                'blending':    'hard' if self.hard else f'soft_top{self.top_k}',
+                'blending':    self._blending_label(),
                 'features':    self.features,
                 'created':     datetime.now().isoformat(),
             },
@@ -678,7 +756,9 @@ class StratifiedSoilMoisturePredictor:
         ds = xr.open_dataset(input_path, decode_timedelta=False)
 
         if apply_qc and 'QUALITY_FLAG' in ds.data_vars:
-            ocean_mask = (ds.QUALITY_FLAG.astype(int) & 1) > 0
+            # No-data cells (fill value, read as NaN) count as flag 0: NaN
+            # cannot be cast to an integer ("invalid value encountered in cast").
+            ocean_mask = (ds.QUALITY_FLAG.fillna(0).astype(int) & 1) > 0
             if 'time' in ocean_mask.dims:
                 ocean_mask = ocean_mask.squeeze('time', drop=True)
             ds = ds.where(~ocean_mask)
@@ -738,7 +818,7 @@ class StratifiedSoilMoisturePredictor:
 def main():
     """Parse CLI arguments and run prediction."""
     parser = argparse.ArgumentParser(
-        description='Predict soil moisture using stratified RF with soft blending',
+        description='Predict soil moisture using stratified RF with cluster blending',
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -750,11 +830,17 @@ def main():
     parser.add_argument('--env-clay',       required=True, help='Clay fraction .nc path')
     parser.add_argument('--env-sand',       required=True, help='Sand fraction .nc path')
     parser.add_argument('--env-silt',       required=True, help='Silt fraction .nc path')
+    parser.add_argument('--blending',       required=True, choices=BLENDING_MODES,
+                        help='How the top-K cluster RFs are combined: distance '
+                             '(weights from the distance to the cluster centres, '
+                             'see --temperature), hard (own cluster only) or gmm')
 
     # Optional arguments.
     parser.add_argument('--top-k',       type=int,   default=3,   help='Top-K clusters to blend')
-    parser.add_argument('--temperature', type=float, default=1.0, help='Softmax temperature')
-    parser.add_argument('--hard',        action='store_true',     help='Use hard assignment')
+    parser.add_argument('--temperature', type=float, default=None,
+                        help='T in w_k = exp(-d_k/T) / sum_j exp(-d_j/T), d_k = distance '
+                             'to cluster centre k (required with --blending distance; '
+                             'smaller = sharper, e.g. 0.1)')
     parser.add_argument('--no-qc',       action='store_true',     help='Skip QC masking')
 
     subparsers = parser.add_subparsers(dest='mode', help='Prediction mode')
@@ -769,6 +855,8 @@ def main():
     hourly_parser.add_argument('--output-dir', '-o', required=True, help='Output directory')
 
     args = parser.parse_args()
+    if args.blending == 'distance' and args.temperature is None:
+        parser.error('--blending distance needs --temperature (e.g. 0.1)')
 
     if args.mode is None:
         parser.print_help()
@@ -788,7 +876,7 @@ def main():
         env_paths=env_paths,
         top_k=args.top_k,
         temperature=args.temperature,
-        hard=args.hard,
+        blending=args.blending,
     )
 
     if args.mode == 'zarr':

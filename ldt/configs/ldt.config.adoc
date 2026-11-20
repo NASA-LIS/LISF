@@ -4155,7 +4155,24 @@ SMOS L2 soil moisture observation directory:  ./SMOS_SM/
 
 `SMOPS soil moisture observation directory:` specifies the location of the data directory containing the real time SMOPS soil moisture data.
 
-`SMOPS soil moisture use ASCAT data:` specifies if the ASCAT layer of SMOPS is to be used.
+`SMOPS soil moisture use realtime data:` specifies whether to read the 6-hourly SMOPS files (1) or the daily files (0). Optional; defaults to 0.
+
+* 0: daily files, `<dir>/YYYY/NPR_SMOPS_CMAP_DYYYYMMDD.gr2`.
+* 1: 6-hourly files, named as given by `SMOPS soil moisture naming convention:`. Every 6-hourly window that starts within the current LDT time step is read. With "`LIS output timestep: 1da`", the four windows of a day are combined into one daily field, the latest valid retrieval winning. With "`LIS output timestep: 6hr`", each window is logged separately and "`Temporal averaging interval:`" averages them. The time step must be a multiple of 6 hours.
+
+`SMOPS soil moisture naming convention:` specifies the names of the 6-hourly SMOPS files, as in LIS. Optional; defaults to "`AGRMET`".
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`AGRMET`" |Files directly in the observation directory: `smops_dYYYYMMDD_sHH0000_cness.gr2` before 2017-10-05, `NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2` from 2017-10-05 to 2024-07-04T18, and `NPR-SMOPS-CMAP-6hrly_vNrM_blend_sYYYYMMDDHH*.grib2` from 2024-07-04T18 (`v4r0`; `v5r0` from 2026-12-08). If several files match, the newest version is read, and within it the latest creation time. (default)
+|"`LIS`" |`<dir>/YYYY/NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2` for all dates.
+|===
+
+The `NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2` files hold the 6 hours before HH; the other files hold the 6 hours starting at HH.
+
+`SMOPS soil moisture use ASCAT data:` specifies if the ASCAT layer of SMOPS is to be used. ASCAT-A and ASCAT-B are read up to SMOPS version 3.0, and ASCAT-B and ASCAT-C from version 4.0. Where more than one satellite has a valid retrieval, the later one (B over A, C over B) is used.
 
 `SMOPS soil moisture use SMOS data:` specifies if the SMOS layer of SMOPS is to be used.
 
@@ -4173,31 +4190,41 @@ SMOS L2 soil moisture observation directory:  ./SMOS_SM/
 |"`1.3`" |Treat the dataset as version 1.3.
 |"`2.0`" |Treat the dataset as version 2.0.
 |"`3.0`" |Treat the dataset as version 3.0.
+|"`4.0`" |Treat the dataset as version 4.0.
 |"`NESDIS V3.0 REGEN`" |Assume the version of the dataset based on the NESDIS version 3.0 regeneration date.
 |===
 
-There are three versions of the SMOPS datasets. According to the use by the 557th Weather Wing:
+There are four versions of the SMOPS datasets. According to the use by the 557th Weather Wing:
 
 ....
                           version_1.3 <  2016-10-31T12:00:00
    2016-10-31T12:00:00 <= version_2.0 <  2017-08-24T12:00:00
-                          version_3.0 >= 2017-08-24T12:00:00
+   2017-08-24T12:00:00 <= version_3.0 <  2024-07-04T18:00:00
+                          version_4.0 >= 2024-07-04T18:00:00
  
 ....
 
 Also, NESDIS has regenerated SMOPS version 3.0 datasets starting from 2012-08-01.
 
-The value "`date-based`" will use the dates 2016-10-31 and 2017-08-24 to determine the version of the SMOPS datasets.
+The value "`date-based`" will use the dates 2016-10-31, 2017-08-24 and 2024-07-04 to determine the version of the SMOPS datasets.
 
 The value "`NESDIS V3.0 REGEN`" will use the date 2012-08-01 to determine the version of the SMOPS datasets.
 
-Should you need to explicitly state the version of the SMOPS datasets, then you may specify their version with either "`1.3`", "`2.0`", or "`3.0`".
+Should you need to explicitly state the version of the SMOPS datasets, then you may specify their version with either "`1.3`", "`2.0`", "`3.0`", or "`4.0`". Any other value is an error.
+
+The `NPR-SMOPS-CMAP-6hrly` files carry their version in the name (`v4r0`, `v5r0`), and LDT takes the version of these files from the name. LDT stops if that version differs from a version number set here.
+
+SMOPS version 5 (`v5r0`, with AMSR3 added) is operational from 2026-12-08. LDT does not have its GRIB2 parameter numbers yet, so it stops on a `v5r0` file. With "`date-based`", it also stops on files whose names carry no version (daily files and the "`LIS`" naming convention) dated from 2026-12-08; set "`4.0`" if such files are still version 4.
+
+For every SMOPS layer it reads, LDT checks the GRIB2 grid: 1440 x 720 cells of 0.25 deg with the first column at -179.875. Rows stored north to south or south to north are both read correctly; any other grid stops LDT.
 
 `SMOPS search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
 
 .Example _ldt.config_ entry
 ....
 SMOPS soil moisture observation directory:  ./RTSMOPS
+SMOPS soil moisture use realtime data:    1
+SMOPS soil moisture naming convention:    "AGRMET"
 SMOPS soil moisture use ASCAT data:       1
 SMOPS soil moisture use SMOS data:        0
 SMOPS soil moisture use AMSR2 data:       0
@@ -4547,9 +4574,17 @@ VIIRS GVF data directory:   ./VIIRS_GVF
 
 `WSF soil moisture data directory:` specifies the location of the directory containing the hourly WSF-M soil moisture retrieval files (`ARFS_SM_WSFM_*.nc`) generated by the WSF OPL pipeline.
 
+`WSF soil moisture grid lower left lat:`, `WSF soil moisture grid lower left lon:`, `WSF soil moisture grid upper right lat:`, `WSF soil moisture grid upper right lon:`, `WSF soil moisture grid resolution (dx):` and `WSF soil moisture grid resolution (dy):` specify the lat-lon grid of the WSF soil moisture files (cell centres, in degrees), in the same way as the run domain entries. This is the grid the WSF brightness temperatures were resampled to (the run domain of the `"OPL WSF brightness temperature resampling"` run). All six entries are required; there is no default grid, and LDT stops if any of them is missing. LDT also stops if a WSF file's size or `lat`/`lon` coordinates do not match this grid, or if the file has no `lat`/`lon` variables. The row order (north to south or south to north) is taken from the file. For the old ARFS grid use lower left -89.953125, -179.9296875, upper right 89.953125, 179.9296875, dx = 0.140625, dy = 0.09375 (2560 x 1920).
+
 .Example _ldt.config_ entry
 ....
 WSF soil moisture data directory:   ./wsf_sm_data
+WSF soil moisture grid lower left lat:    -89.95
+WSF soil moisture grid lower left lon:   -179.95
+WSF soil moisture grid upper right lat:    89.95
+WSF soil moisture grid upper right lon:   179.95
+WSF soil moisture grid resolution (dx):     0.1
+WSF soil moisture grid resolution (dy):     0.1
 ....
 
 [[ssec-hymapopts]]
@@ -5495,7 +5530,10 @@ SMAP_E_OPL landcover file:                          ../../data/PRMS_RETRIEVAL_AR
 This section describes the configuration options for the
 "`OPL WSF brightness temperature resampling`" running mode, which resamples
 raw WSF-M (Weather Satellite Follow-on) Level-1 SDR brightness temperature files to the
-10-km global model grid. One LDT instance is invoked per hour; the
+LDT run domain, which must be a lat-lon grid ("`Map projection of the LIS domain: latlon`").
+The output grid is set by the usual run domain entries (`Run domain lower left lat:` ...
+`Run domain resolution (dy):`); for example the ARFS grid (dx = 0.140625, dy = 0.09375)
+or a 0.1 deg grid. Output rows run north to south. One LDT instance is invoked per hour; the
 `wsf_opl.py` pipeline script populates the time-varying fields automatically
 from a template configuration file.
 
@@ -5537,6 +5575,14 @@ WSF filelist suffix number:   1
 .Full example _ldt.config_ block for WSF OPL resampling
 ....
 LDT running mode:              "OPL WSF brightness temperature resampling"
+
+Map projection of the LIS domain:   latlon
+Run domain lower left lat:          -89.95
+Run domain lower left lon:         -179.95
+Run domain upper right lat:          89.95
+Run domain upper right lon:         179.95
+Run domain resolution (dx):           0.1
+Run domain resolution (dy):           0.1
 
 WSF valid date (YYYYMMDDHH):            2025060100
 WSF input directory:                    /path/to/WSF/raw/202506

@@ -33,11 +33,22 @@
 ! For example, NPR_SMOPS_CMAP_D2017101218.gr2 contains retrievals
 ! for 12 Oct 2017, hours 12, 13, 14, 15, 16, and 17.
 !
+! From 2024-07-04T18 (SMOPS v4) the 6-hourly files are named
+! NPR-SMOPS-CMAP-6hrly_vNrM_blend_sYYYYMMDDHH*.grib2 and hold the 6 hours
+! starting at HH. Their version is taken from the name: v4r0 is read;
+! v5r0 (AMSR3 upgrade, from 2026-12-08) is skipped with an [ERR] message
+! until its GRIB2 parameter numbers are confirmed and added in
+! read_SMOPS_ASCAT_data. Files without a version in the name are dated
+! (version2_time ... version5_time).
+!
 ! !REVISION HISTORY: 
 !  8 May 2013    Sujay Kumar; initial specification
 !  28 Sep 2017: Mahdi Navari; Updated to read ASCAT from SMOPS V3
 !  1  Apr 2019  Yonghwan Kwon: Upated for reading monthy CDF for the current month
 !  08 May 2024: Mahdi Navari; Updated to read ASCAT Metop-B and C from SMOPS V4
+!  13 Nov 2026: Ehsan Jalilvand; SMOPS v5 date; "SMOPS ASCAT version:"
+!               is checked and accepts "4.0"; version4_time is also set
+!               for "NESDIS V3.0 REGEN"
 ! 
 module SMOPS_ASCATsm_Mod
 ! !USES: 
@@ -85,6 +96,7 @@ module SMOPS_ASCATsm_Mod
      integer                :: nbins
      integer                :: ntimes
      real*8                 :: version2_time, version3_time, version4_time
+     real*8                 :: version5_time
      character(len=17)      :: version
      character(len=10)      :: conv
 
@@ -238,6 +250,15 @@ contains
     do n=1, LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,SMOPS_ASCATsm_struc(n)%version,&
           default='date-based', rc=status)
+       select case ( trim(SMOPS_ASCATsm_struc(n)%version) )
+       case ( 'date-based', 'NESDIS V3.0 REGEN', '1.3', '2.0', '3.0', '4.0' )
+       case default
+          write(LIS_logunit,*) '[ERR] SMOPS ASCAT version: "', &
+               trim(SMOPS_ASCATsm_struc(n)%version), '" is not supported.'
+          write(LIS_logunit,*) '[ERR] Use "date-based", "NESDIS V3.0 REGEN", ', &
+               '"1.3", "2.0", "3.0" or "4.0".'
+          call LIS_endrun()
+       end select
     enddo
 
    do n=1, LIS_rc%nnest
@@ -593,6 +614,12 @@ contains
           yr1 = 2012; mo1 = 8; da1 = 1; hr1 = 0; mn1 = 0; ss1 = 0
           call LIS_date2time(SMOPS_ASCATsm_struc(n)%version3_time,updoy,upgmt,&
              yr1,mo1,da1,hr1,mn1,ss1)
+          SMOPS_ASCATsm_struc(n)%version2_time = &
+             SMOPS_ASCATsm_struc(n)%version3_time
+          ! v4 started on the same date for the regenerated archive
+          yr1 = 2024; mo1 = 7; da1 = 4; hr1 = 18; mn1 = 0; ss1 = 0
+          call LIS_date2time(SMOPS_ASCATsm_struc(n)%version4_time,updoy,upgmt,&
+             yr1,mo1,da1,hr1,mn1,ss1)
        else
           ! Actual version dates
           yr1 = 2016; mo1 = 10; da1 = 31; hr1 = 12; mn1 = 0; ss1 = 0
@@ -608,6 +635,12 @@ contains
              yr1,mo1,da1,hr1,mn1,ss1)
 
        endif
+
+       ! SMOPS v5 (AMSR3 upgrade), target operational date 2026-12-08 (NESDIS
+       ! notice). Used only for files whose names carry no version.
+       yr1 = 2026; mo1 = 12; da1 = 8; hr1 = 0; mn1 = 0; ss1 = 0
+       call LIS_date2time(SMOPS_ASCATsm_struc(n)%version5_time,updoy,upgmt,&
+          yr1,mo1,da1,hr1,mn1,ss1)
 
        gridDesci = 0 
        gridDesci(1) = 0 

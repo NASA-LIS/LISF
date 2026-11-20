@@ -12,6 +12,11 @@
 !
 ! !REVISION HISTORY:
 !  09 Oct 2025: Ehsan Jalilvand; Initial specification
+!  Oct 2026: Ehsan Jalilvand; works on any regular lat-lon output grid
+!             (size taken from ref_lat/ref_lon). The search window now
+!             always covers search_radius (a fixed +/-5 cells was too
+!             narrow in longitude poleward of ~75N/S on ARFS) and wraps
+!             across the dateline on global grids.
 !
 ! !DESCRIPTION: Inverse distance resampling with proper per-channel quality filtering
 !-------------------------------------------------------------------------
@@ -48,29 +53,34 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
    real*4, intent(in) :: lat_in(nscans_in, nfovs_in), lon_in(nscans_in, nfovs_in)
    real*8, intent(in) :: ref_lat(:), ref_lon(:)
 
-   ! Outputs
-   real*8, intent(out) :: arfs_time(2560,1920)
-   real*4, intent(out) :: arfs_tb_10h(2560,1920), arfs_tb_10v(2560,1920)
-   real*4, intent(out) :: arfs_tb_18h(2560,1920), arfs_tb_18v(2560,1920)
-   real*4, intent(out) :: arfs_tb_23h(2560,1920), arfs_tb_23v(2560,1920)
-   real*4, intent(out) :: arfs_tb_36h(2560,1920), arfs_tb_36v(2560,1920)
-   real*4, intent(out) :: arfs_tb_89h(2560,1920), arfs_tb_89v(2560,1920)
-   real*4, intent(out) :: arfs_land_water_frac(2560,1920)
-   integer*1, intent(out) :: arfs_quality_flag(2560,1920)
-   integer*4, intent(out) :: arfs_sample_v(2560,1920), arfs_sample_h(2560,1920)
+    ! Outputs on the (lon, lat) grid given by ref_lon, ref_lat
+    real*8, intent(out) :: arfs_time(size(ref_lon),size(ref_lat))
+    real*4, intent(out) :: arfs_tb_10h(size(ref_lon),size(ref_lat)), arfs_tb_10v(size(ref_lon),size(ref_lat))
+    real*4, intent(out) :: arfs_tb_18h(size(ref_lon),size(ref_lat)), arfs_tb_18v(size(ref_lon),size(ref_lat))
+    real*4, intent(out) :: arfs_tb_23h(size(ref_lon),size(ref_lat)), arfs_tb_23v(size(ref_lon),size(ref_lat))
+    real*4, intent(out) :: arfs_tb_36h(size(ref_lon),size(ref_lat)), arfs_tb_36v(size(ref_lon),size(ref_lat))
+    real*4, intent(out) :: arfs_tb_89h(size(ref_lon),size(ref_lat)), arfs_tb_89v(size(ref_lon),size(ref_lat))
+    real*4, intent(out) :: arfs_land_water_frac(size(ref_lon),size(ref_lat))
+    integer*1, intent(out) :: arfs_quality_flag(size(ref_lon),size(ref_lat))
+    integer*4, intent(out) :: arfs_sample_v(size(ref_lon),size(ref_lat)), arfs_sample_h(size(ref_lon),size(ref_lat))
    logical, intent(in) :: filter_snow_precip  ! .true. = exclude snow/precip footprints (SM mode)
    ! .false. = keep all footprints (snow depth mode)
    ! Local variables
-   integer :: ii, jj, r, c, rr, cc, rmin, rmax, cmin, cmax
+    integer :: ii, jj, r, c, rr, cc, cmin, cmax
    real*8, parameter :: RE_KM = 6371.228
    real*8, parameter :: search_radius = 20.0
    real*8, parameter :: PI = 3.141592653589793238
    real*8, parameter :: d2r = PI/180.0
+    real*8, parameter :: KM_PER_DEG = RE_KM*d2r
+    ! Output grid geometry
+    integer :: nlon_g, nlat_g, nwin_lat, nwin_lon, dr
+    real*8  :: dlon_g, dlat_g, coslat
+    logical :: lon_global
    real*8 :: gcdist, lat1, lon1, lat2, lon2, weight
    logical :: has_snow, has_precip, has_water
    logical :: band1_bad, band2_bad, band3_bad, band4_bad, band5_bad
    logical :: skip_snow_precip  ! combined condition: skip this footprint due to snow/precip
-   integer*2 :: arfs_quality_flag2(2560,1920) ! 2-byte version of the arfs quality flag for performing IOR logic
+   integer*2, allocatable :: arfs_quality_flag2(:,:) ! 2-byte version of the arfs quality flag for performing IOR logic
 
    ! Weight arrays for accumulation
    real*4, allocatable :: arfs_wt_tb10h(:,:), arfs_wt_tb10v(:,:)
@@ -100,19 +110,30 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
       write(LDT_logunit,*)'[INFO] WITH per-channel quality filtering (snow/precip NOT filtered)'
    endif
 
-   ! Allocate weight and counter arrays
-   allocate(arfs_wt_tb10h(2560,1920), arfs_wt_tb10v(2560,1920))
-   allocate(arfs_wt_tb18h(2560,1920), arfs_wt_tb18v(2560,1920))
-   allocate(arfs_wt_tb23h(2560,1920), arfs_wt_tb23v(2560,1920))
-   allocate(arfs_wt_tb36h(2560,1920), arfs_wt_tb36v(2560,1920))
-   allocate(arfs_wt_tb89h(2560,1920), arfs_wt_tb89v(2560,1920))
-   allocate(arfs_wt_land_water_frac(2560,1920))
+    ! Output grid geometry (regular lat-lon; rows may run N-S or S-N)
+    nlon_g = size(ref_lon)
+    nlat_g = size(ref_lat)
+    dlon_g = abs(ref_lon(2) - ref_lon(1))
+    dlat_g = ref_lat(2) - ref_lat(1)          ! negative if rows run N-S
+    lon_global = abs(nlon_g*dlon_g - 360.0d0) < 0.5d0*dlon_g
+    ! Rows needed to cover search_radius (+1 for the offset of the
+    ! footprint from the centre of its nearest cell)
+    nwin_lat = ceiling(search_radius / (KM_PER_DEG*abs(dlat_g))) + 1
 
-   allocate(ocean_count(2560,1920), precip_count(2560,1920), snow_count(2560,1920))
-   allocate(total_count(2560,1920))
-   allocate(band1_bad_count(2560,1920), band2_bad_count(2560,1920))
-   allocate(band3_bad_count(2560,1920), band4_bad_count(2560,1920))
-   allocate(band5_bad_count(2560,1920))
+    ! Allocate weight and counter arrays
+    allocate(arfs_wt_tb10h(nlon_g,nlat_g), arfs_wt_tb10v(nlon_g,nlat_g))
+    allocate(arfs_wt_tb18h(nlon_g,nlat_g), arfs_wt_tb18v(nlon_g,nlat_g))
+    allocate(arfs_wt_tb23h(nlon_g,nlat_g), arfs_wt_tb23v(nlon_g,nlat_g))
+    allocate(arfs_wt_tb36h(nlon_g,nlat_g), arfs_wt_tb36v(nlon_g,nlat_g))
+    allocate(arfs_wt_tb89h(nlon_g,nlat_g), arfs_wt_tb89v(nlon_g,nlat_g))
+    allocate(arfs_wt_land_water_frac(nlon_g,nlat_g))
+
+    allocate(ocean_count(nlon_g,nlat_g), precip_count(nlon_g,nlat_g), snow_count(nlon_g,nlat_g))
+    allocate(total_count(nlon_g,nlat_g))
+    allocate(band1_bad_count(nlon_g,nlat_g), band2_bad_count(nlon_g,nlat_g))
+    allocate(band3_bad_count(nlon_g,nlat_g), band4_bad_count(nlon_g,nlat_g))
+    allocate(band5_bad_count(nlon_g,nlat_g))
+    allocate(arfs_quality_flag2(nlon_g,nlat_g))
 
    ! Initialize arrays
    arfs_time = 0.0
@@ -204,16 +225,32 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
             lon1 = lon1 - 360.0
          endif
 
-         c = MINLOC(ABS(lat1 - ref_lat(:)), 1)
-         r = MINLOC(ABS(lon1 - ref_lon(:)), 1)
+            ! Nearest grid cell: c = row (lat), r = column (lon)
+            c = nint((lat1 - ref_lat(1)) / dlat_g) + 1
+            c = max(1, min(nlat_g, c))
+            r = nint((lon1 - ref_lon(1)) / dlon_g) + 1
+            if (lon_global) then
+                r = modulo(r - 1, nlon_g) + 1
+            else
+                r = max(1, min(nlon_g, r))
+            endif
 
-         rmin = max(1, r - 5)
-         rmax = min(size(ref_lon), r + 5)
-         cmin = max(1, c - 5)
-         cmax = min(size(ref_lat), c + 5)
+            ! Columns needed to cover search_radius at this latitude
+            coslat = max(cos(d2r*lat1), 1.0d-3)
+            nwin_lon = min(ceiling(search_radius / (KM_PER_DEG*dlon_g*coslat)) + 1, &
+                           nlon_g/2)
+
+            cmin = max(1, c - nwin_lat)
+            cmax = min(nlat_g, c + nwin_lat)
 
          ! Process each grid cell in search radius
-         do rr = rmin, rmax
+            do dr = -nwin_lon, nwin_lon
+                rr = r + dr
+                if (lon_global) then
+                    rr = modulo(rr - 1, nlon_g) + 1
+                else if (rr < 1 .or. rr > nlon_g) then
+                    cycle
+                endif
             do cc = cmin, cmax
                lat2 = ref_lat(cc)
                lon2 = ref_lon(rr)
@@ -411,8 +448,8 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
    ! CREATE QUALITY FLAGS USING MAJORITY VOTE
    ! =====================================================================
 
-   do rr = 1, 2560
-      do cc = 1, 1920
+    do rr = 1, nlon_g
+        do cc = 1, nlat_g
          if (total_count(rr,cc) > 0) then
             arfs_quality_flag2(rr,cc) = 0
 
@@ -503,6 +540,7 @@ SUBROUTINE WSF2ARFS_INVDIS(tim, tb_10h, tb_10v, tb_18h, tb_18v, &
    deallocate(ocean_count, precip_count, snow_count, total_count)
    deallocate(band1_bad_count, band2_bad_count, band3_bad_count)
    deallocate(band4_bad_count, band5_bad_count)
+   deallocate(arfs_quality_flag2)
 
 END SUBROUTINE WSF2ARFS_INVDIS
 

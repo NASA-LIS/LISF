@@ -18,19 +18,28 @@
 !  22 Sep 2017: Mahdi Navari, filter added to screen the the ASCAT data
 !               in the arid and semi-arid regions
 !  9 Oct 2017: Mahdi Navari, added capability to read AMSR2 and SMAP
+!  28 Oct 2026: Ehsan Jalilvand, read the 6-hourly SMOPS archive (three
+!               naming conventions, as in the LIS SMOPS ASCAT reader) and
+!               SMOPS v4 (ASCAT-B and ASCAT-C). The GRIB2 reading and the
+!               interpolation are split so that the 6-hourly windows of a
+!               time step are combined on the SMOPS grid and interpolated
+!               once.
+!  12 Nov 2026: Ehsan Jalilvand, SMOPS v5: any NPR-SMOPS-CMAP-6hrly
+!               version is found (the newest is read), the version of
+!               these files is taken from the name, and LDT stops on a
+!               version whose GRIB2 parameter numbers it does not have.
+!  12 Nov 2026: Ehsan Jalilvand, check the GRIB2 grid of each layer; flip
+!               the rows only if they are stored north to south.
 !
 ! !INTERFACE:
 subroutine readSMOPSsmObs(n)
 ! !USES:
-  use ESMF
   use LDT_coreMod,      only : LDT_rc
-  use LDT_timeMgrMod,   only : LDT_get_julss
-  use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
-                               LDT_releaseUnitNumber
+  use LDT_timeMgrMod,   only : LDT_date2time, LDT_tick
+  use LDT_logMod,       only : LDT_logunit
   use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_DAobsDataMod
   use SMOPSsm_obsMod,   only : SMOPSsmobs
-  use map_utils
 
   implicit none
 ! !ARGUMENTS:
@@ -43,84 +52,167 @@ subroutine readSMOPSsmObs(n)
 ! and the reader provides the options to select the
 ! desired layer(s).
 !
+! Daily files (default):
+!   <dir>/YYYY/NPR_SMOPS_CMAP_DYYYYMMDD.gr2, one per day.
+!
+! 6-hourly files ("SMOPS soil moisture use realtime data: 1"):
+!   every 6-hourly window that starts within [current time, current
+!   time + time step) is read. On the SMOPS grid, a later window replaces
+!   an earlier one where it has a valid retrieval, so a 1-day time step
+!   gives one value per grid cell per day (the latest), as in the NESDIS
+!   daily product. The combined field is then interpolated once.
+!
 !EOP
 
-  real              :: timenow
-  logical           :: alarmCheck
-  logical           :: file_exists
-  integer           :: c,r,i,j
-  character(len=LDT_CONST_PATH_LEN)     :: fname
+  logical           :: file_exists, ok, found
+  integer           :: c, r, iw, nwin, nnat
+  integer           :: yr, mo, da, hr, mn, ss, doy
+  real              :: gmt
+  real*8            :: wtime
+  character(len=LDT_CONST_PATH_LEN) :: fname
+  character(len=16) :: fver
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
-
-!-----------------------------------------------------------------------
-! It is assumed that CDF is computed using daily observations.
-!-----------------------------------------------------------------------
+  real,      allocatable :: sm_nat(:), sm_win(:)
+  logical*1, allocatable :: b_nat(:), b_win(:)
 
   SMOPSsmobs(n)%smobs = LDT_rc%udef
   smobs = LDT_rc%udef
 
-  call create_SMOPSsm_filename(SMOPSsmobs(n)%odir, &
-       LDT_rc%yr, LDT_rc%mo, LDT_rc%da, fname)
+  nnat = SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr
+  allocate(sm_nat(nnat), b_nat(nnat))
+  sm_nat = LDT_rc%udef
+  b_nat = .false.
+  found = .false.
 
-  inquire(file=trim(fname),exist=file_exists)
-  if(file_exists) then
+  yr = LDT_rc%yr
+  mo = LDT_rc%mo
+  da = LDT_rc%da
+  hr = LDT_rc%hr
+  mn = 0
+  ss = 0
+  call LDT_date2time(wtime, doy, gmt, yr, mo, da, hr, mn, ss)
 
-     write(LDT_logunit,*) '[INFO] Reading ',trim(fname)
-     call read_SMOPS_data(n, fname,smobs)
-     write(LDT_logunit,*) '[INFO] Finished reading ',trim(fname)
+  if (SMOPSsmobs(n)%useRealtime == 1) then
+     allocate(sm_win(nnat), b_win(nnat))
+     nwin = nint(LDT_rc%ts / 21600.0)
+     do iw = 1, nwin
+        call create_SMOPSsm_6hrly_filename(n, SMOPSsmobs(n)%odir, &
+             SMOPSsmobs(n)%conv, yr, mo, da, hr, fname, fver)
+        if (trim(fname) /= 'NULL') then
+           inquire(file=trim(fname), exist=file_exists)
+           if (file_exists) then
+              write(LDT_logunit,*) '[INFO] Reading ', trim(fname)
+              call read_SMOPS_native(n, fname, fver, wtime, sm_win, b_win, ok)
+              if (ok) then
+                 where (b_win)
+                    sm_nat = sm_win
+                    b_nat = .true.
+                 endwhere
+                 found = .true.
+              endif
+           else
+              write(LDT_logunit,*) '[WARN] Missing SMOPS file ', trim(fname)
+           endif
+        else
+           write(LDT_logunit,'(a,i4.4,3i2.2)') &
+                ' [WARN] No NPR-SMOPS-CMAP-6hrly file found for window starting ', &
+                yr, mo, da, hr
+        endif
+        ! Next 6-hourly window
+        call LDT_tick(wtime, doy, gmt, yr, mo, da, hr, mn, ss, 21600.0)
+     enddo
+     deallocate(sm_win, b_win)
+  else
+     call create_SMOPSsm_filename(SMOPSsmobs(n)%odir, &
+          LDT_rc%yr, LDT_rc%mo, LDT_rc%da, fname)
+     inquire(file=trim(fname), exist=file_exists)
+     if (file_exists) then
+        write(LDT_logunit,*) '[INFO] Reading ', trim(fname)
+        call read_SMOPS_native(n, fname, '', wtime, sm_nat, b_nat, found)
+        write(LDT_logunit,*) '[INFO] Finished reading ', trim(fname)
+     endif
+  endif
 
-     do r=1,LDT_rc%lnr(n)
-        do c=1,LDT_rc%lnc(n)
-           if(smobs(c+(r-1)*LDT_rc%lnc(n)).ne.-9999.0) then
+  if (found) then
+     call SMOPS_native_to_ldt(n, sm_nat, b_nat, smobs)
+     do r = 1, LDT_rc%lnr(n)
+        do c = 1, LDT_rc%lnc(n)
+           if (smobs(c+(r-1)*LDT_rc%lnc(n)) .ne. -9999.0) then
               SMOPSsmobs(n)%smobs(c,r) = smobs(c+(r-1)*LDT_rc%lnc(n))
            endif
         enddo
      enddo
-  else
-     SMOPSsmobs(n)%smobs = LDT_rc%udef
   endif
 
-  call LDT_logSingleDAobs(n,LDT_DAobsData(n)%soilmoist_obs,&
-       SMOPSsmobs(n)%smobs,vlevel=1)
+  deallocate(sm_nat, b_nat)
+
+  call LDT_logSingleDAobs(n, LDT_DAobsData(n)%soilmoist_obs, &
+       SMOPSsmobs(n)%smobs, vlevel=1)
 
 end subroutine readSMOPSsmObs
 
 
 !BOP
 !
-! !ROUTINE: read_SMOPS_data
-! \label(read_SMOPS_data)
+! !ROUTINE: read_SMOPS_native
+! \label{read_SMOPS_native}
 !
 ! !INTERFACE:
-subroutine read_SMOPS_data(n, fname, smobs_ip)
+subroutine read_SMOPS_native(n, fname, fversion, datatime, sm_out, b_out, ok)
 !
 ! !USES:
 #if (defined USE_GRIBAPI)
    use grib_api
 #endif
-   use LDT_coreMod,      only : LDT_rc, LDT_domain
-   use LDT_timeMgrMod,   only : LDT_date2time
-   use LDT_logMod
-   use map_utils,        only : latlon_to_ij
+   use LDT_coreMod,      only : LDT_rc
+   use LDT_logMod,       only : LDT_logunit, LDT_endrun
    use SMOPSsm_obsMod,   only : SMOPSsmobs
-
-   ! MN : added to read the greenness, land cover and land mask
-   use LDT_gfracMod,     only : LDT_gfrac_struc
-   use LDT_LMLCMod
-   use LDT_paramDataMod, only : LDT_LSMparam_struc
 
    implicit none
 !
 ! !ARGUMENTS:
 !
-   integer                       :: n
-   character (len=*)             :: fname
-   real                          :: smobs_ip(LDT_rc%lnc(n)*LDT_rc%lnr(n))
-   integer                       :: search_rad
+   integer,           intent(in)  :: n
+   character (len=*), intent(in)  :: fname
+   character (len=*), intent(in)  :: fversion
+   real*8,            intent(in)  :: datatime
+   real,              intent(out) :: sm_out(SMOPSsmobs(n)%smopsnc*&
+                                            SMOPSsmobs(n)%smopsnr)
+   logical*1,         intent(out) :: b_out(SMOPSsmobs(n)%smopsnc*&
+                                           SMOPSsmobs(n)%smopsnr)
+   logical,           intent(out) :: ok
 !
 ! !DESCRIPTION:
-!  This subroutine reads the SMOPS grib2 file and applies the data
-!  quality flags to filter the data.
+!  This subroutine reads one SMOPS grib2 file (daily or 6-hourly) and
+!  applies the data quality flags. The result stays on the SMOPS 0.25 deg
+!  grid, rows south to north.
+!
+!  The grid of every layer read is checked against the SMOPS grid LDT
+!  uses: 1440 x 720 cells of 0.25 deg, row by row, the first column at
+!  -179.875 (180.125 in GRIB2). Rows stored north to south are flipped;
+!  rows stored south to north are kept. Any other grid stops LDT.
+!
+!  The GRIB2 parameter numbers depend on the SMOPS version, which is
+!  taken from the file name for the NPR-SMOPS-CMAP-6hrly files (fversion,
+!  e.g. 'v4r0'), and otherwise from "SMOPS soil moisture version:" or,
+!  for "date-based", from the data time:
+!
+!  \begin{tabular}{lll}
+!  version & ASCAT (QA)                       & dates \\
+!  1.3     & A 213 (234), B 214 (235)         & before 2016-10-31T12 \\
+!  2.0     & A 213 (234), B 214 (235)         & to 2017-08-24T12 \\
+!  3.0     & A 213 (243), B 214 (244)         & to 2024-07-04T18 \\
+!  4.0     & B 214 (244), C 250 (253)         & from 2024-07-04T18 \\
+!  5.0     & not known yet; LDT stops         & from 2026-12-08 \\
+!  \end{tabular}
+!
+!  LDT stops if a file's name gives a version other than v4r0, if it
+!  differs from a version set in "SMOPS soil moisture version:", or if a
+!  file without a version in its name is dated from 2026-12-08 and the
+!  version is "date-based".
+!
+!  For ASCAT, the satellites are merged in the order listed; a later one
+!  replaces an earlier one where it has a valid retrieval (as in LIS).
 !
 !  Quality flags are defined in:
 !      NOAA NESDIS
@@ -142,96 +234,24 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
 !
 !  The arguments are:
 !  \begin{description}
-!  \item[n]            index of the nest
-!  \item[fname]        name of the SMOPS AMSR-E file
-!  \item[smobs\_ip]    soil moisture data processed to the LDT domain
+!  \item[n]         index of the nest
+!  \item[fname]     name of the SMOPS file
+!  \item[fversion]  version from the file name ('v4r0', ...), or blank
+!  \item[datatime]  LDT time of the data (selects the version if blank)
+!  \item[sm\_out]   soil moisture on the SMOPS grid (udef where invalid)
+!  \item[b\_out]    .true. where sm\_out is valid
+!  \item[ok]        .false. if the file could not be read
 ! \end{description}
 !
 !EOP
-   integer        :: param_ASCAT_A, param_ASCAT_A_qa
-   integer        :: param_ASCAT_B, param_ASCAT_B_qa
-   integer        :: param_SMOS, param_SMOS_qa
-   integer        :: param_AMSR2, param_AMSR2_qa
-   integer        :: param_SMAP, param_SMAP_qa
    integer*1, parameter :: err_threshold = 5 ! in percent
+   integer*2, parameter :: qa_undef = 9999
    ! EMK 21 Jul 2021...ISO Fortran restricts use of binary integer constants
    ! to DATA statements and as a principal argument to an intrinsic function.
    ! And gfortran 10 and 11 rejects their use in parameters.
    ! So we replace with arrays here.
-   ! integer*1,parameter :: AMSR2_accept = b'00000001'
-   ! integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
-   ! integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
-   ! integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
-   ! integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
-   ! integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
-   ! integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
-   ! integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
-   ! integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
    integer*1 :: AMSR2_accept(1)
    integer*2 :: SMOS_accept(8)
-   real           :: sm_ASCAT_A(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   real           :: sm_ASCAT_A_t(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   real           :: sm_ASCAT_A_qa(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   integer*2      :: sm_ASCAT_A_qa_t(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   real           :: sm_ASCAT_B(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   real           :: sm_ASCAT_B_t(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   real           :: sm_ASCAT_B_qa(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   integer*2      :: sm_ASCAT_B_qa_t(SMOPSsmobs(n)%smopsnc*&
-      SMOPSsmobs(n)%smopsnr)
-   real           :: sm_smos(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_smos_t(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_smos_qa(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   integer*2      :: sm_smos_qa_t(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_amsr2(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_amsr2_t(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_amsr2_qa(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   integer*2      :: sm_amsr2_qa_t(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_smap(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_smap_t(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   real           :: sm_smap_qa(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   integer*2      :: sm_smap_qa_t(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-
-   real           :: sm_data(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   logical*1      :: sm_data_b(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
-   logical*1      :: smobs_b_ip(LDT_rc%lnc(n)*LDT_rc%lnr(n))
-
-   integer        :: c,r,i,j,kk
-   integer        :: ftn,iret,igrib,nvars
-   integer        :: param_num
-   logical        :: var_found_ascat
-   logical        :: var_found_smos
-   logical        :: var_found_AMSR2
-   logical        :: var_found_SMAP
-   integer*2      :: qavalue
-   integer*1      :: err, ql, qaflags
-   integer        :: updoy,yr1,mo1,da1,hr1,mn1,ss1
-   real           :: upgmt
-   real*8         :: timenow
-   logical        :: smDataNotAvailable
-
-   integer        :: ix, jx,c_s, c_e, r_s, r_e
-
-   ! EMK 21 Jul 2021...ISO Fortran restricts use of binary integer constants
-   ! to DATA statements and as a principal argument to an intrinsic function.
-   ! And gfortran 10 and 11 rejects their use in parameters.
-   ! So we replace with arrays here.
-   ! Old code for reference
-   !integer*1,parameter :: AMSR2_accept = b'00000001'
-   !integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
-   !integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
-   !integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
-   !integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
-   !integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
-   !integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
-   !integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
-   !integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
    data AMSR2_accept / b'00000001' /
    data SMOS_accept / b'0000000000000000', &
         b'0000000000000001', &
@@ -242,333 +262,190 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
         b'0000000010001000', &
         b'0000000010001001' /
 
+   ! GRIB2 parameter numbers; -1 = not in this SMOPS version
+   integer   :: param_ASCAT(3), param_ASCAT_qa(3)
+   integer   :: param_other, param_other_qa
+   character(len=5) :: other_name
+
+   real,      allocatable :: vals(:)
+   real,      allocatable :: sm_ascat(:,:)
+   integer*2, allocatable :: qa_ascat(:,:)
+   real,      allocatable :: sm_other(:)
+   integer*2, allocatable :: qa_other(:)
+
+   integer        :: k, i, nnat
+   integer        :: ftn, iret, igrib, param_num
+   logical        :: north_first
+   integer*2      :: qavalue
+   integer*1      :: err
+   character(len=3) :: vname
+
+   ok = .false.
+   sm_out = LDT_rc%udef
+   b_out = .false.
+
 #if (defined USE_GRIBAPI)
-   smDataNotAvailable = .false.
+   nnat = SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr
 
-   ! Set QA values to NESDIS SMOPS undefined value.
-   sm_ASCAT_A_qa_t = 9999
-   sm_ASCAT_B_qa_t = 9999
-   sm_smos_qa_t    = 9999
-   sm_amsr2_qa_t   = 9999
-   sm_smap_qa_t    = 9999
-
-   if ( SMOPSsmobs(n)%version == '1.3' ) then
-      timenow = SMOPSsmobs(n)%version2_time - 1.0
-   elseif ( SMOPSsmobs(n)%version == '2.0' ) then
-      timenow = SMOPSsmobs(n)%version2_time
-   elseif ( SMOPSsmobs(n)%version == '3.0' ) then
-      timenow = SMOPSsmobs(n)%version3_time
-   else
-      yr1 = LDT_rc%yr
-      mo1 = LDT_rc%mo
-      da1 = LDT_rc%da
-      hr1 = LDT_rc%hr
-      mn1 = LDT_rc%mn
-      ss1 = 0
-      call LDT_date2time(timenow,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
-   endif
-
-   if ( timenow < SMOPSsmobs(n)%version2_time ) then
-      ! SMOPS version 1.3
-      param_ASCAT_A = 213; param_ASCAT_A_qa = 234
-      param_ASCAT_B = 214; param_ASCAT_B_qa = 235
-      param_SMOS  = 212; param_SMOS_qa  = 233
-      if ( SMOPSsmobs(n)%useSMOS.eq.1 ) then
-         write(LDT_logunit,*) '[Warning] LDT does not process SMOS ' // &
-            'from SMOPS version 1.3.'
-         smDataNotAvailable = .true.
-         smobs_ip = LDT_rc%udef
-      endif
-      if ( SMOPSsmobs(n)%useAMSR2.eq.1 ) then
-         write(LDT_logunit,*) '[Warning] AMSR2 is not available ' // &
-            'in SMOPS version 1.3'
-         smDataNotAvailable = .true.
-         smobs_ip = LDT_rc%udef
-      endif
-      if ( SMOPSsmobs(n)%useSMAP.eq.1 ) then
-         write(LDT_logunit,*) '[Warning] SMAP is not available ' // &
-            'in SMOPS version 1.3.'
-         smDataNotAvailable = .true.
-         smobs_ip = LDT_rc%udef
-      endif
-      write(LDT_logunit,*) '[MSG] Reading SMOPS dataset '//&
-         'as SMOPS version 1.3'
-   elseif ( timenow >= SMOPSsmobs(n)%version2_time .and. &
-            timenow <  SMOPSsmobs(n)%version3_time ) then
-      ! SMOPS version 2
-      param_ASCAT_A = 213; param_ASCAT_A_qa = 234
-      param_ASCAT_B = 214; param_ASCAT_B_qa = 235
-      param_SMOS  = 212; param_SMOS_qa  = 233
-      param_AMSR2 = 215; param_AMSR2_qa = 236
-      if ( SMOPSsmobs(n)%useSMOS.eq.1 ) then
-         write(LDT_logunit,*) '[Warning] LDT does not process SMOS ' // &
-            'from SMOPS version 2.0.'
-         smDataNotAvailable = .true.
-         smobs_ip = LDT_rc%udef
-      endif
-      if ( SMOPSsmobs(n)%useAMSR2.eq.1 ) then
-         write(LDT_logunit,*) '[Warning] LDT does not process AMSR2 ' // &
-            'in SMOPS version 2.0.'
-         smDataNotAvailable = .true.
-         smobs_ip = LDT_rc%udef
-      endif
-      if(SMOPSsmobs(n)%useSMAP.eq.1 ) then
-         write(LDT_logunit,*) '[Warning] SMAP is not availabe in SMOPS version 2'
-         smDataNotAvailable = .true.
-         smobs_ip = LDT_rc%udef
-      endif
-      write(LDT_logunit,*) '[MSG] Reading SMOPS dataset '//&
-         'as SMOPS version 2.0'
-   else ! ( timenow >= SMOPSsmobs(n)%version3_time ) then
-      ! SMOPS version 3
-      param_ASCAT_A = 213; param_ASCAT_A_qa = 243
-      param_ASCAT_B = 214; param_ASCAT_B_qa = 244
-      param_SMOS  = 212; param_SMOS_qa  = 242
-      param_AMSR2 = 215; param_AMSR2_qa = 245
-      param_SMAP  = 218; param_SMAP_qa  = 248
-      write(LDT_logunit,*) '[MSG] Reading SMOPS dataset '//&
-         'as SMOPS version 3.0'
-   endif
-
-
-
-   if ( smDataNotAvailable .eqv. .false. ) then
-
-      call grib_open_file(ftn,trim(fname),'r',iret)
-      if(iret.ne.0) then
-         write(LDT_logunit,*) 'Could not open file: ',trim(fname)
-         flush(LDT_logunit)
+   ! SMOPS version: from the file name (NPR-SMOPS-CMAP-6hrly files), else
+   ! from "SMOPS soil moisture version:", else from the data time.
+   if ( len_trim(fversion) > 0 ) then
+      select case ( trim(fversion) )
+      case ( 'v4r0' )
+         vname = '4.0'
+      case default
+         ! v5r0 adds AMSR3 and may move the ASCAT layers; the numbers must
+         ! come from a v5 file before v5 is read.
+         write(LDT_logunit,*) '[ERR] ', trim(fname)
+         write(LDT_logunit,*) '[ERR] is SMOPS ', trim(fversion), &
+              '. LDT has the GRIB2 parameter numbers of SMOPS 1.3, 2.0, 3.0'
+         write(LDT_logunit,*) '[ERR] and 4.0 (v4r0) only. Add those of ', &
+              trim(fversion), ' to read_SMOPS_native.'
+         call LDT_endrun()
+      end select
+      if ( SMOPSsmobs(n)%version /= 'date-based' .and. &
+           SMOPSsmobs(n)%version /= 'NESDIS V3.0 REGEN' .and. &
+           SMOPSsmobs(n)%version /= vname ) then
+         write(LDT_logunit,*) '[ERR] ', trim(fname)
+         write(LDT_logunit,*) '[ERR] is SMOPS ', vname, &
+              ', but "SMOPS soil moisture version:" is ', &
+              trim(SMOPSsmobs(n)%version)
          call LDT_endrun()
       endif
-      call grib_multi_support_on
+   elseif ( SMOPSsmobs(n)%version /= 'date-based' .and. &
+            SMOPSsmobs(n)%version /= 'NESDIS V3.0 REGEN' ) then
+      vname = SMOPSsmobs(n)%version(1:3)   ! checked in SMOPSsm_obsMod
+   elseif ( datatime < SMOPSsmobs(n)%version2_time ) then
+      vname = '1.3'
+   elseif ( datatime < SMOPSsmobs(n)%version3_time ) then
+      vname = '2.0'
+   elseif ( datatime < SMOPSsmobs(n)%version4_time ) then
+      vname = '3.0'
+   elseif ( datatime < SMOPSsmobs(n)%version5_time ) then
+      vname = '4.0'
+   else
+      write(LDT_logunit,*) '[ERR] ', trim(fname)
+      write(LDT_logunit,*) '[ERR] has no version in its name and is dated ', &
+           'from 2026-12-08, when SMOPS v5 starts.'
+      write(LDT_logunit,*) '[ERR] LDT does not have the GRIB2 parameter ', &
+           'numbers of SMOPS v5. If the file is v4,'
+      write(LDT_logunit,*) '[ERR] set "SMOPS soil moisture version: 4.0".'
+      call LDT_endrun()
+   endif
 
-      do
-         call grib_new_from_file(ftn,igrib,iret)
+   param_ASCAT = -1;  param_ASCAT_qa = -1
+   param_other = -1;  param_other_qa = -1
+   other_name = ''
 
-         if ( iret == GRIB_END_OF_FILE ) then
-            exit
+   select case ( vname )
+   case ( '1.3', '2.0' )
+      param_ASCAT(1) = 213; param_ASCAT_qa(1) = 234
+      param_ASCAT(2) = 214; param_ASCAT_qa(2) = 235
+      if ( SMOPSsmobs(n)%useSMOS.eq.1 )  other_name = 'SMOS'
+      if ( SMOPSsmobs(n)%useAMSR2.eq.1 ) other_name = 'AMSR2'
+      if ( SMOPSsmobs(n)%useSMAP.eq.1 )  other_name = 'SMAP'
+   case ( '3.0' )
+      param_ASCAT(1) = 213; param_ASCAT_qa(1) = 243
+      param_ASCAT(2) = 214; param_ASCAT_qa(2) = 244
+      if ( SMOPSsmobs(n)%useSMOS.eq.1 ) then
+         param_other = 212; param_other_qa = 242
+      elseif ( SMOPSsmobs(n)%useAMSR2.eq.1 ) then
+         param_other = 215; param_other_qa = 245
+      elseif ( SMOPSsmobs(n)%useSMAP.eq.1 ) then
+         param_other = 218; param_other_qa = 248
+      endif
+   case ( '4.0' )
+      ! No ASCAT-A, no SMOS
+      param_ASCAT(2) = 214; param_ASCAT_qa(2) = 244
+      param_ASCAT(3) = 250; param_ASCAT_qa(3) = 253
+      if ( SMOPSsmobs(n)%useSMOS.eq.1 ) then
+         other_name = 'SMOS'
+      elseif ( SMOPSsmobs(n)%useAMSR2.eq.1 ) then
+         param_other = 215; param_other_qa = 245
+      elseif ( SMOPSsmobs(n)%useSMAP.eq.1 ) then
+         param_other = 218; param_other_qa = 248
+      endif
+   end select
+
+   write(LDT_logunit,*) '[MSG] Reading SMOPS dataset as SMOPS version '// &
+        vname
+
+   if ( len_trim(other_name) > 0 ) then
+      write(LDT_logunit,*) '[WARN] LDT does not process '//trim(other_name)// &
+           ' from SMOPS version '//vname//'; file skipped.'
+      return
+   endif
+   if ( SMOPSsmobs(n)%useASCAT.ne.1 ) param_ASCAT = -1
+
+   allocate(vals(nnat))
+   allocate(sm_ascat(nnat,3), qa_ascat(nnat,3))
+   allocate(sm_other(nnat), qa_other(nnat))
+   ! Fields missing from a file (e.g., ASCAT-A after Metop-A ended in
+   ! Nov 2021) stay undefined.
+   sm_ascat = LDT_rc%udef
+   qa_ascat = qa_undef
+   sm_other = LDT_rc%udef
+   qa_other = qa_undef
+
+   call grib_open_file(ftn, trim(fname), 'r', iret)
+   if (iret .ne. 0) then
+      write(LDT_logunit,*) '[WARN] Could not open file: ', trim(fname)
+      deallocate(vals, sm_ascat, qa_ascat, sm_other, qa_other)
+      return
+   endif
+   call grib_multi_support_on
+
+   do
+      call grib_new_from_file(ftn, igrib, iret)
+      if ( iret == GRIB_END_OF_FILE ) exit
+      if ( iret /= 0 ) then
+         write(LDT_logunit,*) '[WARN] Problem reading GRIB message from ', &
+              trim(fname)
+         call grib_close_file(ftn)
+         deallocate(vals, sm_ascat, qa_ascat, sm_other, qa_other)
+         return
+      endif
+
+      call grib_get(igrib, 'parameterNumber', param_num, iret)
+      if (iret /= 0) then
+         write(LDT_logunit,*) '[WARN] Problem reading parameterNumber from ', &
+              trim(fname)
+         call grib_release(igrib, iret)
+         call grib_close_file(ftn)
+         deallocate(vals, sm_ascat, qa_ascat, sm_other, qa_other)
+         return
+      endif
+
+      if ( param_num > 0 .and. ( any(param_ASCAT == param_num) .or. &
+           any(param_ASCAT_qa == param_num) .or. &
+           param_num == param_other .or. param_num == param_other_qa ) ) then
+
+         call check_grid(igrib, param_num, north_first)
+         call grib_get(igrib, 'values', vals, iret)
+         if (iret /= 0) then
+            write(LDT_logunit,*) '[WARN] Problem reading values of parameter ', &
+                 param_num, ' from ', trim(fname)
+            call grib_release(igrib, iret)
+            call grib_close_file(ftn)
+            deallocate(vals, sm_ascat, qa_ascat, sm_other, qa_other)
+            return
          endif
+         if ( north_first ) call flip_rows(vals)
 
-         call grib_get(igrib, 'parameterNumber',param_num, iret)
-         call LDT_verify(iret, &
-            'grib_get: parameterNumber failed in readSMOPSsmobs')
+         do k = 1, 3
+            if ( param_num == param_ASCAT(k) )    sm_ascat(:,k) = vals
+            if ( param_num == param_ASCAT_qa(k) ) qa_ascat(:,k) = int(vals, 2)
+         enddo
+         if ( param_num == param_other )    sm_other = vals
+         if ( param_num == param_other_qa ) qa_other = int(vals, 2)
+      endif
 
-         var_found_ascat = .false.
-         if(SMOPSsmobs(n)%useASCAT.eq.1) then
-            if(param_num.eq.param_ASCAT_A) then
-               var_found_ascat = .true.
-            endif
-         endif
+      call grib_release(igrib, iret)
+   enddo
 
-         if(var_found_ascat) then
-            call grib_get(igrib, 'values',sm_ASCAT_A,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_ASCAT_A_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     sm_ASCAT_A(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc)
-               enddo
-            enddo
-         endif
+   call grib_close_file(ftn)
 
-         var_found_ascat = .false.
-         if(SMOPSsmobs(n)%useASCAT.eq.1) then
-            if(param_num.eq.param_ASCAT_A_qa) then
-               var_found_ascat = .true.
-            endif
-         endif
-
-         if(var_found_ascat) then
-            call grib_get(igrib, 'values',sm_ASCAT_A_qa,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_ASCAT_A_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     int(sm_ASCAT_A_qa(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc))
-               enddo
-            enddo
-         endif
-
-         var_found_ascat = .false.
-         if(SMOPSsmobs(n)%useASCAT.eq.1) then
-            if(param_num.eq.param_ASCAT_B) then
-               var_found_ascat = .true.
-            endif
-         endif
-
-         if(var_found_ascat) then
-            call grib_get(igrib, 'values',sm_ASCAT_B,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_ASCAT_B_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     sm_ASCAT_B(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc)
-               enddo
-            enddo
-         endif
-
-         var_found_ascat = .false.
-         if(SMOPSsmobs(n)%useASCAT.eq.1) then
-            if(param_num.eq.param_ASCAT_B_qa) then
-               var_found_ascat = .true.
-            endif
-         endif
-
-         if(var_found_ascat) then
-            call grib_get(igrib, 'values',sm_ASCAT_B_qa,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_ASCAT_B_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     int(sm_ASCAT_B_qa(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc))
-               enddo
-            enddo
-         endif
-
-         !smos
-         var_found_smos = .false.
-         if(SMOPSsmobs(n)%useSMOS.eq.1) then
-            if(param_num.eq.param_smos) then
-               var_found_smos = .true.
-            endif
-         endif
-
-         if(var_found_smos) then
-            call grib_get(igrib, 'values',sm_smos,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_smos_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     sm_smos(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc)
-               enddo
-            enddo
-         endif
-
-         var_found_smos = .false.
-         if(SMOPSsmobs(n)%useSMOS.eq.1) then
-            if(param_num.eq.param_smos_qa) then
-               var_found_smos = .true.
-            endif
-         endif
-
-         if(var_found_smos) then
-            call grib_get(igrib, 'values',sm_smos_qa,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_smos_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     int(sm_smos_qa(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc))
-               enddo
-            enddo
-         endif
-
-         ! AMSR2
-         var_found_amsr2 = .false.
-         if(SMOPSsmobs(n)%useAMSR2.eq.1) then
-            if(param_num.eq.param_amsr2) then
-               var_found_amsr2 = .true.
-            endif
-         endif
-
-         if(var_found_amsr2) then
-            call grib_get(igrib, 'values',sm_amsr2,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-            !print *, 'sm_amsr2' , sm_amsr2
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     sm_amsr2(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc)
-                  if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .GT. 0.1 .and. &
-                     sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .LT. 1) then
-                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)')  &
-                        c, r, c+(r-1)*SMOPSsmobs(n)%smopsnc,      &
-                        sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-                  endif
-               enddo
-            enddo
-         endif
-
-         var_found_amsr2 = .false.
-         if(SMOPSsmobs(n)%useAMSR2.eq.1) then
-            if(param_num.eq.param_amsr2_qa) then
-               var_found_amsr2 = .true.
-            endif
-         endif
-
-         if(var_found_amsr2) then
-            call grib_get(igrib, 'values',sm_amsr2_qa,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-            !print *, 'sm_amsr2_qa' , sm_amsr2_qa
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     int(sm_amsr2_qa(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc))
-                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)')  &
-                  !      c, r ,c+(r-1)*SMOPSsmobs(n)%smopsnc,      &
-                  !      sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-               enddo
-            enddo
-         endif
-         !SMAP
-         var_found_smap = .false.
-         if(SMOPSsmobs(n)%useSMAP.eq.1) then
-            if(param_num.eq.param_smap) then
-               var_found_smap = .true.
-            endif
-         endif
-
-         if(var_found_smap) then
-            call grib_get(igrib, 'values',sm_smap,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_smap_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     sm_smap(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc)
-               enddo
-            enddo
-
-         endif
-
-         var_found_smap = .false.
-         if(SMOPSsmobs(n)%useSMAP.eq.1) then
-            if(param_num.eq.param_smap_qa) then
-               var_found_smap = .true.
-            endif
-         endif
-
-         if(var_found_smap) then
-            call grib_get(igrib, 'values',sm_smap_qa,iret)
-            call LDT_warning(iret,'error in grib_get:values in readSMOPSsmObs')
-
-            do r=1,SMOPSsmobs(n)%smopsnr
-               do c=1,SMOPSsmobs(n)%smopsnc
-                  sm_smap_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = &
-                     int(sm_smap_qa(c+((SMOPSsmobs(n)%smopsnr-r+1)-1)*&
-                     SMOPSsmobs(n)%smopsnc))
-               enddo
-            enddo
-         endif
-
-         call grib_release(igrib,iret)
-         call LDT_verify(iret, 'error in grib_release in readSMOPSsmObs')
-      enddo
-
-      call grib_close_file(ftn)
-
+   if ( SMOPSsmobs(n)%useASCAT.eq.1 ) then
       ! Table 3.6.1 – SMOPS soil moisture product Quality Assessment (QA) bits.
       ! (d) ASCAT Soil Moisture Product QA
       !
@@ -587,97 +464,23 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
       ! Note that I am assuming that Byte 0 above refers to the least
       ! significant byte and Byte 1 above refers to the most significant byte.
       ! Meaning estimated error is get_byte1, and quality is get_byte2.
-      if(SMOPSsmobs(n)%useASCAT.eq.1) then
-         do r=1, SMOPSsmobs(n)%smopsnr
-            do c=1, SMOPSsmobs(n)%smopsnc
-               qavalue = sm_ASCAT_A_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-               if ( qavalue .ne. 9999 ) then
-                  !estimated error
-                  err = get_byte1(qavalue)
-                  !quality flag - not used currently
-                  ql = get_byte2(qavalue)
-
-                  if(err.lt.err_threshold) then
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .true.
-                  else
-                     sm_ASCAT_A_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-                  endif
-                  if(sm_ASCAT_A_t(c+(r-1)*SMOPSsmobs(n)%smopsnc).lt.0.001) then
-                     sm_ASCAT_A_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-                  endif
-               else
-                  sm_ASCAT_A_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-               endif
-            enddo
+      do k = 1, 3
+         if ( param_ASCAT(k) < 0 ) cycle
+         do i = 1, nnat
+            qavalue = qa_ascat(i,k)
+            if ( qavalue == qa_undef ) then
+               sm_ascat(i,k) = LDT_rc%udef
+            else
+               err = get_byte1(qavalue)
+               if ( err >= err_threshold ) sm_ascat(i,k) = LDT_rc%udef
+            endif
+            if ( sm_ascat(i,k) < 0.001 ) sm_ascat(i,k) = LDT_rc%udef
          enddo
+         ! A (1), then B (2), then C (3): later satellite wins
+         where ( sm_ascat(:,k) /= LDT_rc%udef ) sm_out = sm_ascat(:,k)
+      enddo
 
-         do r=1, SMOPSsmobs(n)%smopsnr
-            do c=1, SMOPSsmobs(n)%smopsnc
-               qavalue = sm_ASCAT_B_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-               if ( qavalue .ne. 9999 ) then
-                  !estimated error
-                  err = get_byte1(qavalue)
-                  !quality flag - not used currently
-                  ql = get_byte2(qavalue)
-
-                  if(err >= err_threshold) then
-                     sm_ASCAT_B_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  endif
-                  if(sm_ASCAT_B_t(c+(r-1)*SMOPSsmobs(n)%smopsnc).lt.0.001) then
-                     sm_ASCAT_B_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  endif
-               else
-                  sm_ASCAT_B_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-               endif
-            enddo
-         enddo
-
-         sm_data = sm_ASCAT_A_t
-         where ( sm_ASCAT_B_t /= LDT_rc%udef )
-            sm_data = sm_ASCAT_B_t
-            sm_data_b = .true.
-         endwhere
-
-         !--------------------------------------------------------------------------
-         ! Interpolate to the LDT running domain
-         !--------------------------------------------------------------------------
-         call neighbor_interp(LDT_rc%gridDesc(n,:),&
-            sm_data_b, sm_data, smobs_b_ip, smobs_ip, &
-            SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr, &
-            LDT_rc%lnc(n)*LDT_rc%lnr(n), &
-            LDT_domain(n)%lat, LDT_domain(n)%lon,&
-            SMOPSsmobs(n)%n11, LDT_rc%udef, iret)
-
-         do r = 1, LDT_rc%lnr(n)
-            do c = 1, LDT_rc%lnc(n)
-               ! MN : add condition to check the GVF and land cover
-               !      screen the ASCAT if GVF is less than 0.1 and
-               !      land cover type is Barren or Sparsely Vegetated and
-               !      the value of the pixel is larger than 0.5
-               if ( allocated(LDT_gfrac_struc(n)%gfrac%value) ) then
-                  if ( maxval(LDT_gfrac_struc(n)%gfrac%value(c,r,:)) &
-                     .le. 0.1 .and. &
-                     LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%bareclass) &
-                     .ge. 0.5  ) then
-                     smobs_ip(c+(r-1)*LDT_rc%lnc(n)) = LDT_rc%udef
-                  endif
-               else
-                  !              write(LDT_logunit, *) '[INFO] Enabling greenness fraction ' // &
-                  !                                    'will improve the SMOPS ASCAT filtering'
-                  if ( LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%bareclass) &
-                     .ge. 0.5  ) then
-                     smobs_ip(c+(r-1)*LDT_rc%lnc(n)) = LDT_rc%udef
-                  endif
-               endif
-            enddo
-         enddo
-      endif
-
-
-
+   elseif ( SMOPSsmobs(n)%useSMOS.eq.1 ) then
       ! Table 3.6.1 – SMOPS soil moisture product Quality Assessment (QA) bits.
       ! (c) SMOS Soil Moisture Product QA
       !
@@ -707,66 +510,15 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
       ! 6   |  1 = Flood risk; 0 = no flood risk
       ! 7   |  1 = Urban area; 0 = not urban area
       !
-      !
-      ! From bytes 1 and 2, we will reject an observation if
-      !
-      !     bit 1 is 1 or bit 2 is 1 or bit 4 is 1 or bit 5 is 1 or
-      !     bit 6 is 1 or bit 7 is 1 or bit 8 is 1 or bit 9 is 1 or
-      !     bit 10 is 1 or bit 11 is 1 or bit 12 is 1 or bit 13 is 1 or
-      !     bit 14 is 1 or bit 15 is 1
-      !
-      ! Thus we will accept an observation only if
-      !
-      !     bit 0 is (0|1) and bit 1 is 0 and bit 2 is 0 and
-      !     bit 3 is (0|1) and bit 1 is 0 and bit 2 is 0 and
-      !     bit 4 is 0 and bit 5 is 0 and bit 6 is 0 and bit 4 is 0 and
-      !     bit 5 is 0 and bit 6 is 0 and bit 7 is 0 and bit 8 is 0 and
-      !     bit 9 is 0 and bit 10 is 0 and bit 11 is 0 and bit 12 is 0 and
-      !     bit 13 is 0 and bit 14 is 0 and bit 15 is 0
-      !
-      ! I.e., accept when bytes 1 and 2 are either b'0000000000000000' or
-      ! b'0000000000000001' or b'0000000000001000' or b'0000000000001001';
-      ! otherwise reject.
-      !
-      if(SMOPSsmobs(n)%useSMOS.eq.1) then
-         do r=1, SMOPSsmobs(n)%smopsnr
-            do c=1, SMOPSsmobs(n)%smopsnc
-               qavalue = sm_smos_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-               if ( qavalue .ne. 9999 ) then
-                  if ( qavalue == SMOS_accept(1) .or. &
-                     qavalue == SMOS_accept(2) .or. &
-                     qavalue == SMOS_accept(3) .or. &
-                     qavalue == SMOS_accept(4) .or. &
-                     qavalue == SMOS_accept(5) .or. &
-                     qavalue == SMOS_accept(6) .or. &
-                     qavalue == SMOS_accept(7) .or. &
-                     qavalue == SMOS_accept(8) ) then
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .true.
-                  else
-                     sm_smos_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-                  endif
-               else
-                  sm_smos_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-               endif
-            enddo
-         enddo
-         !--------------------------------------------------------------------------
-         ! Interpolate to the LDT running domain
-         !--------------------------------------------------------------------------
-         call neighbor_interp(LDT_rc%gridDesc(n,:),&
-            sm_data_b, sm_smos_t, smobs_b_ip, smobs_ip, &
-            SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr, &
-            LDT_rc%lnc(n)*LDT_rc%lnr(n), &
-            LDT_domain(n)%lat, LDT_domain(n)%lon,&
-            SMOPSsmobs(n)%n11, LDT_rc%udef, iret)
-      endif
+      ! Accept when bytes 1 and 2 match one of SMOS_accept; otherwise reject.
+      do i = 1, nnat
+         qavalue = qa_other(i)
+         if ( qavalue /= qa_undef .and. any(SMOS_accept == qavalue) ) then
+            sm_out(i) = sm_other(i)
+         endif
+      enddo
 
-
-
-
-
+   elseif ( SMOPSsmobs(n)%useAMSR2.eq.1 ) then
       ! Table 3.6.1 – SMOPS soil moisture product Quality Assessment (QA) bits.
       ! (e) AMSR2 Soil Moisture Layer QA
       !
@@ -785,153 +537,91 @@ subroutine read_SMOPS_data(n, fname, smobs_ip)
       ! 6   |  0 = not snow or rain; 1 = snow or rain
       ! 7   |  0 = not frozen ground; 1 = frozen ground
       !
-      ! Byte 2:
+      ! Byte 2 (GVF classes, TB quality, NDVI source) is NOT considered.
       !
-      ! Bit |  Description
-      ! ----------------------------------------------
-      ! 0   |  1: 0 ≤ GVF < 0.1; 0: otherwise
-      ! 1   |  1: 0.1 ≤ GVF < 0.2; 0: otherwise
-      ! 2   |  1: 0.2 ≤ GVF < 0.3; 0: otherwise
-      ! 3   |  1: 0.3 ≤ GVF < 0.4; 0: otherwise
-      ! 4   |  1: 0.4 ≤ GVF < 0.5; 0: otherwise
-      ! 5   |  1: 0.5 ≤ GVF; 0: otherwise
-      ! 6   |  1: overall input TB quality is good;
-      !     |  0: overall input TB quality is not good
-      ! 7   |  1 = real time NDVI; 0 = NDVI climate
-      !
-      ! Note that we are NOT considering byte 2.
-      !
-      ! From byte 1, we will reject an observation if
-      !
-      !    bit 0 is 0 or bit 1 is 1 or bit 2 is 1 or bit 3 is 1 or
-      !    bit 4 is 1 or bit 5 is 1 or bit 6 is 1 or bit 7 is 1
-      !
-      ! Thus we will accept an observation only if
-      !
-      !    bit 0 is 1 and bit 1 is 0 and bit 2 is 0 and bit 3 is 0 and
-      !    bit 4 is 0 and bit 5 is 0 and bit 6 is 0 and bit 7 is 0
-      !
-      ! I.e., accept when byte 1 is b'00000001'; otherwise reject.
-      !
-      if(SMOPSsmobs(n)%useAMSR2.eq.1) then
-         do r=1, SMOPSsmobs(n)%smopsnr
-            do c=1, SMOPSsmobs(n)%smopsnc
-               qavalue = sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-               if ( qavalue .ne. 9999 ) then
-                  qaflags = get_byte1(qavalue)
-                  if (qaflags == AMSR2_accept(1) ) then
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .true.
-                  else
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-                     sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  endif
-               else
-                  sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-               endif
-
-               if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .GT. 0.1 .and. &
-                  sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) .LT. 1) then
-                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)')  &
-                     c, r ,c+(r-1)*SMOPSsmobs(n)%smopsnc,   &
-                     sm_amsr2_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-               endif
-            enddo
-         enddo
-         !--------------------------------------------------------------------------
-         ! Interpolate to the LDT running domain
-         !--------------------------------------------------------------------------
-         call neighbor_interp(LDT_rc%gridDesc(n,:),&
-            sm_data_b, sm_amsr2_t, smobs_b_ip, smobs_ip, &
-            SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr, &
-            LDT_rc%lnc(n)*LDT_rc%lnr(n), &
-            LDT_domain(n)%lat, LDT_domain(n)%lon,&
-            SMOPSsmobs(n)%n11, LDT_rc%udef, iret)
-
-
-
-         ! MN print
-         do r=1, LDT_rc%lnr(n)
-            do c=1, LDT_rc%lnc(n)
-               if (smobs_ip(c+(r-1)*LDT_rc%lnc(n)) .GT. 0.1 .and. &
-                  smobs_ip(c+(r-1)*LDT_rc%lnc(n)) .LT. 1) then
-                  write(104,'(I5, 2x, I5, 2x, I8, 2x, F10.4 ,2x)')  &
-                     c, r , c+(r-1)*LDT_rc%lnc(n),         &
-                     smobs_ip(c+(r-1)*LDT_rc%lnc(n))
-               endif
-            enddo
-         enddo
-
-
-
-
-      endif
-
-
-      ! SMAP
-      ! Not yet documented.  Applying ASCAT QA logic.
-      if(SMOPSsmobs(n)%useSMAP.eq.1) then
-         do r=1, SMOPSsmobs(n)%smopsnr
-            do c=1, SMOPSsmobs(n)%smopsnc
-               qavalue = sm_smap_qa_t(c+(r-1)*SMOPSsmobs(n)%smopsnc)
-               if ( qavalue .ne. 9999 ) then
-                  !estimated error
-                  err = get_byte1(qavalue)
-                  !quality flag - not used currently
-                  ql = get_byte2(qavalue)
-
-                  if(err.lt.err_threshold) then
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .true.
-                  else
-                     sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-                     sm_smap_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  endif
-               else
-                  sm_smap_t(c+(r-1)*SMOPSsmobs(n)%smopsnc) = LDT_rc%udef
-                  sm_data_b(c+(r-1)*SMOPSsmobs(n)%smopsnc) = .false.
-               endif
-            enddo
-         enddo
-         !--------------------------------------------------------------------------
-         ! Interpolate to the LDT running domain
-         !--------------------------------------------------------------------------
-         call neighbor_interp(LDT_rc%gridDesc(n,:),&
-            sm_data_b, sm_smap_t, smobs_b_ip, smobs_ip, &
-            SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr, &
-            LDT_rc%lnc(n)*LDT_rc%lnr(n), &
-            LDT_domain(n)%lat, LDT_domain(n)%lon,&
-            SMOPSsmobs(n)%n11, LDT_rc%udef, iret)
-      endif
-
-      !------------------------------------------------------------------------
-      !  Remove pixel close to open water
-      !------------------------------------------------------------------------
-      do r = 1, LDT_rc%lnr(n)
-         do c = 1, LDT_rc%lnc(n)
-            if (smobs_ip(c+(r-1)*LDT_rc%lnc(n)) .ne. LDT_rc%udef) then 
-               search_rad = nint(SMOPSsmobs(n)%search_radius)
-               
-               c_s = max(1,c-search_rad)
-               c_e = min(LDT_rc%lnc(n),c+search_rad)
-               
-               r_s = max(1,r-search_rad)
-               r_e = min(LDT_rc%lnr(n),r+search_rad)
-               
-               do ix=c_s,c_e
-                  do jx=r_s,r_e
-                     if( LDT_LSMparam_struc(n)%landmask%value(ix,jx,1) .eq. 0 ) then
-                        smobs_ip(c+(r-1)*LDT_rc%lnc(n)) = LDT_rc%udef
-                     end if
-                  enddo
-               enddo
-            endif
-         enddo
+      ! Accept when byte 1 is b'00000001'; otherwise reject.
+      do i = 1, nnat
+         qavalue = qa_other(i)
+         if ( qavalue /= qa_undef ) then
+            if ( get_byte1(qavalue) == AMSR2_accept(1) ) sm_out(i) = sm_other(i)
+         endif
       enddo
-      
+
+   elseif ( SMOPSsmobs(n)%useSMAP.eq.1 ) then
+      ! SMAP: not yet documented.  Applying ASCAT QA logic.
+      do i = 1, nnat
+         qavalue = qa_other(i)
+         if ( qavalue /= qa_undef ) then
+            if ( get_byte1(qavalue) < err_threshold ) sm_out(i) = sm_other(i)
+         endif
+      enddo
    endif
+
+   b_out = ( sm_out /= LDT_rc%udef )
+   ok = .true.
+
+   deallocate(vals, sm_ascat, qa_ascat, sm_other, qa_other)
 #endif
-   
+
 contains
+
+#if (defined USE_GRIBAPI)
+subroutine check_grid(igrib, param_num, north_first)
+   ! Stops LDT unless the message is on the SMOPS grid LDT uses (see
+   ! above); north_first tells whether its rows run north to south.
+   implicit none
+   integer, intent(in)  :: igrib, param_num
+   logical, intent(out) :: north_first
+   integer :: ni, nj, jpos, ineg, jcons, st(7)
+   real*8  :: lat1, lon1
+   real*8, parameter :: tol = 1d-3
+
+   call grib_get(igrib, 'Ni', ni, st(1))
+   call grib_get(igrib, 'Nj', nj, st(2))
+   call grib_get(igrib, 'jScansPositively', jpos, st(3))
+   call grib_get(igrib, 'iScansNegatively', ineg, st(4))
+   call grib_get(igrib, 'jPointsAreConsecutive', jcons, st(5))
+   call grib_get(igrib, 'latitudeOfFirstGridPointInDegrees', lat1, st(6))
+   call grib_get(igrib, 'longitudeOfFirstGridPointInDegrees', lon1, st(7))
+   north_first = ( jpos == 0 )
+
+   if ( any(st /= 0) ) then
+      write(LDT_logunit,*) '[ERR] Cannot read the grid of parameter ', &
+           param_num, ' in ', trim(fname)
+      call LDT_endrun()
+   endif
+   if ( ni /= SMOPSsmobs(n)%smopsnc .or. nj /= SMOPSsmobs(n)%smopsnr .or. &
+        ineg /= 0 .or. jcons /= 0 .or. &
+        abs(modulo(lon1, 360d0) - 180.125d0) > tol .or. &
+        abs(lat1 - merge(89.875d0, -89.875d0, north_first)) > tol ) then
+      write(LDT_logunit,*) '[ERR] Parameter ', param_num, ' in ', trim(fname)
+      write(LDT_logunit,*) '[ERR] is not on the SMOPS grid LDT expects.'
+      write(LDT_logunit,'(a,2i6,a,3i3,a,2f10.4)') ' [ERR] Ni Nj', ni, nj, &
+           '  jScansPositively iScansNegatively jPointsAreConsecutive', &
+           jpos, ineg, jcons, '  first lat lon', lat1, lon1
+      write(LDT_logunit,'(a,2i6,a)') ' [ERR] Expected: Ni Nj', &
+           SMOPSsmobs(n)%smopsnc, SMOPSsmobs(n)%smopsnr, &
+           ', iScansNegatively 0, jPointsAreConsecutive 0, first lon'// &
+           ' 180.125 (= -179.875), first lat 89.875 (N to S) or -89.875'
+      call LDT_endrun()
+   endif
+end subroutine check_grid
+#endif
+
+subroutine flip_rows(a)
+   ! Rows north to south -> south to north.
+   implicit none
+   real, intent(inout) :: a(:)
+   integer :: r, nc, nr
+   real    :: row(SMOPSsmobs(n)%smopsnc)
+   nc = SMOPSsmobs(n)%smopsnc
+   nr = SMOPSsmobs(n)%smopsnr
+   do r = 1, nr/2
+      row = a((r-1)*nc+1:r*nc)
+      a((r-1)*nc+1:r*nc) = a((nr-r)*nc+1:(nr-r+1)*nc)
+      a((nr-r)*nc+1:(nr-r+1)*nc) = row
+   enddo
+end subroutine flip_rows
 
 integer*1 function get_byte1(i)
    implicit none
@@ -946,27 +636,112 @@ integer*1 function get_byte1(i)
    !                         <--> byte2|byte1
    !                         <--> 0x0201
    ! Here byte1 is b'00000001'; byte2 is b'00000010'
-   j = iand(i, z'00ff')
-   get_byte1 = j
+   j = iand(i, int(z'00ff', 2))
+   get_byte1 = int(j, 1)
 end function get_byte1
 
-integer*1 function get_byte2(i)
+end subroutine read_SMOPS_native
+
+
+!BOP
+!
+! !ROUTINE: SMOPS_native_to_ldt
+! \label{SMOPS_native_to_ldt}
+!
+! !INTERFACE:
+subroutine SMOPS_native_to_ldt(n, sm_nat, b_nat, smobs_ip)
+!
+! !USES:
+   use LDT_coreMod,      only : LDT_rc, LDT_domain
+   use SMOPSsm_obsMod,   only : SMOPSsmobs
+   ! MN : added to read the greenness, land cover and land mask
+   use LDT_gfracMod,     only : LDT_gfrac_struc
+   use LDT_LMLCMod
+   use LDT_paramDataMod, only : LDT_LSMparam_struc
+
    implicit none
-   integer*2, intent(in) :: i
-   integer*2 :: j
-   ! This function expects a 16-bit integer as input.  It returns
-   ! the most significant byte (as an 8-bit integer), referred
-   ! to as byte2 in the NESDIS documention.
-   !
-   ! For example,
-   ! i = b'0000001000000001' <--> 00000010|00000001
-   !                         <--> byte2|byte1
-   !                         <--> 0x0201
-   ! Here byte1 is b'00000001'; byte2 is b'00000010'
-   j = ishft(i, -8)
-   get_byte2 = j
-end function get_byte2
-end subroutine read_SMOPS_data
+!
+! !ARGUMENTS:
+   integer,   intent(in)  :: n
+   real,      intent(in)  :: sm_nat(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
+   logical*1, intent(in)  :: b_nat(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
+   real,      intent(out) :: smobs_ip(LDT_rc%lnc(n)*LDT_rc%lnr(n))
+!
+! !DESCRIPTION:
+!  Interpolates the SMOPS field to the LDT grid (nearest neighbour) and
+!  screens it: for ASCAT, barren or sparsely vegetated cells (and, if
+!  greenness is read, cells with maximum greenness <= 0.1); for all
+!  sensors, cells within "SMOPS search radius for openwater proximity
+!  detection" of a water cell.
+!
+!EOP
+   real           :: sm_in(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
+   logical*1      :: b_in(SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr)
+   logical*1      :: smobs_b_ip(LDT_rc%lnc(n)*LDT_rc%lnr(n))
+   integer        :: c, r, iret
+   integer        :: search_rad, ix, jx, c_s, c_e, r_s, r_e
+
+   sm_in = sm_nat
+   b_in  = b_nat
+
+   !--------------------------------------------------------------------------
+   ! Interpolate to the LDT running domain
+   !--------------------------------------------------------------------------
+   call neighbor_interp(LDT_rc%gridDesc(n,:),&
+        b_in, sm_in, smobs_b_ip, smobs_ip, &
+        SMOPSsmobs(n)%smopsnc*SMOPSsmobs(n)%smopsnr, &
+        LDT_rc%lnc(n)*LDT_rc%lnr(n), &
+        LDT_domain(n)%lat, LDT_domain(n)%lon,&
+        SMOPSsmobs(n)%n11, LDT_rc%udef, iret)
+
+   if ( SMOPSsmobs(n)%useASCAT.eq.1 ) then
+      do r = 1, LDT_rc%lnr(n)
+         do c = 1, LDT_rc%lnc(n)
+            ! MN : add condition to check the GVF and land cover
+            !      screen the ASCAT if GVF is less than 0.1 and
+            !      land cover type is Barren or Sparsely Vegetated and
+            !      the value of the pixel is larger than 0.5
+            if ( allocated(LDT_gfrac_struc(n)%gfrac%value) ) then
+               if ( maxval(LDT_gfrac_struc(n)%gfrac%value(c,r,:)) &
+                    .le. 0.1 .and. &
+                    LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%bareclass) &
+                    .ge. 0.5  ) then
+                  smobs_ip(c+(r-1)*LDT_rc%lnc(n)) = LDT_rc%udef
+               endif
+            else
+               if ( LDT_LSMparam_struc(n)%landcover%value(c,r,LDT_rc%bareclass) &
+                    .ge. 0.5  ) then
+                  smobs_ip(c+(r-1)*LDT_rc%lnc(n)) = LDT_rc%udef
+               endif
+            endif
+         enddo
+      enddo
+   endif
+
+   !------------------------------------------------------------------------
+   !  Remove pixel close to open water
+   !------------------------------------------------------------------------
+   search_rad = nint(SMOPSsmobs(n)%search_radius)
+   do r = 1, LDT_rc%lnr(n)
+      do c = 1, LDT_rc%lnc(n)
+         if (smobs_ip(c+(r-1)*LDT_rc%lnc(n)) .ne. LDT_rc%udef) then
+            c_s = max(1,c-search_rad)
+            c_e = min(LDT_rc%lnc(n),c+search_rad)
+            r_s = max(1,r-search_rad)
+            r_e = min(LDT_rc%lnr(n),r+search_rad)
+            do ix=c_s,c_e
+               do jx=r_s,r_e
+                  if( LDT_LSMparam_struc(n)%landmask%value(ix,jx,1) .eq. 0 ) then
+                     smobs_ip(c+(r-1)*LDT_rc%lnc(n)) = LDT_rc%udef
+                  end if
+               enddo
+            enddo
+         endif
+      enddo
+   enddo
+
+end subroutine SMOPS_native_to_ldt
+
 
 !BOP
 ! !ROUTINE: create_SMOPSsm_filename
@@ -983,7 +758,7 @@ subroutine create_SMOPSsm_filename(ndir, yr, mo,da, filename)
   character (len=*) :: ndir
 !
 ! !DESCRIPTION:
-!  This subroutine creates the SMOPS filename based on the time and date
+!  This subroutine creates the daily SMOPS filename based on the date
 !
 !  The arguments are:
 !  \begin{description}
@@ -1006,3 +781,167 @@ subroutine create_SMOPSsm_filename(ndir, yr, mo,da, filename)
        //trim(fyr)//trim(fmo)//trim(fda)//'.gr2'
 
 end subroutine create_SMOPSsm_filename
+
+
+!BOP
+! !ROUTINE: create_SMOPSsm_6hrly_filename
+! \label{create_SMOPSsm_6hrly_filename}
+!
+! !INTERFACE:
+subroutine create_SMOPSsm_6hrly_filename(n, ndir, conv, yr, mo, da, hr, &
+     filename, fversion)
+! !USES:
+  use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
+                               LDT_releaseUnitNumber, LDT_endrun
+  use LDT_timeMgrMod,   only : LDT_date2time, LDT_tick
+  use SMOPSsm_obsMod,   only : SMOPSsmobs
+
+  implicit none
+! !ARGUMENTS:
+  integer,           intent(in)  :: n
+  character (len=*), intent(in)  :: ndir
+  character (len=*), intent(in)  :: conv
+  integer,           intent(in)  :: yr, mo, da, hr
+  character (len=*), intent(out) :: filename
+  character (len=*), intent(out) :: fversion
+!
+! !DESCRIPTION:
+!  Creates the name of the 6-hourly SMOPS file that holds the window
+!  starting at yr-mo-da hr, following create\_SMOPS\_ASCATsm\_filename
+!  in the LIS SMOPS ASCAT reader.
+!
+!  "AGRMET" naming convention (files directly in ndir):
+!  \begin{description}
+!  \item[before 2017-10-05] smops\_dYYYYMMDD\_sHH0000\_cness.gr2,
+!     HH = window start
+!  \item[2017-10-05 to 2024-07-04T18] NPR\_SMOPS\_CMAP\_DYYYYMMDDHH.gr2,
+!     HH = window start + 6 hours (the file holds the 6 hours before HH)
+!  \item[from 2024-07-04T18]
+!     NPR-SMOPS-CMAP-6hrly\_vNrM\_blend\_sYYYYMMDDHH*\_e*\_c*.grib2
+!     (v4r0 from 2024-07-04T18, v5r0 from 2026-12-08), HH = window start;
+!     the version, end and creation times are found with glob. If several
+!     files match, the newest version is used and, within it, the latest
+!     creation time.
+!  \end{description}
+!
+!  "LIS" naming convention: ndir/YYYY/NPR\_SMOPS\_CMAP\_DYYYYMMDDHH.gr2
+!  for all dates, with the same 6-hour offset.
+!
+!  filename is 'NULL' if no NPR-SMOPS-CMAP-6hrly file is found. fversion
+!  is the version in the name of an NPR-SMOPS-CMAP-6hrly file (e.g.
+!  'v4r0'), and blank for the other names.
+!EOP
+  integer, external :: create_filelist ! C function (ldt/DAobs/WSF_sm)
+  character (len=4) :: fyr
+  character (len=2) :: fmo, fda, fhr
+  character (len=*), parameter :: listfile = 'SMOPS_filelist_ldt.dat'
+  character (len=len(filename)) :: line
+  character (len=16) :: ver
+  real*8            :: t, tfile
+  integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy, rc, ftn, ierr
+  integer           :: vnum, best
+  real              :: gmt
+
+  fversion = ''
+  yr2 = yr; mo2 = mo; da2 = da; hr2 = hr; mn2 = 0; ss2 = 0
+  call LDT_date2time(t, doy, gmt, yr2, mo2, da2, hr2, mn2, ss2)
+
+  ! t (window start) picks the naming convention; yr2..hr2 go in the name.
+  if ( t >= SMOPSsmobs(n)%naming3_time .and. &
+       t <  SMOPSsmobs(n)%version4_time ) then
+     ! NPR_SMOPS_CMAP_DYYYYMMDDHH.gr2 holds the 6 hours before HH
+     call LDT_tick(tfile, doy, gmt, yr2, mo2, da2, hr2, mn2, ss2, 21600.0)
+  endif
+
+  write(unit=fyr, fmt='(i4.4)') yr2
+  write(unit=fmo, fmt='(i2.2)') mo2
+  write(unit=fda, fmt='(i2.2)') da2
+  write(unit=fhr, fmt='(i2.2)') hr2
+
+  if ( trim(conv) == 'LIS' ) then
+     filename = trim(ndir)//'/'//fyr//'/NPR_SMOPS_CMAP_D' &
+          //fyr//fmo//fda//fhr//'.gr2'
+
+  elseif ( t < SMOPSsmobs(n)%naming3_time ) then
+     filename = trim(ndir)//'/smops_d'//fyr//fmo//fda//'_s'//fhr// &
+          '0000_cness.gr2'
+
+  elseif ( t < SMOPSsmobs(n)%version4_time ) then
+     filename = trim(ndir)//'/NPR_SMOPS_CMAP_D'//fyr//fmo//fda//fhr//'.gr2'
+
+  else
+     filename = 'NULL'
+     rc = create_filelist(trim(ndir)//'/NPR-SMOPS-CMAP-6hrly_v*_blend_s' &
+          //fyr//fmo//fda//fhr//'*.grib2'//char(0), listfile//char(0))
+     if (rc /= 0) then
+        write(LDT_logunit,*) '[WARN] Problem searching for ', &
+             'NPR-SMOPS-CMAP-6hrly files in ', trim(ndir)
+     endif
+     best = -1
+     ftn = LDT_getNextUnitNumber()
+     open(ftn, file=listfile, status='old', iostat=ierr)
+     do while (ierr == 0)
+        read(ftn, '(a)', iostat=ierr) line
+        if (ierr /= 0) exit
+        if (len_trim(line) == 0) cycle
+        call SMOPS_6hrly_version(line, ver, vnum)
+        if (vnum < 0) then
+           write(LDT_logunit,*) '[ERR] No SMOPS version (vNrM) in the name ', &
+                trim(line)
+           call LDT_endrun()
+        endif
+        ! glob lists the files by name, so within one version the last
+        ! file has the latest creation time.
+        if (vnum >= best) then
+           best = vnum
+           filename = line
+           fversion = ver
+        endif
+     enddo
+     close(ftn)
+     call LDT_releaseUnitNumber(ftn)
+  endif
+
+end subroutine create_SMOPSsm_6hrly_filename
+
+!BOP
+! !ROUTINE: SMOPS_6hrly_version
+! \label{SMOPS_6hrly_version}
+!
+! !INTERFACE:
+subroutine SMOPS_6hrly_version(fname, ver, vnum)
+  implicit none
+! !ARGUMENTS:
+  character (len=*), intent(in)  :: fname
+  character (len=*), intent(out) :: ver
+  integer,           intent(out) :: vnum
+!
+! !DESCRIPTION:
+!  Reads the SMOPS version from the name of an NPR-SMOPS-CMAP-6hrly file,
+!  e.g. NPR-SMOPS-CMAP-6hrly\_v5r0\_blend\_s...grib2 gives ver = 'v5r0'
+!  and vnum = 5000 (1000 * N + M for vNrM, for comparing versions).
+!  vnum is -1 and ver blank if the name has no vNrM.
+!EOP
+  character (len=*), parameter :: tag = '6hrly_v'
+  character (len=*), parameter :: digits = '0123456789'
+  integer :: i, j, k, major, minor, ios
+
+  ver = ''
+  vnum = -1
+  i = index(fname, tag, back=.true.)
+  if (i == 0) return
+  i = i + len(tag) - 1                    ! the 'v'
+  j = index(fname(i:), '_blend')
+  if (j < 5) return                       ! at least 'vNrM'
+  k = index(fname(i:i+j-2), 'r')          ! the 'r', relative to i
+  if (k < 3 .or. k > j - 2) return
+  if (verify(fname(i+1:i+k-2), digits) /= 0) return
+  if (verify(fname(i+k:i+j-2), digits) /= 0) return
+  read(fname(i+1:i+k-2), *, iostat=ios) major
+  if (ios /= 0) return
+  read(fname(i+k:i+j-2), *, iostat=ios) minor
+  if (ios /= 0) return
+  ver = fname(i:i+j-2)
+  vnum = 1000*major + minor
+
+end subroutine SMOPS_6hrly_version
